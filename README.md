@@ -8,7 +8,7 @@
 
 **版本定位：Beta 1.0 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
 
-**技术文档**：[`docs/technical-doc.md`](docs/technical-doc.md) —— 系统架构、核心算法（多 Agent 协作 / 证据驱动评分 / BM25 + 端侧向量混合检索 / 三级降级）、后端接口契约、测试体系与复现步骤。
+**技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 29 页。**PDF 版由该文档 A4 打印导出，随赛事材料以附件形式提交。**
 
 **在线演示（免安装，浏览器直接打开）：<https://penguin-zhou.github.io/FutureMirror/>**（GitHub Pages）· **国内直连镜像：<https://futuremirror-demo.app.workbuddy.host/>** · 演示账号 `demo@futuremirror.app / Demo123456`
 
@@ -114,6 +114,8 @@
 > 两个在线入口内容完全一致（均为 `public/futuremirror-demo.html` 的逐字节副本）：
 > - 主站由 GitHub Pages 托管 `gh-pages` 分支（`.nojekyll` 跳过 Jekyll 处理），重新发布：`node scripts/deploy-pages.js --build`；
 > - 镜像由静态托管服务托管 `.mirror-site/` 目录，重新发布：`node scripts/stage-mirror.js` 后对该目录执行一次「发布」。镜像目录为纯产物，已被 `.gitignore` 忽略，不参与版本管理。
+>
+> 技术文档（`docs/technical-doc.html`）随同一条发布链路上线，两个入口地址见本文件顶部；PDF 版由该文档打印导出，以附件形式随赛事材料提交。
 
 ### 3.3 安装 B：模块版前端 + FastAPI 后端（推荐答辩使用）
 
@@ -590,7 +592,9 @@ futuremirror/
 │   └── build-manifest.json     # 拆分清单（build-demo.js 依据）
 ├── public/futuremirror-demo.html   # 单文件演示版（build-demo.js 产物）
 ├── scripts/                    # split-frontend / build-demo / deploy-pages / stage-mirror / validate / test-* 工具与测试
+├── docs/technical-doc.html         # 技术文档（9 章正式版，可直接在线阅读；PDF 附件由此打印导出）
 ├── docs/demo-video-storyboard.md   # 演示视频分镜脚本
+├── docs/archive/                   # 技术文档早期 Markdown 草稿（仅供演进追溯，不对外）
 ├── app/ lib/ components/ …     # Next.js 完整版
 └── README.md
 ```
@@ -635,6 +639,45 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 - 演示数据均为合成示例，非真实爬取。
 
 
+## 十、团队信息与成员分工
+
+**面镜 FutureMirror 开发团队 · 福建农林大学桢队** · 技术文档 v1.0（对应产品 Beta 1.0）
+
+| 角色 | 成员 | GitHub |
+| --- | --- | --- |
+| 项目负责人 / 前端开发 / 后端开发 | 周鹏辉（PenguinZhou） | [@Penguin-Zhou](https://github.com/Penguin-Zhou) |
+| 文案与视觉美化 | 林宇豪（Vito） | — |
+
+### 10.1 项目负责人｜周鹏辉（PenguinZhou）
+
+- 整体产品需求梳理、系统架构设计；完成多 Agent 角色划分、任务调度逻辑设计；
+- 负责 Prompt 工程、打分评估规则、可解释评价体系、系统降级与容错方案设计；
+- 统筹 Git 仓库搭建、规范代码提交，拆分细粒度 commit，保证开发历史完整可追溯；
+- 承担前后端整体联调、功能测试，设计数据隐私安全与合规方案。
+
+### 10.2 前端开发｜周鹏辉（PenguinZhou）
+
+- 完成页面布局、组件开发（HTML/CSS/JS）；实现明暗双主题、流式对话输出、雷达图可视化、报告导出打印、弹窗交互；
+- 开发本地存储、语音识别与语音朗读、开发者调试面板；完成离线 Mock 模式开发，对接后端接口并完成全流程调试。
+
+> 备注：基础 UI 代码由 AI 编程工具辅助生成，本人独立完成业务逻辑编写、代码审核、逻辑纠错与 BUG 修复。
+
+### 10.3 后端开发｜周鹏辉（PenguinZhou）
+
+- 使用 FastAPI 搭建代理服务，实现 LLM 流式 SSE 消息转发，解决浏览器跨域问题；
+- 完成 API 密钥安全托管、请求超时捕获、异常信息处理；搭建 SQLite 数据持久化、简易 RAG 检索模块；
+- 编写项目部署脚本、依赖环境清单，验证 10 分钟本地一键复现流程。
+
+### 10.4 文案与视觉美化｜林宇豪（Vito）
+
+- 撰写 README 文档、AI 辅助开发声明、全套技术说明书与赛事申报材料；
+- 撰写演示视频脚本，配合完成内容准备；
+- 负责全部技术文档排版美化、图文规整，优化文档视觉观感。
+
+> 与技术文档的一致说明：本 README 与 [`docs/technical-doc.html`](docs/technical-doc.html) 为同一套交付材料，技术文档含 9 章完整内容（附录 9.5 交付材料清单与本文档互相指向）。
+
+---
+
 ## 十一、交付材料
 
 | 材料                     | 状态 | 地址 / 说明                              |
@@ -646,7 +689,8 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 6 项 + 前端 858 项断言           |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`      |
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                          |
-| 技术文档 PDF               | ✅  | Markdown 版已就绪：仓库内 `docs/technical-doc.md`（在线阅读：https://github.com/Penguin-Zhou/FutureMirror/blob/main/docs/technical-doc.md）；PDF 版另行导出 |
+| 技术文档（HTML 在线版）         | ✅  | https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html （国内镜像：https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内 `docs/technical-doc.html`） |
+| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，约 29 页，**随赛事材料以附件形式提交** |
 | 在线演示（公网可访问）            | ✅  | https://penguin-zhou.github.io/FutureMirror/ |
 | 在线演示镜像（国内直连）          | ✅  | https://futuremirror-demo.app.workbuddy.host/ |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456` |
@@ -655,11 +699,12 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 ### 部署速查
 
 ```bash
-# 方案 0：GitHub Pages（当前在线演示所用，纯静态、零成本、随仓库更新）
-node scripts/deploy-pages.js --build    # 重建单文件版 → 强推 gh-pages 分支（index.html / 404.html / .nojekyll）
+# 方案 0：GitHub Pages（当前在线演示 + 在线技术文档所用，纯静态、零成本、随仓库更新）
+node scripts/deploy-pages.js --build    # 重建单文件版 → 强推 gh-pages 分支
+                                        # 产物：index.html / 404.html / .nojekyll / docs/technical-doc.html
 
 # 方案 0b：国内直连镜像（同一份产物，托管 .mirror-site/ 静态目录）
-node scripts/stage-mirror.js            # 生成 .mirror-site/index.html + 404.html（纯产物，已 gitignore）
+node scripts/stage-mirror.js            # 生成 .mirror-site/index.html + 404.html + docs/technical-doc.html（纯产物，已 gitignore）
 # 随后对该目录执行一次「发布为应用」（静态站点），链接即 https://futuremirror-demo.app.workbuddy.host/
 
 # 方案 A：Vercel（完整版 Next.js）
@@ -673,7 +718,7 @@ cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
 # 前端构建后用任意静态服务托管 frontend/，并在 CONFIG 中填写后端地址
 ```
 
-部署后把地址回填到 `frontend/js/data/config.js` 的 `CONFIG` 与本 README。当前 `repoUrl / fullAppUrl / liveUrl / docsUrl` 均已指向线上地址；`videoUrl` 待演示视频录制完成后再填。
+部署后把地址回填到 `frontend/js/data/config.js` 的 `CONFIG` 与本 README。当前 `repoUrl / fullAppUrl / liveUrl / docsUrl` 均已指向线上地址（`docsUrl` = Pages 上的 HTML 在线版）；`videoUrl` 待演示视频录制完成后再填。
 
 > `gh-pages` 是**纯产物分支**：每次发布重建单个提交并强推，不保留历史；项目主历史始终在 `main`。首次启用 Pages 只需在仓库 Settings → Pages 选择 `gh-pages` 分支根目录一次（当前已启用，`https_enforced`）。
 
