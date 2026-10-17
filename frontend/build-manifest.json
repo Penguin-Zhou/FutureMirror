@@ -1,0 +1,278 @@
+{
+  "source": "public/futuremirror-demo.html",
+  "generatedBy": "scripts/split-frontend.js",
+  "css": [
+    {
+      "file": "css/tokens.css",
+      "lines": [
+        16,
+        1800
+      ],
+      "note": "基础令牌层（v1–v16：主题变量 / 暗色 / 组件增量）"
+    },
+    {
+      "file": "css/theme.css",
+      "lines": [
+        1801,
+        2528
+      ],
+      "note": "v17 Arkira 主题重构层"
+    },
+    {
+      "file": "css/pages.css",
+      "lines": [
+        2529,
+        3202
+      ],
+      "note": "功能页面层（v18–v22：求职 / 题库 / 小助手 / 移动端 / API）"
+    }
+  ],
+  "jsOriginalOrder": [
+    {
+      "file": "js/data/config.js",
+      "lines": [
+        4764,
+        4777
+      ],
+      "note": "§0 项目材料配置"
+    },
+    {
+      "file": "js/core/router.js",
+      "lines": [
+        4778,
+        4988
+      ],
+      "note": "§0.5 视图路由 + §0.6 应用内子路由 + 0.6 应用内子路由"
+    },
+    {
+      "file": "js/INDEX.js",
+      "lines": [
+        4989,
+        5008
+      ],
+      "note": "模块索引（注释）"
+    },
+    {
+      "file": "js/core/store.js",
+      "lines": [
+        5009,
+        5055
+      ],
+      "note": "§1 全局状态 & 工具"
+    },
+    {
+      "file": "js/core/auth.js",
+      "lines": [
+        5056,
+        5299
+      ],
+      "note": "§2 用户系统"
+    },
+    {
+      "file": "js/core/theme.js",
+      "lines": [
+        5300,
+        5318
+      ],
+      "note": "§3 主题"
+    },
+    {
+      "file": "js/core/router-pages.js",
+      "lines": [
+        5319,
+        5330
+      ],
+      "note": "§4 应用内页面路由"
+    },
+    {
+      "file": "js/features/match.js",
+      "lines": [
+        5331,
+        5435
+      ],
+      "note": "§4 简历匹配"
+    },
+    {
+      "file": "js/features/interview.js",
+      "lines": [
+        5436,
+        5989
+      ],
+      "note": "§5 模拟面试（含 QUESTION_BANK）"
+    },
+    {
+      "file": "js/data/kb.js",
+      "lines": [
+        5990,
+        6124
+      ],
+      "note": "§6 RAG 面经问答 + v10 知识库 + v10 · 面经知识库扩充"
+    },
+    {
+      "file": "js/features/report.js",
+      "lines": [
+        6125,
+        6365
+      ],
+      "note": "§7 评估报告"
+    },
+    {
+      "file": "js/features/prompt-viewer.js",
+      "lines": [
+        6366,
+        6470
+      ],
+      "note": "§7.5 Prompt 查看器 / 导出"
+    },
+    {
+      "file": "js/core/boot.js",
+      "lines": [
+        6471,
+        6597
+      ],
+      "note": "§9 启动流程（bootApp 等声明）"
+    },
+    {
+      "file": "js/core/reveal.js",
+      "lines": [
+        6598,
+        6691
+      ],
+      "note": "v17 滚动渐入 + init()"
+    },
+    {
+      "file": "js/core/theme-variants.js",
+      "lines": [
+        6692,
+        6712
+      ],
+      "note": "§10 主题色变体"
+    },
+    {
+      "file": "js/core/roll.js",
+      "lines": [
+        6713,
+        6739
+      ],
+      "note": "§11 数字滚动"
+    },
+    {
+      "file": "js/features/resume.js",
+      "lines": [
+        6740,
+        6904
+      ],
+      "note": "§12 简历优化工作台"
+    },
+    {
+      "file": "js/features/career.js",
+      "lines": [
+        6905,
+        7531
+      ],
+      "note": "§13 职业探索 + v10 扩充 + v11 选择器 + v10 · 岗位数据库扩充 + v11 · 目标岗位下拉选择器"
+    },
+    {
+      "file": "js/dev/runtime.js",
+      "lines": [
+        7532,
+        7727
+      ],
+      "note": "v12 可验证运行时三件套"
+    },
+    {
+      "file": "js/bootstrap.js",
+      "lines": [
+        7728,
+        7755
+      ],
+      "note": "v10 尾部引导 bootstrapV10"
+    },
+    {
+      "file": "js/dev/devmode.js",
+      "lines": [
+        7756,
+        8339
+      ],
+      "note": "v13 + v14 开发者模式 + v14 · 开发者模式"
+    },
+    {
+      "file": "js/features/today.js",
+      "lines": [
+        8340,
+        8373
+      ],
+      "note": "v15 今日推荐"
+    },
+    {
+      "file": "js/features/profile.js",
+      "lines": [
+        8374,
+        8763
+      ],
+      "note": "v16 个人中心"
+    },
+    {
+      "file": "js/features/jobs.js",
+      "lines": [
+        8764,
+        9089
+      ],
+      "note": "v18 求职闭环"
+    },
+    {
+      "file": "js/features/quiz.js",
+      "lines": [
+        9090,
+        10249
+      ],
+      "note": "v19 题库 + v20 题库增强 + v20 · 题库增强"
+    },
+    {
+      "file": "js/features/assistant.js",
+      "lines": [
+        10250,
+        10522
+      ],
+      "note": "v20 AI 小助手 + v21 悬浮球 + v21 · AI 悬浮球"
+    },
+    {
+      "file": "js/core/api.js",
+      "lines": [
+        10523,
+        10708
+      ],
+      "note": "v22 后端适配层"
+    }
+  ],
+  "jsLoadOrder": [
+    "js/data/config.js",
+    "js/core/router.js",
+    "js/INDEX.js",
+    "js/core/store.js",
+    "js/core/auth.js",
+    "js/core/theme.js",
+    "js/core/router-pages.js",
+    "js/features/match.js",
+    "js/features/interview.js",
+    "js/data/kb.js",
+    "js/features/report.js",
+    "js/features/prompt-viewer.js",
+    "js/core/boot.js",
+    "js/core/theme-variants.js",
+    "js/core/reveal.js",
+    "js/core/roll.js",
+    "js/features/resume.js",
+    "js/features/career.js",
+    "js/dev/runtime.js",
+    "js/bootstrap.js",
+    "js/dev/devmode.js",
+    "js/features/today.js",
+    "js/features/profile.js",
+    "js/features/jobs.js",
+    "js/features/quiz.js",
+    "js/features/assistant.js",
+    "js/core/api.js"
+  ],
+  "loadOrderNote": "与原区划顺序唯一差异：theme-variants 提前于 reveal（init() 加载期调用 syncAccentBtn，跨文件无函数提升）"
+}
