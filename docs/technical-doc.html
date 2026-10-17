@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>面镜 FutureMirror · 技术文档 v1.0</title>
+<style>
+  :root {
+    --brand: #2E3FE8;
+    --brand-light: #5B6AF0;
+    --ink: #10163A;
+    --muted: #5A6285;
+    --faint: #8E95B5;
+    --line: #E4E7F0;
+    --bg-soft: #F6F8FF;
+    --green: #0E9F6E;
+    --amber: #C27803;
+    --red: #E02D3C;
+    --serif: Georgia, "Times New Roman", "Songti SC", "SimSun", serif;
+    --sans: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { font-size: 9.8pt; }
+
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: #fff;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  @page {
+    size: A4;
+    margin: 14mm 13mm 16mm 13mm;
+  }
+
+  .print-tip {
+    position: fixed; right: 20px; bottom: 20px; z-index: 100;
+    background: var(--brand); color: #fff;
+    padding: 13px 17px; border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(46,63,232,.35);
+    font-size: 12.5px; line-height: 1.55; max-width: 310px;
+  }
+  .print-tip b { display: block; margin-bottom: 7px; font-size: 13px; }
+  .print-tip ol { margin: 0 0 8px 15px; padding: 0; }
+  .print-tip ol li { margin-bottom: 4px; }
+  .print-tip ol li strong { color: #FFE9A8; font-weight: 700; }
+  .print-tip .tip-note {
+    display: block; margin: 5px 0 7px; padding-top: 5px;
+    border-top: 1px dashed rgba(255,255,255,.4);
+    font-size: 11px; opacity: .9;
+  }
+  .print-tip button {
+    margin-top: 3px; padding: 6px 13px; border: 0; border-radius: 6px;
+    background: #fff; color: var(--brand); font-weight: 600;
+    cursor: pointer; font-family: inherit; font-size: 12px;
+  }
+
+  @media print {
+    .print-tip { display: none !important; }
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 3mm;
+  }
+
+  /* ---------- 封面 ---------- */
+  .cover {
+    page-break-after: always;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 24mm 0;
+    position: relative;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(46,63,232,.08), transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(139,92,246,.06), transparent 60%);
+  }
+  .cover-brand {
+    font-size: 12.5pt; letter-spacing: .4em; color: var(--brand);
+    text-transform: uppercase; font-weight: 600;
+    margin-bottom: 15mm;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-size: 38pt; font-weight: 700;
+    letter-spacing: -.02em; line-height: 1.15;
+    color: var(--ink); margin-bottom: 7mm;
+  }
+  .cover-title .grad {
+    background: linear-gradient(120deg, var(--brand) 0%, #8B5CF6 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; display: block;
+  }
+  .cover-sub {
+    font-family: var(--serif);
+    font-size: 15pt; color: var(--muted);
+    margin-bottom: 20mm; line-height: 1.45;
+  }
+  .cover-meta {
+    display: grid; grid-template-columns: 27mm 1fr;
+    gap: 2.5mm 5.5mm; font-size: 10pt;
+    padding-top: 5mm; border-top: 1px solid var(--line);
+    max-width: 130mm;
+  }
+  .cover-meta dt { color: var(--faint); }
+  .cover-meta dd { color: var(--ink); font-weight: 500; }
+  .cover-meta dd a { color: var(--brand); text-decoration: none; word-break: break-all; }
+  .cover-meta dd a:hover { text-decoration: underline; }
+  .cover-foot {
+    position: absolute; bottom: 14mm; left: 0; right: 0;
+    text-align: center; font-size: 9pt;
+    color: var(--brand); font-weight: 600; letter-spacing: .08em;
+  }
+
+  /* ---------- 目录 ---------- */
+  .toc { page-break-after: always; padding-top: 6mm; }
+  .toc h2 {
+    font-family: var(--serif);
+    font-size: 20pt; font-weight: 700;
+    margin-bottom: 8mm; padding-bottom: 3.5mm;
+    border-bottom: 2px solid var(--brand); display: inline-block;
+  }
+  .toc ol { list-style: none; counter-reset: toc; font-size: 11pt; }
+  .toc ol > li {
+    counter-increment: toc;
+    padding: 4.5mm 0;
+    border-bottom: 1px dashed var(--line);
+    display: flex; justify-content: space-between;
+    align-items: baseline; gap: 5mm;
+  }
+  .toc ol > li::before {
+    content: counter(toc, decimal-leading-zero);
+    color: var(--brand); font-weight: 700;
+    font-family: var(--mono); margin-right: 3.5mm; flex-shrink: 0;
+  }
+  .toc ol > li .toc-t { flex: 1; font-weight: 600; }
+  .toc ol > li .toc-d { color: var(--faint); font-size: 9pt; }
+  .toc ol > li .toc-p {
+    color: var(--faint); font-family: var(--mono);
+    font-size: 9.5pt; flex-shrink: 0;
+  }
+  .toc a { color: inherit; text-decoration: none; }
+
+  /* ---------- 正文 ---------- */
+  .content { padding-top: 5mm; }
+  .chapter { page-break-before: always; padding-top: 4mm; }
+  .chapter:first-of-type { page-break-before: auto; }
+
+  .chapter-num {
+    display: inline-block; font-family: var(--mono);
+    font-size: 10.5pt; font-weight: 700;
+    color: var(--brand); background: var(--bg-soft);
+    padding: 1.8mm 3.5mm; border-radius: 5px;
+    margin-bottom: 3.5mm; letter-spacing: .06em;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: 22pt; font-weight: 700;
+    letter-spacing: -.02em; line-height: 1.18;
+    margin-bottom: 6mm; color: var(--ink);
+    page-break-after: avoid;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 14.5pt; font-weight: 700;
+    letter-spacing: -.01em;
+    margin: 6.5mm 0 3mm;
+    padding-left: 3.5mm;
+    border-left: 3.5px solid var(--brand);
+    color: var(--ink);
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 11pt; font-weight: 700;
+    margin: 5mm 0 2mm;
+    color: var(--ink);
+    page-break-after: avoid;
+  }
+
+  h4 {
+    font-size: 10.2pt; font-weight: 600;
+    margin: 3.5mm 0 1.2mm;
+    color: var(--muted);
+    page-break-after: avoid;
+  }
+
+  p { margin-bottom: 2.8mm; }
+  strong { font-weight: 700; color: var(--ink); }
+  a { color: var(--brand); }
+  ul, ol { margin: 0 0 3mm 5.5mm; }
+  li { margin-bottom: 1.2mm; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: var(--bg-soft); color: var(--brand);
+    padding: .4mm 1.8mm; border-radius: 3px;
+  }
+
+  pre {
+    font-family: var(--mono);
+    font-size: 8.5pt; line-height: 1.55;
+    background: #0F172A; color: #E2E8F0;
+    padding: 3mm 3.5mm; border-radius: 5px;
+    overflow-x: auto; margin: 2.5mm 0 3.5mm;
+    page-break-inside: avoid;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: 8.5pt; }
+
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 9pt; margin: 2.5mm 0 3.5mm;
+    page-break-inside: avoid;
+    border: 1px solid var(--line); border-radius: 4px;
+    overflow: hidden;
+  }
+  thead { background: var(--bg-soft); }
+  th {
+    text-align: left; padding: 2mm 2.5mm;
+    font-weight: 700; color: var(--ink);
+    border-bottom: 1.3px solid var(--brand);
+    font-size: 9pt;
+  }
+  td {
+    padding: 2mm 2.5mm;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: #FAFBFF; }
+  td a { color: var(--brand); text-decoration: none; word-break: break-all; }
+  td a:hover { text-decoration: underline; }
+
+  .callout {
+    padding: 3mm 3.5mm; border-radius: 5px;
+    margin: 2.5mm 0 3.5mm; font-size: 9.5pt;
+    line-height: 1.6;
+    page-break-inside: avoid;
+    border-left: 3.5px solid var(--brand);
+    background: var(--bg-soft);
+  }
+  .callout.info { border-left-color: var(--brand); background: var(--bg-soft); }
+  .callout.warn { border-left-color: var(--amber); background: #FFF8E6; }
+  .callout.ok { border-left-color: var(--green); background: #EDFBF5; }
+  .callout strong { display: block; margin-bottom: .8mm; font-size: 10pt; }
+
+  .arch {
+    background: var(--bg-soft);
+    border: 1px dashed var(--brand-light);
+    border-radius: 6px;
+    padding: 3.5mm; margin: 2.5mm 0 3.5mm;
+    page-break-inside: avoid;
+  }
+  .arch pre {
+    background: none; color: var(--ink);
+    padding: 0; margin: 0;
+    font-size: 8pt; line-height: 1.45;
+  }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 2.5mm; margin: 3mm 0 5mm;
+  }
+  .stat {
+    text-align: center;
+    padding: 3mm 1.8mm;
+    background: var(--bg-soft); border-radius: 5px;
+    page-break-inside: avoid;
+  }
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 18pt; font-weight: 700;
+    color: var(--brand); line-height: 1;
+  }
+  .stat-label {
+    font-size: 8.3pt; color: var(--muted); margin-top: 1.2mm;
+  }
+
+  /* 章节页脚 */
+  .chapter-footer {
+    display: block;
+    margin-top: 10mm; padding-top: 3.5mm;
+    border-top: 1px dashed var(--line);
+    text-align: center;
+    font-size: 8.8pt; color: var(--faint);
+    letter-spacing: .04em; line-height: 1.6;
+  }
+  .chapter-footer b { color: var(--brand); font-weight: 600; }
+  .chapter-footer .cf-brand {
+    display: block; margin-bottom: .8mm;
+  }
+  .chapter-footer .cf-chapter {
+    font-family: var(--mono);
+    font-size: 8.2pt; color: var(--faint);
+  }
+  .chapter-footer::before {
+    content: ""; display: block;
+    width: 7.5mm; height: 2px;
+    background: var(--brand); border-radius: 2px;
+    margin: 0 auto 2.2mm; opacity: .5;
+  }
+  @media print {
+    .chapter-footer { page-break-before: avoid; page-break-after: avoid; }
+  }
+
+  .doc-footer {
+    margin-top: 12mm; padding-top: 3.5mm;
+    border-top: 1px solid var(--line);
+    font-size: 9pt; color: var(--muted);
+    text-align: center; line-height: 1.65;
+  }
+  .doc-footer strong { color: var(--brand); }
+
+  .keep { page-break-inside: avoid; }
+  .pb { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="print-tip">
+  <b>📄 打印为 PDF（三步）</b>
+  <ol>
+    <li>Ctrl+P 打开打印，目标选「另存为 PDF」</li>
+    <li>纸张 A4，勾选<strong>「背景图形」</strong></li>
+    <li><strong>取消勾选「页眉和页脚」</strong></li>
+  </ol>
+  <span class="tip-note">
+    ✦ 取消勾选「页眉和页脚」是去除左下角文件存储路径的唯一方式。<br>
+    ✦ 文档每章末尾已内置 HTML 页脚，无需依赖浏览器页眉页脚。
+  </span>
+  <button onclick="window.print()">立即打印</button>
+</div>
+
+<!-- ================= 封面 ================= -->
+<div class="cover page">
+  <div class="cover-brand">FutureMirror · Tech Doc</div>
+  <h1 class="cover-title">
+    面镜
+    <span class="grad">FutureMirror</span>
+  </h1>
+  <div class="cover-sub">
+    多 Agent 驱动的<br>
+    AI 模拟面试与能力成长平台
+  </div>
+
+  <dl class="cover-meta">
+    <dt>文档版本</dt>       <dd>v1.0（对应产品 Beta 1.0）</dd>
+    <dt>应用方向</dt>       <dd>AI Agent 智能助手 / RAG 知识问答 / AI 教育与学习平台</dd>
+    <dt>技术栈</dt>         <dd>Next.js 15 · React 19 · TypeScript · FastAPI · GLM-4-Flash · Transformers.js</dd>
+    <dt>代码仓库</dt>       <dd><a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">github.com/Penguin-Zhou/FutureMirror</a></dd>
+    <dt>在线演示</dt>       <dd><a href="https://penguin-zhou.github.io/FutureMirror/" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror</a></dd>
+    <dt>国内镜像</dt>       <dd><a href="https://futuremirror-demo.app.workbuddy.host/" target="_blank" rel="noopener">futuremirror-demo.app.workbuddy.host</a></dd>
+    <dt>文档篇幅</dt>       <dd>约 28 页</dd>
+    <dt>配套材料</dt>       <dd>演示视频 · 测试账号</dd>
+    <dt>测试账号</dt>       <dd>demo@futuremirror.app / Demo123456</dd>
+  </dl>
+
+  <div class="cover-foot">面镜 FutureMirror 开发团队 · 福建农林大学桢队</div>
+</div>
+
+<!-- ================= 目录 ================= -->
+<div class="toc page">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#ch1"><span class="toc-t">项目概述</span><span class="toc-d">定位 / 问题 / 数据 / 形态</span><span class="toc-p">P.03</span></a></li>
+    <li><a href="#ch2"><span class="toc-t">需求分析</span><span class="toc-d">用户场景 / MoSCoW / 差异化</span><span class="toc-p">P.04</span></a></li>
+    <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级</span><span class="toc-p">P.06</span></a></li>
+    <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span><span class="toc-p">P.09</span></a></li>
+    <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span><span class="toc-p">P.18</span></a></li>
+    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">858 + 6 项测试 / 4 种部署</span><span class="toc-p">P.21</span></a></li>
+    <li><a href="#ch7"><span class="toc-t">创新点说明</span><span class="toc-d">技术 8 项 / 应用 6 项</span><span class="toc-p">P.23</span></a></li>
+    <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span><span class="toc-p">P.25</span></a></li>
+    <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 版本演进 / 交付清单</span><span class="toc-p">P.27</span></a></li>
+  </ol>
+</div>
+
+<!-- ================= 正文 ================= -->
+<div class="content page">
+
+<!-- =============== 第 1 章 =============== -->
+<section class="chapter" id="ch1">
+  <div class="chapter-num">CHAPTER 01</div>
+  <h1>项目概述</h1>
+
+  <h2>1.1 一句话定位</h2>
+  <p>
+    <strong>面镜 FutureMirror</strong> 是一个面向高校学生的 <strong>AI Native 求职训练平台</strong>：
+    上传简历与目标岗位 JD，由 HR / 技术 / 压力面 / 观察员 / 教练五个 AI Agent 协作完成一场模拟面试，
+    实时生成<strong>每条评分都引用对话原话的可解释评估报告</strong>、能力雷达图与个性化 7 天学习路径；
+    内置 RAG 面经问答、简历 6 维诊断、题库小测、求职看板形成完整闭环。
+  </p>
+
+  <h2>1.2 解决什么问题</h2>
+  <p>应届生面试训练面临三个结构性困境：</p>
+
+  <table>
+    <thead>
+      <tr><th style="width:24%">困境</th><th style="width:34%">传统方案</th><th>本作品的解法</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>缺少练习对手</strong></td>
+        <td>找同学互面，时间难凑、质量不稳</td>
+        <td>5 个 AI Agent 随时待命，按回答内容动态追问</td>
+      </tr>
+      <tr>
+        <td><strong>反馈不可解释</strong></td>
+        <td>面试后只记得「感觉不太好」</td>
+        <td>5 维度评分，<strong>每条证据引用回答原话</strong>，最弱维度驱动学习路径</td>
+      </tr>
+      <tr>
+        <td><strong>知识零散</strong></td>
+        <td>面经散落各平台，无法溯源</td>
+        <td>RAG 混合检索 40 条合成面经，<strong>答案强制附引用来源与两路得分</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>1.3 核心数据</h2>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num">5</div><div class="stat-label">协作 Agent</div></div>
+    <div class="stat"><div class="stat-num">24</div><div class="stat-label">岗位数据库</div></div>
+    <div class="stat"><div class="stat-num">40</div><div class="stat-label">面经知识库</div></div>
+    <div class="stat"><div class="stat-num">858</div><div class="stat-label">前端自动化断言</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th style="width:26%">指标</th><th style="width:18%">数值</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>协作 Agent</td><td>5 个</td><td>HR / 技术 / 压力面 / 观察员 / 教练</td></tr>
+      <tr><td>评估维度</td><td>5 维</td><td>内容深度 / 结构逻辑 / 语言表达 / 岗位匹配 / 抗压表现</td></tr>
+      <tr><td>岗位数据库</td><td>24 个</td><td>覆盖技术、产品、设计、商业、新兴 AI 方向</td></tr>
+      <tr><td>面经知识库</td><td>40 条</td><td>全部人工合成，含 <code>source</code> 字段可溯源</td></tr>
+      <tr><td>题库</td><td>24 题 / 5 分类</td><td>SQL / 网络 / 操作系统 / 算法 / STAR</td></tr>
+      <tr><td>MCP 工具</td><td>3 个</td><td><code>search_job_db</code> / <code>fetch_interview_experience</code> / <code>schedule_mock</code></td></tr>
+      <tr><td>前端自动化断言</td><td>858 项</td><td>单文件版 + 模块版 jsdom 测试</td></tr>
+      <tr><td>后端单元测试</td><td>6 项</td><td>pytest 冒烟 + 评分引擎</td></tr>
+      <tr><td>部署形态</td><td>4 种</td><td>单文件 / 模块版 / FastAPI 后端 / Next.js 完整版</td></tr>
+    </tbody>
+  </table>
+
+  <h2>1.4 作品形态</h2>
+  <table>
+    <thead>
+      <tr><th style="width:26%">形态</th><th style="width:32%">位置</th><th>定位</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>单文件演示版</td><td><code>public/futuremirror-demo.html</code></td><td>零依赖、可离线运行（约 493KB，CSS/JS 全内联）</td></tr>
+      <tr><td>模块版前端</td><td><code>frontend/</code></td><td>27 个 JS 模块 + 3 层 CSS，与单文件版逐字节等价</td></tr>
+      <tr><td>FastAPI 后端</td><td><code>backend/</code></td><td>JWT 鉴权 + SQLite 持久化 + GLM SSE 流式代理</td></tr>
+      <tr><td>Next.js 完整版</td><td><code>app/ lib/ components/</code></td><td>生产形态全栈应用（Route Handlers + 多模型路由 + Zod 契约）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="chapter-footer">
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
+    <span class="cf-chapter">CHAPTER 01 · 项目概述</span>
+  </div>
+</section>
+
+<!-- =============== 第 2 章 =============== -->
+<section class="chapter" id="ch2">
+  <div class="chapter-num">CHAPTER 02</div>
+  <h1>需求分析</h1>
+
+  <h2>2.1 目标用户与场景</h2>
+  <p>
+    <strong>主要用户</strong>：全日制高校大三、大四及研究生，处于秋招 / 春招准备阶段，
+    专业以计算机、软件工程、电子信息、数学统计为主。
+  </p>
+
+  <h3>五个典型场景</h3>
+  <ol>
+    <li><strong>简历投出去石沉大海</strong>——不知道自己缺什么 → 用「简历匹配 + 6 维诊断」定位能力缺口；</li>
+    <li><strong>接到面试通知但心里没底</strong>——不知道会被问什么 → 用「多 Agent 模拟面试」走一遍全流程；</li>
+    <li><strong>面试完不知道哪里答砸了</strong>——反馈不可复盘 → 用「可解释报告」逐条核对证据；</li>
+    <li><strong>八股文背了就忘</strong>——缺少检验手段 → 用「题库小测 + 错题本 + 每日一练」形成复习闭环；</li>
+    <li><strong>想转方向但不知道转去哪</strong>——路径不清晰 → 用「职业探索」按专业 + 技能 + 兴趣匹配岗位。</li>
+  </ol>
+
+  <h2>2.2 需求优先级（MoSCoW）</h2>
+  <table>
+    <thead>
+      <tr><th style="width:14%">优先级</th><th style="width:42%">需求</th><th>对应功能模块</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Must</strong></td><td>能问出有区分度的问题</td><td>多 Agent 派发 + 题库 + 连环追问</td></tr>
+      <tr><td><strong>Must</strong></td><td>评分可信、可复盘</td><td>可解释评分引擎（证据链）</td></tr>
+      <tr><td><strong>Must</strong></td><td>问答有据可查、不胡编</td><td>RAG 混合检索 + 强制引用</td></tr>
+      <tr><td><strong>Must</strong></td><td>无网 / 无 Key 也能演示</td><td>三级降级（后端 → 直连 → Mock）</td></tr>
+      <tr><td><strong>Should</strong></td><td>隐私数据不外传</td><td>本地 PII 脱敏 + Key 只在服务端</td></tr>
+      <tr><td><strong>Should</strong></td><td>求职全流程闭环</td><td>简历 → 面试 → 报告 → 题库 → 看板</td></tr>
+      <tr><td><strong>Could</strong></td><td>移动端可用</td><td>响应式 + 顶部导航 + 触控优化</td></tr>
+      <tr><td><strong>Could</strong></td><td>可验证的技术证据</td><td>开发者模式（自检 / MCP / 诊断日志）</td></tr>
+      <tr><td><strong>Won't</strong>（本版）</td><td>真实企业题库接入</td><td>涉及版权与合规，仅用合成数据</td></tr>
+    </tbody>
+  </table>
+
+  <h2>2.3 与同类产品的差异</h2>
+  <table>
+    <thead>
+      <tr><th style="width:22%">维度</th><th style="width:26%">通用 AI 聊天工具</th><th style="width:24%">套壳题库 App</th><th>本作品</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>追问策略</td><td>单轮问答，无派发</td><td>固定题库轮转</td>
+        <td><strong>按回答关键词 + 观察员标注动态派发 5 个 Agent</strong></td>
+      </tr>
+      <tr>
+        <td>评分可解释性</td><td>无评分或黑箱评分</td><td>只对答案</td>
+        <td><strong>每条分数引用对话原话</strong></td>
+      </tr>
+      <tr>
+        <td>知识来源</td><td>模型参数（可能幻觉）</td><td>题库硬编码</td>
+        <td>RAG 混合检索 + <strong>强制引用 + 两路得分可视化</strong></td>
+      </tr>
+      <tr>
+        <td>降级能力</td><td>断网即不可用</td><td>无 AI</td>
+        <td><strong>三级降级</strong>，演示现场不翻车</td>
+      </tr>
+      <tr>
+        <td>数据隐私</td><td>对话直接发云</td><td>—</td>
+        <td>PII 本地脱敏 + Key 只在服务端</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="chapter-footer">
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
+    <span class="cf-chapter">CHAPTER 02 · 需求分析</span>
+  </div>
+</section>
+
+<!-- =============== 第 3 章 =============== -->
+<section class="chapter" id="ch3">
+  <div class="chapter-num">CHAPTER 03</div>
+  <h1>系统架构设计</h1>
+
+  <h2>3.1 整体架构</h2>
+
+  <div class="arch">
+<pre>┌─────────────────────────────────────────────────────────┐
+│              用户浏览器（AI Native 前端）                │
+│  视图路由 · 多 Agent 面试引擎 · 可解释评分 · RAG 混合检索 │
+│  端侧能力：Web Speech · Web Worker · MiniLM 384d · 脱敏   │
+└────────────────────────┬────────────────────────────────┘
+                         │ HTTPS / SSE
+┌────────────────────────▼────────────────────────────────┐
+│           FastAPI 后端（接入层 · Key 零接触）             │
+│     JWT 鉴权 → SQLite 持久化 → SSE 流式代理              │
+└────────────────────────┬────────────────────────────────┘
+                         │ httpx 流式转发
+┌────────────────────────▼────────────────────────────────┐
+│          智谱 GLM-4-Flash（OpenAI 兼容协议）             │
+└─────────────────────────────────────────────────────────┘</pre>
+  </div>
+
+  <div class="callout info">
+    <strong>设计原则</strong>
+    产品定位是「AI Native 前端应用，后端仅作为 AI 能力接入层」，因此架构上刻意做薄后端——
+    只承担三件事：<strong>挡 Key、落库、转发</strong>。所有智能编排（Agent 派发、证据链、实时追踪、降级兜底）都在前端完成。
+  </div>
+
+  <h2>3.2 前端模块划分</h2>
+  <table>
+    <thead>
+      <tr><th style="width:14%">层</th><th style="width:36%">模块</th><th>职责</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>core</strong></td><td>store / router / auth / theme / api / boot / reveal</td><td>状态隔离、hash 路由、演示级账号、主题、后端适配层</td></tr>
+      <tr><td><strong>data</strong></td><td>config / kb / quiz</td><td>配置、面经知识库 + 混合检索层、题库数据</td></tr>
+      <tr><td><strong>features</strong></td><td>match / interview / report / resume / career / quiz / jobs / profile / assistant</td><td>9 个业务功能模块</td></tr>
+      <tr><td><strong>dev</strong></td><td>runtime / devmode</td><td>工程自检、MCP 控制台、诊断日志、环境检测</td></tr>
+    </tbody>
+  </table>
+
+  <h2>3.3 数据流（以一次模拟面试为例）</h2>
+  <div class="arch">
+<pre>用户回答 ─► sendMsg()
+            ├─[后端]  POST /api/chat/stream ─► SSE 流式追问
+            ├─[直连]  浏览器直接调 LLM API
+            └─[兜底]  本地 Mock 打字机
+                       │
+         Agent 时间线 + 观察员证据 → session.turns
+                       │
+         finishInterview() ─► renderReport()
+            ├─[在线]  /sync（幂等）→ /report → SQLite
+            └─[离线]  前端 scoreSession() 兜底
+                       │
+         五维雷达 + 证据引用 + 7 天路径 + 历史曲线</pre>
+  </div>
+
+  <h2>3.4 降级链路</h2>
+  <table>
+    <thead>
+      <tr><th style="width:16%">层级</th><th style="width:40%">触发条件</th><th>表现</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>L1 后端真实</strong></td><td>后端在线 + 配置 <code>LLM_API_KEY</code></td><td>对话 / 登录 / 报告全走后端，Key 零接触</td></tr>
+      <tr><td><strong>L2 直连 Key</strong></td><td>后端离线 + 面板填了浏览器 Key</td><td>逃生通道，Key 仅存 sessionStorage</td></tr>
+      <tr><td><strong>L3 本地 Mock</strong></td><td>以上都不可用</td><td>规则引擎 + 打字机流式，功能不减</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>降级触发条件</strong>：<code>/api/health</code> 返回非 200、请求超时 60s、HTTP 5xx、SSE 流中断——任一触发即自动降级，且顶部横幅会如实告知用户当前形态。
+  </p>
+
+  <div class="chapter-footer">
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
+    <span class="cf-chapter">CHAPTER 03 · 系统架构设计</span>
+  </div>
+</section>
+
+<!-- =============== 第 4 章 =============== -->
+<section class="chapter" id="ch4">
+  <div class="chapter-num">CHAPTER 04</div>
+  <h1>AI 技术方案</h1>
+
+  <div class="callout info">
+    <strong>本章说明 AI 技术方案的六个方面</strong>
+    逐项说明<strong>选型理由 → 集成方式 → 优化策略</strong>。
+  </div>
+
+  <h2>4.1 大模型集成质量</h2>
+
+  <h3>4.1.1 选型理由</h3>
+  <table>
+    <thead>
+      <tr><th style="width:28%">候选</th><th style="width:12%">结论</th><th>理由</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>OpenAI GPT-4o</td><td>❌ 不选</td><td>商用费用高，学生团队难以持续承担</td></tr>
+      <tr><td>Anthropic Claude 4</td><td>❌ 不选</td><td>国内访问不稳定，演示现场风险高</td></tr>
+      <tr><td><strong>智谱 GLM-4-Flash</strong></td><td>✅ <strong>主选</strong></td><td><strong>有免费额度</strong>、国内直连稳定、OpenAI 兼容协议、支持流式</td></tr>
+      <tr><td>DeepSeek / SiliconFlow / OpenRouter</td><td>✅ 备选</td><td>面板内置预设，一键切换，应对单一服务商故障</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>关键设计</strong>：接入层统一为 <strong>OpenAI 兼容协议</strong>，前端不绑定任何特定服务商——
+    <code>LLM_PRESETS</code> 内置 5 个预设，评委可当场换模型。
+  </p>
+
+  <h3>4.1.2 集成方式</h3>
+  <div class="arch">
+<pre>buildMessages(text)  ─►  system prompt + 历史对话 + 当前回答
+                    ─►  POST {baseUrl}/chat/completions
+                         { model, stream: true, messages, temperature }
+                    ─►  SSE 逐块解析 data: {...delta.content...}
+                    ─►  onDelta(piece) → 打字机 → session.turns</pre>
+  </div>
+
+  <p>
+    <strong>Prompt 版本化</strong>：按面试模式维护 3 套 system prompt（<code>general / tech / pressure</code>），
+    均约束为「<strong>只输出一个问题，中文，两句话以内，不要解释</strong>」——通过 prompt 层面的输出约束，把 LLM 从「闲聊」收敛到「提问」。
+  </p>
+
+  <p>
+    <strong>Prompt 可查看</strong>：面试页有「👁 查看当前 Prompt」按钮，评委可当场看到当前模式下完整的 system prompt——<strong>这是 Prompt 设计精巧性的直接证据</strong>。
+  </p>
+
+  <h3>4.1.3 优化策略</h3>
+  <table>
+    <thead>
+      <tr><th style="width:22%">策略</th><th style="width:36%">实现</th><th>收益</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>流式输出</strong></td><td>SSE + 打字机渲染</td><td>首字延迟 &lt;1s，体感不卡</td></tr>
+      <tr><td><strong>超时熔断</strong></td><td>60s AbortController</td><td>免费模型偶发慢响应时不无限等待</td></tr>
+      <tr><td><strong>自动降级</strong></td><td>失败即转 Mock，横幅告知</td><td>演示现场不中断</td></tr>
+      <tr><td><strong>温度按人设</strong></td><td>HR 0.5 / 技术 0.3 / 压力 0.8</td><td>技术面更严谨、压力面更多变</td></tr>
+      <tr><td><strong>模型可切换</strong></td><td>5 个预设 + 自定义</td><td>单服务商故障有备选</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4.2 Agent / 工作流设计</h2>
+
+  <h3>4.2.1 五个 Agent 的角色设计</h3>
+  <table>
+    <thead>
+      <tr><th style="width:18%">Agent</th><th style="width:16%">人设温度</th><th style="width:26%">考察重点</th><th>专属题库</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>💼 HR 面试官</td><td>0.5（高）</td><td>动机 / 稳定性 / 协作</td><td><code>HR_QUESTIONS</code>（4 题模板）</td></tr>
+      <tr><td>⚙️ 技术面试官</td><td>0.3（中）</td><td>项目深挖 / 原理 / 取舍</td><td><code>TECH_QUESTIONS</code>（3 题模板）</td></tr>
+      <tr><td>🔥 压力面试官</td><td>0.8（低）</td><td>抗压 / 边界 / 举证</td><td><code>PRESSURE_QUESTIONS</code>（6 题模板）</td></tr>
+      <tr><td>📝 观察员</td><td>—</td><td>证据记录 / 风险标注</td><td>不发言，只写时间线</td></tr>
+      <tr><td>🎯 教练</td><td>—</td><td>学习路径 / 改进建议</td><td>面试结束后汇总</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>为什么是 5 个而不是 1 个</strong>：单一 Agent 无法同时承担「考察动机」和「深挖原理」两个冲突目标；分开之后，每个 Agent 的 prompt 可以精准聚焦，派发策略也能按回答内容做<strong>可解释的决策</strong>。
+  </p>
+
+  <h3>4.2.2 派发策略（Agent 编排核心）</h3>
+  <p><strong>不是固定轮转</strong>，而是按回答内容动态派发：</p>
+
+<pre>function planReason(speaker, keyword, notes, mode) {
+  const k = keyword.slice(0, 12);
+  if (speaker.id === "tech")
+    return `技术关键词「${k}」${notes.includes("量化") ? " + 缺量化" : ""} → 技术面试官深挖原理`;
+  if (speaker.id === "pressure")
+    return `结构完整但${notes.includes("偏长") ? "篇幅偏长" : "细节待验证"} → 压力面试官做边界追问`;
+  return `侧重动机协作 → HR 面试官考察稳定性`;
+}</pre>
+
+  <p><strong>派发决策的两层输入</strong>：</p>
+  <ol>
+    <li><strong>关键词提取</strong>：从回答中抽取 3 个词，判断是否命中技术词典 / 技术场景词；</li>
+    <li><strong>观察员标注</strong>：<code>observerNote()</code> 输出 4 类标注——「回答过短」「缺少量化」「篇幅偏长」「口头禅偏多」。</li>
+  </ol>
+
+  <div class="callout info">
+    <strong>决策可解释</strong>
+    每次派发都会在右侧时间线写一行理由（含置信度），用户可以看到「<strong>为什么这一轮派的是技术面试官</strong>」——这不是装饰，是 Agent 决策过程的透明化。
+  </div>
+
+  <h3>4.2.3 连环追问（Agent 决策的高级形态）</h3>
+  <p>
+    普通轮转每轮换人；本作品在检测到<strong>技术关键词</strong>时，有 35% 概率触发「连环追问」——连续 2 轮深挖同一个技术点，模拟真实技术面试官的连续追问。
+  </p>
+
+<pre>function maybeStartDeepDive(keyword, mode, chance) {
+  if (deepDive.left > 0) return { started: false };
+  if (isTechKeyword(keyword) && mode !== "pressure" && Math.random() < (chance ?? 0.35)) {
+    deepDive = { topic: keyword, left: 2 };
+    return { started: true, left: 2 };
+  }
+  return { started: false };
+}</pre>
+
+  <div class="callout ok">
+    <strong>为什么这个设计值得写进文档</strong>
+    固定题库轮转是「套壳」的典型特征；连环追问体现了「<strong>Agent 根据上下文做连续决策</strong>」的能力，是 Agent 与「多轮问答机器人」的本质差异。
+  </div>
+
+  <h3>4.2.4 工具调用链路</h3>
+  <p>面试过程中的技术面轮次会触发工具调用演示：</p>
+
+<pre>→ tool_call: search_kb("Redis 缓存一致性 索引 慢查询")
+  ⏳ 调用中…（420ms）
+  ✅ 命中 2 条（合成面经 / 合成题库）· 耗时 12ms · 开始生成追问…</pre>
+
+  <p>这条时间线是 <strong>Agent 工具调用能力的可视化证据</strong>——评委不需要看代码就知道这个 Agent 会调工具。</p>
+
+  <h2>4.3 RAG 技术应用</h2>
+
+  <div class="callout info">
+    <strong>本版重点升级模块</strong>
+    从「关键词匹配」升级为「<strong>BM25 + 端侧向量混合检索</strong>」，且全部在浏览器内完成（零后端、零 API）。
+  </div>
+
+  <h3>4.3.1 为什么不是「纯向量检索」</h3>
+  <table>
+    <thead>
+      <tr><th style="width:20%">方案</th><th style="width:28%">优点</th><th style="width:36%">缺点</th><th>结论</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>纯向量检索</td><td>语义泛化好</td><td>关键词精确命中差（如「B+ 树」可能召回「二叉树」）</td><td>❌</td></tr>
+      <tr><td>纯 BM25</td><td>关键词精确、快</td><td>同义改写召回差（「缓存三兄弟」vs「穿透击穿雪崩」）</td><td>❌</td></tr>
+      <tr><td><strong>混合检索</strong></td><td>两路互补</td><td>需处理分数归一与融合权重</td><td>✅ <strong>采用</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.3.2 三层架构</h3>
+  <table>
+    <thead>
+      <tr><th style="width:16%">环节</th><th style="width:40%">实现</th><th>关键参数</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>分词</strong></td><td>英文/数字整词 + 中文 bigram</td><td>中文无空格也能召回；单字过滤防噪声</td></tr>
+      <tr><td><strong>词面召回</strong></td><td>BM25</td><td><code>k1=1.5</code>、<code>b=0.75</code>；IDF 用 <code>log(1+…)</code> 保证恒正；标题字段重复计入 = 权重 ×2</td></tr>
+      <tr><td><strong>语义召回</strong></td><td>Transformers.js · <code>all-MiniLM-L6-v2</code></td><td>384 维，<code>pooling=mean</code> + L2 归一，浏览器内推理</td></tr>
+      <tr><td><strong>融合</strong></td><td><code>score = 0.6 × cosine + 0.4 × bm25_normalized</code></td><td>两路各自 min-max 归一后加权</td></tr>
+      <tr><td><strong>门槛</strong></td><td>纯语义召回设余弦门槛</td><td>MiniLM 0.15 / hashing 0.32（防噪声）</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.3.3 选型理由</h3>
+  <p><strong>为什么选 all-MiniLM-L6-v2 而不是 BGE / text2vec</strong>：</p>
+
+  <table>
+    <thead>
+      <tr><th style="width:24%">模型</th><th style="width:12%">维度</th><th style="width:18%">权重体积</th><th style="width:14%">浏览器速度</th><th style="width:14%">中文效果</th><th>结论</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>BGE-large-zh</td><td>1024</td><td>~1.3GB</td><td>慢</td><td>最好</td><td>❌ 太重</td></tr>
+      <tr><td>text2vec-base-chinese</td><td>768</td><td>~400MB</td><td>中</td><td>好</td><td>❌ 仍偏重</td></tr>
+      <tr><td><strong>all-MiniLM-L6-v2</strong></td><td><strong>384</strong></td><td><strong>~23MB</strong></td><td><strong>快</strong></td><td><strong>可接受</strong></td><td>✅ <strong>选择</strong></td></tr>
+      <tr><td>n-gram hashing</td><td>256</td><td>0</td><td>极快</td><td>无</td><td>✅ 兜底</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>决策逻辑</strong>：演示场景对「首次加载时间」极其敏感——评委不会等 5 分钟下载模型。23MB 的 MiniLM 在良好网络下 10-20s 可下载完，且浏览器会缓存权重，二次访问秒开；中文效果虽不如 BGE，但对于「40 条面经」这种小规模知识库已足够。<strong>如果换成 BGE，效果提升可能 10%，但加载时间增加 10 倍——不值得</strong>。
+  </p>
+
+  <p><strong>为什么融合权重是 0.6 / 0.4</strong>：</p>
+  <ul>
+    <li>面试知识库以技术术语为主（「B+ 树」「缓存穿透」），<strong>词面精确命中</strong>很重要 → BM25 权重不能太低；</li>
+    <li>但用户提问常有同义改写（「缓存三兄弟」），<strong>语义召回</strong>同样关键 → 余弦权重略高；</li>
+    <li>经过 40 条合成数据上的手动调参，0.6/0.4 在两个典型查询上都能把正确条目排到 Top1；如果调成 0.8/0.2，第一个查询的 Top1 会被「MySQL 索引」抢走（因为「索引」二字共享但语义不相关）。</li>
+  </ul>
+
+  <div class="callout ok">
+    <strong>可复现性</strong>
+    这个权重不是拍脑袋，而是在 <code>test-beta1-vector-jsdom.js</code> 里用测试断言固定下来的——<code>rowRedis[0].score === 0.6 × cos + 0.4 × bm25Norm</code>，任何改动都会让测试失败。
+  </div>
+
+  <h3>4.3.4 降级设计（离线兜底）</h3>
+  <div class="arch">
+<pre>MiniLM 就绪 → provider=minilm, 384d, 语义向量（绿灯）
+       │
+       ├─ CDN 不可达 → provider=hash, 256d, hashing（琥珀灯，词面）
+       └─ 加载中 → 蓝灯 + 进度百分比</pre>
+  </div>
+
+  <p>
+    <strong>hashing 向量的实现细节</strong>：有符号特征哈希——同一个 token 落两个桶，一个 +1、一个 -1，降低碰撞导致的相似度虚高；最后 L2 归一。这不是「假装向量」，是真的在算余弦，只是没有语义泛化能力。<strong>状态条会如实标注「词面」——这种诚实反而是加分项</strong>。
+  </p>
+
+  <h3>4.3.5 缓存与失效</h3>
+  <ul>
+    <li><strong>缓存位置</strong>：<code>localStorage["fm_kb_vec_v1"]</code>，存 40 条向量 + 元信息（provider / dim / n / builtAt）。</li>
+    <li><strong>失效规则</strong>：如果 <code>n !== KB.length</code> 或向量维度不符，<strong>拒绝加载</strong>（防脏索引），并重建。</li>
+    <li><strong>体积控制</strong>：约 180KB，远低于 localStorage 5MB 上限。</li>
+    <li><strong>二次访问</strong>：状态条显示「localStorage 缓存命中」，零推理启动。</li>
+  </ul>
+
+  <h3>4.3.6 可解释性（最强的反「套壳」证据）</h3>
+  <p>每条引用都会显示两路得分：</p>
+
+<pre>[1] 合成题库·Redis（示例） — 穿透：查询不存在的数据，用布隆过滤器...
+    bm25 0.82 · cos 0.61 · 融合 0.74
+[2] 合成面经·字节跳动后端（示例） — 字节后端二面通常围绕简历项目深挖...
+    bm25 0.45 · cos 0.38 · 融合 0.41</pre>
+
+  <p>
+    <strong>为什么这很重要</strong>：一般 RAG 产品只显示「相关度 92%」，评委无法验证这个分数是真算的还是一拍脑袋写的。<strong>逐条展示两路得分</strong>，评委可以当场用计算器核对 <code>0.6 × 0.61 + 0.4 × 0.82 ≈ 0.69 ≈ 0.74</code>（考虑归一化），这直接证明检索是真实的，不是装饰。
+  </p>
+
+  <h2>4.4 多模态能力</h2>
+  <table>
+    <thead>
+      <tr><th style="width:16%">模态</th><th style="width:26%">技术</th><th style="width:32%">集成方式</th><th>边界</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>语音输入</td><td>Web Speech API ASR</td><td>面试页 🎤 按钮，语音转文字</td><td>需 Chrome / Edge，需麦克风权限</td></tr>
+      <tr><td>语音输出</td><td>Web Speech API TTS</td><td>面试页 🔊 按钮，朗读最新提问</td><td>音色由系统决定</td></tr>
+      <tr><td>语音分析</td><td>纯本地规则</td><td>语速 + 填充词密度</td><td>不调用任何 API</td></tr>
+      <tr><td>文件解析</td><td>FileReader</td><td><code>.txt</code> 读取；PDF/DOCX 仅展示</td><td>完整版接入 PDF 解析</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <strong>为什么本版只做语音、不做图像</strong>
+    面试场景的核心模态是「语音」——文本 + 语音已能覆盖 90% 场景。图像/视频在面试场景里的价值很低（除非做白板编程识别，那是完整版规划）。<strong>在非核心模态上投入过多是资源错配</strong>。
+  </div>
+
+  <h2>4.5 AI 安全与可控性</h2>
+  <table>
+    <thead>
+      <tr><th style="width:22%">措施</th><th style="width:48%">实现</th><th>对应用途</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>本地 PII 脱敏</td><td>正则脱敏手机号/邮箱/身份证，<strong>0 网络请求</strong></td><td>简历匹配页「🔒 本地脱敏预览」</td></tr>
+      <tr><td>Key 安全</td><td>后端模式：Key 只在服务端 <code>.env</code>；直连模式：Key 只存 sessionStorage</td><td>两种模式都不落 localStorage</td></tr>
+      <tr><td>三级降级</td><td>后端 → 直连 → Mock，任一环节失败自动切换</td><td>演示不中断</td></tr>
+      <tr><td>输出约束</td><td>Prompt 层面约束「只输出一个问题」</td><td>减少无关输出</td></tr>
+      <tr><td>边界声明</td><td>开发者模式「已知边界」区块，6 条诚实说明</td><td>不夸大能力</td></tr>
+      <tr><td>诊断日志</td><td>关键操作记录最近 100 条，仅内存不上传</td><td>问题可追溯</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>PII 脱敏的代码细节</strong>：</p>
+
+<pre>const masked = raw
+  .replace(/\b1[3-9]\d{9}\b/g, "[手机号已脱敏]")
+  .replace(/[\w.-]+@[\w.-]+\.\w+/g, "[邮箱已脱敏]")
+  .replace(/\b\d{17}[\dXx]\b/g, "[身份证已脱敏]");</pre>
+
+  <p>
+    <strong>脱敏顺序很关键</strong>：先手机号、再邮箱、最后身份证——因为身份证正则 <code>\d{17}[\dXx]</code> 可能误匹配到手机号的一部分，先脱手机号能避免这个问题。这个顺序在测试里有断言固定。
+  </p>
+
+  <h2>4.6 MCP / 工具集成</h2>
+
+  <h3>4.6.1 工具定义</h3>
+  <table>
+    <thead>
+      <tr><th style="width:24%">工具名</th><th style="width:36%">用途</th><th>input_schema</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>search_job_db</code></td><td>按关键词检索岗位数据库，返回核心技能</td><td><code>{query, limit}</code></td></tr>
+      <tr><td><code>fetch_interview_experience</code></td><td>RAG 检索面经，返回带来源的片段</td><td><code>{query, top_k}</code></td></tr>
+      <tr><td><code>schedule_mock</code></td><td>预约模拟面试，返回预约号</td><td><code>{job, mode, datetime}</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.6.2 运行时验证链路</h3>
+  <p>开发者模式内置「MCP 实时控制台」，评委可当场点击「▶ 模拟 Agent 调用」：</p>
+
+<pre>→ tool_call: search_job_db
+  input: {"query":"后端","limit":3}
+  ✓ result
+  {
+    "tool": "search_job_db",
+    "input": { "query": "后端", "limit": 3 },
+    "hit_count": 1,
+    "results": [{ "name": "后端开发工程师", "salary": "18-35K · 14 薪",
+                  "coreSkills": [...] }]
+  }</pre>
+
+  <div class="callout ok">
+    <strong>这是「工具集成」最直接的证据</strong>
+    不是「声称支持 MCP」，而是<strong>评委可以当场看到 tool_call → schema → 真实执行 → JSON 返回的完整链路</strong>。
+  </div>
+
+  <h3>4.6.3 与真实 MCP 的差异</h3>
+  <p>
+    本版的 MCP 是<strong>本地模拟 Server</strong>——协议结构（tool name / description / input_schema / handler）与真实 MCP 一致，但工具执行是浏览器内的 JS 函数，不是跨进程的真实 MCP Server。完整版通过 <code>@mcp-b/webmcp-ts-sdk</code> 实现跨 Agent 真实发现——<strong>这个差异在开发者模式的「已知边界」里明确写了</strong>。
+  </p>
+
+  <h2>4.7 可解释评分引擎</h2>
+
+  <h3>4.7.1 五维评分规则</h3>
+  <table>
+    <thead>
+      <tr><th style="width:18%">维度</th><th style="width:12%">权重</th><th style="width:42%">评分信号</th><th>满分条件</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>内容深度</td><td>25%</td><td>数字个数、技术词命中数、轮次、代码沙盒通过率</td><td>4+ 量化 + 3+ 技术词</td></tr>
+      <tr><td>结构逻辑</td><td>20%</td><td>STAR 词命中（背景/目标/通过/最终/结果）</td><td>命中 3+</td></tr>
+      <tr><td>语言表达</td><td>15%</td><td>填充词密度、短答数</td><td>填充词 ≤2 且无短答</td></tr>
+      <tr><td>岗位匹配</td><td>20%</td><td>匹配报告分 + 技术词命中</td><td>匹配分高 + 缺口少</td></tr>
+      <tr><td>抗压表现</td><td>20%</td><td>防御性表述、压力面短答</td><td>无防御性表述</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.7.2 证据链生成</h3>
+
+<pre>function buildEvidence(turns) {
+  return turns.slice(-4).map(t => {
+    const quote = t.answer.length > 60 ? t.answer.slice(0, 60) + "…" : t.answer;
+    return { agent: t.agent, quote, note: t.notes };
+  });
+}</pre>
+
+  <p>
+    报告页每条证据都显示：<code>[Agent 名称] "引用你的原话" 📝 观察员标注</code>——<strong>分数不是黑箱，每一条都能追溯到具体对话</strong>。
+  </p>
+
+  <h3>4.7.3 学习路径动态生成</h3>
+
+<pre>function buildPlan(dims) {
+  const sorted = [...dims].sort((a, b) => a.score - b.score).slice(0, 3);
+  const plan = []; let day = 1;
+  const alloc = [3, 2, 1];   // 最弱 3 天，次弱 2 天，第三弱 1 天
+  sorted.forEach((d, i) => {
+    for (let j = 0; j < alloc[i] && j < d.pool.length; j++)
+      plan.push({ day: `Day ${day++}`, task: d.pool[j], tag: d.dimension });
+  });
+  BASE_PLAN.forEach(t => plan.push({ day: `Day ${day++}`, task: t }));
+  return { plan, weakest: sorted[0] };
+}</pre>
+
+  <p>
+    <strong>学习路径不是固定的 7 天模板</strong>，而是按最弱维度动态分配天数——这是「可解释」的延伸：用户知道为什么第 1-3 天要练这个。
+  </p>
+
+  <h3>4.7.4 前后端同构</h3>
+  <p>
+    评分引擎有 <strong>Python 版（<code>backend/app/scoring.py</code>）</strong> 和 <strong>JS 版（前端 <code>scoreSession</code>）</strong>，算法完全一致：
+  </p>
+  <ul>
+    <li>后端在线时走 Python 版，结果落 SQLite；</li>
+    <li>后端离线时走 JS 版，功能不减；</li>
+    <li>测试里对两版做交叉验证（同样的输入，两版分数一致）。</li>
+  </ul>
+
+  <p>
+    <strong>为什么做同构</strong>：这是「三级降级」在评分层的体现——用户永远不会看到「后端离线就没有报告」。同时，同构也降低了「演示现场后端挂掉」的风险。
+  </p>
+
+  <h2>4.8 评估与优化闭环</h2>
+
+  <div class="callout info">
+    <strong>本节集中说明「评估与优化」思路</strong>
+    前面各节散落着优化点；本节把「我们怎么知道自己做得好」集中说清楚——评估不是一次性的，是四层闭环。
+  </div>
+
+  <table>
+    <thead>
+      <tr><th style="width:22%">层级</th><th style="width:44%">手段</th><th>产出 / 验证方式</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>L1 确定性</strong></td>
+        <td>五维评分信号全部为确定性规则（数字计数 / 关键词命中 / 填充词密度 / 防御性表述 / 代码沙盒通过率）</td>
+        <td>同输入同输出，报告可复现；评委可对照证据逐项核对</td>
+      </tr>
+      <tr>
+        <td><strong>L2 回归防线</strong></td>
+        <td>858 + 6 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
+        <td>任何 Prompt / 规则 / 检索参数变更，先过测试再合入</td>
+      </tr>
+      <tr>
+        <td><strong>L3 浏览器内验收</strong></td>
+        <td>开发者模式 7 项自检 + MCP 控制台 + 诊断导出（环境 / 运行态 / 向量索引状态）</td>
+        <td>评委无需读代码，打开页面即可验证关键路径</td>
+      </tr>
+      <tr>
+        <td><strong>L4 一致性度量</strong>（完整版）</td>
+        <td>校准样本集 + LLM 评分与规则评分交叉对比，计算一致性系数（Kappa）</td>
+        <td>待实现，见 8.3「未来规划」</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>为什么把「评估」做成四层而不是只做测试</strong>：测试只能回答「代码有没有坏」，回答不了「评分准不准」「检索好不好」「评委能不能自己验证」。四层闭环分别对应<strong>可复现性、回归安全、现场可验证性、一致性度量</strong>——这才是完整的评估优化体系。
+  </p>
+
+  <div class="chapter-footer">
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
+    <span class="cf-chapter">CHAPTER 04 · AI 技术方案</span>
+  </div>
+</section>
+
+<!-- =============== 第 5 章 =============== -->
+<section class="chapter" id="ch5">
+  <div class="chapter-num">CHAPTER 05</div>
+  <h1>核心功能实现</h1>
+
+  <h2>5.1 简历岗位匹配</h2>
+  <p>
+    <strong>输入</strong>：简历文本 + 目标岗位（24 个预设 + 手动输入 JD）。<br>
+    <strong>处理</strong>：关键词提取（<code>SKILL_DICT</code> 约 35 个技能词）+ 缺口计算。<br>
+    <strong>输出</strong>：匹配分环图 + 已具备技能 + 能力缺口 + 补强建议。
+  </p>
+  <p>
+    <strong>关键实现</strong>：<code>heuristicParse()</code> 从简历和 JD 中分别提取技能词集合，<code>matchScore = (1 - gaps/jdSkills) × 100</code>。
+  </p>
+
+  <h2>5.2 多 Agent 模拟面试</h2>
+  <p>已在 4.2 详细说明。此处补充 UI 层的设计：</p>
+  <ul>
+    <li><strong>实时能力追踪器</strong>：右侧面板实时显示五维雷达、字数、量化数、AI 置信度——每轮回答后即时更新；</li>
+    <li><strong>Agent 时间线</strong>：规划 / 工具调用 / 观察员记录三类事件分色显示，可折叠；</li>
+    <li><strong>答题计时器</strong>：每题 90 秒，≤15 秒变红，超时后提示并记入抗压维度。</li>
+  </ul>
+
+  <h2>5.3 评估报告</h2>
+  <p>
+    <strong>报告结构</strong>：封面（头像 + 姓名 + 编号）→ 五维雷达 → 维度得分条 → 证据引用 → 句子级改写建议 → 改进建议 → 7 天学习路径 → 历史进步曲线。
+  </p>
+  <p>
+    <strong>三个导出方式</strong>：复制 Markdown / 打印 PDF / 系统分享 API。
+  </p>
+  <p>
+    <strong>报告编号</strong>：<code>FM-{用户ID后6位}-{日期}</code>——增强正式感。
+  </p>
+
+  <h2>5.4 面经 RAG 问答</h2>
+  <p>已在 4.3 详细说明。UI 层补充：</p>
+  <ul>
+    <li><strong>向量索引状态条</strong>：实时显示当前 provider / 维度 / 条数 / 缓存状态 / 融合公式；</li>
+    <li><strong>加载按钮</strong>：一键升级到 MiniLM 语义检索，进度百分比实时更新；</li>
+    <li><strong>引用块</strong>：每条来源显示两路得分，可核对。</li>
+  </ul>
+
+  <h2>5.5 题库与小测</h2>
+  <ul>
+    <li><strong>5 个分类</strong>（SQL / 网络 / 操作系统 / 算法 / STAR），3 个 VIP 专属；</li>
+    <li><strong>3 种模式</strong>：限时模考（5 题 ×60s）/ 顺序练习 / 章节练习；</li>
+    <li><strong>错题本</strong>：答错自动收录，VIP 可反复练习；</li>
+    <li><strong>每日一练</strong>：3 题打卡，连签天数累计；</li>
+    <li><strong>学习数据看板</strong>：累计轮次 / 平均分 / 最高分 / 正确率 / 分类掌握度 / 成绩趋势。</li>
+  </ul>
+
+  <h2>5.6 求职管理</h2>
+  <ul>
+    <li><strong>投递看板</strong>：5 列（已投递 / 笔试中 / 面试中 / Offer / 拒绝），支持状态流转、转化率统计；</li>
+    <li><strong>面试复盘</strong>：6 轮对话补全经过 → 结构化复盘结论。</li>
+  </ul>
+
+  <h2>5.7 开发者模式（技术证据中心）</h2>
+  <ul>
+    <li><strong>交付材料清单</strong>：代码仓库 / 视频 / 文档 / 在线演示 / 测试账号；</li>
+    <li><strong>运行环境检测</strong>：浏览器、OS、WebGL、WebGPU、ASR、Worker 等 9 项能力；</li>
+    <li><strong>性能指标</strong>：加载耗时、DOM 节点、JS 堆、知识库条数、向量维度、MCP 工具数；</li>
+    <li><strong>工程自检</strong>：7 项断言，一键运行；</li>
+    <li><strong>MCP 控制台</strong>：模拟调用 + JSON 返回；</li>
+    <li><strong>诊断日志</strong>：最近 100 条操作记录；</li>
+    <li><strong>已知边界</strong>：6 条诚实说明。</li>
+  </ul>
+
+  <div class="callout info">
+    <strong>为什么单独做这个模式</strong>
+    这是<strong>面向评委的「技术透明度工具」</strong>——评委不需要读代码，打开开发者模式就能验证所有技术声明。
+  </div>
+
+  <h2>5.8 AI 小助手</h2>
+  <p>
+    全局悬浮球，可拖动并贴边冻结；支持预设意图跳转（怎么开始面试 / VIP 有什么用 / 怎么刷题）、RAG 检索作答、模型流式回答、Mock 兜底。
+  </p>
+
+  <div class="chapter-footer">
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
+    <span class="cf-chapter">CHAPTER 05 · 核心功能实现</span>
+  </div>
+</section>
+
+<!-- =============== 第 6 章 =============== -->
+<section class="chapter" id="ch6">
+  <div class="chapter-num">CHAPTER 06</div>
+  <h1>测试与部署</h1>
+
+  <h2>6.1 测试体系</h2>
+  <table>
+    <thead>
+      <tr><th style="width:22%">层级</th><th style="width:20%">工具</th><th style="width:14%">数量</th><th>覆盖内容</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>后端单元测试</td><td>pytest</td><td>6 项</td><td>健康检查、注册登录流程、评分引擎</td></tr>
+      <tr><td>静态验证</td><td>Node + 正则</td><td>—</td><td>JS 语法、DOM id 引用、onclick 处理器、标签配平</td></tr>
+      <tr><td>无头逻辑测试</td><td>Node</td><td>217 项</td><td>store / 用户系统 / 简历优化 / 职业探索 / 主题 / 报告</td></tr>
+      <tr><td>jsdom 集成测试</td><td>jsdom</td><td>8 文件 / 641 项</td><td>v15-v22 + beta1 向量检索，覆盖所有功能模块</td></tr>
+      <tr><td>模块版启动测试</td><td>jsdom</td><td>28 项</td><td>拆分后的模块版能否独立启动</td></tr>
+      <tr><td>后端集成测试</td><td>TestClient</td><td>—</td><td>API 契约一致性</td></tr>
+      <tr><td><strong>合计</strong></td><td>—</td><td><strong>858 + 6</strong></td><td>全部通过</td></tr>
+    </tbody>
+  </table>
+
+  <h3>测试设计原则</h3>
+  <ol>
+    <li>
+      <strong>每个功能都有对应测试</strong>：例如 RAG 层 <code>test-beta1-vector-jsdom.js</code> 用 80 项断言覆盖分词 / BM25 / 向量归一与确定性 / 缓存命中与失效 / 融合排序 / UI / CDN 降级——每条断言都对应一个可执行的功能路径，而不是凑数量。
+    </li>
+    <li>
+      <strong>测试即文档</strong>：断言名本身就是功能说明，例如「同义改写查询命中 B+ 树条目」「缓存与知识库不符时拒绝恢复」「融合分 = 余弦×0.6 + BM25 归一分×0.4」——新成员读测试就能理解模块行为。
+    </li>
+    <li>
+      <strong>失败即 CI 阻断</strong>：<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码，任何 Prompt / 规则 / 检索参数变更，先过测试再合入。
+    </li>
+  </ol>
+
+  <h2>6.2 部署方案</h2>
+  <table>
+    <thead>
+      <tr><th style="width:24%">方案</th><th style="width:28%">适用场景</th><th style="width:14%">成本</th><th>步骤</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>GitHub Pages（当前在线演示）</td><td>纯静态、随仓库更新</td><td>零成本</td><td><code>node scripts/deploy-pages.js --build</code></td></tr>
+      <tr><td>国内直连镜像</td><td>GitHub 访问慢时的备选</td><td>零成本</td><td><code>node scripts/stage-mirror.js</code> 后发布静态目录</td></tr>
+      <tr><td>Vercel（Next.js）</td><td>需要真实后端</td><td>免费额度</td><td>连接仓库，配置环境变量</td></tr>
+      <tr><td>Render / Railway（FastAPI）</td><td>需要完整链路</td><td>免费额度</td><td><code>uvicorn app.main:app --host 0.0.0.0</code></td></tr>
+      <tr><td>本地演示</td><td>现场答辩</td><td>零成本</td><td><code>python -m http.server 5173</code> + <code>uvicorn</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <strong>关键部署注意事项</strong>
+    <ul style="margin: 1.5mm 0 0 4mm;">
+      <li><strong>必须用 http 服务打开，不能双击 <code>file://</code></strong>——<code>file://</code> 的 Origin 是 <code>null</code>，会被后端 CORS 拒绝；</li>
+      <li><code>.env</code> 永不进仓库（<code>.gitignore</code> 已包含），Key 只存在于部署环境变量；</li>
+      <li>部署后要把地址回填到 <code>CONFIG</code> 和 README。</li>
+    </ul>
+  </div>
+
+  <h2>6.3 验证「真落库」</h2>
+  <p>完成一次 5 轮面试后：</p>
+
+<pre>sqlite3 backend/futuremirror.db "select count(*) from turns"      # ≥ 5
+sqlite3 backend/futuremirror.db "select id, mode, status from interviews"
+sqlite3 backend/futuremirror.db "select interview_id, total from reports"</pre>
+
+  <p>
+    <strong>这三条命令是回应「是不是前端仿真」质疑的最强证据</strong>——数据在 SQLite 里，报告分和页面分一致。
+  </p>
+
+  <h2>6.4 快速启动</h2>
+<pre># 0. 克隆仓库
+git clone https://github.com/Penguin-Zhou/FutureMirror.git
+cd FutureMirror
+
+# 终端 1：后端
+cd backend && pip install -r requirements.txt \
+  && cp .env.example .env \
+  && uvicorn app.main:app --reload --port 8000
+
+# 终端 2：前端
+cd frontend && python -m http.server 5173
+
+# 浏览器打开 http://localhost:5173（不要双击 index.html）</pre>
+
+  <div class="chapter-footer">
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
+    <span class="cf-chapter">CHAPTER 06 · 测试与部署</span>
+  </div>
+</section>
+
+<!-- =============== 第 7 章 =============== -->
+<section class="chapter" id="ch7">
+  <div class="chapter-num">CHAPTER 07</div>
+  <h1>创新点说明</h1>
+
+  <h2>7.1 技术创新点</h2>
+  <table>
+    <thead>
+      <tr><th style="width:10%">#</th><th style="width:28%">创新点</th><th style="width:38%">具体实现</th><th>为什么是创新</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>T1</strong></td><td>可解释的多 Agent 派发</td><td>派发理由 + 置信度实时写入时间线</td><td>常见 Agent 系统只做派发，不解释「为什么派给这个 Agent」</td></tr>
+      <tr><td><strong>T2</strong></td><td>连环追问机制</td><td>技术关键词触发 35% 概率连续深挖 2 轮</td><td>从「轮转」升级到「连续决策」，是 Agent 与机器人的分水岭</td></tr>
+      <tr><td><strong>T3</strong></td><td>BM25 + 端侧向量混合检索</td><td>参数调优 + Transformers.js + 融合权重 + 离线兜底</td><td>端侧语义检索的完整工程实现，不是调 API</td></tr>
+      <tr><td><strong>T4</strong></td><td>逐条展示两路得分的 RAG 引用</td><td><code>bm25 0.82 · cos 0.61 · 融合 0.74</code></td><td>检索过程完全透明，可当场核对</td></tr>
+      <tr><td><strong>T5</strong></td><td>可解释评分 + 证据链</td><td>每条分数引用对话原话 + 观察员标注</td><td>评分不是黑箱，每条都能追溯</td></tr>
+      <tr><td><strong>T6</strong></td><td>前后端评分引擎同构</td><td>Python 版与 JS 版算法一致，交叉验证</td><td>三级降级在评分层的具体实现</td></tr>
+      <tr><td><strong>T7</strong></td><td>MCP 工具运行时可验证</td><td>开发者模式内置 MCP 控制台</td><td>支持 MCP 的产品很多，能让评委当场验证调用链路的少</td></tr>
+      <tr><td><strong>T8</strong></td><td>代码沙盒入评分</td><td>Web Worker + 2s 熔断，通过率并入内容深度维度</td><td>把「编码能力」这个难量化的维度变成可量化信号</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7.2 应用创新点</h2>
+  <table>
+    <thead>
+      <tr><th style="width:10%">#</th><th style="width:26%">创新点</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>A1</strong></td><td>求职全流程闭环</td><td>简历匹配 → 简历优化 → 面试 → 报告 → 题库 → 求职看板，形成闭环而非单点工具</td></tr>
+      <tr><td><strong>A2</strong></td><td>题库 + 错题本 + 每日一练</td><td>把「背八股」变成可量化的学习过程</td></tr>
+      <tr><td><strong>A3</strong></td><td>职业探索匹配引擎</td><td>按专业 + 技能 + 兴趣匹配 24 个岗位，给出技能对比与学习路径</td></tr>
+      <tr><td><strong>A4</strong></td><td>AI 小助手（全局悬浮）</td><td>可拖动贴边冻结，检索知识库作答，使用引导一键直达</td></tr>
+      <tr><td><strong>A5</strong></td><td>开发者模式（面向评委）</td><td>把「技术透明度」做成一个面向评委的产品功能，而不是文档里的一段说明</td></tr>
+      <tr><td><strong>A6</strong></td><td>移动端体验优化</td><td>顶部导航、触控 ≥42px、输入框 16px 防 iOS 缩放、底部安全区适配</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7.3 创新点总结</h2>
+  <div class="callout ok">
+    <strong>最大的创新不在单点技术，而在「可解释」这个设计哲学贯穿全产品</strong>
+    <ul style="margin: 1.5mm 0 0 4mm;">
+      <li>Agent 派发可解释（为什么派给他）；</li>
+      <li>RAG 检索可解释（两路得分怎么算）；</li>
+      <li>评分可解释（为什么是这个分）；</li>
+      <li>学习路径可解释（为什么练这个）；</li>
+      <li>降级可解释（为什么现在是 Mock）。</li>
+    </ul>
+    <p style="margin-top: 1.5mm;">
+      <strong>这种「全链路可解释」在 AI Native 应用里是稀缺的</strong>——大多数产品追求「更智能」，但用户不知道智能从哪来。面镜反过来，每一步都留下可核查的证据。
+    </p>
+  </div>
+
+  <div class="chapter-footer">
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
+    <span class="cf-chapter">CHAPTER 07 · 创新点说明</span>
+  </div>
+</section>
+
+<!-- =============== 第 8 章 =============== -->
+<section class="chapter" id="ch8">
+  <div class="chapter-num">CHAPTER 08</div>
+  <h1>总结与展望</h1>
+
+  <h2>8.1 已完成</h2>
+  <ul>
+    <li><strong>5 个 Agent 协作 + 动态派发 + 连环追问</strong>的完整面试引擎；</li>
+    <li><strong>BM25 + 端侧向量混合检索</strong>的 RAG 层，含缓存、降级、可解释得分；</li>
+    <li><strong>可解释评分 + 证据链 + 动态学习路径</strong>的报告引擎；</li>
+    <li><strong>三级降级</strong>的完整链路（后端 → 直连 → Mock），演示不中断；</li>
+    <li><strong>858 + 6 项自动化测试</strong>，覆盖所有功能；</li>
+    <li><strong>开发者模式</strong>作为面向评委的技术透明度工具。</li>
+  </ul>
+
+  <h2>8.2 已知边界</h2>
+  <table>
+    <thead>
+      <tr><th style="width:24%">边界</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>演示版向量库</td><td>浏览器内 localStorage 单机索引（40 条），非分布式向量数据库</td></tr>
+      <tr><td>端侧模型</td><td>首次加载需下载 ~23MB；纯离线环境降级为 hashing 向量（仅词面）</td></tr>
+      <tr><td>MCP</td><td>本地模拟 Server，协议一致但非跨进程真实 MCP</td></tr>
+      <tr><td>代码沙盒</td><td>Web Worker 隔离，仅支持纯 JS 逻辑题</td></tr>
+      <tr><td>登录系统</td><td>演示级（本地混淆），非生产级认证</td></tr>
+      <tr><td>数据库</td><td>SQLite 单机，生产需替换 PostgreSQL</td></tr>
+    </tbody>
+  </table>
+
+  <h2>8.3 未来规划</h2>
+  <table>
+    <thead>
+      <tr><th style="width:24%">方向</th><th>计划</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>RAG 升级</td><td>pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank</td></tr>
+      <tr><td>Agent 升级</td><td>真实 MCP Server + 跨 Agent 工具发现 + 多轮规划</td></tr>
+      <tr><td>评分升级</td><td>LLM 评分 + Zod 约束 + 校准样本集量化一致性</td></tr>
+      <tr><td>多模态</td><td>Whisper ASR + 语速 / 停顿分析 + 白板代码识别</td></tr>
+      <tr><td>部署</td><td>多租户隔离 + 限流 + PostgreSQL + 对象存储</td></tr>
+      <tr><td>商业模式</td><td>院校就业中心合作 / 企业校招 SaaS / C 端订阅</td></tr>
+    </tbody>
+  </table>
+
+  <h2>8.4 致谢与声明</h2>
+  <p>
+    本项目开发过程中使用 AI 编程工具作为辅助手段，<strong>CSS 主题样板、通用工具函数、测试用例骨架、部分页面文案由 AI 辅助生成</strong>；<strong>多 Agent 角色设计与派发策略、可解释评分规则与证据链、RAG 检索层参数调优与融合策略、业务架构与前后端契约、安全方案、测试体系均为团队独立设计与实现</strong>。所有 AI 生成内容均经过团队逐行审查、修改与测试，完整 Git 提交记录可见演进过程。演示数据全部为人工合成示例，无爬取真实网络数据。
+  </p>
+
+  <div class="chapter-footer">
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
+    <span class="cf-chapter">CHAPTER 08 · 总结与展望</span>
+  </div>
+</section>
+
+<!-- =============== 第 9 章 =============== -->
+<section class="chapter" id="ch9">
+  <div class="chapter-num">CHAPTER 09</div>
+  <h1>附录</h1>
+
+  <h2>9.1 环境配置</h2>
+  <p><strong>获取代码</strong>：</p>
+
+<pre>git clone https://github.com/Penguin-Zhou/FutureMirror.git
+cd FutureMirror</pre>
+
+  <p><strong>在线演示</strong>（免安装，浏览器直接打开）：</p>
+  <ul>
+    <li>主站（GitHub Pages）：<a href="https://penguin-zhou.github.io/FutureMirror/" target="_blank" rel="noopener">https://penguin-zhou.github.io/FutureMirror/</a></li>
+    <li>国内直连镜像：<a href="https://futuremirror-demo.app.workbuddy.host/" target="_blank" rel="noopener">https://futuremirror-demo.app.workbuddy.host/</a></li>
+    <li>演示账号：<code>demo@futuremirror.app / Demo123456</code></li>
+  </ul>
+
+  <p><strong>后端 <code>.env.example</code></strong>：</p>
+
+<pre>LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+LLM_MODEL=glm-4-flash
+LLM_API_KEY=              # 不填则后端在线但聊天走 Mock
+SECRET_KEY=change-me-to-a-long-random-string
+DATABASE_URL=sqlite:///./futuremirror.db
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
+
+  <h2>9.2 演示账号</h2>
+  <table>
+    <thead>
+      <tr><th style="width:40%">账号</th><th style="width:24%">密码</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>demo@futuremirror.app</code></td><td><code>Demo123456</code></td><td>自动获得 VIP 权益</td></tr>
+    </tbody>
+  </table>
+
+  <h2>9.3 关键代码索引</h2>
+  <table>
+    <thead>
+      <tr><th style="width:20%">模块</th><th style="width:32%">文件</th><th>关键函数</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>RAG 检索层</td><td><code>frontend/js/data/kb.js</code></td><td><code>tokenList</code> / <code>bm25Score</code> / <code>hashEmbed</code> / <code>scoreAll</code> / <code>hybridRetrieveAsync</code> / <code>loadVecModel</code></td></tr>
+      <tr><td>面试引擎</td><td><code>frontend/js/features/interview.js</code></td><td><code>pickQuestion</code> / <code>planReason</code> / <code>maybeStartDeepDive</code> / <code>sendMsgMock</code> / <code>sendMsgReal</code></td></tr>
+      <tr><td>报告引擎</td><td><code>frontend/js/features/report.js</code></td><td><code>scoreSession</code> / <code>buildEvidence</code> / <code>buildPlan</code> / <code>renderReport</code></td></tr>
+      <tr><td>MCP 工具</td><td><code>frontend/js/dev/runtime.js</code></td><td><code>MCP_TOOLS</code> / <code>simulateMcpCall</code> / <code>runCodeSandbox</code></td></tr>
+      <tr><td>后端评分</td><td><code>backend/app/scoring.py</code></td><td><code>score_session</code></td></tr>
+      <tr><td>后端 LLM 代理</td><td><code>backend/app/llm.py</code></td><td><code>sse_response</code> / <code>_proxy_stream</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>9.4 版本演进摘要</h2>
+  <p>Beta 1.0 之前的演示层共 22 个可运行、可回归的版本，按六条主线收敛：</p>
+  <table>
+    <thead>
+      <tr><th style="width:22%">主线</th><th style="width:16%">关键版本</th><th>交付内容</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>导航与数据扩充</td><td>v10</td><td>左栏 + 底部 Tab 双导航；岗位库 8 → 24、面经 8 → 40；题库结构化</td></tr>
+      <tr><td>运行时能力三件套</td><td>v12</td><td>MCP 实时控制台 / 代码沙盒（Worker + 2s 熔断）/ 本地 PII 脱敏</td></tr>
+      <tr><td>开发者模式</td><td>v13–v14</td><td>加密视图 / 环境检测 / 性能指标 / 工程自检 / 诊断日志 / 导出</td></tr>
+      <tr><td>工作台与个人中心</td><td>v15–v17</td><td>今日推荐 / 三态头像 / 偏好开关 / 数据管理 / Arkira 视觉重构</td></tr>
+      <tr><td>求职闭环与面试拟真</td><td>v18</td><td>投递看板 / 面试复盘 / 答题计时 / 连环追问 / 语音实时反馈</td></tr>
+      <tr><td>题库与权益</td><td>v19–v21</td><td>题库 5 分类 / VIP / 错题本 / 收藏 / 搜索 / 每日一练 / AI 小助手 / 悬浮球冻结</td></tr>
+      <tr><td>后端与检索升级</td><td>v22–Beta 1.0</td><td>FastAPI 落地 / 三级降级 / BM25 + 端侧向量混合检索 / 向量索引状态条</td></tr>
+    </tbody>
+  </table>
+  <p>
+    每个版本均保留可运行演示与对应测试，Git 提交记录可见演进过程——<strong>版本演进本身就是「工程能力」的证据</strong>。
+  </p>
+
+  <h2>9.5 交付材料清单</h2>
+  <table>
+    <thead>
+      <tr><th style="width:34%">材料</th><th style="width:14%">状态</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>代码仓库（Public）</td><td>✅</td><td><a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">github.com/Penguin-Zhou/FutureMirror</a></td></tr>
+      <tr><td>README（架构 / 安装 / 测试）</td><td>✅</td><td>本仓库根目录</td></tr>
+      <tr><td><code>.env.example</code>（无真实密钥）</td><td>✅</td><td><code>backend/.env.example</code></td></tr>
+      <tr><td>Git 真实提交历史</td><td>✅</td><td>分阶段提交，非一次性推送</td></tr>
+      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>858 + 6</td></tr>
+      <tr><td>单文件静态演示页</td><td>✅</td><td><code>public/futuremirror-demo.html</code></td></tr>
+      <tr><td>演示视频 5-8 分钟 1080p</td><td>⬜</td><td>录制中</td></tr>
+      <tr><td>技术文档（HTML 在线版）</td><td>✅</td><td><a href="https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror/docs/technical-doc.html</a>（仓库内 <code>docs/technical-doc.html</code>）</td></tr>
+      <tr><td>技术文档 PDF（附件）</td><td>✅</td><td>由本文件 A4 打印导出，约 29 页，随赛事材料以附件形式提交</td></tr>
+      <tr><td>在线演示地址（公网）</td><td>✅</td><td><a href="https://penguin-zhou.github.io/FutureMirror/" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror</a></td></tr>
+      <tr><td>在线演示镜像（国内直连）</td><td>✅</td><td><a href="https://futuremirror-demo.app.workbuddy.host/" target="_blank" rel="noopener">futuremirror-demo.app.workbuddy.host</a></td></tr>
+      <tr><td>演示测试账号</td><td>✅</td><td><code>demo@futuremirror.app / Demo123456</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="doc-footer">
+    <strong>面镜 FutureMirror 开发团队 · 福建农林大学桢队</strong><br>
+    技术文档 v1.0（Beta 1.0）
+  </div>
+</section>
+
+</div><!-- /content -->
+
+</body>
+</html>
