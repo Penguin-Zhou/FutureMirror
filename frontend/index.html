@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.0 演示版）</title>
+<meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台（在线演示版）">
+<script>
+/* 主题预置：先于 body 渲染，避免首屏闪白/闪主题（g_theme/g_accent 为全局共享 key，不随用户隔离） */
+try {
+  document.documentElement.dataset.theme = JSON.parse(localStorage.getItem("g_theme") || '"light"');
+  document.documentElement.dataset.accent = localStorage.getItem("g_accent") || "default";
+} catch (e) {}
+</script>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<!-- ============================================================
+     视图 1：落地页（公共 · 无需登录）
+     ============================================================ -->
+<div class="view landing active" id="view-landing">
+
+  <!-- 落地页导航 -->
+  <nav class="landing-nav">
+    <div class="wrap">
+      <div class="logo">
+        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+          <rect x="1" y="1" width="24" height="24" rx="7" fill="var(--brand)"/>
+          <ellipse cx="13" cy="13" rx="8.5" ry="5" fill="none" stroke="#fff" stroke-width="1.6"/>
+          <circle cx="13" cy="13" r="2.4" fill="#fff"/>
+        </svg>
+        面镜 <span style="color:var(--brand)">FutureMirror</span>
+      </div>
+      <div class="landing-nav-links">
+        <a href="#features">功能</a>
+        <a href="#workflow">流程</a>
+        <a href="#stats">数据</a>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-ghost btn-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式">🌙</button>
+        <button class="btn btn-ghost btn-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（紫 / 牛客绿 / 科技蓝）">🟣</button>
+        <button class="btn btn-outline btn-sm" onclick="showView('app')">免费体验</button>
+        <button class="btn btn-primary btn-sm" onclick="showView('auth')">登录 / 注册</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="landing-hero">
+    <div class="wrap">
+      <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.0</span>
+      <h1 class="hero-title">
+        让每一次面试，<br>
+        都成为<span class="grad">可量化的成长</span>。
+      </h1>
+      <p class="hero-sub">
+        上传简历与目标岗位 JD，由 AI 面试官团队（HR / 技术 / 压力面 / 观察员）完成模拟面试，
+        生成可解释的评分报告、能力雷达图与个性化学习路径。
+      </p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" onclick="enterAppOrAuth()">立即体验 →</button>
+        <button class="btn btn-outline" onclick="showView('app')">先看看界面</button>
+      </div>
+
+      <!-- 产品预览 Mock -->
+      <div class="hero-mock">
+        <div class="hero-mock-dots"><span></span><span></span><span></span></div>
+        <div class="hero-mock-body">
+          <div class="mock-chat">
+            <div class="mock-bubble ai"><span class="agent-tag">⚙️ 技术面试官 · 温度 0.3</span><br>「电商秒杀系统」的缓存一致性你怎么保证？如果缓存与 DB 不一致，用户侧会看到什么现象？</div>
+            <div class="mock-bubble user">我用了 Redis 缓存热点商品，通过延迟双删 + 消息队列最终一致…QPS 从 200 提升到 1200。</div>
+            <div class="mock-bubble ai"><span class="agent-tag">🔥 压力面试官 · 温度 0.8</span><br>「QPS 1200」这个方案，我让一个实习生来写一周也能做出来——你的不可替代性在哪？</div>
+          </div>
+          <div class="mock-radar">
+            <svg viewBox="0 0 200 200" width="100%" style="max-width:180px" role="img" aria-label="五维能力雷达图示例">
+              <polygon points="100,30 165,65 165,135 100,170 35,135 35,65" fill="none" stroke="var(--line)"/>
+              <polygon points="100,60 145,82 145,118 100,140 55,118 55,82" fill="none" stroke="var(--line)"/>
+              <polygon points="100,50 155,78 145,128 100,155 45,120 60,80" fill="color-mix(in srgb,var(--brand) 30%,transparent)" stroke="var(--brand)" stroke-width="2"/>
+              <text x="100" y="20" text-anchor="middle" font-size="10" fill="var(--muted)">内容</text>
+              <text x="180" y="65" text-anchor="end" font-size="10" fill="var(--muted)">结构</text>
+              <text x="180" y="145" text-anchor="end" font-size="10" fill="var(--muted)">表达</text>
+              <text x="100" y="188" text-anchor="middle" font-size="10" fill="var(--muted)">匹配</text>
+              <text x="20" y="145" font-size="10" fill="var(--muted)">抗压</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 功能网格 -->
+  <section class="landing-section" id="features">
+    <div class="wrap">
+      <div class="landing-section-head">
+        <h2 class="landing-section-title">求职全流程，一个平台闭环</h2>
+        <p class="landing-section-sub">从简历诊断到职业探索，从模拟面试到评估报告——AI 在每个环节都深度参与</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-block" onmousemove="trackLight(event)">
+          <div class="fb-icon">🎯</div>
+          <h3>简历岗位匹配</h3>
+          <p>上传简历 + 粘贴 JD，AI 提取技能关键词，输出匹配度、能力缺口与补强建议。</p>
+        </div>
+        <div class="feature-block" onmousemove="trackLight(event)">
+          <div class="fb-icon">🎙️</div>
+          <h3>多 Agent 模拟面试</h3>
+          <p>HR / 技术 / 压力面三位面试官轮转追问，观察员实时记录证据，教练生成学习路径。</p>
+        </div>
+        <div class="feature-block" onmousemove="trackLight(event)">
+          <div class="fb-icon">📖</div>
+          <h3>RAG 面经问答</h3>
+          <p>BM25 + 端侧向量（MiniLM 384 维，浏览器内计算）混合检索，答案强制附引用来源与两路得分，从机制上降低幻觉。</p>
+        </div>
+        <div class="feature-block" onmousemove="trackLight(event)">
+          <div class="fb-icon">✍️</div>
+          <h3>简历优化工作台</h3>
+          <p>6 维诊断 + 逐条改写建议，可直接用 LLM 深度改写，让简历通过机器筛选。</p>
+        </div>
+        <div class="feature-block" onmousemove="trackLight(event)">
+          <div class="fb-icon">🧭</div>
+          <h3>职业探索推荐</h3>
+          <p>选择专业 + 技能 + 兴趣，AI 匹配 <b class="js-career-count">24</b> 个岗位，给出技能对比与分步学习路径。</p>
+        </div>
+        <div class="feature-block" onmousemove="trackLight(event)">
+          <div class="fb-icon">📊</div>
+          <h3>可解释评估报告</h3>
+          <p>五维雷达 + 每条证据引用对话原话 + 最弱维度动态生成 7 天学习路径 + 历史进步曲线。</p>
+        </div>
+        <div class="feature-block" onmousemove="trackLight(event)">
+          <div class="fb-icon">📝</div>
+          <h3>题库与小测</h3>
+          <p>SQL、网络等知识点刷题，限时模考 / 顺序练习 / 章节练习三种模式，错题自动收录错题本，每日一练打卡连签。</p>
+        </div>
+        <div class="feature-block" onmousemove="trackLight(event)">
+          <div class="fb-icon">👑</div>
+          <h3>VIP 会员体系</h3>
+          <p>VIP 解锁专属分类、错题本与无限次小测，测试账号登录即自动获得 VIP 权益。</p>
+        </div>
+        <div class="feature-block" onmousemove="trackLight(event)">
+          <div class="fb-icon">🤖</div>
+          <h3>AI 小助手</h3>
+          <p>全局悬浮问答入口，检索题库与面经知识库作答，使用引导与快捷操作一键直达对应功能。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 工作流 -->
+  <section class="landing-section alt" id="workflow">
+    <div class="wrap">
+      <div class="landing-section-head">
+        <h2 class="landing-section-title">四步走完求职准备</h2>
+        <p class="landing-section-sub">每个环节都留下可追溯的数据，形成你的专属能力成长档案</p>
+      </div>
+      <div class="workflow">
+        <div class="workflow-step">
+          <div class="ws-num">STEP 01</div>
+          <h4>输入你的信息</h4>
+          <p>粘贴简历与目标岗位 JD，或从 8 个热门岗位中选择一个开始。</p>
+        </div>
+        <div class="workflow-step">
+          <div class="ws-num">STEP 02</div>
+          <h4>AI 诊断与匹配</h4>
+          <p>匹配度环图 + 能力缺口 + 简历 6 维诊断 + 逐条改写建议。</p>
+        </div>
+        <div class="workflow-step">
+          <div class="ws-num">STEP 03</div>
+          <h4>多 Agent 模拟面试</h4>
+          <p>三位面试官轮转追问，实时能力追踪器动态更新雷达图。</p>
+        </div>
+        <div class="workflow-step">
+          <div class="ws-num">STEP 04</div>
+          <h4>报告与学习路径</h4>
+          <p>可解释评分 + 证据引用 + 动态学习计划 + 历史进步曲线。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 数据条 -->
+  <section class="landing-section" id="stats">
+    <div class="wrap">
+      <div class="landing-stats">
+        <div class="landing-stat">
+          <div class="val" data-count="5">0</div>
+          <div class="lbl">协作 Agent</div>
+        </div>
+        <div class="landing-stat">
+          <div class="val" data-count="24" id="stat-careers-l">0</div>
+          <div class="lbl">推荐岗位</div>
+        </div>
+        <div class="landing-stat">
+          <div class="val" data-count="6">0</div>
+          <div class="lbl">简历诊断维度</div>
+        </div>
+        <div class="landing-stat">
+          <div class="val" data-count="3">0</div>
+          <div class="lbl">面试模式</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 底部 CTA -->
+  <section class="wrap" style="padding-bottom:64px">
+    <div class="landing-cta">
+      <h3>准备好了吗？</h3>
+      <p>用 3 分钟完成首次模拟面试，拿到你的第一份可解释评估报告。</p>
+      <div style="margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-white" onclick="enterAppOrAuth()">立即开始 →</button>
+      </div>
+      <div style="margin-top:18px;font-size:12px;opacity:.75">
+        评委与技术验证请 <button style="background:none;border:none;color:#fff;text-decoration:underline;cursor:pointer;font-size:12px;font-family:inherit" onclick="openEvaluatorGate()">进入开发者模式 →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" style="padding-bottom:40px;text-align:center">
+    <button class="btn btn-ghost btn-sm" onclick="openEvaluatorGate()" style="opacity:.6;font-size:12px" title="仅评委与开发者可见">
+      🎛 开发者模式
+    </button>
+  </section>
+
+  <footer style="border-top:1px solid var(--line);padding:26px 0 40px;font-size:12.5px;color:var(--faint);line-height:1.9;text-align:center">
+    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0<br>
+    <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
+  </footer>
+
+</div>
+
+<!-- ============================================================
+     视图 3：登录 / 注册（演示级账号系统，数据仅存当前浏览器）
+     ============================================================ -->
+<div class="view" id="view-auth">
+<div class="auth-screen view-inner" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-left">
+      <div>
+        <div class="auth-brand">
+          <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+            <rect x="1" y="1" width="24" height="24" rx="7" fill="rgba(255,255,255,.22)"/>
+            <ellipse cx="13" cy="13" rx="8.5" ry="5" fill="none" stroke="#fff" stroke-width="1.6"/>
+            <circle cx="13" cy="13" r="2.4" fill="#fff"/>
+          </svg>
+          面镜 FutureMirror
+        </div>
+        <h2>让每一次面试，<br>都成为可量化的成长。</h2>
+        <p class="lead">多 Agent 驱动的 AI 模拟面试平台，从简历匹配到可解释评分报告，帮你在真实面试前把每个漏洞都补上。</p>
+        <ul class="auth-features">
+          <li><span class="dot">🤖</span><span><b>Agent 圆桌</b>：HR / 技术 / 压力面 / 观察员 / 教练协同追问</span></li>
+          <li><span class="dot">📊</span><span><b>可解释评分</b>：每个分数都附对话证据与改进建议</span></li>
+          <li><span class="dot">📖</span><span><b>RAG 面经库</b>：答案强制附引用来源，降低幻觉</span></li>
+          <li><span class="dot">🎙️</span><span><b>多模态交互</b>：语音输入 / TTS 朗读 / 简历上传</span></li>
+        </ul>
+      </div>
+      <div class="auth-foot">
+        演示级登录系统 · 数据仅存于当前浏览器<br>
+        © 2026 面镜 FutureMirror
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录</button>
+        <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册</button>
+      </div>
+
+      <!-- 登录表单 -->
+      <form class="auth-form" id="form-login" onsubmit="event.preventDefault();doLogin();">
+        <div class="auth-field">
+          <label for="login-email">邮箱</label>
+          <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+        <div class="auth-field">
+          <label for="login-pass">密码</label>
+          <input type="password" id="login-pass" placeholder="至少 6 位" autocomplete="current-password" required>
+        </div>
+        <div class="auth-error" id="login-error" role="alert"></div>
+        <button type="submit" class="auth-submit" id="login-submit">登录</button>
+      </form>
+
+      <!-- 注册表单 -->
+      <form class="auth-form" id="form-register" style="display:none" onsubmit="event.preventDefault();doRegister();">
+        <div class="auth-field">
+          <label for="reg-name">昵称</label>
+          <input type="text" id="reg-name" placeholder="怎么称呼你？" maxlength="20" required>
+        </div>
+        <div class="auth-field">
+          <label for="reg-email">邮箱</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+        <div class="auth-field">
+          <label for="reg-pass">密码</label>
+          <input type="password" id="reg-pass" placeholder="至少 6 位" autocomplete="new-password" minlength="6" required>
+        </div>
+        <div class="auth-error" id="reg-error" role="alert"></div>
+        <button type="submit" class="auth-submit" id="reg-submit">创建账号</button>
+      </form>
+
+      <div class="auth-demo">
+        想直接体验？<button onclick="quickDemoLogin()">一键使用演示账号 →</button>
+      </div>
+      <div class="auth-note">
+        🔒 <b>演示说明</b>：这是演示级登录系统，密码仅做本地简单混淆存储，<b>不应用于生产环境</b>；账号与面试记录仅保存在当前浏览器，清除浏览器数据即丢失。
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /view-auth -->
+
+<!-- ============================================================
+     视图 2：主应用（游客可浏览 UI，AI 功能需登录后解锁）
+     ============================================================ -->
+<div class="view" id="view-app">
+
+<header>
+  <div class="wrap nav">
+    <div class="logo" style="cursor:pointer" onclick="showView('landing')" title="返回首页">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+        <rect x="1" y="1" width="24" height="24" rx="7" fill="var(--brand)"/>
+        <ellipse cx="13" cy="13" rx="8.5" ry="5" fill="none" stroke="#fff" stroke-width="1.6"/>
+        <circle cx="13" cy="13" r="2.4" fill="#fff"/>
+      </svg>
+      面镜 <span style="color:var(--brand)">FutureMirror</span>
+    </div>
+    <div class="nav-right">
+      <!-- v10：状态胶囊（游客 / Mock / 真实），替代原 badge 组 -->
+      <span class="status-pill" id="status-pill" title="当前运行模式">
+        <span class="dot"></span>
+        <span id="status-text">Mock 模式</span>
+      </span>
+      <!-- v19：VIP 会员徽章（登录且享有权益时显示） -->
+      <span class="vip-pill" id="vip-pill" hidden title="VIP 会员权益">VIP</span>
+      <button class="btn btn-ghost btn-icon" id="theme-btn" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式">🌙</button>
+      <button class="btn btn-ghost btn-icon" id="accent-btn" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（紫 / 牛客绿 / 科技蓝）">🟣</button>
+
+      <!-- 用户菜单 -->
+      <div class="user-menu" id="user-menu-box" hidden>
+        <button class="user-btn" onclick="toggleUserMenu(event)" aria-haspopup="true" aria-expanded="false">
+          <span class="user-avatar" id="nav-avatar">?</span>
+          <span id="nav-username">未登录</span>
+          <span class="user-caret">▾</span>
+        </button>
+        <div class="user-dropdown" id="user-dropdown" hidden role="menu">
+          <div class="dropdown-head">
+            <div class="user-avatar lg" id="dd-avatar">?</div>
+            <div>
+              <div class="dropdown-name" id="dd-name"></div>
+              <div class="dropdown-email" id="dd-email"></div>
+            </div>
+          </div>
+          <button onclick="closeUserMenu();switchTab('profile')" role="menuitem">👤 个人中心</button>
+          <button onclick="openMaterial('account')" role="menuitem">🔑 演示账号信息</button>
+          <button onclick="switchAccount()" role="menuitem">👥 切换账号</button>
+          <button class="danger" onclick="logout()" role="menuitem">🚪 退出登录</button>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost btn-sm" onclick="openEvaluatorGate()" title="仅评委与技术验证使用" style="font-size:12px">
+        🎛 开发者模式
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== 游客模式提示条（未登录时显示） ===== -->
+<div class="wrap" style="padding-top:16px">
+  <div class="guest-banner" id="guest-banner" hidden>
+    <span>🔒 你正在以<b>游客模式</b>浏览 — AI 功能需要登录后解锁</span>
+    <button class="btn btn-primary btn-sm" onclick="showView('auth')">登录 / 注册 →</button>
+  </div>
+</div>
+
+<!-- ===== 演示版声明横幅（可关闭） ===== -->
+<div class="banner" id="demo-banner" role="note">
+  <div class="wrap">
+    <b>本页 = 在线演示版首页 · Beta 1.0</b>
+    <span>（Mock 数据，可离线运行；默认零外部请求，仅当点「加载端侧模型 MiniLM」时联网拉取一次模型权重）——也可以直接「接入我的 API Key」体验真实大模型驱动</span>
+    <button class="btn btn-primary btn-sm" onclick="openMaterial('full')" style="margin-left:auto">前往完整项目 →</button>
+    <button class="btn btn-ghost btn-sm" onclick="dismissBanner()" aria-label="关闭横幅">✕</button>
+  </div>
+</div>
+
+<main>
+  <div class="app-shell">
+
+    <!-- ============ 左侧栏（桌面，≤900px 自动隐藏） ============ -->
+    <aside class="app-sidebar" aria-label="应用导航">
+      <a class="sb-item active" href="#/dashboard" data-nav="dashboard">
+        <span class="sb-icon">🏠</span> 工作台
+      </a>
+
+      <div class="sb-group-label">输入与准备</div>
+      <a class="sb-item" href="#/match" data-nav="match">
+        <span class="sb-icon">📄</span> 简历匹配
+      </a>
+      <a class="sb-item" href="#/resume" data-nav="resume">
+        <span class="sb-icon">✍️</span> 简历优化
+      </a>
+      <a class="sb-item" href="#/career" data-nav="career">
+        <span class="sb-icon">🧭</span> 职业探索
+      </a>
+
+      <div class="sb-group-label">训练与评估</div>
+      <a class="sb-item" href="#/interview" data-nav="interview">
+        <span class="sb-icon">🎙️</span> 模拟面试
+        <span class="sb-badge" id="sb-interview-badge">0/5</span>
+      </a>
+      <a class="sb-item" href="#/rag" data-nav="rag">
+        <span class="sb-icon">📖</span> 面经问答
+      </a>
+      <a class="sb-item" href="#/report" data-nav="report">
+        <span class="sb-icon">📊</span> 评估报告
+      </a>
+      <a class="sb-item" href="#/quiz" data-nav="quiz">
+        <span class="sb-icon">📝</span> 题库小测
+      </a>
+
+      <div class="sb-group-label">我的</div>
+      <a class="sb-item" href="#/profile" data-nav="profile">
+        <span class="sb-icon">👤</span> 个人中心
+      </a>
+      <a class="sb-item" href="#/jobs" data-nav="jobs">
+        <span class="sb-icon">📋</span> 求职管理
+      </a>
+
+      <div class="sb-footer">
+        面镜 FutureMirror · beta1.0<br>
+        <a href="#" onclick="openMaterial('repo');return false">代码仓库</a> ·
+        <a href="#" onclick="openMaterial('docs');return false">技术文档</a>
+      </div>
+    </aside>
+
+    <!-- ============ 主内容区 ============ -->
+    <div class="app-main">
+
+      <!-- 面包屑（由 applyRoute 填充当前页名） -->
+      <nav class="breadcrumb" id="breadcrumb" aria-label="面包屑">
+        <a href="#/dashboard">工作台</a>
+        <span class="bc-sep">/</span>
+        <span class="bc-current" id="bc-current">工作台</span>
+      </nav>
+
+  <!-- ========================================================
+       页面 1：工作台（dashboard）
+       ======================================================== -->
+  <div class="app-page active" data-page="dashboard">
+
+  <!-- ===== 首次访问引导（本地记住，可关闭） ===== -->
+  <div class="onboarding-card fade-up" id="onboarding" hidden>
+    <b style="font-size:15px">👋 欢迎来到面镜</b>
+    <p>建议按这个顺序体验：<b>简历匹配 → 简历优化 → 模拟面试 → 评估报告</b>，3 分钟走完求职全流程。左侧栏可随时切换 8 个功能页（移动端在底部 Tab 栏）。</p>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="switchTab('match')">从简历匹配开始 →</button>
+      <button class="btn btn-outline btn-sm" onclick="dismissOnboarding();switchTab('profile')">👤 先完善个人资料</button>
+      <button class="btn btn-outline btn-sm" onclick="dismissOnboarding()">我知道了</button>
+    </div>
+  </div>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <span class="badge badge-brand" style="margin-bottom:14px">多 Agent 驱动的 AI 模拟面试与能力成长平台</span>
+    <h1>面镜 <span>FutureMirror</span></h1>
+    <p>上传简历与目标岗位 JD，由 AI 面试官团队（HR / 技术 / 压力面 / 观察员）完成模拟面试，生成可解释的评分报告、能力雷达图与个性化学习路径。</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="switchTab('match')">🎯 开始体验 Demo →</button>
+      <button class="btn btn-outline" onclick="document.getElementById('agents').scrollIntoView({behavior:'smooth'})">👥 认识面试圆桌</button>
+    </div>
+
+    <!-- 快速入口（美化 · 互动） -->
+    <div class="quick-entries quick-entries-hero">
+      <button class="quick-entry card qe-featured" onclick="switchTab('match')">
+        <div class="qe-icon">📄</div>
+        <div class="qe-title">简历匹配</div>
+        <div class="qe-desc">上传简历 + 选岗位，一键生成匹配度分析</div>
+        <div class="qe-arrow">开始 →</div>
+      </button>
+      <button class="quick-entry card" onclick="switchTab('resume')">
+        <div class="qe-icon">✍️</div>
+        <div class="qe-title">简历优化</div>
+        <div class="qe-desc">6 维诊断 + 逐条改写建议，支持 LLM 深度改写</div>
+        <div class="qe-arrow">开始 →</div>
+      </button>
+      <button class="quick-entry card" onclick="switchTab('career')">
+        <div class="qe-icon">🧭</div>
+        <div class="qe-title">职业探索</div>
+        <div class="qe-desc">按专业 + 技能 + 兴趣，匹配 24 个热门岗位</div>
+        <div class="qe-arrow">开始 →</div>
+      </button>
+      <button class="quick-entry card qe-featured" onclick="switchTab('interview')">
+        <div class="qe-icon">🎙️</div>
+        <div class="qe-title">模拟面试</div>
+        <div class="qe-desc">HR / 技术 / 压力面实时追问，含代码沙盒</div>
+        <div class="qe-arrow">开始 →</div>
+      </button>
+      <button class="quick-entry card" onclick="switchTab('rag')">
+        <div class="qe-icon">📖</div>
+        <div class="qe-title">面经问答</div>
+        <div class="qe-desc">RAG 检索 40+ 条合成面经，答案强制引用</div>
+        <div class="qe-arrow">开始 →</div>
+      </button>
+      <button class="quick-entry card" onclick="switchTab('report')">
+        <div class="qe-icon">📊</div>
+        <div class="qe-title">评估报告</div>
+        <div class="qe-desc">五维雷达 + 可解释评分 + 7 天学习路径</div>
+        <div class="qe-arrow">开始 →</div>
+      </button>
+    </div>
+
+    <!-- 数据看板（可点击跳转） -->
+    <div class="stats-row stats-row-clickable">
+      <div class="card stat-card" onclick="switchTab('interview')" title="点击进入模拟面试">
+        <div class="stat-arrow">→</div>
+        <div class="stat-icon">🤖</div>
+        <div class="stat-num" data-count="5">0</div>
+        <div class="stat-label">协作 Agent</div>
+      </div>
+      <div class="card stat-card" onclick="switchTab('report')" title="点击查看评估报告">
+        <div class="stat-arrow">→</div>
+        <div class="stat-icon">📊</div>
+        <div class="stat-num" data-count="5">0</div>
+        <div class="stat-label">评估维度</div>
+      </div>
+      <div class="card stat-card" onclick="switchTab('career')" title="点击查看推荐岗位">
+        <div class="stat-arrow">→</div>
+        <div class="stat-icon">🧭</div>
+        <div class="stat-num" data-count="24" id="stat-careers-d">0</div>
+        <div class="stat-label">推荐岗位</div>
+      </div>
+      <div class="card stat-card" onclick="switchTab('resume')" title="点击进入简历优化">
+        <div class="stat-arrow">→</div>
+        <div class="stat-icon">✍️</div>
+        <div class="stat-num" data-count="6">0</div>
+        <div class="stat-label">简历诊断维度</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 今日推荐岗位（新增 · 互动） ===== -->
+  <section class="section today-section">
+    <div class="today-head">
+      <div>
+        <h2 class="today-title">🎯 今日推荐岗位</h2>
+        <p class="today-sub">从 24 个热门岗位随机挑选，点击直接开始模拟面试</p>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="renderTodayPicks()">🔄 换一批</button>
+    </div>
+    <div class="today-picks" id="today-picks"></div>
+  </section>
+
+  <!-- ===== Agent 圆桌 ===== -->
+  <section class="section" id="agents">
+    <h2 class="section-title">面试圆桌：五个协作 Agent</h2>
+    <p class="section-sub">不是单一聊天机器人——每个 Agent 有独立人设、考察重点与发言策略</p>
+    <div class="agents">
+      <div class="agent" onclick="switchTab('interview')" title="点击开始模拟面试">
+        <div class="agent-avatar">HR</div><div class="agent-name">HR 面试官</div><div class="agent-title">动机 · 稳定性 · 沟通</div>
+      </div>
+      <div class="agent" onclick="switchTab('interview')" title="点击开始模拟面试">
+        <div class="agent-avatar">技</div><div class="agent-name">技术面试官</div><div class="agent-title">项目深挖 · 原理</div>
+      </div>
+      <div class="agent" onclick="switchTab('interview')" title="点击开始模拟面试">
+        <div class="agent-avatar">压</div><div class="agent-name">压力面试官</div><div class="agent-title">抗压 · 边界场景</div>
+      </div>
+      <div class="agent" title="观察员在面试中实时记录证据，不直接发言">
+        <div class="agent-avatar">观</div><div class="agent-name">观察员 Agent</div><div class="agent-title">证据记录 · 风险标注</div>
+      </div>
+      <div class="agent" onclick="switchTab('report')" title="点击查看评估报告">
+        <div class="agent-avatar">练</div><div class="agent-name">教练 Agent</div><div class="agent-title">改进建议 · 学习路径</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MCP 工具清单 ===== -->
+  <section class="section">
+    <h2 class="section-title">MCP 工具生态 <span class="tag-demo">完整版能力</span></h2>
+    <p class="section-sub">通过 MCP Server 暴露以下工具，LLM 在面试与问答中自主决定调用哪一个</p>
+    <div class="mcp-grid">
+      <div class="card mcp-item"><h4><code>search_job_db</code></h4><p>岗位数据库检索：按关键词/城市/学历筛选 JD，返回岗位能力模型，用于匹配度分析。</p></div>
+      <div class="card mcp-item"><h4><code>fetch_interview_experience</code></h4><p>面经检索：RAG 检索企业面经与 STAR 题库，为面试官提问提供弹药，答案附引用。</p></div>
+      <div class="card mcp-item"><h4><code>schedule_mock</code></h4><p>日历预约：把模拟面试写入日历并生成提醒，支持周期性训练计划。</p></div>
+      <div class="card mcp-item"><h4><code>send_report_email</code></h4><p>邮件发送：将评估报告（含雷达图与学习路径）发送到用户邮箱。</p></div>
+      <div class="card mcp-item"><h4><code>run_code_sandbox</code></h4><p>代码沙盒：白板/代码面试中运行候选人代码并返回执行结果与复杂度分析。</p></div>
+      <div class="card mcp-item"><h4><code>query_course_catalog</code></h4><p>课程推荐：按能力缺口检索课程库，生成个性化学习路径。</p></div>
+    </div>
+
+    <p class="eval-hint-line">
+      MCP 工具已在页面内注册为可执行 Server。
+      <button onclick="openEvaluatorGate('mcp')">🎛 在开发者模式查看运行时验证 →</button>
+    </p>
+  </section>
+
+  <!-- ===== 特性 ===== -->
+  <section class="section">
+    <h2 class="section-title">为什么是「AI Native」而不是「套壳题库」</h2>
+    <div class="features">
+      <div class="card feature"><h3><span class="ic">🤖</span>多 Agent 协作</h3><p>面试官按轮次与模式轮转，基于回答动态追问；观察员实时记录证据，教练生成学习路径——追问策略由 LLM 决策，而非固定题库。演示版将规划、工具调用、证据记录的结构完整呈现。</p></div>
+      <div class="card feature"><h3><span class="ic">📖</span>RAG 混合检索</h3><p>BM25 词面召回 + 端侧向量（MiniLM 384 维，Transformers.js 浏览器内计算）语义召回，两路归一分后加权融合，答案必须标注来源与两路得分，资料不足时明说「暂无相关资料」。完整版为 pgvector + RRF + Rerank。</p></div>
+      <div class="card feature"><h3><span class="ic">📊</span>可解释评分</h3><p>五个维度分数全部引用对话原话作为证据——演示版中每条证据均来自你的真实回答；完整版另建校准样本集量化评分一致性。</p></div>
+      <div class="card feature"><h3><span class="ic">🎙️</span>多模态交互</h3><p>演示版已集成浏览器原生能力：语音输入（Web Speech API）、TTS 朗读（speechSynthesis）、简历文件上传。完整版叠加 Whisper ASR、语速/停顿分析与白板代码理解。</p></div>
+      <div class="card feature"><h3><span class="ic">🔒</span>隐私优先</h3><p>本地 PII 脱敏（身份证/手机号/邮箱）+ Prompt 注入检测，原始简历不上云；演示版 API Key 仅存 sessionStorage，关闭即清除；脱敏顺序经过单元测试验证。</p></div>
+      <div class="card feature"><h3><span class="ic">⚡</span>三级兜底</h3><p>无 API Key 自动 Mock；模型超时/限流自动降级本地流式输出；API 失败时启发式算法兜底——演示现场不翻车。</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 架构 ===== -->
+  <section class="section">
+    <h2 class="section-title">技术架构</h2>
+    <div class="card arch">
+      <div class="arch-flow">
+        <span class="arch-node">用户浏览器</span><span class="arch-arrow">→</span>
+        <span class="arch-node">Next.js 15 前端</span><span class="arch-arrow">→</span>
+        <span class="arch-node">Route Handlers</span><span class="arch-arrow">→</span>
+        <span class="arch-node">Agent 编排层</span><span class="arch-arrow">→</span>
+        <span class="arch-node">多模型路由（免费额度优先）</span>
+      </div>
+      <div class="arch-flow">
+        <span class="arch-node">Agent 编排层</span><span class="arch-arrow">→</span>
+        <span class="arch-node">RAG 服务</span><span class="arch-arrow">→</span>
+        <span class="arch-node">pgvector 混合检索 + Rerank（开发中）</span><span class="arch-arrow">·</span>
+        <span class="arch-node">Web Speech API</span><span class="arch-arrow">·</span>
+        <span class="arch-node">MCP 工具层</span><span class="arch-arrow">·</span>
+        <span class="arch-node">WebGPU 本地推理</span>
+      </div>
+      <p>技术栈：Next.js 15 App Router · React 19 · TypeScript · Tailwind CSS v4 · Zustand · Recharts · Zod · Vitest。<br>
+      AI 层：版本化 Prompt（<code>prompts/*.md</code>）· Zod 约束输出 · 流式 SSE · 自动降级 · PII 脱敏 · 注入检测。<br>
+      本静态演示页即完整项目的 <code>/demo</code> 页，Mock 逻辑与 <code>lib/ai</code> 保持一致。</p>
+    </div>
+  </section>
+
+  <footer>
+    <div style="padding:0">
+      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0<br>
+      <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
+    </div>
+  </footer>
+
+  <div class="notice">本页面为<b>在线演示版</b>（默认 Mock 数据，可离线运行；也可粘贴自己的 API Key 体验真实 LLM 驱动）。完整功能版为 <code>futuremirror/</code> 目录下的 Next.js 项目：真实 LLM 驱动、SSE 流式输出、多模型免费额度路由、模型故障自动降级，仓库与文档可在「开发者模式」的交付材料中查看。</div>
+
+  </div><!-- /app-page dashboard -->
+
+  <!-- ========================================================
+       页面：简历岗位匹配（match）
+       ======================================================== -->
+  <div class="app-page" data-page="match">
+    <div class="page-header">
+      <h2><span class="ph-icon">📄</span> 简历岗位匹配</h2>
+      <p>上传简历 + 粘贴目标岗位 JD，AI 提取技能关键词，输出匹配度、能力缺口与补强建议。</p>
+    </div>
+    <div class="page-card">
+
+        <div class="grid2">
+          <div>
+            <div class="pane-title">📄 简历文本</div>
+            <textarea id="resume" rows="7" placeholder="粘贴简历内容，或上传简历文件（.txt 自动读取）…" aria-label="简历文本"></textarea>
+            <div class="file-drop" id="resume-file">📎 上传简历文件（.pdf / .docx / .txt）——完整版支持 PDF/DOCX 解析，本演示版读取 .txt，其余仅展示文件形态</div>
+            <input type="file" id="resume-upload" accept=".pdf,.docx,.txt" style="margin-top:8px;font-size:13px" aria-label="上传简历文件">
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <button class="btn btn-outline btn-sm" onclick="localPiiMask()" title="在浏览器内用正则脱敏手机号/邮箱/身份证，不发起任何网络请求">🔒 本地脱敏预览</button>
+              <span class="badge badge-green" id="pii-badge" hidden>✓ 浏览器内完成 · 0 网络请求</span>
+            </div>
+          </div>
+          <div>
+            <div class="pane-title">🎯 目标岗位</div>
+            <div class="jd-selector">
+              <select id="jd-select" onchange="onJdSelectChange()" aria-label="选择目标岗位"></select>
+            </div>
+            <div class="jd-preview" id="jd-preview" hidden></div>
+            <div class="jd-manual-link">
+              没有合适的岗位？<button type="button" onclick="toggleManualJd()" id="jd-manual-btn">✏️ 手动输入 JD</button>
+            </div>
+            <textarea id="jd" rows="7" placeholder="粘贴目标岗位职位描述…" aria-label="目标岗位 JD" hidden></textarea>
+            <div class="file-drop" id="jd-file" hidden>📎 完整版支持 JD 链接抓取与岗位数据库匹配（MCP 工具 search_job_db）</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="fillDemo()">填入示例数据</button>
+          <button class="btn btn-outline btn-sm" onclick="analyze()">⚡ 生成匹配报告</button>
+        </div>
+        <div class="inline-error" id="match-error" role="alert"></div>
+        <div id="match-result"></div>
+      
+    </div>
+  </div>
+
+  <!-- ========================================================
+       页面：多 Agent 模拟面试（interview）
+       ======================================================== -->
+  <div class="app-page" data-page="interview">
+    <div class="page-header">
+      <h2><span class="ph-icon">🎙️</span> 多 Agent 模拟面试</h2>
+      <p>HR / 技术 / 压力面三位面试官轮转追问，观察员实时记录证据，教练生成学习路径。</p>
+    </div>
+    <div class="page-card">
+
+        <div class="mode-bar">
+          <span>面试模式：</span>
+          <button class="mode-btn active" data-mode="general" onclick="setMode('general')">综合面</button>
+          <button class="mode-btn" data-mode="tech" onclick="setMode('tech')">技术面</button>
+          <button class="mode-btn" data-mode="pressure" onclick="setMode('pressure')">压力面</button>
+          <button class="btn btn-outline btn-sm" onclick="openApiKeyPanel()" style="margin-left:8px">🔑 接入我的 API Key（真实 LLM）</button>
+          <span class="badge badge-amber" id="llm-status">Mock 模式</span>
+        </div>
+
+        <!-- v12 · 代码面试沙盒：受控本地运行候选人代码，通过率进入评估报告 -->
+        <div id="code-sandbox" class="card" style="padding:16px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <b>💻 代码题 · 两数之和（twoSum）</b>
+            <span class="badge badge-amber" id="code-status">就绪</span>
+          </div>
+          <p class="hint">实现 <code>twoSum(nums, target)</code> 返回两个下标。代码在浏览器 Worker 沙盒中运行（带 2 秒超时熔断），用例通过率自动写入评估报告「编码能力」维度。</p>
+          <textarea id="code-editor" rows="8" spellcheck="false"
+            style="font-family:ui-monospace,monospace;font-size:13px;width:100%;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)"
+            placeholder="function twoSum(nums, target) {&#10;  // 你的实现&#10;}"></textarea>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="runCodeSandbox()">▶ 运行用例</button>
+            <button class="btn btn-outline btn-sm" onclick="fillCodeDemo()">填入参考实现</button>
+          </div>
+          <div id="code-result" style="margin-top:12px;font-size:13px"></div>
+        </div>
+
+        <!-- 降级提示横幅（真实模型失败时出现） -->
+        <div id="fallback-banner" class="fallback-banner" hidden role="alert">
+          ⚠️ 真实模型调用失败（<span id="fallback-reason"></span>），已自动降级为 Mock 输出，演示不中断。
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fallback-banner').hidden=true">知道了</button>
+        </div>
+
+        <!-- 真实 LLM 接入面板 -->
+        <div class="llm-panel" id="llm-panel" hidden>
+          <div class="llm-backend-row">
+            <span class="lb-title">🚀 后端模型网关</span>
+            <span class="badge badge-amber" id="llm-backend-status">检测中…</span>
+            <input type="text" id="llm-api-base" placeholder="http://localhost:8000" aria-label="后端地址">
+            <button class="btn btn-outline btn-sm" id="llm-api-test" onclick="testApiBase()">检测连接</button>
+            <span class="hint">🔒 推荐模式：API Key 只保存在后端环境变量（backend/.env），前端零接触；后端未启动时自动回退「面板直连 Key」或「Mock 模式」，演示不中断。</span>
+          </div>
+          <div class="llm-grid">
+            <label>服务商预设
+              <select id="llm-preset" onchange="onPresetChange()" aria-label="选择服务商预设"></select>
+            </label>
+            <label>Base URL（OpenAI 兼容）
+              <input type="text" id="llm-base" placeholder="https://open.bigmodel.cn/api/paas/v4" aria-label="Base URL">
+            </label>
+            <label>模型名
+              <input type="text" id="llm-model" placeholder="glm-4-flash" aria-label="模型名">
+            </label>
+            <label>API Key
+              <input type="password" id="llm-key" placeholder="粘贴 Key，仅存本地" aria-label="API Key">
+            </label>
+          </div>
+          <div class="llm-actions">
+            <button class="btn btn-primary btn-sm" onclick="saveLlm()">启用真实模型</button>
+            <button class="btn btn-outline btn-sm" onclick="showPromptViewer()">👁 查看当前 Prompt</button>
+            <button class="btn btn-outline btn-sm" onclick="clearLlm()">清除并回到 Mock</button>
+            <span class="hint">🔒 Key 仅保存于当前标签页 sessionStorage，关闭即清除；请求由浏览器直连所选服务商，不经过任何第三方服务器。</span>
+          </div>
+        </div>
+
+        <div class="chat">
+          <div class="chat-main">
+            <div class="chat-head">
+              <span class="badge badge-green" id="chat-agent">规划 Agent</span>
+              <span id="chat-mode-label">综合面 · 动态追问模式 · 题库 6 题</span>
+              <div class="progress-wrap" title="面试进度（5 轮）"><div class="progress-bar" id="progress-bar"></div></div>
+              <span class="answer-timer" id="answer-timer" title="本题答题倒计时（90 秒）——超时将记入「抗压表现」维度">⏱ 90s</span>
+              <span style="margin-left:auto;display:flex;gap:6px">
+                <button class="btn btn-ghost btn-sm" id="tts-btn" onclick="speakLast()" aria-label="朗读或停止朗读面试官最新问题" title="朗读 / 停止朗读（浏览器 TTS）">🔊 朗读</button>
+                <button class="btn btn-ghost btn-sm" onclick="showShortcuts()" aria-label="查看快捷键" title="快捷键说明">⌨️</button>
+                <button class="btn btn-ghost btn-sm" onclick="finishInterview()">结束面试 →</button>
+              </span>
+            </div>
+            <div class="chat-body" id="chat-body" role="log" aria-live="polite">
+              <div class="msg msg-system">面试开始：选择模式并发送第一条消息，AI 面试官团队将依次提问</div>
+            </div>
+            <div class="chat-input">
+              <input type="text" id="chat-input" placeholder="输入你的回答，Enter 发送" onkeydown="if(event.key==='Enter')sendMsg()" aria-label="回答输入框">
+              <button class="btn btn-outline btn-sm" id="mic-btn" onclick="toggleVoice()" aria-label="语音输入（浏览器语音识别）" title="语音输入（需 Chrome/Edge）">🎤</button>
+              <button class="btn btn-primary btn-sm" id="chat-send" onclick="sendMsg()">发送</button>
+            </div>
+          </div>
+          <details class="chat-aside" id="timeline-box" open>
+            <summary>查看思考过程（Agent 圆桌）</summary>
+            <!-- 实时能力追踪器：面试过程中动态更新 -->
+            <div class="live-tracker">
+              <div class="aside-title">实时能力追踪</div>
+              <div id="live-radar" class="live-radar"></div>
+              <div class="live-metrics">
+                <div class="metric"><span>进度</span><b id="live-turn">0/5</b></div>
+                <div class="metric"><span>字数</span><b id="live-words">0</b></div>
+                <div class="metric"><span>量化</span><b id="live-digits">0</b></div>
+                <div class="metric"><span>置信</span><b id="live-conf">—</b></div>
+              </div>
+              <div class="live-hint" id="live-hint">发送第一条回答后开始追踪</div>
+            </div>
+            <div class="aside-title">Agent 圆桌时间线</div>
+            <div id="timeline">
+              <div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示 Agent 规划、工具调用与证据记录。</div>
+            </div>
+          </details>
+        </div>
+        <p class="hint">提示：回答尽量具体、带数据（如「QPS 从 200 提升到 1200」）；支持 🎤 语音输入与 🔊 朗读。观察员会实时标注证据与风险，并写入评估上下文。</p>
+      
+    </div>
+  </div>
+
+  <!-- ========================================================
+       页面：RAG 面经问答（rag）
+       ======================================================== -->
+  <div class="app-page" data-page="rag">
+    <div class="page-header">
+      <h2><span class="ph-icon">📖</span> RAG 面经问答</h2>
+      <p>岗位 JD、企业面经、STAR 题库混合检索，答案强制附引用来源，从机制上降低幻觉。</p>
+    </div>
+    <div class="page-card">
+
+        <div class="pane-title">🔍 面经知识问答 <span class="tag-demo">检索：BM25 + 向量混合</span> <span class="badge badge-brand" id="kb-count">知识库 …</span></div>
+        <div class="vec-bar" id="vec-bar">
+          <span class="vec-dot" id="vec-dot"></span>
+          <span class="vec-status" id="vec-status">向量索引未初始化</span>
+          <button class="btn btn-outline btn-sm" id="vec-build-btn" onclick="loadVecModel()" title="在浏览器内计算 384 维句向量（Transformers.js · all-MiniLM-L6-v2），零后端、零 API">⚡ 加载端侧模型 MiniLM</button>
+        </div>
+        <p class="hint" style="margin-top:0;margin-bottom:10px">检索层为 <b>BM25 + 端侧向量混合检索</b>：BM25（k1=1.5 / b=0.75，中文 bigram 切分，标题字段加权）× <b>0.4</b> + 余弦相似度 × <b>0.6</b>，两路各自归一分后融合。<br>向量由 <b>Transformers.js</b> 在浏览器内计算（all-MiniLM-L6-v2，384 维，40 条面经向量预计算后写入 localStorage），<b>不需要后端、不需要 API、离线可跑</b>；无模型文件时自动降级为 n-gram hashing 向量（256 维），检索链路不中断。完整版技术方案为 pgvector + RRF + Rerank。</p>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="rag-input" placeholder="试试：字节后端二面一般问什么？" onkeydown="if(event.key==='Enter')askRag()" aria-label="RAG 查询输入框">
+          <button class="btn btn-primary btn-sm" onclick="askRag()">提问</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="askRagPreset('STAR 法则怎么讲项目')">STAR 怎么讲项目</button>
+          <button class="btn btn-outline btn-sm" onclick="askRagPreset('Redis 缓存穿透 击穿 雪崩 区别')">缓存三兄弟区别</button>
+          <button class="btn btn-outline btn-sm" onclick="askRagPreset('MySQL 索引为什么用 B+ 树')">MySQL 索引八股</button>
+        </div>
+        <div id="rag-result"></div>
+      
+    </div>
+  </div>
+
+  <!-- ========================================================
+       页面：简历优化工作台（resume）
+       ======================================================== -->
+  <div class="app-page" data-page="resume">
+    <div class="page-header">
+      <h2><span class="ph-icon">✍️</span> 简历优化工作台</h2>
+      <p>6 维诊断（量化成果 / STAR / 动词力度 / 岗位匹配…）+ 逐条改写建议，可直接用 LLM 深度改写。</p>
+    </div>
+    <div class="page-card">
+
+        <div class="pane-title">✍️ 简历优化工作台
+          <span class="tag-demo">规则引擎演示 · 接入 Key 后由 LLM 深度改写</span>
+        </div>
+        <p class="hint" style="margin-top:0;margin-bottom:12px">
+          粘贴简历或经历描述，系统从 6 个维度分析并给出修改方案（引用 STAR 法则）。
+        </p>
+
+        <div class="grid2">
+          <div>
+            <div class="pane-title">📝 简历原文</div>
+            <textarea id="resume-raw" rows="10" placeholder="粘贴你的简历内容或一段经历描述…" aria-label="简历原文"></textarea>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-outline btn-sm" onclick="fillResumeDemo()">填入示例</button>
+              <button class="btn btn-primary btn-sm" onclick="analyzeResume()">⚡ 生成优化方案</button>
+              <button class="btn btn-outline btn-sm" onclick="optimizeWithLLM()" id="llm-optimize-btn">🤖 用真实模型深度改写</button>
+            </div>
+          </div>
+          <div>
+            <div class="pane-title">📊 诊断总览</div>
+            <div id="resume-score-panel">
+              <div class="notice notice-info" style="margin-top:8px">粘贴简历后点击「生成优化方案」，这里会显示简历健康度总览。</div>
+            </div>
+          </div>
+        </div>
+        <div id="resume-result" style="margin-top:20px"></div>
+      
+    </div>
+  </div>
+
+  <!-- ========================================================
+       页面：职业探索（career）
+       ======================================================== -->
+  <div class="app-page" data-page="career">
+    <div class="page-header">
+      <h2><span class="ph-icon">🧭</span> 职业探索</h2>
+      <p>选择专业 + 技能 + 兴趣，AI 匹配 <b class="js-career-count">24</b> 个岗位，给出技能对比与分步学习路径。</p>
+    </div>
+    <div class="page-card">
+
+        <div class="pane-title">🧭 职业探索 · 岗位智能推荐
+          <span class="tag-demo">基于专业 + 技能 + 兴趣的匹配引擎</span>
+        </div>
+
+        <!-- 输入区 -->
+        <div class="card" style="padding:16px;margin-bottom:16px">
+          <div class="grid2">
+            <div>
+              <div class="pane-title" style="font-size:14px">🎓 你的专业 / 背景</div>
+              <div class="career-chips" id="major-chips">
+                <button class="chip-btn" onclick="toggleChip(this,'major')">计算机/软件工程</button>
+                <button class="chip-btn" onclick="toggleChip(this,'major')">电子信息</button>
+                <button class="chip-btn" onclick="toggleChip(this,'major')">数学/统计</button>
+                <button class="chip-btn" onclick="toggleChip(this,'major')">设计/视觉</button>
+                <button class="chip-btn" onclick="toggleChip(this,'major')">商科/管理</button>
+                <button class="chip-btn" onclick="toggleChip(this,'major')">其他</button>
+              </div>
+            </div>
+            <div>
+              <div class="pane-title" style="font-size:14px">🔧 你会的技能</div>
+              <div class="career-chips" id="skill-chips"></div>
+            </div>
+          </div>
+          <div style="margin-top:14px">
+            <div class="pane-title" style="font-size:14px">💡 你感兴趣的领域（可多选）</div>
+            <div class="career-chips" id="interest-chips">
+              <button class="chip-btn" onclick="toggleChip(this,'interest')">写代码</button>
+              <button class="chip-btn" onclick="toggleChip(this,'interest')">做产品</button>
+              <button class="chip-btn" onclick="toggleChip(this,'interest')">分析数据</button>
+              <button class="chip-btn" onclick="toggleChip(this,'interest')">训练模型</button>
+              <button class="chip-btn" onclick="toggleChip(this,'interest')">做设计</button>
+              <button class="chip-btn" onclick="toggleChip(this,'interest')">带团队</button>
+              <button class="chip-btn" onclick="toggleChip(this,'interest')">写文档</button>
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="recommendCareer()">🔍 为我推荐岗位</button>
+            <button class="btn btn-outline btn-sm" onclick="clearCareer()">重置选择</button>
+          </div>
+        </div>
+
+        <div id="career-result">
+          <div class="notice notice-info">选择你的专业、技能与兴趣方向，点击「为我推荐岗位」查看 Top 3 匹配岗位与学习路径。</div>
+        </div>
+      
+    </div>
+  </div>
+
+  <!-- ========================================================
+       页面：评估报告（report）
+       ======================================================== -->
+  <div class="app-page" data-page="report">
+    <div class="page-header">
+      <h2><span class="ph-icon">📊</span> 评估报告</h2>
+      <p>五维雷达 + 每条证据引用对话原话 + 最弱维度动态生成 7 天学习路径 + 历史进步曲线。</p>
+    </div>
+    <div class="page-card">
+
+        <div id="report-content"></div>
+      
+    </div>
+  </div>
+
+  <!-- ========================================================
+       页面：个人中心（profile · v16 新增）
+       ======================================================== -->
+  <div class="app-page" data-page="profile">
+    <div class="page-header">
+      <h2><span class="ph-icon">👤</span> 个人中心</h2>
+      <p>自定义头像与求职信息——资料越完整，匹配度分析与职业探索推荐越准确。</p>
+    </div>
+
+    <!-- 未登录时的门槛（由 renderProfile 填充） -->
+    <div id="profile-gate"></div>
+
+    <div id="profile-body" hidden>
+
+    <!-- 头部概览 -->
+    <div class="page-card" style="margin-bottom:16px">
+      <div class="profile-hero">
+        <div class="profile-avatar-lg user-avatar" id="profile-avatar">?</div>
+        <div class="profile-hero-info">
+          <div class="profile-hero-name" id="profile-name">—</div>
+          <div class="profile-hero-sub" id="profile-email">—</div>
+          <div class="profile-hero-tags" id="profile-tags"></div>
+          <div class="profile-completion">
+            <div class="dim-head"><span>资料完成度</span><span id="profile-completion-text">0%</span></div>
+            <div class="dim-bar"><div id="profile-completion-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- v19：VIP 会员卡（renderVipCard 填充） -->
+    <div id="vip-card-slot"></div>
+
+    <!-- 头像设置 -->
+    <div class="page-card" style="margin-bottom:16px">
+      <div class="card-section-title">🖼 头像设置</div>
+      <p class="card-section-sub">支持表情头像、本地上传（自动压缩为 128px）或姓名首字母——顶栏、下拉菜单与报告封面同步生效。</p>
+      <div class="avatar-picker" id="avatar-picker"></div>
+      <div class="avatar-upload-row">
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('avatar-file').click()">📁 上传本地图片</button>
+        <input type="file" id="avatar-file" accept="image/*" hidden onchange="uploadAvatar(this)">
+        <span class="hint">建议正方形图片，≤2MB，仅存当前浏览器</span>
+      </div>
+    </div>
+
+    <!-- 求职信息 -->
+    <div class="page-card" style="margin-bottom:16px">
+      <div class="card-section-title">📋 求职信息</div>
+      <p class="card-section-sub">这些信息会参与简历匹配度分析与职业探索推荐。</p>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>姓名 / 昵称 <span class="req">*</span></label>
+          <input type="text" id="pf-name" maxlength="20" placeholder="怎么称呼你？">
+        </div>
+        <div class="form-field">
+          <label>邮箱（账号）</label>
+          <input type="text" id="pf-email" readonly>
+        </div>
+        <div class="form-field">
+          <label>所在城市</label>
+          <input type="text" id="pf-city" maxlength="20" placeholder="如：杭州">
+        </div>
+        <div class="form-field">
+          <label>目标岗位</label>
+          <select id="pf-target"></select>
+        </div>
+        <div class="form-field">
+          <label>最高学历</label>
+          <select id="pf-degree">
+            <option value="">请选择</option>
+            <option>大专</option><option>本科</option><option>硕士</option><option>博士</option><option>其他</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>工作年限</label>
+          <select id="pf-years">
+            <option value="">请选择</option>
+            <option>在校学生</option><option>应届毕业生</option><option>1-3 年</option><option>3-5 年</option><option>5-10 年</option><option>10 年以上</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>求职状态</label>
+          <select id="pf-status">
+            <option>在校学生</option><option>应届求职</option><option>在职看机会</option><option>离职求职</option>
+          </select>
+        </div>
+        <div class="form-field wide">
+          <label>个人简介 / 求职意向</label>
+          <textarea id="pf-bio" maxlength="200" placeholder="一句话介绍你的优势与求职方向，如：3 年后端经验，主导过日活百万级订单系统，期望转向基础架构方向。"></textarea>
+          <span class="field-hint">填写后参与匹配度分析（建议 20 字以上）</span>
+        </div>
+        <div class="form-field wide">
+          <label>技能标签（最多 8 个）</label>
+          <div class="skill-picker" id="pf-skills"></div>
+        </div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="saveProfileForm()">💾 保存资料</button>
+        <button class="btn btn-outline" onclick="renderProfile()">↺ 还原</button>
+      </div>
+    </div>
+
+    <!-- 偏好设置 -->
+    <div class="page-card" style="margin-bottom:16px">
+      <div class="card-section-title">⚙️ 偏好设置</div>
+      <p class="card-section-sub">偏好按当前账号隔离存储，换设备不漫游。</p>
+      <div class="switch-row">
+        <div class="switch-text"><b>暗色模式</b><p>与顶栏 🌙 按钮双向同步（主题为全局设置）</p></div>
+        <button class="switch" id="sw-dark" role="switch" aria-checked="false" aria-label="暗色模式" onclick="togglePrefDark()"></button>
+      </div>
+      <div class="switch-row">
+        <div class="switch-text"><b>语音输入</b><p>面试页 🎤 语音转文字（需浏览器支持，推荐 Chrome / Edge）</p></div>
+        <button class="switch" id="sw-voice" role="switch" aria-checked="true" aria-label="语音输入" onclick="togglePref('voice')"></button>
+      </div>
+      <div class="switch-row">
+        <div class="switch-text"><b>面试官问题自动朗读</b><p>新提问生成后自动 TTS 朗读（浏览器语音合成）</p></div>
+        <button class="switch" id="sw-auto" role="switch" aria-checked="false" aria-label="自动朗读" onclick="togglePref('autoSpeak')"></button>
+      </div>
+      <div class="switch-row">
+        <div class="switch-text"><b>每周学习提醒</b><p>演示项：完整版将按 7 天学习路径推送邮件提醒</p></div>
+        <button class="switch" id="sw-weekly" role="switch" aria-checked="false" aria-label="每周学习提醒" onclick="togglePref('weekly')"></button>
+      </div>
+    </div>
+
+    <!-- 数据管理 -->
+    <div class="page-card">
+      <div class="card-section-title">🗄 数据管理</div>
+      <p class="card-section-sub">所有数据仅存当前浏览器（localStorage），按账号前缀隔离。</p>
+      <div class="storage-bar"><div id="storage-bar-fill" style="width:0%"></div></div>
+      <p class="hint" id="storage-text">计算中…</p>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="exportUserData()">📦 导出我的数据（JSON）</button>
+        <button class="btn btn-outline btn-sm" onclick="resetOnboardingFlag()">🔄 重置首访引导</button>
+        <button class="btn btn-outline btn-sm" onclick="refreshStorage()">↻ 刷新占用</button>
+        <button class="btn btn-outline btn-sm" style="color:var(--red)" onclick="clearUserData()">🗑 清除我的全部数据</button>
+      </div>
+    </div>
+
+    </div><!-- /profile-body -->
+  </div>
+
+  <!-- ========================================================
+       页面：题库小测（quiz）· 知识点学习 + 限时小测 + 成绩档案（v19）
+       ======================================================== -->
+  <div class="app-page" data-page="quiz">
+    <div class="page-header">
+      <h2><span class="ph-icon">📝</span> 题库小测</h2>
+      <p>知识点学习 + 限时模考 / 顺序练习 / 章节练习三种模式，错题自动收录错题本，每日一练打卡连签，学习数据全程可视化。VIP 解锁专属分类、错题本与无限次小测。</p>
+    </div>
+
+    <div class="quiz-tabs" role="tablist" aria-label="题库小测子页">
+      <button class="quiz-tab active" data-quiz="learn" role="tab" aria-selected="true" onclick="switchQuizTab('learn')">📖 知识点学习</button>
+      <button class="quiz-tab" data-quiz="exam" role="tab" aria-selected="false" onclick="switchQuizTab('exam')">⏱ 限时小测</button>
+      <button class="quiz-tab" data-quiz="stats" role="tab" aria-selected="false" onclick="switchQuizTab('stats')">📈 学习数据</button>
+      <button class="quiz-tab" data-quiz="wrong" role="tab" aria-selected="false" onclick="switchQuizTab('wrong')">📕 错题本</button>
+      <button class="quiz-tab" data-quiz="fav" role="tab" aria-selected="false" onclick="switchQuizTab('fav')">⭐ 收藏夹</button>
+    </div>
+
+    <div class="quiz-pane" id="quiz-pane-learn"></div>
+    <div class="quiz-pane" id="quiz-pane-exam" hidden></div>
+    <div class="quiz-pane" id="quiz-pane-stats" hidden></div>
+    <div class="quiz-pane" id="quiz-pane-wrong" hidden></div>
+    <div class="quiz-pane" id="quiz-pane-fav" hidden></div>
+  </div>
+
+  <!-- ========================================================
+       页面：求职管理（jobs）· 投递看板 + 面试复盘（v18）
+       ======================================================== -->
+  <div class="app-page" data-page="jobs">
+    <div class="page-header">
+      <h2><span class="ph-icon">📋</span> 求职管理</h2>
+      <p>投递看板记录每个机会的去向，面试复盘把真实面试转化为可回查的结论——与模拟面试的表现数据形成对流，闭合「练习 → 实战 → 再训练」闭环。</p>
+    </div>
+
+    <div class="jobs-tabs" role="tablist" aria-label="求职管理子页">
+      <button class="jobs-tab active" data-jobs="board" role="tab" aria-selected="true" onclick="switchJobsTab('board')">📮 投递看板</button>
+      <button class="jobs-tab" data-jobs="review" role="tab" aria-selected="false" onclick="switchJobsTab('review')">🪞 面试复盘</button>
+    </div>
+
+    <!-- 子页：投递看板 -->
+    <div class="jobs-pane" data-jobs-pane="board">
+      <div class="board-stats" id="board-stats"></div>
+      <div class="page-card" style="margin-bottom:16px">
+        <div class="card-section-title">➕ 添加投递记录</div>
+        <p class="card-section-sub">手动记录投递去向，看板按阶段自动归档（数据仅存本地 localStorage，按账号隔离）。</p>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>公司 <span class="req">*</span></label>
+            <input type="text" id="app-company" maxlength="30" placeholder="如：字节跳动">
+          </div>
+          <div class="form-field">
+            <label>岗位 <span class="req">*</span></label>
+            <input type="text" id="app-role" maxlength="30" placeholder="如：后端开发工程师">
+          </div>
+          <div class="form-field">
+            <label>当前状态</label>
+            <select id="app-status">
+              <option value="applied">已投递</option>
+              <option value="written">笔试中</option>
+              <option value="interview">面试中</option>
+              <option value="offer">已拿 Offer</option>
+              <option value="rejected">已拒绝</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>投递日期</label>
+            <input type="text" id="app-date" placeholder="留空为今天">
+          </div>
+          <div class="form-field wide">
+            <label>备注（可选）</label>
+            <input type="text" id="app-note" maxlength="60" placeholder="如：内推 · 联系人张三">
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary btn-sm" onclick="addApplication()">➕ 添加到看板</button>
+        </div>
+      </div>
+      <div class="board-columns" id="board-columns"></div>
+    </div>
+
+    <!-- 子页：面试复盘 -->
+    <div class="jobs-pane" data-jobs-pane="review" hidden>
+      <div class="page-card" style="margin-bottom:16px">
+        <div class="card-section-title">🪞 真实面试复盘</div>
+        <p class="card-section-sub">面试结束后回来，用 6 轮对话补全经过，AI 生成可回查的复盘结论（Mock 演示，数据仅存本地）。</p>
+        <div class="review-chat" id="review-chat" role="log" aria-live="polite"></div>
+        <div class="review-input-row" id="review-input-row" hidden>
+          <input type="text" id="review-input" placeholder="输入你的回答，Enter 提交" aria-label="复盘回答输入框">
+          <button class="btn btn-primary btn-sm" onclick="submitReviewAnswer()">提交</button>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" id="review-start-btn" onclick="startReview()">✨ 开始新复盘</button>
+          <button class="btn btn-outline btn-sm" id="review-cancel-btn" onclick="cancelReview()" hidden>取消</button>
+        </div>
+      </div>
+      <div class="page-card">
+        <div class="card-section-title">📚 复盘记录</div>
+        <p class="card-section-sub">复盘结论按时间倒序保存，可回查对比多次面试的改进轨迹。</p>
+        <div id="review-list"></div>
+      </div>
+    </div>
+  </div>
+
+    </div><!-- /app-main -->
+  </div><!-- /app-shell -->
+</main>
+
+<!-- ============ 底部 Tab 栏（移动端，≤900px 显示） ============ -->
+<nav class="app-tabbar" aria-label="移动端导航">
+  <a class="tabbar-item active" href="#/dashboard" data-nav="dashboard">
+    <span class="tb-icon">🏠</span><span>工作台</span>
+  </a>
+  <a class="tabbar-item" href="#/interview" data-nav="interview">
+    <span class="tb-icon">🎙️</span><span>面试</span>
+  </a>
+  <a class="tabbar-item" href="#/match" data-nav="match">
+    <span class="tb-icon">📄</span><span>匹配</span>
+  </a>
+  <a class="tabbar-item" href="#/resume" data-nav="resume">
+    <span class="tb-icon">✍️</span><span>简历</span>
+  </a>
+  <a class="tabbar-item" href="#/career" data-nav="career">
+    <span class="tb-icon">🧭</span><span>职业</span>
+  </a>
+  <a class="tabbar-item" href="#/rag" data-nav="rag">
+    <span class="tb-icon">📖</span><span>面经</span>
+  </a>
+  <a class="tabbar-item" href="#/profile" data-nav="profile">
+    <span class="tb-icon">👤</span><span>我的</span>
+  </a>
+  <a class="tabbar-item" href="#/jobs" data-nav="jobs">
+    <span class="tb-icon">📋</span><span>求职</span>
+  </a>
+  <a class="tabbar-item" href="#/quiz" data-nav="quiz">
+    <span class="tb-icon">📝</span><span>题库</span>
+  </a>
+</nav>
+
+  <!-- v20：AI 小助手（全局悬浮入口 + 抽屉式对话面板） -->
+  <button class="ai-fab" id="ai-fab" aria-label="AI 小助手" title="AI 小助手 · 拖动可贴边冻结">🤖</button>
+  <div class="ai-panel" id="ai-assistant-panel" role="dialog" aria-label="AI 小助手对话面板" aria-hidden="true">
+    <div class="ai-panel-head">
+      <b>🤖 AI 小助手</b>
+      <span style="display:flex;align-items:center;gap:8px">
+        <span class="ai-mode-tag" id="ai-mode-tag">Mock 检索</span>
+        <button class="btn btn-ghost btn-sm" onclick="toggleAiAssistant(false)" aria-label="关闭小助手">✕</button>
+      </span>
+    </div>
+    <div class="ai-panel-body" id="ai-assistant-messages"></div>
+    <div class="ai-panel-quick" id="ai-panel-quick"></div>
+    <div class="ai-panel-foot">
+      <input type="text" id="ai-assistant-input" placeholder="问点什么，如「SQL 索引为什么会失效」" onkeydown="if(event.key==='Enter')sendAiAssistant()">
+      <button class="btn btn-primary btn-sm" onclick="sendAiAssistant()">发送</button>
+    </div>
+  </div>
+
+</div><!-- /view-app -->
+
+<!-- ============================================================
+     视图 4：开发者模式（加密 · 需密码解锁）
+     ============================================================ -->
+<div class="view" id="view-evaluator">
+
+  <nav class="evaluator-nav">
+    <div class="wrap">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="evaluator-badge">🎛 开发者模式</span>
+        <span style="font-size:13px;color:var(--muted)">面镜 FutureMirror · 演示版技术证据</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" title="切换主题">🌙</button>
+        <button class="btn btn-ghost btn-sm" onclick="refreshAll()" title="重新采集环境与性能指标">🔄 刷新指标</button>
+        <button class="btn btn-outline btn-sm" onclick="showView('app')">进入应用</button>
+        <button class="btn btn-outline btn-sm" onclick="exitEvaluator()">退出开发者模式</button>
+      </div>
+    </div>
+  </nav>
+
+  <section class="evaluator-hero">
+    <div class="wrap">
+      <h1>🎛 开发者模式</h1>
+      <p>此处集中呈现交付材料、运行环境、性能指标、工程自检、MCP 运行时验证、技术架构与诊断日志，供评委与技术验证使用。所有断言均可在浏览器内一键运行验证。</p>
+    </div>
+  </section>
+
+  <main class="wrap">
+
+    <!-- 1. 交付材料 -->
+    <section class="eval-section" id="eval-materials">
+      <h2 class="eval-section-title">📦 交付材料</h2>
+      <p class="eval-section-sub">正式提交前，在文件顶部 <code>CONFIG</code> 中填写以下链接；填写后状态自动变为「已填写」，点击可直接跳转。</p>
+      <div class="eval-checklist">
+        <div class="eval-material">
+          <div class="material-icon">💻</div>
+          <div>
+            <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
+            <div class="material-desc">完整 Next.js 15 + React 19 + TypeScript 工程，含 README、Vitest 单测、Playwright E2E</div>
+          </div>
+          <span class="material-status pending" id="eval-status-repo">待填写</span>
+        </div>
+        <div class="eval-material">
+          <div class="material-icon">▶️</div>
+          <div>
+            <div class="material-name">演示视频（5-8 分钟 · MP4 · 1080p）</div>
+            <div class="material-desc">含项目介绍、核心功能演示、代码沙盒、MCP 运行时验证、AI 技术亮点</div>
+          </div>
+          <span class="material-status pending" id="eval-status-video">待填写</span>
+        </div>
+        <div class="eval-material">
+          <div class="material-icon">📄</div>
+          <div>
+            <div class="material-name">技术文档（PDF · ≤ 30 页）</div>
+            <div class="material-desc">含 AI 技术选型理由、集成方式、优化策略、创新点说明</div>
+          </div>
+          <span class="material-status pending" id="eval-status-docs">待填写</span>
+        </div>
+        <div class="eval-material">
+          <div class="material-icon">🌐</div>
+          <div>
+            <div class="material-name">在线演示（Vercel / Cloudflare Pages）</div>
+            <div class="material-desc">部署期间保持可用；提供演示测试账号</div>
+          </div>
+          <span class="material-status pending" id="eval-status-live">待填写</span>
+        </div>
+        <div class="eval-material">
+          <div class="material-icon">🔑</div>
+          <div>
+            <div class="material-name">演示测试账号</div>
+            <div class="material-desc">demo@futuremirror.app / Demo123456（登录页可一键使用）</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="copyTestAccount()">📋 复制</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 运行环境 -->
+    <section class="eval-section" id="eval-env">
+      <h2 class="eval-section-title">🖥️ 运行环境</h2>
+      <p class="eval-section-sub">当前浏览器环境自动检测，用于验证技术能力矩阵与兼容性。点击右上角"🔄 刷新指标"可重新采集。</p>
+      <div id="dev-env-content"></div>
+    </section>
+
+    <!-- 3. 性能指标 -->
+    <section class="eval-section" id="eval-perf">
+      <h2 class="eval-section-title">📈 性能指标</h2>
+      <p class="eval-section-sub">页面加载耗时、DOM 规模、JS 堆内存与数据规模实时数据。</p>
+      <div id="dev-perf-content"></div>
+    </section>
+
+    <!-- 4. 工程自检 -->
+    <section class="eval-section" id="eval-selfcheck">
+      <h2 class="eval-section-title">🔧 工程自检（浏览器内可一键运行）</h2>
+      <p class="eval-section-sub">5 项内联断言，覆盖简历匹配、RAG 检索、评分引擎、MCP 工具注册、岗位数据库完整性。点击下方按钮，浏览器内立即验证，无任何网络请求。</p>
+      <button class="btn btn-primary btn-sm" onclick="runSelfCheckPanel()">▶ 运行全部检查</button>
+      <span class="badge badge-brand" id="self-check-summary" style="margin-left:10px;display:none">…</span>
+      <div class="self-check-list" id="self-check-list"></div>
+    </section>
+
+    <!-- 5. MCP 运行时验证 -->
+    <section class="eval-section" id="eval-mcp">
+      <h2 class="eval-section-title">🔌 MCP 运行时验证</h2>
+      <p class="eval-section-sub">下方工具已在页面内注册为 MCP Server。点击「模拟 Agent 调用」，可看到 <code>tool_call → input_schema → 真实执行 → JSON 返回</code> 的完整链路。本地执行，无外部请求。</p>
+      <div class="mcp-console card" style="padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <b>🔌 MCP 实时控制台</b>
+          <span class="badge badge-green" id="mcp-status">初始化中…</span>
+        </div>
+        <div id="mcp-tools-list" style="display:grid;gap:10px;margin-top:12px"></div>
+        <div id="mcp-call-log" style="margin-top:14px;font-family:ui-monospace,monospace;font-size:12px;background:var(--chip-bg);border-radius:10px;padding:12px;max-height:240px;overflow-y:auto">
+          <div style="color:var(--faint)">等待调用…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. 端侧能力证据 -->
+    <section class="eval-section" id="eval-edge">
+      <h2 class="eval-section-title">📱 端侧能力证据</h2>
+      <p class="eval-section-sub">以下能力完全在浏览器内执行，无外部网络请求，可在对应产品页面当场验证。</p>
+      <div class="eval-checklist">
+        <div class="eval-material">
+          <div class="material-icon">💻</div>
+          <div>
+            <div class="material-name">代码面试沙盒</div>
+            <div class="material-desc">Worker + 超时熔断（2s），用例通过率自动计入评估报告「内容深度」维度</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showView('app');navTo('interview')">去验证 →</button>
+        </div>
+        <div class="eval-material">
+          <div class="material-icon">🔒</div>
+          <div>
+            <div class="material-name">本地 PII 脱敏</div>
+            <div class="material-desc">正则脱敏手机号 / 邮箱 / 身份证，全流程 0 网络请求</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showView('app');navTo('match')">去验证 →</button>
+        </div>
+        <div class="eval-material">
+          <div class="material-icon">🎤</div>
+          <div>
+            <div class="material-name">浏览器原生多模态</div>
+            <div class="material-desc">Web Speech API 语音输入 + speechSynthesis TTS 朗读</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showView('app');navTo('interview')">去验证 →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. 技术架构 -->
+    <section class="eval-section" id="eval-arch">
+      <h2 class="eval-section-title">🏗️ 技术架构</h2>
+      <div class="card arch" style="margin-top:0">
+        <div class="arch-flow">
+          <span class="arch-node">用户浏览器</span><span class="arch-arrow">→</span>
+          <span class="arch-node">Next.js 15 前端</span><span class="arch-arrow">→</span>
+          <span class="arch-node">Route Handlers</span><span class="arch-arrow">→</span>
+          <span class="arch-node">Agent 编排层</span><span class="arch-arrow">→</span>
+          <span class="arch-node">多模型路由（免费额度优先）</span>
+        </div>
+        <div class="arch-flow">
+          <span class="arch-node">Agent 编排层</span><span class="arch-arrow">→</span>
+          <span class="arch-node">RAG 服务</span><span class="arch-arrow">→</span>
+          <span class="arch-node">pgvector 混合检索 + Rerank</span><span class="arch-arrow">·</span>
+          <span class="arch-node">Web Speech API</span><span class="arch-arrow">·</span>
+          <span class="arch-node">MCP 工具层</span><span class="arch-arrow">·</span>
+          <span class="arch-node">WebGPU 本地推理</span>
+        </div>
+        <p>技术栈：Next.js 15 App Router · React 19 · TypeScript · Tailwind CSS v4 · Zustand · Recharts · Zod · Vitest。<br>
+        AI 层：版本化 Prompt（<code>prompts/*.md</code>）· Zod 约束输出 · 流式 SSE · 自动降级 · PII 脱敏 · 注入检测。<br>
+        <b>演示版说明</b>：本单文件演示页的 Mock 逻辑与 <code>lib/ai</code> 同构，所有断言（含 MCP 工具、RAG 检索、评分引擎）均可在浏览器内验证。</p>
+      </div>
+    </section>
+
+    <!-- 8. 评分维度映射 -->
+    <section class="eval-section" id="eval-mapping">
+      <h2 class="eval-section-title">📊 评分维度映射</h2>
+      <p class="eval-section-sub">每个评分维度 → 本作品的具体实现 → 快速跳转验证入口。</p>
+      <div class="eval-table-wrap">
+        <table class="eval-table">
+          <thead>
+            <tr><th style="width:20%">评分维度</th><th>本作品对应实现</th><th style="width:20%">验证入口</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>AI 技术深度</b></td>
+              <td>多 Agent 协作（HR/技术/压力/观察员/教练）+ 可解释评分 + RAG 强制引用 + MCP 工具调用 + 代码沙盒 + 端侧脱敏 + 三级降级兜底</td>
+              <td><button class="btn btn-outline btn-sm" onclick="showView('app');navTo('interview')">模拟面试 →</button></td>
+            </tr>
+            <tr>
+              <td><b>创新性</b></td>
+              <td>多 Agent 面试圆桌（非单一聊天机器人）+ 可解释评分（每条证据引用原话）+ 代码沙盒通过率入报告 + 端侧脱敏 + 职业能力图谱</td>
+              <td><button class="btn btn-outline btn-sm" onclick="showView('app');navTo('report')">评估报告 →</button></td>
+            </tr>
+            <tr>
+              <td><b>前端工程质量</b></td>
+              <td>TypeScript 全量、组件化、状态隔离、性能优化（懒加载 / 代码分割）、Vitest + Playwright（完整工程）、本页内联自检</td>
+              <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
+            </tr>
+            <tr>
+              <td><b>实用性</b></td>
+              <td>24 岗位选择 + 简历 6 维诊断 + 模拟面试 + 代码沙盒 + 学习路径 + 历史进步曲线，形成完整求职闭环</td>
+              <td><button class="btn btn-outline btn-sm" onclick="showView('app');navTo('match')">简历匹配 →</button></td>
+            </tr>
+            <tr>
+              <td><b>用户体验</b></td>
+              <td>左栏 + 底部 Tab 双导航、面包屑、多主题、暗色模式、流式输出、思考状态可视化、错误兜底、无障碍快捷键</td>
+              <td><button class="btn btn-outline btn-sm" onclick="showView('app')">进入应用 →</button></td>
+            </tr>
+            <tr>
+              <td><b>社会价值与商业潜力</b></td>
+              <td>面向在校学生求职训练场景，低成本 AI 辅导，可扩展到院校就业中心 / 企业校招合作</td>
+              <td><button class="btn btn-outline btn-sm" onclick="showView('landing')">落地页 →</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 9. 已知边界 -->
+    <section class="eval-section" id="eval-boundary">
+      <h2 class="eval-section-title">⚠️ 已知边界与限制</h2>
+      <p class="eval-section-sub">本演示页为单文件静态版，以下为诚实的边界说明，完整工程见代码仓库。</p>
+      <div class="boundary-list">
+        <div class="boundary-item"><b>演示版为单文件静态页</b>：所有 Mock 逻辑、断言、MCP 工具均为浏览器内本地执行，无后端依赖。完整 Next.js 工程包含真实 LLM 调用、SSE 流式、pgvector 混合检索。</div>
+        <div class="boundary-item"><b>登录系统为演示级</b>：密码仅做本地简单混淆存储，<b>不应用于生产</b>。完整工程采用 NextAuth + Postgres + 密码哈希。</div>
+        <div class="boundary-item"><b>向量库为浏览器内单机索引</b>：演示版用 localStorage 存 40 条面经向量（MiniLM 384 维），混合打分在浏览器内完成；完整版升级为 pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank。</div>
+        <div class="boundary-item"><b>代码沙盒为浏览器 Worker 隔离</b>：具备 2s 超时熔断，仅支持纯 JS 逻辑题；完整工程集成 QuickJS WASM 沙盒，支持多语言与虚拟文件系统。</div>
+        <div class="boundary-item"><b>MCP 为本地模拟 Server</b>：协议结构与真实 MCP 一致，完整工程通过 <code>@mcp-b/webmcp-ts-sdk</code> 实现跨 Agent 真实发现。</div>
+        <div class="boundary-item"><b>材料链接待填写</b>：代码仓库 / 视频 / 文档 / 在线演示地址将在正式提交前通过 <code>CONFIG</code> 补齐，见本页顶部「交付材料」区块。</div>
+      </div>
+    </section>
+
+    <!-- 10. 开发者工具 -->
+    <section class="eval-section" id="eval-tools">
+      <h2 class="eval-section-title">🛠️ 开发者工具</h2>
+      <p class="eval-section-sub">一键导出诊断、清空数据、重置状态等开发者操作。用于问题排查、结果留档与临时复位。</p>
+      <div class="tools-grid">
+        <div class="tool-card">
+          <h4>📄 导出诊断报告</h4>
+          <p>导出 JSON 格式的完整诊断报告，含运行环境、应用状态、最近 50 条日志，可用于问题排查或结果留档。</p>
+          <button class="btn btn-primary btn-sm" onclick="exportDiagnostic()">下载 JSON</button>
+        </div>
+        <div class="tool-card">
+          <h4>🔑 复制测试账号</h4>
+          <p>复制演示账号信息，快速分享给评委进行登录测试。</p>
+          <button class="btn btn-outline btn-sm" onclick="copyTestAccount()">复制到剪贴板</button>
+        </div>
+        <div class="tool-card">
+          <h4>🎭 切换 LLM 模式</h4>
+          <p>当前：<b id="dev-llm-mode">检测中…</b>。Mock 模式零成本演示；真实模式需配置 API Key。</p>
+          <button class="btn btn-outline btn-sm" onclick="toggleLlmMode()">切换模式</button>
+        </div>
+        <div class="tool-card">
+          <h4>🔄 重置引导</h4>
+          <p>清除 onboarding 已读标记，下次进入工作台时重新展示首访引导。</p>
+          <button class="btn btn-outline btn-sm" onclick="resetOnboarding()">重置引导</button>
+        </div>
+        <div class="tool-card" style="border-color:var(--red)">
+          <h4>⚠️ 清空本地数据</h4>
+          <p>删除所有 localStorage / sessionStorage（账号、面试记录、简历草稿、历史曲线）。操作不可恢复。</p>
+          <button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="clearAllData()">清空并刷新</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. 诊断日志 -->
+    <section class="eval-section" id="eval-log">
+      <h2 class="eval-section-title">📝 运行时诊断日志</h2>
+      <p class="eval-section-sub">记录页面内关键操作事件（最多保留最近 100 条），用于排查问题与结果复核。日志不会上传，仅在当前标签页内存中保留。</p>
+      <div class="diag-log" id="dev-log">
+        <div class="log-line"><span class="log-time">--:--:--</span><span class="log-msg">暂无日志（操作后自动记录）</span></div>
+      </div>
+    </section>
+
+    <!-- 12. 快速跳转 -->
+    <section class="eval-section" id="eval-jump">
+      <h2 class="eval-section-title">🔗 快速跳转测试</h2>
+      <p class="eval-section-sub">演示现场如需快速验证，可直接点击跳转。</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="showView('app');navTo('match')">📄 简历匹配</button>
+        <button class="btn btn-primary btn-sm" onclick="showView('app');navTo('resume')">✍️ 简历优化</button>
+        <button class="btn btn-primary btn-sm" onclick="showView('app');navTo('interview')">🎙️ 模拟面试</button>
+        <button class="btn btn-primary btn-sm" onclick="showView('app');navTo('rag')">📖 面经问答</button>
+        <button class="btn btn-primary btn-sm" onclick="showView('app');navTo('career')">🧭 职业探索</button>
+        <button class="btn btn-primary btn-sm" onclick="showView('app');navTo('report')">📊 评估报告</button>
+      </div>
+    </section>
+
+    <footer style="border-top:1px solid var(--line);padding:26px 0 40px;font-size:12.5px;color:var(--faint);line-height:1.9;text-align:center">
+      面镜 FutureMirror · 开发者模式 · Beta 1.0 · 仅对评委与开发者开放<br>
+      <span>AI辅助开发说明：AI仅辅助样式、工具函数与文案，多Agent、评分引擎、业务架构、测试体系由团队独立设计实现，演示数据为合成示例。</span><br>
+      解锁凭据保存在 sessionStorage，关闭标签页自动失效
+    </footer>
+  </main>
+
+</div>
+
+<!-- ============================================================
+     开发者密码 Modal
+     ============================================================ -->
+<div id="eval-gate-modal" class="modal" hidden role="dialog" aria-modal="true" aria-label="开发者模式登录" onclick="if(event.target===this)closeEvalGate()">
+  <div class="modal-box eval-gate-modal">
+    <div class="gate-icon">🎛</div>
+    <h3>进入开发者模式</h3>
+    <p class="gate-sub">此处集中展示交付材料、运行环境、性能指标、工程自检、MCP 运行时验证、技术架构与诊断日志，供评委与技术验证使用。</p>
+    <input type="password" id="eval-password" placeholder="请输入开发者密码" autocomplete="off"
+      onkeydown="if(event.key==='Enter')submitEvalPassword()" aria-label="开发者密码">
+    <div class="inline-error" id="eval-error" role="alert"></div>
+    <div class="gate-actions">
+      <button class="btn btn-primary btn-sm" onclick="submitEvalPassword()">进入</button>
+      <button class="btn btn-outline btn-sm" onclick="closeEvalGate()">取消</button>
+    </div>
+    <div class="gate-hint">
+      开发者密码：<code>FM2026</code>（正式提交时写在 README 与答辩 PPT 中）<br>
+      也可直接访问 <code>#/evaluator?key=FM2026</code> 一键进入
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- Prompt 查看器 Modal -->
+<div id="prompt-modal" class="modal" hidden role="dialog" aria-modal="true" aria-label="当前 Agent System Prompt" onclick="if(event.target===this)this.hidden=true">
+  <div class="modal-box">
+    <div class="modal-head">
+      <b>当前 Agent System Prompt（按面试模式版本化）</b>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('prompt-modal').hidden=true" aria-label="关闭 Prompt 查看器">✕</button>
+    </div>
+    <pre id="prompt-view" class="prompt-code"></pre>
+    <p class="hint">Prompt 按面试模式版本化维护（<code>prompts/interviewer-*.md</code>），通过 Zod 约束 LLM 输出为单个追问问题；完整版另含评估 Prompt、教练 Prompt、安全过滤 Prompt。快捷键：Esc 关闭。</p>
+  </div>
+</div>
+
+  <script src="js/data/config.js"></script>
+  <script src="js/core/router.js"></script>
+  <script src="js/INDEX.js"></script>
+  <script src="js/core/store.js"></script>
+  <script src="js/core/auth.js"></script>
+  <script src="js/core/theme.js"></script>
+  <script src="js/core/router-pages.js"></script>
+  <script src="js/features/match.js"></script>
+  <script src="js/features/interview.js"></script>
+  <script src="js/data/kb.js"></script>
+  <script src="js/features/report.js"></script>
+  <script src="js/features/prompt-viewer.js"></script>
+  <script src="js/core/boot.js"></script>
+  <script src="js/core/theme-variants.js"></script>
+  <script src="js/core/reveal.js"></script>
+  <script src="js/core/roll.js"></script>
+  <script src="js/features/resume.js"></script>
+  <script src="js/features/career.js"></script>
+  <script src="js/dev/runtime.js"></script>
+  <script src="js/bootstrap.js"></script>
+  <script src="js/dev/devmode.js"></script>
+  <script src="js/features/today.js"></script>
+  <script src="js/features/profile.js"></script>
+  <script src="js/features/jobs.js"></script>
+  <script src="js/features/quiz.js"></script>
+  <script src="js/features/assistant.js"></script>
+  <script src="js/core/api.js"></script>
+</body>
+</html>
