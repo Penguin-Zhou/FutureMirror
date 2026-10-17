@@ -8,7 +8,7 @@
 
 **版本定位：Beta 1.0 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
 
-**在线演示（免安装，浏览器直接打开）：<https://penguin-zhou.github.io/FutureMirror/>** · 演示账号 `demo@futuremirror.app / Demo123456`
+**在线演示（免安装，浏览器直接打开）：<https://penguin-zhou.github.io/FutureMirror/>**（GitHub Pages）· **国内直连镜像：<https://futuremirror-demo.app.workbuddy.host/>** · 演示账号 `demo@futuremirror.app / Demo123456`
 
 上传简历与目标岗位 JD，由 HR / 技术 / 压力面 / 观察员 / 教练五个 Agent 协作完成模拟面试，生成**可解释**的评分报告、能力雷达图与个性化学习路径；内置题库小测、错题本、求职看板与 AI 小助手。
 
@@ -95,7 +95,12 @@
 
 ### 3.2 安装 A：单文件演示版（零依赖）
 
-**方式 1（推荐，零安装）**：直接打开在线演示 <https://penguin-zhou.github.io/FutureMirror/>，Chromium 系浏览器即可完整走完流程。
+**方式 1（推荐，零安装）**：直接打开在线演示，Chromium 系浏览器即可完整走完流程。
+
+| 入口 | 地址 | 说明 |
+| --- | --- | --- |
+| 主站（GitHub Pages） | <https://penguin-zhou.github.io/FutureMirror/> | 与仓库同源，随 `gh-pages` 分支更新 |
+| 国内直连镜像 | <https://futuremirror-demo.app.workbuddy.host/> | 同一份单文件产物的逐字节副本，国内网络直连更快；github.io 打不开时用这个 |
 
 **方式 2（本地离线）**：打开仓库内的 `public/futuremirror-demo.html`（约 493KB，所有 CSS/JS 内联，默认零外部请求）。
 
@@ -104,7 +109,9 @@
 # 需要连后端时改用 http 服务（见 3.3，file:// 会被 CORS 拒绝）
 ```
 
-> 在线版由 GitHub Pages 托管 `gh-pages` 分支（内容为 `public/futuremirror-demo.html` 的逐字节副本，`.nojekyll` 跳过 Jekyll 处理）。重新发布：`node scripts/deploy-pages.js --build`。
+> 两个在线入口内容完全一致（均为 `public/futuremirror-demo.html` 的逐字节副本）：
+> - 主站由 GitHub Pages 托管 `gh-pages` 分支（`.nojekyll` 跳过 Jekyll 处理），重新发布：`node scripts/deploy-pages.js --build`；
+> - 镜像由静态托管服务托管 `.mirror-site/` 目录，重新发布：`node scripts/stage-mirror.js` 后对该目录执行一次「发布」。镜像目录为纯产物，已被 `.gitignore` 忽略，不参与版本管理。
 
 ### 3.3 安装 B：模块版前端 + FastAPI 后端（推荐答辩使用）
 
@@ -191,7 +198,7 @@ npm run dev                        # http://localhost:3000
 
 ### 4.1 登录
 
-打开 <https://penguin-zhou.github.io/FutureMirror/>（或本地 `public/futuremirror-demo.html`），使用演示账号：
+打开 <https://penguin-zhou.github.io/FutureMirror/>（国内网络可改用镜像 <https://futuremirror-demo.app.workbuddy.host/>，或本地 `public/futuremirror-demo.html`），使用演示账号：
 
 - 账号：`demo@futuremirror.app`
 - 密码：`Demo123456`
@@ -580,7 +587,7 @@ futuremirror/
 │   │   └── dev/                # runtime（MCP 三件套）/ devmode
 │   └── build-manifest.json     # 拆分清单（build-demo.js 依据）
 ├── public/futuremirror-demo.html   # 单文件演示版（build-demo.js 产物）
-├── scripts/                    # split-frontend / build-demo / deploy-pages / validate / test-* 工具与测试
+├── scripts/                    # split-frontend / build-demo / deploy-pages / stage-mirror / validate / test-* 工具与测试
 ├── docs/demo-video-storyboard.md   # 演示视频分镜脚本
 ├── app/ lib/ components/ …     # Next.js 完整版
 └── README.md
@@ -639,6 +646,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                          |
 | 技术文档 PDF               | ⬜  | `<撰写后填写链接>`                          |
 | 在线演示（公网可访问）            | ✅  | https://penguin-zhou.github.io/FutureMirror/ |
+| 在线演示镜像（国内直连）          | ✅  | https://futuremirror-demo.app.workbuddy.host/ |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456` |
 | 开源许可证                  | ✅  | MIT，见仓库根目录 `LICENSE`                |
 
@@ -647,6 +655,10 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 ```bash
 # 方案 0：GitHub Pages（当前在线演示所用，纯静态、零成本、随仓库更新）
 node scripts/deploy-pages.js --build    # 重建单文件版 → 强推 gh-pages 分支（index.html / 404.html / .nojekyll）
+
+# 方案 0b：国内直连镜像（同一份产物，托管 .mirror-site/ 静态目录）
+node scripts/stage-mirror.js            # 生成 .mirror-site/index.html + 404.html（纯产物，已 gitignore）
+# 随后对该目录执行一次「发布为应用」（静态站点），链接即 https://futuremirror-demo.app.workbuddy.host/
 
 # 方案 A：Vercel（完整版 Next.js）
 npm i -g vercel && vercel --prod        # 环境变量在 Vercel 后台配置；不配 Key 自动 Mock
