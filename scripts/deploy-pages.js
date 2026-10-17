@@ -1,7 +1,10 @@
 /* ============================================================
- * deploy-pages.js —— 把单文件演示版发布到 GitHub Pages
+ * deploy-pages.js —— 把单文件演示版与技术文档发布到 GitHub Pages
  *   public/futuremirror-demo.html  →  分支 gh-pages（index.html / 404.html）
- *   发布后地址：https://<user>.github.io/<repo>/
+ *   docs/technical-doc.html        →  分支 gh-pages（docs/technical-doc.html）
+ *   发布后地址：
+ *     https://<user>.github.io/<repo>/                      演示
+ *     https://<user>.github.io/<repo>/docs/technical-doc.html 技术文档
  *
  *   用法：
  *     node scripts/deploy-pages.js             # 发布当前 public/ 下的产物
@@ -19,6 +22,7 @@ const { execFileSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
 const SRC = path.join(ROOT, "public", "futuremirror-demo.html");
+const DOC = path.join(ROOT, "docs", "technical-doc.html");
 const BRANCH = "gh-pages";
 
 const argv = process.argv.slice(2);
@@ -39,6 +43,7 @@ if (!fs.existsSync(SRC)) {
   console.error(`❌ 未找到 ${SRC}，请先执行 node scripts/build-demo.js`);
   process.exit(1);
 }
+const HAS_DOC = fs.existsSync(DOC);
 
 /* ---------- 1) 读取远程地址 ---------- */
 const remoteUrl = sh("git", ["-C", ROOT, "remote", "get-url", "origin"]);
@@ -55,18 +60,28 @@ fs.writeFileSync(path.join(tmp, "404.html"), html);
 /* .nojekyll：跳过 Jekyll 处理，保证产物按原样发布 */
 fs.writeFileSync(path.join(tmp, ".nojekyll"), "");
 
+/* 技术文档随演示一同发布：排版好的 HTML 版可直接在线阅读（PDF 版另行以附件提交） */
+let docKB = 0;
+if (HAS_DOC) {
+  const doc = fs.readFileSync(DOC, "utf8");
+  docKB = Buffer.byteLength(doc, "utf8") / 1024;
+  fs.mkdirSync(path.join(tmp, "docs"), { recursive: true });
+  fs.writeFileSync(path.join(tmp, "docs", "technical-doc.html"), doc);
+}
+
 const version = (html.match(/beta\s*1\.0/i) || ["Beta 1.0"])[0];
 const stamp = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
 fs.writeFileSync(
   path.join(tmp, "README.md"),
   `# FutureMirror 在线演示（发布产物分支）\n\n` +
   `- 内容：\`public/futuremirror-demo.html\`（单文件演示版，${sizeKB}KB，CSS/JS 全内联）\n` +
+  (HAS_DOC ? `- 文档：\`docs/technical-doc.html\`（技术文档 HTML 在线版，${docKB.toFixed(1)}KB）\n` : "") +
   `- 版本：${version}\n` +
   `- 生成时间：${stamp}\n` +
   `- 生成方式：\`node scripts/deploy-pages.js --build\`\n\n` +
   `本分支只存放构建产物，源码与提交历史见主分支 \`main\`。\n`
 );
-log("stage", `${tmp}（${sizeKB}KB）`);
+log("stage", `${tmp}（${sizeKB}KB${HAS_DOC ? ` + 文档 ${docKB.toFixed(1)}KB` : ""}）`);
 
 if (DRY) {
   log("dry-run", "已装配，未推送；目录保留以便检查");
@@ -103,3 +118,4 @@ fs.rmSync(tmp, { recursive: true, force: true });
 const repo = remoteUrl.replace(/^.*github\.com[:/]/, "").replace(/\.git$/, "");
 const [owner, name] = repo.split("/");
 log("done", `已发布 → https://${owner.toLowerCase()}.github.io/${name}/`);
+if (HAS_DOC) log("done", `技术文档 → https://${owner.toLowerCase()}.github.io/${name}/docs/technical-doc.html`);
