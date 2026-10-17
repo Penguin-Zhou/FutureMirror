@@ -44,3 +44,6 @@ next-env.d.ts
 # 本地临时备份
 .v*-backup.html
 *.tmp
+
+# 在线演示镜像的发布目录（由 scripts/stage-mirror.js 生成的纯产物）
+/.mirror-site/
