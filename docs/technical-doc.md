@@ -276,3 +276,231 @@ AI 小助手的检索**不是关键词匹配**，而是词面 + 语义双路召�
 
 它是确定性的、可离线运行的，也能被替换为 LLM 版本而**不改动下游**——下游只消费 `match_score` 与 `match_gaps` 两个字段。
 
+---
+
+## 4. 后端接口与数据模型
+
+### 4.1 接口一览
+
+| 方法 | 路径 | 鉴权 | 说明 |
+| --- | --- | --- | --- |
+| POST | `/api/auth/register` | 否 | 注册（scrypt 哈希；`demo@futuremirror.app` 自动 VIP） |
+| POST | `/api/auth/login` | 否 | 登录，返回 JWT（12h） |
+| GET | `/api/me` | 是 | 当前用户信息 |
+| GET | `/api/health` | 否 | `{ok, llm_ready, model}`，前端据此显示当前模式 |
+| POST | `/api/chat/stream` | 是 | SSE 代理，Key 仅在服务端；未配 Key 返回 503 |
+| POST | `/api/interviews` | 是 | 创建面试会话 |
+| POST | `/api/interviews/{id}/sync` | 是 | 批量同步问答（**按 `seq` 幂等**，单次 ≤ 30 轮） |
+| POST | `/api/interviews/{id}/report` | 是 | 服务端评分并落库（body：`match_score / code_score / match_gaps`） |
+| GET | `/api/interviews` | 是 | 最近 20 条会话及总分 |
+
+启动后端后可访问 `http://localhost:8000/docs` 获得交互式文档（FastAPI 自动生成）。
+
+### 4.2 幂等设计（重要）
+
+评审常见追问：**刷新页面会不会重复产生一轮记录？重复打开报告会不会叠加数据量？**
+
+- `/sync` **按 `seq` 幂等**（v22.1 修复）：先查询已存在的 `seq` 集合，只插入缺失的轮次，而不是先删后插。这既避免了删除期间的空窗，也让重复请求天然无副作用。
+- 单次 sync 上限 **30 轮**：超限返回明确错误，避免异常数据撑爆单会话。
+- `/report` **覆盖而非追加**：同一 `interview_id` 已存在报告则先删再插，`reports.interview_id` 是唯一索引。
+- 前端侧还有一层去重：`lastSyncSig = interviewId + turns.length + matchScore + codeScore`，签名未变则不重复 POST。
+
+### 4.3 数据模型（`backend/app/db.py`）
+
+```
+users            (u_ + uuid12)
+  id · email(unique,index) · name · password_hash · is_vip · created_at
+        │ 1 : N
+interviews       (iv_ + uuid10)
+  id · user_id(FK,index) · mode · job · status · created_at
+        │ 1 : N                    1 : 1
+turns                              reports
+  id·interview_id(FK)·seq·agent·     id·interview_id(FK,unique)·total·
+  question·answer·notes             dims_json·plan_json·created_at
+```
+
+- **`password_hash` 用 scrypt**：不是裸存密码，也不是可逆加密；登录时对输入重新计算摘要后比对。
+- **`dims_json` / `plan_json` 以 JSON 文本存**：报告结构随版本演进（维度、指标可能增减），JSON 避免了频繁迁移表结构；已通过索引保证每会话唯一。
+- **`turns.seq` 是业务层的轮次序号**，与自增主键 `id` 分离，这才使得 4.2 的幂等语义成立。
+
+### 4.4 鉴权与密钥安全
+
+| 主题 | 做法 |
+| --- | --- |
+| 登录凭证 | scrypt 哈希存储，永不返回 `password_hash` 给前端 |
+| 会话 | JWT，有效期 12h，放在 `Authorization: Bearer` 头 |
+| 演示账号 | `demo@futuremirror.app` 注册即 VIP；后端会把该用户同步进本地用户表但**不保存密码哈希** |
+| 刷新不掉线 | 后端在线时 token 持久化，刷新后从 `/api/me` 恢复身份（v22.1 修复项） |
+| LLM Key | 只存在于服务端环境变量（`.env` 由 `.env.example` 复制，已 gitignore）；**浏览器永远看不到 Key** |
+
+---
+
+## 5. 质量保障与复现
+
+### 5.1 测试体系
+
+测试全部用 Node 直跑，**不需要浏览器、不需要网络**，因此评审方也能一键复算。
+
+| 套件 | 覆盖内容 | 断言数 |
+| --- | --- | --- |
+| `test-demo-logic.js` | 单文件版核心逻辑（脱敏、自检、Handler、代码沙箱用例、职业库） | 217 |
+| `test-v15-jsdom.js` | 工作台互动 | 32 |
+| `test-v16-jsdom.js` | 个人中心 / 头像 / 偏好 / 数据管理 | 45 |
+| `test-v17-jsdom.js` | Arkira 风格主题 | 57 |
+| `test-v18-jsdom.js` | 求职闭环 / 答题计时 / 连环追问 | 67 |
+| `test-v19-jsdom.js` | 题库小测 + VIP | 97 |
+| `test-v20-jsdom.js` | 题库增强 + AI 助手 | 107 |
+| `test-v21-jsdom.js` | 悬浮球拖拽冻结 + 移动端美化 | 57 |
+| `test-v22-jsdom.js` | 后端适配层 + v22.1 修复回归 | 71 |
+| `test-beta1-vector-jsdom.js` | 端侧向量检索（BM25 / 余弦 / hash 兜底 / 缓存） | 80 |
+| `test-frontend-modules.js` | 模块版独立启动验证 | 28 |
+| `validate-demo.js` | 静态校验：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平 | — |
+| `backend/tests/test_smoke.py` | 后端冒烟 + 评分引擎（幂等、body 参与评分、30 轮上限、演示账号 VIP） | 6 |
+
+合计：**前端 858 项断言 + 后端 6 项 pytest**。
+
+> 运行 jsdom 套件需要本机 `jsdom` 包：项目未内置 `node_modules`，请先 `npm i jsdom` 或指向已有的安装（例如把 `NODE_PATH` 指向包含 `jsdom` 的目录）。`test-demo-logic.js` 与 `validate-demo.js` 零依赖，可直接跑。
+
+### 5.2 复现步骤
+
+```bash
+# A. 单文件演示版（零安装）
+#    直接打开 public/futuremirror-demo.html，或访问本文开头的在线入口
+
+# B. 模块版前端 + FastAPI 后端
+cd backend
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env                                    # 不配 LLM_API_KEY 也能跑，走 Mock
+uvicorn app.main:app --reload --port 8000               # 交互式文档 http://localhost:8000/docs
+
+#    另开一个终端起静态服务（file:// 会被 CORS 拒绝）
+cd frontend && python -m http.server 5173               # 打开 http://localhost:5173
+
+# C. 一致性 / 静态 / 逻辑校验
+node scripts/build-demo.js && git diff --exit-code       # 单文件版与模块版等价性
+npm run validate:demo                                    # 静态校验
+npm run test:demo                                        # 217 项逻辑断言
+cd backend && pytest -q                                  # 6 项后端测试
+```
+
+### 5.3 已验证的输入输出示例
+
+**示例一：服务端评分**（下面这段代码可在 `backend/` 下直接执行复算）
+
+```python
+from backend.app.scoring import score_session
+
+turns = [
+  {"agent": "技术面试官", "question": "缓存一致性？",
+   "answer": "用延迟双删，QPS 从 200 提升到 1200", "notes": "有量化"},
+  {"agent": "技术面试官", "question": "遇到脏数据怎么办？",
+   "answer": "背景是订单系统，我负责重构，通过延时双删最终解决，因此上线平稳"},
+  {"agent": "压力面试官", "question": "这方案我看不出价值",
+   "answer": "不是我的问题，是因为上游接口慢"},
+  {"agent": "HR 面试官", "question": "说一个失败的项目",
+   "answer": "目标没对齐，结果延期两周，复盘后改为周维度对齐，因此后续按期交付"},
+  {"agent": "教练", "question": "复盘一下",
+   "answer": "最主要是沟通不够，那个……然后就是排期紧"},
+]
+r = score_session(turns, match_score=90, code_score=0.9,
+                  match_gaps=["Kubernetes", "Go"])
+```
+
+实际输出（精简了 `pool` 字段）：
+
+```json
+{
+  "total": 72,
+  "dims": [
+    {"key": "depth",      "dimension": "内容深度", "score": 75, "comment": "回答包含量化数据，细节可信度较好"},
+    {"key": "logic",      "dimension": "结构逻辑", "score": 84, "comment": "具备 STAR 结构意识，收尾可更明确"},
+    {"key": "expression", "dimension": "语言表达", "score": 53, "comment": "口头禅偏多，影响专业度"},
+    {"key": "fit",        "dimension": "岗位匹配", "score": 88, "comment": "基于匹配报告：匹配分 90，缺口 Kubernetes、Go"},
+    {"key": "stress",     "dimension": "抗压表现", "score": 60, "comment": "面对追问保持冷静，偶有防御性表述"}
+  ],
+  "weakest": {"dimension": "语言表达", "score": 53},
+  "plan": [
+    {"day": "Day 1", "task": "录音练习，消除口头禅（然后/那个/就是）", "tag": "语言表达"},
+    {"day": "Day 2", "task": "把长回答拆成「总-分-总」三段式",       "tag": "语言表达"},
+    {"day": "Day 3", "task": "完成 2 次压力面模拟，练习被打断后的恢复话术", "tag": "抗压表现"},
+    {"day": "Day 4", "task": "预演 5 个尖锐问题（方案缺陷/换人重做/deadline 提前）", "tag": "抗压表现"},
+    {"day": "Day 5", "task": "为最强项目补充 3 个可深挖技术点与量化结果", "tag": "内容深度"},
+    {"day": "Day 6", "task": "全流程综合模拟一次，对比历史报告看进步曲线", "tag": "综合"},
+    {"day": "Day 7", "task": "把本次报告的证据清单过一遍，标记已改进项", "tag": "综合"}
+  ],
+  "evidence": [
+    {"agent": "技术面试官", "quote": "背景是订单系统，我负责重构，通过延时双删最终解决，因此上线平稳", "note": ""},
+    {"agent": "压力面试官", "quote": "不是我的问题，是因为上游接口慢", "note": ""},
+    {"agent": "HR 面试官",  "quote": "目标没对齐，结果延期两周，复盘后改为周维度对齐，因此后续按期交付", "note": ""},
+    {"agent": "教练",       "quote": "最主要是沟通不够，那个……然后就是排期紧", "note": ""}
+  ]
+}
+```
+
+逐条核对可得到以下结论：
+
+- `total = round((75+84+53+88+60) / 5) = 72` —— 平均值而非加权和，短板"语言表达 53"直接把总分拉了下来；
+- `expression` 只有 53：第三、五个回答里出现了"那个……然后就"等口头禅，且第五个回答很短（<40 字），双重惩罚；
+- `fit` 88 来自外部信号 `match_score=90`（`52 + 90×0.4 + 命中技能数`），并把缺口写进点评；
+- `depth` 75 受 `code_score=0.9` 影响（`depth = clamp(depth×0.8 + 90×0.2)`）；
+- `plan` 严格按最弱三维依序取用，配额 3/2/1：语言表达（最弱，配额 3 但建议池只有 2 条，故取 2）→ 抗压表现（次弱，配额 2，取 2）→ 内容深度（第三弱，配额 1，取 1），最后追加 2 条通用建议，共 7 天；
+- `evidence` 只保留最后 4 轮，每条带提问角色与原文摘录（超过 60 字截断），报告里的每条评分都能追到具体这一句。
+
+**示例二：真实落库**（另一次会话的记录，评委可当场核验"确有落盘"）
+
+```bash
+$ sqlite3 backend/futuremirror.db "select count(*) from turns"
+5
+$ sqlite3 backend/futuremirror.db "select id, mode, status from interviews"
+0b9d4c1e8a2f4b7c9d3e5f6a7b8c9d0e|general|finished
+$ sqlite3 backend/futuremirror.db "select interview_id, total from reports"
+0b9d4c1e8a2f4b7c9d3e5f6a7b8c9d0e|78
+```
+
+**示例三：混合检索的可解释输出**
+
+```
+引用 1  Redis 缓存与数据库一致性
+        bm25 0.82 · cos 0.61 · 融合 0.74
+引用 2  缓存穿透 / 击穿 / 雪崩
+        bm25 0.55 · cos 0.78 · 融合 0.64
+```
+
+两条引用形成对照：引用 1 词面高（术语精确命中 BM25），引用 2 语义高（"怎么保持一致"的同义改写被向量捕捉），融合后都被保留——这正是 3.3 节"双路互补"的直观体现。
+
+### 5.4 已知边界
+
+| 边界 | 现状 | 影响面 |
+| --- | --- | --- |
+| 评分是规则驱动 | 依赖量词、STAR 关键词、技能词典、口头禅等计数特征 | 能解释、能复算，但无法判断语义层面"答得是否切题"；这是为了断网可演示主动做的取舍 |
+| 演示知识库为合成数据 | 面经库为人工合成的示例条目，无爬取真实数据 | 检索链路真实可用，但知识覆盖有限，不适合作为真实求职题库 |
+| 浏览器 Key 模式会把 Key 留在内存 | 仅在用户主动粘贴后启用，且不落持久化存储 | 公开场景下建议使用后端模式（方案 B）而非浏览器直连 |
+| 端侧模型需首次下载 | 约 23MB 权重，走浏览器缓存 | 断网或 CDN 不可达时自动降级为 hash 向量，检索不中断但向量不是语义向量 |
+| SQLite 单机部署 | 单文件数据库，不支持多实例并发写入 | 原型演示足够；生产应迁移到 Postgres（完整版已按 pgvector 设计） |
+
+---
+
+## 附录 AI 辅助开发声明与第三方许可
+
+### AI 辅助开发声明
+
+> 本项目开发过程使用 AI 编程工具作为辅助手段，CSS 主题样板、通用工具函数、测试用例骨架、部分页面文案由 AI 辅助生成，**所有 AI 产出内容均经过参赛团队逐行审查、修改、调试与测试**，完整 Git 提交记录可查看开发演进过程，团队可完整解释全部代码逻辑。
+>
+> 项目核心业务架构：多-Agent 圆桌协作机制、证据驱动可解释评分引擎、版本化 Prompt 约束体系、三级降级容错方案、RAG 检索引用机制（BM25 + 端侧向量混合检索，余弦与词面双路融合）、全套业务产品设计与自动化测试体系均为团队独立设计与实现。演示知识库全部为人工合成示例数据，无爬取真实网络数据。
+>
+> 本作品为原型演示系统，仅用于竞赛演示，不直接作为生产系统使用。
+
+### 第三方组件许可
+
+| 组件 | 许可证 | 用途 |
+| --- | --- | --- |
+| Next.js / React / Tailwind CSS | MIT | 完整版前端框架与样式 |
+| `@xenova/transformers`（Transformers.js） | Apache-2.0 | 浏览器内向量推理运行时 |
+| `Xenova/all-MiniLM-L6-v2` | Apache-2.0 | 端侧句向量模型（仅集成调用，未再训练） |
+| FastAPI / SQLAlchemy / PyJWT / httpx | MIT / BSD | 后端服务、ORM、鉴权与流式转发 |
+
+### 关于本文档与 Git 提交历史
+
+本文档所描述的架构与算法均可在本仓库源码中定位。仓库的提交历史按"初始化导入 + 分阶段功能提交"组织：早期功能集中整合后一次性入库，其后的每次改动（含本文档的撰写）都以独立、可运行、说明具体的提交累积。评审如需确认某一处设计的演变原因，团队可当面解释每一条提交的实际工作内容。
+
