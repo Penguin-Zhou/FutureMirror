@@ -624,7 +624,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 
 | 材料                     | 状态 | 地址 / 说明                              |
 | ---------------------- | -- | ------------------------------------ |
-| 代码仓库（Public）           | ✅  | `<填写 GitHub/Gitee 地址>`               |
+| 代码仓库（Public）           | ✅  | https://github.com/Penguin-Zhou/FutureMirror |
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                  |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录         |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                         |
@@ -650,7 +650,7 @@ cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
 # 前端构建后用任意静态服务托管 frontend/，并在 CONFIG 中填写后端地址
 ```
 
-部署后把地址回填到 `frontend/js/data/config.js` 的 `CONFIG`（`repoUrl / liveUrl / videoUrl / docsUrl / fullAppUrl`）与本 README。
+部署后把地址回填到 `frontend/js/data/config.js` 的 `CONFIG` 与本 README。当前 `repoUrl / fullAppUrl` 已指向本仓库；`liveUrl / videoUrl / docsUrl` 待部署与录制完成后再填。
 
 ---
 
