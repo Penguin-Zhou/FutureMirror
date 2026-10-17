@@ -8,6 +8,8 @@
 
 **版本定位：Beta 1.0 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
 
+**技术文档**：[`docs/technical-doc.md`](docs/technical-doc.md) —— 系统架构、核心算法（多 Agent 协作 / 证据驱动评分 / BM25 + 端侧向量混合检索 / 三级降级）、后端接口契约、测试体系与复现步骤。
+
 **在线演示（免安装，浏览器直接打开）：<https://penguin-zhou.github.io/FutureMirror/>**（GitHub Pages）· **国内直连镜像：<https://futuremirror-demo.app.workbuddy.host/>** · 演示账号 `demo@futuremirror.app / Demo123456`
 
 上传简历与目标岗位 JD，由 HR / 技术 / 压力面 / 观察员 / 教练五个 Agent 协作完成模拟面试，生成**可解释**的评分报告、能力雷达图与个性化学习路径；内置题库小测、错题本、求职看板与 AI 小助手。
@@ -644,7 +646,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 6 项 + 前端 858 项断言           |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`      |
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                          |
-| 技术文档 PDF               | ⬜  | `<撰写后填写链接>`                          |
+| 技术文档 PDF               | ✅  | Markdown 版已就绪：仓库内 `docs/technical-doc.md`（在线阅读：https://github.com/Penguin-Zhou/FutureMirror/blob/main/docs/technical-doc.md）；PDF 版另行导出 |
 | 在线演示（公网可访问）            | ✅  | https://penguin-zhou.github.io/FutureMirror/ |
 | 在线演示镜像（国内直连）          | ✅  | https://futuremirror-demo.app.workbuddy.host/ |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456` |
@@ -671,7 +673,7 @@ cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
 # 前端构建后用任意静态服务托管 frontend/，并在 CONFIG 中填写后端地址
 ```
 
-部署后把地址回填到 `frontend/js/data/config.js` 的 `CONFIG` 与本 README。当前 `repoUrl / fullAppUrl / liveUrl` 均已指向线上地址（`liveUrl` = GitHub Pages）；`videoUrl / docsUrl` 待录制与撰写完成后再填。
+部署后把地址回填到 `frontend/js/data/config.js` 的 `CONFIG` 与本 README。当前 `repoUrl / fullAppUrl / liveUrl / docsUrl` 均已指向线上地址；`videoUrl` 待演示视频录制完成后再填。
 
 > `gh-pages` 是**纯产物分支**：每次发布重建单个提交并强推，不保留历史；项目主历史始终在 `main`。首次启用 Pages 只需在仓库 Settings → Pages 选择 `gh-pages` 分支根目录一次（当前已启用，`https_enforced`）。
 
