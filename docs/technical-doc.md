@@ -81,3 +81,98 @@
 | **模块版前端** | `frontend/` | 由单文件版按"版本横幅"机械拆出的 27 个 JS 模块 + 3 层 CSS，行为与单文件版逐字节等价 |
 | **FastAPI 后端** | `backend/` | 演示版的可选后端：JWT 鉴权、SQLite 持久化、GLM SSE 流式代理（API Key 只存服务端环境变量）、服务端评分落库 |
 | **Next.js 完整版** | `app/` `lib/` `components/` | 生产形态全栈应用：Route Handlers + 多模型路由 + RAG + Zod 契约 + Mock 兜底 |
+
+---
+
+## 2. 系统架构与技术选型
+
+### 2.1 总体架构
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  浏览器                                                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐ │
+│  │ 单文件演示版  │  │  模块版前端   │  │  Next.js 完整版       │ │
+│  │ (index.html) │  │ (frontend/)  │  │  (app/)              │ │
+│  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘ │
+│         │ 三种前端共享同一套业务逻辑（store / auth / features） │
+└─────────┼─────────────────┼─────────────────────┼─────────────┘
+          │ HTTPS / SSE     │                     │ Route Handlers
+          ▼                 ▼                     ▼
+   ┌────────────────────────────────────┐   ┌──────────────────┐
+   │  FastAPI 后端（backend/）           │   │  多模型路由 + RAG │
+   │  JWT 鉴权 · SQLite · SSE 代理       │   │  + Zod 契约      │
+   │  ─ 评分引擎 scoring.py              │   └──────────────────┘
+   └───────────────┬────────────────────┘
+                   │ httpx 流式转发（Key 只在服务端环境变量）
+                   ▼
+            智谱 GLM-4-Flash（OpenAI 兼容）
+```
+
+**关键：后端是"可选增强"而不是"必需依赖"。** 前端每次调用前探测 `http://localhost:8000` 的 `/api/health`，在线则对话 / 登录 / 报告生成全部走后端（Key 零接触浏览器）；离线则按 3.4 节的降级链自动回退，功能不减、只是数据来源不同。
+
+### 2.2 为什么先做"单文件优先"
+
+| 约束 | 影响 | 对策 |
+| --- | --- | --- |
+| 赛场网络不可控 | 依赖 CDN / 云 API 的产品可能整页白屏 | 全部 CSS/JS 内联，字体走系统栈，默认零外部请求 |
+| 评委临时查看 | 不愿先执行 `npm install` | 双击 HTML 即可完整走完流程；内载演示数据与 Mock 模型 |
+| 断网要能演示 | 评审可能要求关网演示 | Mock 模型内置完整问答语料，功能链路不因断网中断 |
+| 又要便于二次开发 | 单文件 493KB 不利于阅读与协作 | 用 `split-frontend.js` 机械拆出 `frontend/` 模块版，`build-demo.js` 反向合并回单文件 |
+
+### 2.3 单文件版与模块版的双向转换
+
+这是本项目的工程基础，也是"用单文件交付、按模块维护"的前提：
+
+```
+public/futuremirror-demo.html
+        │  split-frontend.js（按"版本横幅"机械切分）
+        ▼
+frontend/  ── 27 个 JS 模块 + 3 层 CSS + build-manifest.json
+        │  build-demo.js（反合并：link 序列 → <style>，script 序列 → 单 <script>）
+        ▼
+public/futuremirror-demo.html      （除 1 行 hashchange 监听注册随 handler 归位外，逐字节一致）
+```
+
+三条约束保证了等价性可验证：
+
+1. **`.gitattributes` 锁定 LF**（`* text=auto eol=lf`），避免 Windows 上的 CRLF 破坏逐字节比对；
+2. `npm run build:demo`（即 `build-demo.js`）必须产出与仓库中完全一致的文件，CI 里用 `git diff --exit-code` 卡住；
+3. `test-frontend-modules.js` 用 jsdom 真实加载模块版，验证它能独立启动（28 项断言）。
+
+### 2.4 一次面试的数据流
+
+```
+① 上传简历 + 目标 JD
+      ▼
+② 本地匹配引擎解析 → match_score / 命中技能 / 能力缺口       （纯浏览器，零网络）
+      ▼
+③ 创建会话   POST /api/interviews            （后端离线时生成本地 interviewId）
+      ▼
+④ 五个 Agent 按轮转策略出牌，逐字流式渲染到面试台
+   · HR：简历追问与动机校验
+   · 技术：围绕简历项目深挖实现细节
+   · 压力面：质疑方案、压缩时间、制造冲突
+   · 观察员：记录关键行为，不直接发问
+   · 教练：阶段复盘，给出下一轮提示
+      ▼
+⑤ 每轮回答写入 localStorage；后端在线时按 seq 幂等批量同步
+      ▼
+⑥ 结束 → 评分引擎：五维打分 + 点评 + 最近 4 轮取证 + Day-N 计划
+      ▼
+⑦ 报告渲染（雷达图）＋ 服务端落库（幂等覆盖，重复打开不重复计数）
+```
+
+### 2.5 技术选型
+
+| 层 | 选型 | 理由 | 替代方案为何没选 |
+| --- | --- | --- | --- |
+| 演示前端 | 原生 HTML/CSS/JS（无框架） | 单文件自包含、可被任意静态托管、启动 0ms | React + Vite：需要构建产物，无法"双击即开" |
+| 模块版 | 原生 ES 风格全局脚本 + `<script>` 顺序加载 | 与单文件版保持逐字节等价，无打包要求 | ESM `import`：单文件合并需改写 import 语句，破坏等价性 |
+| 后端 | FastAPI + SQLAlchemy + PyJWT | 交互式文档自动生成；同步 ORM 在 SQLite 下足够；JWT 无状态便于部署 | Flask / Express：无原生 OpenAPI，SSE 实现更啰嗦 |
+| 数据库 | SQLite（`futuremirror.db`） | 单文件落盘，答辩时可直接 `sqlite3` 查询证明"真实持久化" | Postgres：需要额外服务，增加演示环境不确定性 |
+| 流式 | SSE（Server-Sent Events） | 单向流式足够，HTTP 原生、无需额外协议库 | WebSocket：双向用不上，握手与部署复杂度更高 |
+| 模型 | 智谱 GLM-4-Flash（OpenAI 兼容协议） | 免费额度 + 兼容 SDK，替换为其他 OpenAI 兼容模型仅需改 base_url | 固定厂商 SDK：协议锁定，迁移成本高 |
+| 端侧向量 | Transformers.js · `Xenova/all-MiniLM-L6-v2` | 浏览器内推理，384 维，Apache-2.0，零 API 成本且离线可跑 | 远程 embedding API：断网即失效，且有调用成本 |
+| 完整版 | Next.js + TypeScript + Zod + Zustand | Route Handlers 统一前后端契约；Zod 校验输入输出；生产形态可平滑演进 | 继续用原生：完整版需要类型安全与工程约束 |
+
