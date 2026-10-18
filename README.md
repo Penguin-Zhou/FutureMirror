@@ -691,7 +691,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`      |
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                          |
 | 技术文档（HTML 在线版）         | ✅  | https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html （国内镜像：https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内 `docs/technical-doc.html`） |
-| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，约 29 页，**随赛事材料以附件形式提交**；仓库 Release 同附：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0-beta/FutureMirror.Beta.pdf> |
+| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，约 29 页，**随赛事材料以附件形式提交**；仓库 Release 同附（修复版 v1.0.0-beta.1）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0-beta.1/FutureMirror.Beta.pdf> |
 | 在线演示（公网可访问）            | ✅  | https://penguin-zhou.github.io/FutureMirror/ |
 | 在线演示镜像（国内直连）          | ✅  | https://futuremirror-demo.app.workbuddy.host/ |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456` |
