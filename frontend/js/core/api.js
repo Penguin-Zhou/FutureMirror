@@ -20,6 +20,16 @@ const fmApi = {
   },
   backendReady() { return this.ready && !!this.health && this.health.ok; },
   backendModel() { return (this.health && this.health.model) || "后端模型"; },
+  /* 公网静态托管（GitHub Pages / 国内镜像）没有后端是设计如此，不应报成故障：
+   * 只有「https 公网 + 后端地址仍是默认 localhost」才算静态部署 */
+  isStaticDeploy() {
+    try {
+      const loc = window.location || {};
+      const host = loc.hostname || "";
+      const publicHttps = loc.protocol === "https:" && !/^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])$/.test(host);
+      return publicHttps && this.base === FM_API_DEFAULT_BASE;
+    } catch (e) { return false; }
+  },
   authHeaders() {
     const h = { "Content-Type": "application/json" };
     if (this.token) h["Authorization"] = "Bearer " + this.token;
@@ -166,6 +176,7 @@ async function testApiBase() {
   if (btn) btn.disabled = false;
   const h = fmApi.health;
   if (h && h.ok) toast(h.llm_ready ? `✅ 后端已连接 · ${h.model}` : "✅ 后端已连接（未配置 Key，聊天走 Mock）");
+  else if (fmApi.isStaticDeploy()) toast("ℹ️ 在线演示为纯前端版本，未部署后端（预期）：聊天走本地 Mock。需要真实模型请本地启动 backend（README 3.3）后在此填入地址");
   else toast("❌ 后端未连接（" + fmApi.base + "），将使用本地 Key 或 Mock 模式");
 }
 function refreshBackendUi() {
@@ -175,6 +186,9 @@ function refreshBackendUi() {
     if (h && h.ok) {
       el.textContent = h.llm_ready ? `已连接 · ${h.model}` : "已连接 · 未配置 Key";
       el.className = "badge " + (h.llm_ready ? "badge-green" : "badge-amber");
+    } else if (fmApi.isStaticDeploy()) {
+      el.textContent = "未部署（在线演示）";
+      el.className = "badge badge-amber";
     } else {
       el.textContent = "未连接";
       el.className = "badge badge-amber";

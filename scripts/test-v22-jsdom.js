@@ -108,8 +108,13 @@ setTimeout(async () => {
   await w.eval("fmApi.checkHealth(true)");
   ok(w.eval("fmApi.ready === false && fmApi.backendReady() === false"), "后端不可达时 ready 置假（降级）");
   w.eval("refreshBackendUi()");
-  ok(w.document.getElementById("llm-backend-status").textContent === "未连接", "不可达徽章显示未连接");
+  ok(w.eval("fmApi.isStaticDeploy() === true"), "公网 https + 默认后端地址 → 识别为静态部署（无后端属预期）");
+  ok(w.document.getElementById("llm-backend-status").textContent === "未部署（在线演示）", "静态部署下徽章显示「未部署（在线演示）」而非故障态");
+  w.eval("fmApi.setBase('http://localhost:9000')");
+  w.eval("refreshBackendUi()");
+  ok(w.document.getElementById("llm-backend-status").textContent === "未连接", "自定义后端地址后恢复「未连接」故障态");
   ok(w.document.getElementById("llm-backend-status").className.includes("badge-amber"), "未连接徽章为琥珀色");
+  w.eval("fmApi.setBase('http://localhost:8000')");
 
   /* 恢复健康路由 + 未配置 Key 形态 */
   w.fetch = async (url, opts) => {
