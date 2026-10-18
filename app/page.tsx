@@ -64,6 +64,14 @@ export default function Home() {
             查看 Demo（Mock 模式可跑）
           </Link>
         </div>
+        <p className="mt-5 text-sm text-slate-500">
+          <Link
+            href="/changelog"
+            className="font-medium text-brand-600 transition-colors hover:text-brand-700 hover:underline"
+          >
+            查看版本更新日志（v1 → Beta 1.0 · v23 规划中）→
+          </Link>
+        </p>
       </div>
 
       <div className="mt-20">
