@@ -191,7 +191,7 @@ function runTests() {
       ok(cssText.includes(".quick-entries-hero") && /repeat\(4,\s*1fr\)/.test(cssText), "快速入口升级为 4 列 Bento 网格");
       ok(cssText.includes("grid-column: span 2"), "核心入口跨列（span 2）");
       ok(cssText.includes("repeat(9, 1fr)"), "底部 Tab 栏 9 格布局（v19 新增题库入口）");
-      ok(cssText.includes("rgba(255,255,255,0.85)"), "亮色玻璃边框对比度增强");
+      ok(/rgba\(255,\s*255,\s*255,\s*0\.85\)/.test(cssText), "亮色玻璃边框对比度增强");
       ok(/#8A90B8/.test(cssText), "暗色 --faint 提升至 #8A90B8（WCAG AA）");
       ok(/color-mix\(in srgb, var\(--bg\) 92%, #000\)/.test(cssText), "诊断日志背景主题化");
       ok(document.getElementById("answer-timer").className.includes("answer-timer"), "计时器样式类就位");
