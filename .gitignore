@@ -47,3 +47,6 @@ next-env.d.ts
 
 # 在线演示镜像的发布目录（由 scripts/stage-mirror.js 生成的纯产物）
 /.mirror-site/
+
+# 端侧模型权重（约 23MB，由 scripts/fetch-model.js 下载，进发布产物但不进主仓库历史）
+/public/models/
