@@ -69,6 +69,19 @@ if (HAS_DOC) {
   fs.writeFileSync(path.join(tmp, "docs", "technical-doc.html"), doc);
 }
 
+/* 端侧模型权重随站点自托管：Pages 会返回 Access-Control-Allow-Origin: *，
+   既满足本站同源读取，也能作为 file:// 或其他站点打开时的跨域兜底 */
+let modelMB = 0;
+const MODEL_SRC = path.join(ROOT, "public", "models");
+if (fs.existsSync(MODEL_SRC)) {
+  fs.cpSync(MODEL_SRC, path.join(tmp, "models"), { recursive: true });
+  const walk = d => fs.readdirSync(d, { withFileTypes: true })
+    .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
+  modelMB = walk(MODEL_SRC) / 1024 / 1024;
+} else {
+  log("warn", "未找到 public/models，端侧模型将退回外网镜像源；先执行 node scripts/fetch-model.js");
+}
+
 const version = (html.match(/beta\s*1\.0/i) || ["Beta 1.0"])[0];
 const stamp = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
 fs.writeFileSync(
@@ -76,12 +89,13 @@ fs.writeFileSync(
   `# FutureMirror 在线演示（发布产物分支）\n\n` +
   `- 内容：\`public/futuremirror-demo.html\`（单文件演示版，${sizeKB}KB，CSS/JS 全内联）\n` +
   (HAS_DOC ? `- 文档：\`docs/technical-doc.html\`（技术文档 HTML 在线版，${docKB.toFixed(1)}KB）\n` : "") +
+  (modelMB ? `- 端侧模型：\`models/\`（all-MiniLM-L6-v2，${modelMB.toFixed(1)}MB，同源可读）\n` : "") +
   `- 版本：${version}\n` +
   `- 生成时间：${stamp}\n` +
   `- 生成方式：\`node scripts/deploy-pages.js --build\`\n\n` +
   `本分支只存放构建产物，源码与提交历史见主分支 \`main\`。\n`
 );
-log("stage", `${tmp}（${sizeKB}KB${HAS_DOC ? ` + 文档 ${docKB.toFixed(1)}KB` : ""}）`);
+log("stage", `${tmp}（${sizeKB}KB${HAS_DOC ? ` + 文档 ${docKB.toFixed(1)}KB` : ""}${modelMB ? ` + 模型 ${modelMB.toFixed(1)}MB` : ""}）`);
 
 if (DRY) {
   log("dry-run", "已装配，未推送；目录保留以便检查");

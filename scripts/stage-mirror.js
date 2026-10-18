@@ -37,8 +37,21 @@ if (fs.existsSync(DOC)) {
   fs.writeFileSync(path.join(OUT_DIR, "docs", "technical-doc.html"), doc);
 }
 
+/* 端侧模型权重随站点自托管：同源读取，彻底绕开 CORS 与 huggingface 不可达 */
+let modelMB = 0;
+const MODEL_SRC = path.join(ROOT, "public", "models");
+if (fs.existsSync(MODEL_SRC)) {
+  fs.cpSync(MODEL_SRC, path.join(OUT_DIR, "models"), { recursive: true });
+  const walk = d => fs.readdirSync(d, { withFileTypes: true })
+    .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
+  modelMB = walk(MODEL_SRC) / 1024 / 1024;
+} else {
+  console.warn("⚠️ 未找到 public/models，端侧模型将退回外网镜像源；先执行 node scripts/fetch-model.js");
+}
+
 const sizeKB = (Buffer.byteLength(html, "utf8") / 1024).toFixed(1);
 const version = (html.match(/beta\s*1\.0/i) || ["Beta 1.0"])[0];
 console.log(`✅ 镜像目录已就绪 → .mirror-site/（index.html + 404.html，${sizeKB}KB，${version}）`);
 if (docKB) console.log(`   技术文档 → .mirror-site/docs/technical-doc.html（${docKB.toFixed(1)}KB）`);
+if (modelMB) console.log(`   端侧模型 → .mirror-site/models/（${modelMB.toFixed(1)}MB，同源可读）`);
 console.log("   发布：在 WorkBuddy 中对该目录执行「发布为应用」（静态站点）");
