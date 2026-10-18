@@ -36,6 +36,9 @@ w.eval(`
   window.matchMedia = window.matchMedia || (q => ({ matches: false, media: q, addListener(){}, removeListener(){}, addEventListener(){}, removeEventListener(){} }));
   window.IntersectionObserver = window.IntersectionObserver || class { constructor(cb){ this.cb = cb; } observe(el){ this.cb([{ isIntersecting: true, target: el }], this); } unobserve(){} disconnect(){} };
 `);
+/* jsdom 25 起不再向 window 暴露 TextEncoder/TextDecoder（旧版有），用 Node 全局补齐（SSE 打桩需要） */
+if (!w.TextEncoder) w.TextEncoder = TextEncoder;
+if (!w.TextDecoder) w.TextDecoder = TextDecoder;
 
 /* ---------- fetch 打桩（URL 路由） ---------- */
 const fetchLog = [];

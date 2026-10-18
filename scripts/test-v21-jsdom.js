@@ -148,7 +148,7 @@ function runTests() {
     /* ============ G. 冻结相关样式（CSSOM） ============ */
     console.log("\n-- G. 冻结相关样式 --");
     ok(/body\.ai-open \.ai-fab \{[^}]*opacity:\s*0/.test(flat), "抽屉打开时悬浮球隐藏");
-    ok(/body\.ai-fab-left \.ai-panel \{ left: 20px; right: auto; \}/.test(flat.replace(/\s+/g, " ")), "桌面端左侧冻结时抽屉镜像（min-width:901 媒体内）");
+    ok(/body\.ai-fab-left \.ai-panel \{\s*left:\s*20px;\s*right:\s*auto;\s*\}/.test(flat), "桌面端左侧冻结时抽屉镜像（min-width:901 媒体内）");
     ok(/\.ai-fab\.dragging \{[^}]*transition:\s*none/.test(flat), "拖拽中禁用过渡（跟手）");
     ok(/\.ai-fab\.dragging \{[^}]*transform:\s*scale\(1\.12\)/.test(flat), "拖拽中放大反馈");
     ok(/\.ai-fab\.hint::after \{[^}]*animation:\s*aiFabPulse/.test(flat), "首次进入提示光环动画");

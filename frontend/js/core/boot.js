@@ -34,8 +34,8 @@ function bootApp() {
   $("timeline").innerHTML = '<div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示 Agent 规划、工具调用与证据记录。</div>';
   if (session.turns.length) restoreSession();
   else { setCurrentSpeaker("规划 Agent"); $("progress-bar").style.width = "0"; }
-  // 窄屏默认折叠时间线，避免占满屏幕
-  if (matchMedia("(max-width: 860px)").matches) $("timeline-box").removeAttribute("open");
+  // 窄屏默认折叠时间线，避免占满屏幕（matchMedia 在个别环境缺失，防御性跳过）
+  try { if (window.matchMedia && window.matchMedia("(max-width: 860px)").matches) $("timeline-box").removeAttribute("open"); } catch (e) {}
   // 重置报告缓存，避免跨用户复用
   lastReportSig = "";
   // v10：首访引导 + 知识库容量展示 + 侧栏面试进度

@@ -610,7 +610,7 @@ futuremirror/
 # 后端
 cd backend && pytest -q                 # 冒烟 + 评分引擎（6 项）
 
-# 前端（Node 直跑，无需浏览器）
+# 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -620,12 +620,12 @@ node scripts/test-v18-jsdom.js          # 求职闭环 / 答题计时 / 连环�
 node scripts/test-v19-jsdom.js          # 题库小测 + VIP（97 项）
 node scripts/test-v20-jsdom.js          # 题库增强 + AI 助手（107 项）
 node scripts/test-v21-jsdom.js          # 悬浮球拖拽冻结 + 移动端美化（57 项）
-node scripts/test-v22-jsdom.js          # 后端适配层 + 契约修复回归（71 项）
-node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向量/缓存/融合/UI（80 项）
+node scripts/test-v22-jsdom.js          # 后端适配层 + 契约修复回归（73 项）
+node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向量/缓存/融合/UI/权重源（90 项）
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **858 项前端断言 + 6 项后端单测**，全部通过。
+合计 **870 项前端断言 + 6 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
