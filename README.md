@@ -104,7 +104,7 @@
 | 主站（GitHub Pages） | <https://penguin-zhou.github.io/FutureMirror/> | 与仓库同源，随 `gh-pages` 分支更新 |
 | 国内直连镜像 | <https://futuremirror-demo.app.workbuddy.host/> | 同一份单文件产物的逐字节副本，国内网络直连更快；github.io 打不开时用这个 |
 
-**方式 2（本地离线）**：打开仓库内的 `public/futuremirror-demo.html`（约 493KB，所有 CSS/JS 内联，默认零外部请求）。
+**方式 2（本地离线）**：打开仓库内的 `public/futuremirror-demo.html`（约 496KB，所有 CSS/JS 内联，默认零外部请求）。
 
 ```bash
 # 纯离线 Mock 演示：直接双击 public/futuremirror-demo.html
@@ -528,7 +528,7 @@ Next.js 完整版（app/）── Route Handlers ── 多模型路由 / RAG / 
 | --------------- | ------------------------------- | ------------------------------------------------------------------- |
 | **FastAPI 后端**  | `backend/`                      | 演示版的后端适配层：JWT 鉴权、SQLite 持久化、GLM SSE 流式代理（API Key 只存服务端环境变量）、可解释评分引擎 |
 | **模块版前端**       | `frontend/`                     | 由单文件演示版机械拆分而成（27 个 JS 模块 + 3 层 CSS），行为与单文件版逐字节等价                    |
-| **单文件演示版**      | `public/futuremirror-demo.html` | 零依赖、可离线运行的演示页（约 493KB，所有 CSS/JS 内联，默认零外部请求；仅主动点「加载端侧模型」时才拉一次模型权重）   |
+| **单文件演示版**      | `public/futuremirror-demo.html` | 零依赖、可离线运行的演示页（约 496KB，所有 CSS/JS 内联，默认零外部请求；仅主动点「加载端侧模型」时才拉一次模型权重）   |
 | **Next.js 完整版** | `app/` `lib/` `components/`     | 生产形态的全栈应用（Route Handlers + 多模型路由 + RAG + Zod 契约）                    |
 
 - **演示版与后端的关系**：演示版检测 `http://localhost:8000` 后端；在线则对话 / 登录 / 报告生成全部走后端（Key 零接触），离线则自动回退「浏览器直连 Key → 本地 Mock」，功能不减。
@@ -686,7 +686,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                  |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录         |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                         |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 6 项 + 前端 858 项断言           |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 6 项 + 前端 860 项断言           |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`      |
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                          |
 | 技术文档（HTML 在线版）         | ✅  | https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html （国内镜像：https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内 `docs/technical-doc.html`） |

@@ -379,7 +379,7 @@
     <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级</span><span class="toc-p">P.06</span></a></li>
     <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span><span class="toc-p">P.09</span></a></li>
     <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span><span class="toc-p">P.18</span></a></li>
-    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">858 + 6 项测试 / 4 种部署</span><span class="toc-p">P.21</span></a></li>
+    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">860 + 6 项测试 / 4 种部署</span><span class="toc-p">P.21</span></a></li>
     <li><a href="#ch7"><span class="toc-t">创新点说明</span><span class="toc-d">技术 8 项 / 应用 6 项</span><span class="toc-p">P.23</span></a></li>
     <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span><span class="toc-p">P.25</span></a></li>
     <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 版本演进 / 交付清单</span><span class="toc-p">P.27</span></a></li>
@@ -434,7 +434,7 @@
     <div class="stat"><div class="stat-num">5</div><div class="stat-label">协作 Agent</div></div>
     <div class="stat"><div class="stat-num">24</div><div class="stat-label">岗位数据库</div></div>
     <div class="stat"><div class="stat-num">40</div><div class="stat-label">面经知识库</div></div>
-    <div class="stat"><div class="stat-num">858</div><div class="stat-label">前端自动化断言</div></div>
+    <div class="stat"><div class="stat-num">860</div><div class="stat-label">前端自动化断言</div></div>
   </div>
 
   <table>
@@ -448,7 +448,7 @@
       <tr><td>面经知识库</td><td>40 条</td><td>全部人工合成，含 <code>source</code> 字段可溯源</td></tr>
       <tr><td>题库</td><td>24 题 / 5 分类</td><td>SQL / 网络 / 操作系统 / 算法 / STAR</td></tr>
       <tr><td>MCP 工具</td><td>3 个</td><td><code>search_job_db</code> / <code>fetch_interview_experience</code> / <code>schedule_mock</code></td></tr>
-      <tr><td>前端自动化断言</td><td>858 项</td><td>单文件版 + 模块版 jsdom 测试</td></tr>
+      <tr><td>前端自动化断言</td><td>860 项</td><td>单文件版 + 模块版 jsdom 测试</td></tr>
       <tr><td>后端单元测试</td><td>6 项</td><td>pytest 冒烟 + 评分引擎</td></tr>
       <tr><td>部署形态</td><td>4 种</td><td>单文件 / 模块版 / FastAPI 后端 / Next.js 完整版</td></tr>
     </tbody>
@@ -460,7 +460,7 @@
       <tr><th style="width:26%">形态</th><th style="width:32%">位置</th><th>定位</th></tr>
     </thead>
     <tbody>
-      <tr><td>单文件演示版</td><td><code>public/futuremirror-demo.html</code></td><td>零依赖、可离线运行（约 493KB，CSS/JS 全内联）</td></tr>
+      <tr><td>单文件演示版</td><td><code>public/futuremirror-demo.html</code></td><td>零依赖、可离线运行（约 496KB，CSS/JS 全内联）</td></tr>
       <tr><td>模块版前端</td><td><code>frontend/</code></td><td>27 个 JS 模块 + 3 层 CSS，与单文件版逐字节等价</td></tr>
       <tr><td>FastAPI 后端</td><td><code>backend/</code></td><td>JWT 鉴权 + SQLite 持久化 + GLM SSE 流式代理</td></tr>
       <tr><td>Next.js 完整版</td><td><code>app/ lib/ components/</code></td><td>生产形态全栈应用（Route Handlers + 多模型路由 + Zod 契约）</td></tr>
@@ -1018,7 +1018,7 @@
       </tr>
       <tr>
         <td><strong>L2 回归防线</strong></td>
-        <td>858 + 6 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
+        <td>860 + 6 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
         <td>任何 Prompt / 规则 / 检索参数变更，先过测试再合入</td>
       </tr>
       <tr>
@@ -1145,7 +1145,7 @@
       <tr><td>jsdom 集成测试</td><td>jsdom</td><td>8 文件 / 641 项</td><td>v15-v22 + beta1 向量检索，覆盖所有功能模块</td></tr>
       <tr><td>模块版启动测试</td><td>jsdom</td><td>28 项</td><td>拆分后的模块版能否独立启动</td></tr>
       <tr><td>后端集成测试</td><td>TestClient</td><td>—</td><td>API 契约一致性</td></tr>
-      <tr><td><strong>合计</strong></td><td>—</td><td><strong>858 + 6</strong></td><td>全部通过</td></tr>
+      <tr><td><strong>合计</strong></td><td>—</td><td><strong>860 + 6</strong></td><td>全部通过</td></tr>
     </tbody>
   </table>
 
@@ -1286,7 +1286,7 @@ cd frontend && python -m http.server 5173
     <li><strong>BM25 + 端侧向量混合检索</strong>的 RAG 层，含缓存、降级、可解释得分；</li>
     <li><strong>可解释评分 + 证据链 + 动态学习路径</strong>的报告引擎；</li>
     <li><strong>三级降级</strong>的完整链路（后端 → 直连 → Mock），演示不中断；</li>
-    <li><strong>858 + 6 项自动化测试</strong>，覆盖所有功能；</li>
+    <li><strong>860 + 6 项自动化测试</strong>，覆盖所有功能；</li>
     <li><strong>开发者模式</strong>作为面向评委的技术透明度工具。</li>
   </ul>
 
@@ -1413,7 +1413,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <tr><td>README（架构 / 安装 / 测试）</td><td>✅</td><td>本仓库根目录</td></tr>
       <tr><td><code>.env.example</code>（无真实密钥）</td><td>✅</td><td><code>backend/.env.example</code></td></tr>
       <tr><td>Git 真实提交历史</td><td>✅</td><td>分阶段提交，非一次性推送</td></tr>
-      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>858 + 6</td></tr>
+      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>860 + 6</td></tr>
       <tr><td>单文件静态演示页</td><td>✅</td><td><code>public/futuremirror-demo.html</code></td></tr>
       <tr><td>演示视频 5-8 分钟 1080p</td><td>⬜</td><td>录制中</td></tr>
       <tr><td>技术文档（HTML 在线版）</td><td>✅</td><td><a href="https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror/docs/technical-doc.html</a>（仓库内 <code>docs/technical-doc.html</code>）</td></tr>
