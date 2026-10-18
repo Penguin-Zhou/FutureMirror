@@ -19,6 +19,7 @@ const path = require("path");
 const ROOT = path.join(__dirname, "..");
 const MODEL = "Xenova/all-MiniLM-L6-v2";
 const OUT_DIR = path.join(ROOT, "public", "models", MODEL, "resolve", "main");
+const ORT_DIR = path.join(ROOT, "public", "models", "ort");
 const HOSTS = ["https://hf-mirror.com", "https://huggingface.co"];
 const FILES = [
   "config.json",
@@ -27,6 +28,10 @@ const FILES = [
   "special_tokens_map.json",
   "onnx/model_quantized.onnx",
 ];
+/* ONNX Runtime 的 wasm 运行时同样自托管：否则要从 CDN 再拉 10MB，遇到网络抖动会
+   报「no available backend found. ERR: [wasm] TypeError: Failed to fetch」 */
+const ORT_BASE = "https://fastly.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist";
+const ORT_FILES = ["ort-wasm-simd.wasm", "ort-wasm.wasm"];
 const FORCE = process.argv.includes("--force");
 
 function human(n) {
@@ -41,6 +46,17 @@ async function download(host, rel) {
   if (!buf.length) throw new Error("空响应");
   const dest = path.join(OUT_DIR, rel);
   fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.writeFileSync(dest, buf);
+  return buf.length;
+}
+
+/* ONNX Runtime 运行时：直接取 CDN 上的静态文件，落到 public/models/ort/ */
+async function downloadOrt(name) {
+  const res = await fetch(`${ORT_BASE}/${name}`, { signal: AbortSignal.timeout(180000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  const dest = path.join(ORT_DIR, name);
+  fs.mkdirSync(ORT_DIR, { recursive: true });
   fs.writeFileSync(dest, buf);
   return buf.length;
 }
@@ -72,10 +88,28 @@ async function download(host, rel) {
     }
     if (!done) console.error(`[fail] ${rel.padEnd(28)} ${lastErr}`);
   }
-  const total = fs.readdirSync(OUT_DIR, { recursive: true })
-    .map(f => path.join(OUT_DIR, String(f)))
-    .filter(f => fs.statSync(f).isFile())
-    .reduce((s, f) => s + fs.statSync(f).size, 0);
-  console.log(`\n模型目录：public/models/（${ok}/${FILES.length} 个文件，合计 ${human(total)}，跳过 ${skipped} 个已存在）`);
-  if (ok !== FILES.length) process.exit(1);
+  /* ONNX Runtime wasm 运行时（同源托管） */
+  for (const name of ORT_FILES) {
+    const dest = path.join(ORT_DIR, name);
+    if (!FORCE && fs.existsSync(dest) && fs.statSync(dest).size > 0) {
+      console.log(`[skip] ort/${name.padEnd(24)} ${human(fs.statSync(dest).size)}`);
+      skipped++;
+      ok++;
+      continue;
+    }
+    try {
+      const size = await downloadOrt(name);
+      console.log(`[ok]   ort/${name.padEnd(24)} ${human(size)}  ← fastly.jsdelivr.net`);
+      ok++;
+    } catch (e) {
+      console.error(`[fail] ort/${name.padEnd(24)} ${e.message}`);
+    }
+  }
+
+  const walk = d => fs.readdirSync(d, { withFileTypes: true })
+    .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
+  const total = walk(path.join(ROOT, "public", "models"));
+  const totalN = FILES.length + ORT_FILES.length;
+  console.log(`\n模型目录：public/models/（${ok}/${totalN} 个文件，合计 ${human(total)}，跳过 ${skipped} 个已存在）`);
+  if (ok !== totalN) process.exit(1);
 })();

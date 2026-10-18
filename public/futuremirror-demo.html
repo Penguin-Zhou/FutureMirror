@@ -6151,6 +6151,9 @@ const VEC_CFG = {
     "https://huggingface.co/",
   ],
   probeTimeout: 8000,       // 单个权重源的连通性探测上限
+  /* ONNX Runtime 的 wasm 运行时：站点自托管优先，CDN 兜底 */
+  ortPath: "ort/",
+  ortCdn: "https://fastly.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/",
   storeKey: "fm_kb_vec_v1",
   wVec: 0.6,        // 融合权重：余弦相似度
   wBm25: 0.4,       // 融合权重：BM25
@@ -6433,6 +6436,21 @@ async function probeHost(host) {
   }
 }
 
+/* 探测 ONNX 运行时 wasm 是否随该源一起托管（有则同源加载，避免 CDN 抖动导致后端初始化失败） */
+async function probeWasm(host) {
+  if (typeof fetch !== "function") return false;
+  const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+  const timer = setTimeout(() => { if (ctrl) ctrl.abort(); }, VEC_CFG.probeTimeout);
+  try {
+    const res = await fetch(`${host}${VEC_CFG.ortPath}ort-wasm-simd.wasm`, ctrl ? { method: "HEAD", signal: ctrl.signal } : { method: "HEAD" });
+    return !!res.ok;
+  } catch (e) {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function loadVecModel(silent) {
   if (vecIndex.building) return false;
   if (vecIndex.provider === "minilm" && vecIndex.extractor) {
@@ -6478,6 +6496,10 @@ async function loadVecModel(silent) {
       setVecStatus(`模型权重加载中（源：${hostName}，首次约 23MB，之后走浏览器缓存）…`, "load");
       try {
         if (mod.env) mod.env.remoteHost = host;
+        /* wasm 运行时同样优先同源：CDN 一旦抖动，ORT 会直接报 no available backend */
+        const wasmSameOrigin = await probeWasm(host);
+        const wasmEnv = mod.env && mod.env.backends && mod.env.backends.onnx && mod.env.backends.onnx.wasm;
+        if (wasmEnv) wasmEnv.wasmPaths = wasmSameOrigin ? `${host}${VEC_CFG.ortPath}` : VEC_CFG.ortCdn;
         extractor = await mod.pipeline("feature-extraction", VEC_CFG.model, {
           quantized: true,
           progress_callback: p => {
