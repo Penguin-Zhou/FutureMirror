@@ -173,8 +173,11 @@ const S = (cond, name) => ok(cond, name);
   const savedFetch = w.fetch;
   w.fetch = undefined;
   const probeNoFetch = await w.eval("probeHost(vecHosts()[0])");
+  const wasmNoFetch = await w.eval("probeWasm(vecHosts()[0])");
   w.fetch = savedFetch;
   S(probeNoFetch === true, "无 fetch 环境探测直接放行，交由 pipeline 报错（不误判为源不可用）");
+  S(wasmNoFetch === false, "无 fetch 环境时 wasm 探测返回 false，回退 CDN 路径");
+  S(w.eval("VEC_CFG.ortPath") === "ort/" && /jsdelivr/.test(w.eval("VEC_CFG.ortCdn")), "wasm 同源路径与 CDN 兜底均已配置");
 
   /* ============ I. 版本与声明 ============ */
   console.log("\n-- I. beta1.0 版本与页脚声明 --");
