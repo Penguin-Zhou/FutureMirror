@@ -160,6 +160,22 @@ const S = (cond, name) => ok(cond, name);
   S(doc.getElementById("vec-build-btn").textContent.includes("MiniLM"), "失败后按钮可重试");
   S(js('hybridRetrieve("Redis 缓存穿透", 3)').length > 0, "降级后检索链路不中断");
 
+  /* ============ H2. 权重源解析（自托管优先） ============ */
+  console.log("\n-- H2. 权重源解析 --");
+  const hosts = js("vecHosts()");
+  S(Array.isArray(hosts) && hosts.length >= 4, `权重源列表含同源与兜底（${hosts.length} 个）`);
+  S(/^https:\/\/example\.com\/models\/$/.test(hosts[0]), "首个权重源是同源 models/（自托管，零跨域）");
+  S(hosts.includes("https://penguin-zhou.github.io/FutureMirror/models/"), "跨域兜底为 Pages 的 models/（带 ACAO:*）");
+  S(hosts.includes("https://hf-mirror.com/") && hosts.includes("https://huggingface.co/"), "外网源保留为最后兜底");
+  S(new Set(hosts).size === hosts.length, "权重源列表已去重");
+  S(js('hostLabel(vecHosts()[0])') === "本站 models/", "同源源在状态条显示为「本站 models/」");
+  S(js('hostLabel("https://hf-mirror.com/")') === "hf-mirror.com", "外网源显示为主机名");
+  const savedFetch = w.fetch;
+  w.fetch = undefined;
+  const probeNoFetch = await w.eval("probeHost(vecHosts()[0])");
+  w.fetch = savedFetch;
+  S(probeNoFetch === true, "无 fetch 环境探测直接放行，交由 pipeline 报错（不误判为源不可用）");
+
   /* ============ I. 版本与声明 ============ */
   console.log("\n-- I. beta1.0 版本与页脚声明 --");
   S(/beta1\.0/.test(doc.querySelector(".sb-footer").textContent), "侧栏版本号 beta1.0");
