@@ -99,10 +99,10 @@
 
 **方式 1（推荐，零安装）**：直接打开在线演示，Chromium 系浏览器即可完整走完流程。
 
-| 入口 | 地址 | 说明 |
-| --- | --- | --- |
-| 主站（GitHub Pages） | <https://penguin-zhou.github.io/FutureMirror/> | 与仓库同源，随 `gh-pages` 分支更新 |
-| 国内直连镜像 | <https://futuremirror-demo.app.workbuddy.host/> | 同一份单文件产物的逐字节副本，国内网络直连更快；github.io 打不开时用这个 |
+| 入口               | 地址                                              | 说明                                        |
+| ---------------- | ----------------------------------------------- | ----------------------------------------- |
+| 主站（GitHub Pages） | <https://penguin-zhou.github.io/FutureMirror/>  | 与仓库同源，随 `gh-pages` 分支更新                   |
+| 国内直连镜像           | <https://futuremirror-demo.app.workbuddy.host/> | 同一份单文件产物的逐字节副本，国内网络直连更快；github.io 打不开时用这个 |
 
 **方式 2（本地离线）**：打开仓库内的 `public/futuremirror-demo.html`（约 499KB，所有 CSS/JS 内联，默认零外部请求）。
 
@@ -112,6 +112,7 @@
 ```
 
 > 两个在线入口内容完全一致（均为 `public/futuremirror-demo.html` 的逐字节副本）：
+>
 > - 主站由 GitHub Pages 托管 `gh-pages` 分支（`.nojekyll` 跳过 Jekyll 处理），重新发布：`node scripts/deploy-pages.js --build`；
 > - 镜像由静态托管服务托管 `.mirror-site/` 目录，重新发布：`node scripts/stage-mirror.js` 后对该目录执行一次「发布」。镜像目录为纯产物，已被 `.gitignore` 忽略，不参与版本管理。
 >
@@ -186,14 +187,15 @@ cp .env.example .env.local         # 可选：填模型 Key；不填自动 Mock
 npm run dev                        # http://localhost:3000
 ```
 
+
 ### 3.5 常见安装问题
 
-| 现象                          | 原因                                | 处理                                                                        |
-| --------------------------- | --------------------------------- | ------------------------------------------------------------------------- |
-| 页面显示「未连接」，报告无「已落库」          | 后端未启动 / 端口不对 / CORS 拒绝            | 确认 `uvicorn` 在 8000；页面用 `http://localhost:5173` 打开；`CORS_ORIGINS` 与前端端口一致 |
-| 登录后提示「邮箱或密码不正确」             | 后端在线但该账号只在本地注册过，或未注册              | 用演示账号一键登录，或先在后端注册（注册即写 SQLite）                                            |
-| 后端启动报 `ModuleNotFoundError` | 依赖未装到当前解释器                        | 确认已激活 `.venv` 后重新 `pip install -r requirements.txt`                       |
-| 对话不走模型、只要 Mock              | `.env` 的 `LLM_API_KEY` 为空或 Key 无效 | 填 Key 后重启 uvicorn；`/api/health` 的 `llm_ready` 应为 `true`                   |
+| 现象                          | 原因                                            | 处理                                                                                          |
+| --------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 页面显示「未连接」，报告无「已落库」          | 后端未启动 / 端口不对 / CORS 拒绝                        | 确认 `uvicorn` 在 8000；页面用 `http://localhost:5173` 打开；`CORS_ORIGINS` 与前端端口一致                   |
+| 登录后提示「邮箱或密码不正确」             | 后端在线但该账号只在本地注册过，或未注册                          | 用演示账号一键登录，或先在后端注册（注册即写 SQLite）                                                              |
+| 后端启动报 `ModuleNotFoundError` | 依赖未装到当前解释器                                    | 确认已激活 `.venv` 后重新 `pip install -r requirements.txt`                                         |
+| 对话不走模型、只要 Mock              | `.env` 的 `LLM_API_KEY` 为空或 Key 无效             | 填 Key 后重启 uvicorn；`/api/health` 的 `llm_ready` 应为 `true`                                     |
 | 「⚡ 加载端侧模型 MiniLM」一直转圈/失败    | 站点上缺 `models/` 目录（未随站点发布），回落到外网源后又被 CORS/网络挡住 | 线上两个站点已自托管权重，正常可直接加载；本地自建站点先跑 `npm run model:fetch` 再发布。失败时属预期降级：状态条会逐源列出失败原因并继续用离线 hash 向量 |
 
 ---
@@ -222,7 +224,7 @@ npm run dev                        # http://localhost:3000
 | 6  | 看报告页顶部徽章                      | 后端在线：「服务端评分引擎 · 已落库」；离线：「本地评分引擎（Mock）」                               |
 | 7  | 进「面经问答」→ 输入问题或点预设             | 返回带引用的回答，每条引用显示 `bm25 / cos / 融合` 分数                                 |
 | 8  | 点「⚡ 加载端侧模型 MiniLM」            | 状态条从 `hash-ngram 256d` 变为 `MiniLM 384d（语义）`，检索升级为语义召回                |
-| 9  | （答辩加分）终端查库                          | `sqlite3 backend/futuremirror.db "select count(*) from turns"` 应 ≥ 5 |
+| 9  | 终端查库                          | `sqlite3 backend/futuremirror.db "select count(*) from turns"` 应 ≥ 5 |
 
 ### 4.3 各页面速查
 
@@ -324,7 +326,6 @@ MySQL 索引与事务、Redis 缓存；了解分布式系统基本原理，
 ```
 
 > 匹配分算法：`round(100 × (JD 技能数 − 缺口数) / JD 技能数)`；技能词典 32 项（`SKILL_DICT`），JD 无命中时兜底 60 分。缺口会带入后续面试提问方向与报告「岗位匹配」维度。
-
 
 ### 5.2 模拟面试 → 可解释评分报告
 
@@ -440,6 +441,7 @@ retriever=hybrid(bm25×0.4+cos×0.6) · vec=MiniLM 384d · hits=3
 
 **注册（演示邮箱自动 VIP）**
 
+
 ```bash
 curl -X POST http://localhost:8000/api/auth/register \
   -H "Content-Type: application/json" \
@@ -524,12 +526,12 @@ Next.js 完整版（app/）── Route Handlers ── 多模型路由 / RAG / 
 
 **四种交付形态**
 
-| 形态              | 位置                              | 定位                                                                  |
-| --------------- | ------------------------------- | ------------------------------------------------------------------- |
-| **FastAPI 后端**  | `backend/`                      | 演示版的后端适配层：JWT 鉴权、SQLite 持久化、GLM SSE 流式代理（API Key 只存服务端环境变量）、可解释评分引擎 |
-| **模块版前端**       | `frontend/`                     | 由单文件演示版机械拆分而成（27 个 JS 模块 + 3 层 CSS），行为与单文件版逐字节等价                    |
-| **单文件演示版**      | `public/futuremirror-demo.html` | 零依赖、可离线运行的演示页（约 499KB，所有 CSS/JS 内联，默认零外部请求；仅主动点「加载端侧模型」时才从**同源 `models/`** 取一次权重）   |
-| **Next.js 完整版** | `app/` `lib/` `components/`     | 生产形态的全栈应用（Route Handlers + 多模型路由 + RAG + Zod 契约）                    |
+| 形态              | 位置                              | 定位                                                                                |
+| --------------- | ------------------------------- | --------------------------------------------------------------------------------- |
+| **FastAPI 后端**  | `backend/`                      | 演示版的后端适配层：JWT 鉴权、SQLite 持久化、GLM SSE 流式代理（API Key 只存服务端环境变量）、可解释评分引擎               |
+| **模块版前端**       | `frontend/`                     | 由单文件演示版机械拆分而成（27 个 JS 模块 + 3 层 CSS），行为与单文件版逐字节等价                                  |
+| **单文件演示版**      | `public/futuremirror-demo.html` | 零依赖、可离线运行的演示页（约 499KB，所有 CSS/JS 内联，默认零外部请求；仅主动点「加载端侧模型」时才从**同源 `models/`** 取一次权重） |
+| **Next.js 完整版** | `app/` `lib/` `components/`     | 生产形态的全栈应用（Route Handlers + 多模型路由 + RAG + Zod 契约）                                  |
 
 - **演示版与后端的关系**：演示版检测 `http://localhost:8000` 后端；在线则对话 / 登录 / 报告生成全部走后端（Key 零接触），离线则自动回退「浏览器直连 Key → 本地 Mock」，功能不减。
 - **单文件版与模块版的关系**：`scripts/split-frontend.js` 从单文件版按「版本横幅」机械拆分出 `frontend/`；`scripts/build-demo.js` 反向合并回单文件（除一行 hashchange 监听注册随 handler 归位外**逐字节一致**）。`scripts/test-frontend-modules.js` 用 jsdom 真实加载模块版验证独立启动（28 项）。
@@ -538,15 +540,15 @@ Next.js 完整版（app/）── Route Handlers ── 多模型路由 / RAG / 
 
 RAG 检索不是关键词匹配，而是**词面 + 语义双路召回后归一融合**，全部在浏览器内完成（零后端、零 API、离线可跑）：
 
-| 环节   | 实现                                                                | 关键参数 / 说明                                                    |
-| ---- | ----------------------------------------------------------------- | ------------------------------------------------------------ |
-| 分词   | 英文/数字整词 + 中文 bigram（`tokenList`）                                  | 与完整版 `lib/ai/rag.ts` 同策略，中文无空格也能召回                           |
-| 词面召回 | BM25（`bm25Score`）                                                 | `k1=1.5`、`b=0.75`，IDF 恒正（`log(1+…)` 防负权），标题字段重复计入 = 权重 ×2    |
-| 语义召回 | **Transformers.js · all-MiniLM-L6-v2**（`Xenova/all-MiniLM-L6-v2`） | 384 维，`pooling=mean` + L2 归一，浏览器内推理；**权重自托管在站点 `models/`，同源读取**（不依赖 huggingface，规避其国内不可达与 CORS 缺失），浏览器缓存二次秒开          |
-| 向量库  | `localStorage["fm_kb_vec_v1"]`（40 条预计算向量 + 元信息）                   | 二次访问「缓存命中」零推理；条目数与知识库不符时**拒绝加载**，避免脏索引                       |
-| 离线兜底 | n-gram hashing 向量（`hashEmbed`，256 维，有符号特征哈希 + L2 归一）              | 无模型文件 / CDN 不可达时自动启用，检索链路不中断，状态条如实标注「非语义」                    |
-| 融合   | `score = 0.6 × cosine + 0.4 × bm25_normalized`                    | 两路各自 min-max 归一后加权；纯语义召回设余弦门槛（MiniLM 0.15 / hashing 0.32）防噪声 |
-| 可解释  | 每条引用显示 `bm25 0.82 · cos 0.61 · 融合 0.74`                           | 评委可当场核对分数，不是黑箱「相似度」                                          |
+| 环节   | 实现                                                                | 关键参数 / 说明                                                                                                    |
+| ---- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 分词   | 英文/数字整词 + 中文 bigram（`tokenList`）                                  | 与完整版 `lib/ai/rag.ts` 同策略，中文无空格也能召回                                                                           |
+| 词面召回 | BM25（`bm25Score`）                                                 | `k1=1.5`、`b=0.75`，IDF 恒正（`log(1+…)` 防负权），标题字段重复计入 = 权重 ×2                                                    |
+| 语义召回 | **Transformers.js · all-MiniLM-L6-v2**（`Xenova/all-MiniLM-L6-v2`） | 384 维，`pooling=mean` + L2 归一，浏览器内推理；**权重自托管在站点 `models/`，同源读取**（不依赖 huggingface，规避其国内不可达与 CORS 缺失），浏览器缓存二次秒开 |
+| 向量库  | `localStorage["fm_kb_vec_v1"]`（40 条预计算向量 + 元信息）                   | 二次访问「缓存命中」零推理；条目数与知识库不符时**拒绝加载**，避免脏索引                                                                       |
+| 离线兜底 | n-gram hashing 向量（`hashEmbed`，256 维，有符号特征哈希 + L2 归一）              | 无模型文件 / CDN 不可达时自动启用，检索链路不中断，状态条如实标注「非语义」                                                                    |
+| 融合   | `score = 0.6 × cosine + 0.4 × bm25_normalized`                    | 两路各自 min-max 归一后加权；纯语义召回设余弦门槛（MiniLM 0.15 / hashing 0.32）防噪声                                                 |
+| 可解释  | 每条引用显示 `bm25 0.82 · cos 0.61 · 融合 0.74`                           | 评委可当场核对分数，不是黑箱「相似度」                                                                                          |
 
 答辩口径：**检索层是 BM25 + 端侧向量混合检索**，向量由 Transformers.js 在浏览器内计算（零 API 成本、离线可跑），两路归一分后加权融合；完整版升级为 **pgvector + RRF + Rerank**。
 
@@ -639,15 +641,14 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 - 所有 AI 生成代码均经逐行审查、修改与调试，git 提交记录可见演进过程；
 - 演示数据均为合成示例，非真实爬取。
 
-
 ## 十、团队信息与成员分工
 
 **面镜 FutureMirror 开发团队 · 福建农林大学桢队** · 技术文档 v1.0（对应产品 Beta 1.0）
 
-| 角色 | 成员 | GitHub |
-| --- | --- | --- |
+| 角色                  | 成员               | GitHub                                           |
+| ------------------- | ---------------- | ------------------------------------------------ |
 | 项目负责人 / 前端开发 / 后端开发 | 周鹏辉（PenguinZhou） | [@Penguin-Zhou](https://github.com/Penguin-Zhou) |
-| 文案与视觉美化 | 林宇豪（Vito） | — |
+| 文案与视觉美化             | 林宇豪（Vito）        | —                                                |
 
 ### 10.1 项目负责人｜周鹏辉（PenguinZhou）
 
@@ -681,21 +682,22 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 
 ## 十一、交付材料
 
-| 材料                     | 状态 | 地址 / 说明                              |
-| ---------------------- | -- | ------------------------------------ |
-| 代码仓库（Public）           | ✅  | https://github.com/Penguin-Zhou/FutureMirror |
-| README（问题/功能/安装/使用/示例） | ✅  | 本文件                                  |
-| `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录         |
-| Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                         |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 6 项 + 前端 870 项断言           |
-| 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`      |
-| 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                          |
-| 技术文档（HTML 在线版）         | ✅  | https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html （国内镜像：https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内 `docs/technical-doc.html`） |
+| 材料                     | 状态 | 地址 / 说明                                                                                                                                                                           |
+| ---------------------- | -- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 代码仓库（Public）           | ✅  | <https://github.com/Penguin-Zhou/FutureMirror>                                                                                                                                    |
+| README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
+| `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
+| Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 6 项 + 前端 870 项断言                                                                                                                                                        |
+| 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
+| 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
+| 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
 | 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，约 29 页，**随赛事材料以附件形式提交**；仓库 Release 同附（修复版 v1.0.0-beta.1）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0-beta.1/FutureMirror.Beta.pdf> |
-| 在线演示（公网可访问）            | ✅  | https://penguin-zhou.github.io/FutureMirror/ |
-| 在线演示镜像（国内直连）          | ✅  | https://futuremirror-demo.app.workbuddy.host/ |
-| 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456` |
-| 开源许可证                  | ✅  | MIT，见仓库根目录 `LICENSE`                |
+| 在线演示（公网可访问）            | ✅  | <https://penguin-zhou.github.io/FutureMirror/>                                                                                                                                    |
+| 在线演示镜像（国内直连）           | ✅  | <https://futuremirror-demo.app.workbuddy.host/>                                                                                                                                   |
+| 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456`                                                                                                                                              |
+| 开源许可证                  | ✅  | MIT，见仓库根目录 `LICENSE`                                                                                                                                                              |
+
 
 ### 部署速查
 
@@ -739,16 +741,17 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 第三方组件遵循各自许可证，版权归原作者所有：
 
-| 组件 | 许可证 | 用途 |
-| --- | --- | --- |
-| Next.js / React / Tailwind CSS | MIT | 完整版前端框架与样式 |
-| `@xenova/transformers`（Transformers.js） | Apache-2.0 | 浏览器内向量推理运行时 |
-| `Xenova/all-MiniLM-L6-v2` | Apache-2.0 | 端侧句向量模型（仅集成调用，未再训练） |
-| FastAPI / SQLAlchemy / PyJWT / httpx | MIT / BSD | 后端服务、ORM、鉴权与流式转发 |
+| 组件                                      | 许可证        | 用途                  |
+| --------------------------------------- | ---------- | ------------------- |
+| Next.js / React / Tailwind CSS          | MIT        | 完整版前端框架与样式          |
+| `@xenova/transformers`（Transformers.js） | Apache-2.0 | 浏览器内向量推理运行时         |
+| `Xenova/all-MiniLM-L6-v2`               | Apache-2.0 | 端侧句向量模型（仅集成调用，未再训练） |
+| FastAPI / SQLAlchemy / PyJWT / httpx    | MIT / BSD  | 后端服务、ORM、鉴权与流式转发    |
 
 > 演示知识库（`frontend/js/data/kb.js`、`lib/data/kb.json`）与题库均为**人工合成示例数据**，随项目一同提供仅用于功能演示，不代表任何真实企业面试内容。
 
 ---
+
 ---
 
 ## 附：版本更新日志（v1 → Beta 1.0，v23 规划中）
@@ -793,9 +796,8 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 规划指标（预估）**
 
-
-| 3 | 2 | 2 | 3 |
-|---|---|---|---|
+| 3       | 2         | 2     | 3      |
+| ------- | --------- | ----- | ------ |
 | RAG 升级项 | Agent 升级项 | 评分升级项 | 多模态升级项 |
 
 ### Beta 1.0 · 检索层升级与版本定位（2026.10 当前版本）
@@ -821,10 +823,9 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 数据指标**
 
-
-| 384d | 256d | 0.6/0.4 | 80 |
-|---|---|---|---|
-| MiniLM 语义维度 | hashing 兜底维度 | 融合权重 | 新增断言 |
+| 384d        | 256d         | 0.6/0.4 | 80   |
+| ----------- | ------------ | ------- | ---- |
+| MiniLM 语义维度 | hashing 兜底维度 | 融合权重    | 新增断言 |
 
 ### v22 · 后端适配与工程化（2026.10）
 
@@ -858,9 +859,8 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 数据指标**
 
-
-| 6 | 3 | 27 | 4 |
-|---|---|---|---|
+| 6         | 3    | 27   | 4    |
+| --------- | ---- | ---- | ---- |
 | 后端 pytest | 降级层级 | 前端模块 | 数据库表 |
 
 ### v21 · 悬浮球拖拽冻结 + 移动端美化（2026.10）
@@ -886,9 +886,8 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 数据指标**
 
-
-| 6px | 16px | 42px | 100% |
-|---|---|---|---|
+| 6px  | 16px | 42px   | 100%    |
+| ---- | ---- | ------ | ------- |
 | 拖动阈值 | 贴边留白 | 触控最小高度 | 位置按账号记忆 |
 
 ### v20 · 题库增强 + AI 小助手 + 移动端导航顶部化（2026.10）
@@ -916,9 +915,8 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 数据指标**
 
-
-| +4 | +1 | 5 | 3 |
-|---|---|---|---|
+| +4   | +1     | 5       | 3    |
+| ---- | ------ | ------- | ---- |
 | 刷题模块 | AI 小助手 | 移动端核心入口 | 刷题模式 |
 
 ### v19 · 题库小测模块 + VIP 会员体系（2026.10）
@@ -932,7 +930,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **学习模式**：每题 4 个选项 + 正确答案标记 + 详细解析，先建立知识框架再做题
 - **限时小测**：每轮 5 题，每题 60 秒倒计时，答错或超时立即展示解析，自动判分
 - **成绩档案**：累计次数 / 平均分 / 最高分 / 累计答对 / 历史记录列表，持久化到 `fm_quiz`
-- **VIP 会员体系**：demo@futuremirror.app 登录自动获得 VIP；顶栏新增 VIP 徽章；个人中心新增 VIP 权益卡；侧栏新增 VIP 徽章
+- **VIP 会员体系**：<demo@futuremirror.app> 登录自动获得 VIP；顶栏新增 VIP 徽章；个人中心新增 VIP 权益卡；侧栏新增 VIP 徽章
 - **免费 / VIP 分级**：免费用户每日 1 次小测、解锁 2 个分类；VIP 用户不限次数、解锁全部 5 个分类
 
 **🔧 优化改进**
@@ -945,9 +943,8 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 数据指标**
 
-
-| 5 | 24 | 3 | 9 |
-|---|---|---|---|
+| 5    | 24   | 3      | 9    |
+| ---- | ---- | ------ | ---- |
 | 题库分类 | 题库题目 | VIP 分类 | 自检断言 |
 
 ### v18 · 产品闭环深化 · 求职管理 + 面试真实感（2026.10）
@@ -964,6 +961,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **HR / 压力面专属题库**：HR 面试官使用动机 / 稳定性专属题库，压力面试官引入"打断-否定-要求举证"三段式话术
 - **语音输入实时反馈**：纯本地规则计算语速与填充词密度，零网络请求
 - **句子级改写建议**：规则引擎自动识别无量化动词句，按维度给出改写模板，无需 LLM
+
 
 **🔧 优化改进**
 
