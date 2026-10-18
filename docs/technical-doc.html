@@ -7,6 +7,10 @@
   :root {
     --brand: #2E3FE8;
     --brand-light: #5B6AF0;
+    --brand2: #8B5CF6;
+    --grad: linear-gradient(120deg, #2E3FE8 0%, #8B5CF6 100%);
+    --grad-soft: linear-gradient(180deg, #FFFFFF 0%, #F7F8FF 100%);
+    --shadow: 0 2px 10px rgba(46,63,232,.10);
     --ink: #10163A;
     --muted: #5A6285;
     --faint: #8E95B5;
@@ -20,7 +24,7 @@
     --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   html { font-size: 9.8pt; }
 
@@ -77,22 +81,32 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 24mm 0;
+    padding: 22mm 0;
     position: relative;
     background:
-      radial-gradient(ellipse at 20% 0%, rgba(46,63,232,.08), transparent 60%),
-      radial-gradient(ellipse at 80% 100%, rgba(139,92,246,.06), transparent 60%);
+      radial-gradient(ellipse at 12% -5%, rgba(46,63,232,.10), transparent 55%),
+      radial-gradient(ellipse at 92% 108%, rgba(139,92,246,.10), transparent 55%),
+      linear-gradient(180deg, #FFFFFF 0%, #F7F8FF 100%);
+  }
+  .cover::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 7mm;
+    background: var(--grad);
   }
   .cover-brand {
-    font-size: 12.5pt; letter-spacing: .4em; color: var(--brand);
-    text-transform: uppercase; font-weight: 600;
-    margin-bottom: 15mm;
+    font-size: 11pt; letter-spacing: .38em; color: var(--brand);
+    text-transform: uppercase; font-weight: 700;
+    margin-bottom: 12mm;
+    display: inline-flex; align-items: center; gap: 3mm;
+  }
+  .cover-brand::before {
+    content: ""; width: 9mm; height: 2.4mm; border-radius: 2mm;
+    background: var(--grad); display: inline-block;
   }
   .cover-title {
     font-family: var(--serif);
-    font-size: 38pt; font-weight: 700;
-    letter-spacing: -.02em; line-height: 1.15;
-    color: var(--ink); margin-bottom: 7mm;
+    font-size: 40pt; font-weight: 700;
+    letter-spacing: -.02em; line-height: 1.12;
+    color: var(--ink); margin-bottom: 6mm;
   }
   .cover-title .grad {
     background: linear-gradient(120deg, var(--brand) 0%, #8B5CF6 100%);
@@ -101,53 +115,60 @@
   }
   .cover-sub {
     font-family: var(--serif);
-    font-size: 15pt; color: var(--muted);
-    margin-bottom: 20mm; line-height: 1.45;
+    font-size: 14.5pt; color: var(--muted);
+    margin-bottom: 16mm; line-height: 1.5;
   }
   .cover-meta {
-    display: grid; grid-template-columns: 27mm 1fr;
-    gap: 2.5mm 5.5mm; font-size: 10pt;
-    padding-top: 5mm; border-top: 1px solid var(--line);
-    max-width: 130mm;
+    display: grid; grid-template-columns: 26mm 1fr;
+    gap: 2.2mm 5mm; font-size: 9.6pt;
+    padding-top: 4.5mm; border-top: 1px solid var(--line);
+    max-width: 134mm;
   }
   .cover-meta dt { color: var(--faint); }
   .cover-meta dd { color: var(--ink); font-weight: 500; }
   .cover-meta dd a { color: var(--brand); text-decoration: none; word-break: break-all; }
   .cover-meta dd a:hover { text-decoration: underline; }
   .cover-foot {
-    position: absolute; bottom: 14mm; left: 0; right: 0;
-    text-align: center; font-size: 9pt;
-    color: var(--brand); font-weight: 600; letter-spacing: .08em;
+    position: absolute; bottom: 13mm; left: 0; right: 0;
+    text-align: center; font-size: 8.6pt;
+    color: var(--muted); font-weight: 600; letter-spacing: .1em;
   }
+  .cover-foot b { color: var(--brand); }
 
   /* ---------- 目录 ---------- */
-  .toc { page-break-after: always; padding-top: 6mm; }
+  .toc { page-break-after: always; padding-top: 8mm; }
   .toc h2 {
     font-family: var(--serif);
     font-size: 20pt; font-weight: 700;
-    margin-bottom: 8mm; padding-bottom: 3.5mm;
+    margin-bottom: 9mm; padding-bottom: 3.5mm;
     border-bottom: 2px solid var(--brand); display: inline-block;
   }
-  .toc ol { list-style: none; counter-reset: toc; font-size: 11pt; }
+  .toc ol { list-style: none; counter-reset: toc; font-size: 10.6pt; }
   .toc ol > li {
     counter-increment: toc;
-    padding: 4.5mm 0;
-    border-bottom: 1px dashed var(--line);
+    padding: 4.2mm 0;
+    border-bottom: 1px solid var(--line);
     display: flex; justify-content: space-between;
     align-items: baseline; gap: 5mm;
   }
   .toc ol > li::before {
     content: counter(toc, decimal-leading-zero);
-    color: var(--brand); font-weight: 700;
-    font-family: var(--mono); margin-right: 3.5mm; flex-shrink: 0;
+    color: #fff; font-weight: 700;
+    font-family: var(--mono); margin-right: 4mm; flex-shrink: 0;
+    background: var(--grad);
+    width: 9mm; height: 9mm; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 9pt;
+    box-shadow: 0 2px 6px rgba(46,63,232,.25);
   }
   .toc ol > li .toc-t { flex: 1; font-weight: 600; }
-  .toc ol > li .toc-d { color: var(--faint); font-size: 9pt; }
+  .toc ol > li .toc-d { color: var(--faint); font-size: 8.6pt; }
   .toc ol > li .toc-p {
     color: var(--faint); font-family: var(--mono);
     font-size: 9.5pt; flex-shrink: 0;
   }
   .toc a { color: inherit; text-decoration: none; }
+  .toc ol > li:hover .toc-t { color: var(--brand); }
 
   /* ---------- 正文 ---------- */
   .content { padding-top: 5mm; }
@@ -156,10 +177,12 @@
 
   .chapter-num {
     display: inline-block; font-family: var(--mono);
-    font-size: 10.5pt; font-weight: 700;
-    color: var(--brand); background: var(--bg-soft);
-    padding: 1.8mm 3.5mm; border-radius: 5px;
-    margin-bottom: 3.5mm; letter-spacing: .06em;
+    font-size: 10pt; font-weight: 700;
+    color: #fff;
+    background: var(--grad);
+    padding: 1.8mm 3.8mm; border-radius: 6px;
+    margin-bottom: 3.5mm; letter-spacing: .08em;
+    box-shadow: 0 3px 10px rgba(46,63,232,.25);
   }
 
   h1 {
@@ -169,16 +192,26 @@
     margin-bottom: 6mm; color: var(--ink);
     page-break-after: avoid;
   }
+  h1::after {
+    content: ""; display: block; width: 22mm; height: 3px;
+    margin-top: 3mm; border-radius: 3px;
+    background: var(--grad);
+  }
 
   h2 {
+    position: relative;
     font-family: var(--serif);
     font-size: 14.5pt; font-weight: 700;
     letter-spacing: -.01em;
     margin: 6.5mm 0 3mm;
-    padding-left: 3.5mm;
-    border-left: 3.5px solid var(--brand);
+    padding-left: 4.2mm;
     color: var(--ink);
     page-break-after: avoid;
+  }
+  h2::before {
+    content: ""; position: absolute; left: 0; top: .4mm; bottom: .4mm;
+    width: 4px; border-radius: 3px;
+    background: var(--grad);
   }
 
   h3 {
@@ -226,11 +259,11 @@
     border: 1px solid var(--line); border-radius: 4px;
     overflow: hidden;
   }
-  thead { background: var(--bg-soft); }
+  thead { background: var(--grad); }
   th {
-    text-align: left; padding: 2mm 2.5mm;
-    font-weight: 700; color: var(--ink);
-    border-bottom: 1.3px solid var(--brand);
+    text-align: left; padding: 2.2mm 2.5mm;
+    font-weight: 700; color: #fff;
+    border-bottom: none;
     font-size: 9pt;
   }
   td {
@@ -244,17 +277,18 @@
   td a:hover { text-decoration: underline; }
 
   .callout {
-    padding: 3mm 3.5mm; border-radius: 5px;
+    padding: 3mm 3.5mm; border-radius: 7px;
     margin: 2.5mm 0 3.5mm; font-size: 9.5pt;
     line-height: 1.6;
     page-break-inside: avoid;
-    border-left: 3.5px solid var(--brand);
+    border-left: 4px solid var(--brand);
     background: var(--bg-soft);
+    box-shadow: 0 2px 8px rgba(46,63,232,.08);
   }
   .callout.info { border-left-color: var(--brand); background: var(--bg-soft); }
   .callout.warn { border-left-color: var(--amber); background: #FFF8E6; }
   .callout.ok { border-left-color: var(--green); background: #EDFBF5; }
-  .callout strong { display: block; margin-bottom: .8mm; font-size: 10pt; }
+  .callout strong { display: block; margin-bottom: .8mm; font-size: 10pt; color: var(--brand); }
 
   .arch {
     background: var(--bg-soft);
@@ -276,13 +310,19 @@
   .stat {
     text-align: center;
     padding: 3mm 1.8mm;
-    background: var(--bg-soft); border-radius: 5px;
+    background: linear-gradient(180deg, #FFFFFF, var(--bg-soft));
+    border: 1px solid var(--line);
+    border-radius: 7px;
     page-break-inside: avoid;
+    box-shadow: 0 2px 8px rgba(16,22,58,.05);
   }
   .stat-num {
     font-family: var(--serif);
     font-size: 18pt; font-weight: 700;
-    color: var(--brand); line-height: 1;
+    background: var(--grad);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
   }
   .stat-label {
     font-size: 8.3pt; color: var(--muted); margin-top: 1.2mm;
@@ -345,7 +385,7 @@
 
 <!-- ================= 封面 ================= -->
 <div class="cover page">
-  <div class="cover-brand">FutureMirror · Tech Doc</div>
+  <div class="cover-brand">FutureMirror · Technical Document</div>
   <h1 class="cover-title">
     面镜
     <span class="grad">FutureMirror</span>
@@ -362,27 +402,27 @@
     <dt>代码仓库</dt>       <dd><a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">github.com/Penguin-Zhou/FutureMirror</a></dd>
     <dt>在线演示</dt>       <dd><a href="https://penguin-zhou.github.io/FutureMirror/" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror</a></dd>
     <dt>国内镜像</dt>       <dd><a href="https://futuremirror-demo.app.workbuddy.host/" target="_blank" rel="noopener">futuremirror-demo.app.workbuddy.host</a></dd>
-    <dt>文档篇幅</dt>       <dd>约 28 页</dd>
-    <dt>配套材料</dt>       <dd>演示视频 · 测试账号</dd>
     <dt>测试账号</dt>       <dd>demo@futuremirror.app / Demo123456</dd>
+    <dt>配套材料</dt>       <dd>演示视频 · 测试账号 · 技术文档 PDF</dd>
   </dl>
 
-  <div class="cover-foot">面镜 FutureMirror 开发团队 · 福建农林大学桢队</div>
+  <div class="cover-foot"><b>面镜 FutureMirror</b> 开发团队 · 福建农林大学桢队</div>
 </div>
 
 <!-- ================= 目录 ================= -->
 <div class="toc page">
   <h2>目录</h2>
   <ol>
-    <li><a href="#ch1"><span class="toc-t">项目概述</span><span class="toc-d">定位 / 问题 / 数据 / 形态</span><span class="toc-p">P.03</span></a></li>
-    <li><a href="#ch2"><span class="toc-t">需求分析</span><span class="toc-d">用户场景 / MoSCoW / 差异化</span><span class="toc-p">P.04</span></a></li>
-    <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级</span><span class="toc-p">P.06</span></a></li>
-    <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span><span class="toc-p">P.09</span></a></li>
-    <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span><span class="toc-p">P.18</span></a></li>
-    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">870 + 6 项测试 / 4 种部署</span><span class="toc-p">P.21</span></a></li>
-    <li><a href="#ch7"><span class="toc-t">创新点说明</span><span class="toc-d">技术 8 项 / 应用 6 项</span><span class="toc-p">P.23</span></a></li>
-    <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span><span class="toc-p">P.25</span></a></li>
-    <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 版本演进 / 交付清单</span><span class="toc-p">P.27</span></a></li>
+    <li><a href="#ch1"><span class="toc-t">项目概述</span><span class="toc-d">定位 / 问题 / 数据 / 形态</span></a></li>
+    <li><a href="#ch2"><span class="toc-t">需求分析</span><span class="toc-d">用户场景 / MoSCoW / 差异化</span></a></li>
+    <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级</span></a></li>
+    <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span></a></li>
+    <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span></a></li>
+    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">870 + 6 项测试 / 4 种部署</span></a></li>
+    <li><a href="#ch7"><span class="toc-t">创新点说明</span><span class="toc-d">技术 8 项 / 应用 6 项</span></a></li>
+    <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span></a></li>
+    <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 交付清单</span></a></li>
+    <li><a href="#ch10"><span class="toc-t">版本更新日志</span><span class="toc-d">v1 → Beta 1.0，v23 规划</span></a></li>
   </ol>
 </div>
 
@@ -1421,7 +1461,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <tr><td>单文件静态演示页</td><td>✅</td><td><code>public/futuremirror-demo.html</code></td></tr>
       <tr><td>演示视频 5-8 分钟 1080p</td><td>⬜</td><td>录制中</td></tr>
       <tr><td>技术文档（HTML 在线版）</td><td>✅</td><td><a href="https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror/docs/technical-doc.html</a>（仓库内 <code>docs/technical-doc.html</code>）</td></tr>
-      <tr><td>技术文档 PDF（附件）</td><td>✅</td><td>由本文件导出的 A4 精简打印版（约 30 页：移除附录、版本日志压缩为摘要），随赛事材料以附件形式提交；完整逐版本明细见本文件第 11 章与 README</td></tr>
+      <tr><td>技术文档 PDF（附件）</td><td>✅</td><td>由本文件导出的 A4 精简打印版（约 30 页：移除附录、版本日志压缩为摘要），随赛事材料以附件形式提交；完整逐版本明细见本文件第 10 章与 README</td></tr>
       <tr><td>在线演示地址（公网）</td><td>✅</td><td><a href="https://penguin-zhou.github.io/FutureMirror/" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror</a></td></tr>
       <tr><td>在线演示镜像（国内直连）</td><td>✅</td><td><a href="https://futuremirror-demo.app.workbuddy.host/" target="_blank" rel="noopener">futuremirror-demo.app.workbuddy.host</a></td></tr>
       <tr><td>演示测试账号</td><td>✅</td><td><code>demo@futuremirror.app / Demo123456</code></td></tr>
@@ -1438,65 +1478,6 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
 <!-- =============== 第 10 章 =============== -->
 <section class="chapter" id="ch10">
   <div class="chapter-num">CHAPTER 10</div>
-  <h1>团队信息与成员分工</h1>
-
-  <p><strong>面镜 FutureMirror 开发团队 · 福建农林大学桢队</strong> · 技术文档 v1.0（对应产品 Beta 1.0）</p>
-
-  <table>
-    <thead>
-      <tr><th style="width:34%">角色</th><th style="width:33%">成员</th><th>GitHub</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>项目负责人 / 前端开发 / 后端开发</td><td>周鹏辉（PenguinZhou）</td><td><a href="https://github.com/Penguin-Zhou" target="_blank" rel="noopener">@Penguin-Zhou</a></td></tr>
-      <tr><td>文案与视觉美化</td><td>林宇豪（Vito）</td><td>—</td></tr>
-    </tbody>
-  </table>
-
-  <h2>10.1 项目负责人｜周鹏辉（PenguinZhou）</h2>
-  <ul>
-    <li>整体产品需求梳理、系统架构设计；完成多 Agent 角色划分、任务调度逻辑设计；</li>
-    <li>负责 Prompt 工程、打分评估规则、可解释评价体系、系统降级与容错方案设计；</li>
-    <li>统筹 Git 仓库搭建、规范代码提交，拆分细粒度 commit，保证开发历史完整可追溯；</li>
-    <li>承担前后端整体联调、功能测试，设计数据隐私安全与合规方案。</li>
-  </ul>
-
-  <h2>10.2 前端开发｜周鹏辉（PenguinZhou）</h2>
-  <ul>
-    <li>完成页面布局、组件开发（HTML/CSS/JS）；实现明暗双主题、流式对话输出、雷达图可视化、报告导出打印、弹窗交互；</li>
-    <li>开发本地存储、语音识别与语音朗读、开发者调试面板；完成离线 Mock 模式开发，对接后端接口并完成全流程调试。</li>
-  </ul>
-  <div class="callout">
-    <strong>备注</strong>：基础 UI 代码由 AI 编程工具辅助生成，本人独立完成业务逻辑编写、代码审核、逻辑纠错与 BUG 修复。
-  </div>
-
-  <h2>10.3 后端开发｜周鹏辉（PenguinZhou）</h2>
-  <ul>
-    <li>使用 FastAPI 搭建代理服务，实现 LLM 流式 SSE 消息转发，解决浏览器跨域问题；</li>
-    <li>完成 API 密钥安全托管、请求超时捕获、异常信息处理；搭建 SQLite 数据持久化、简易 RAG 检索模块；</li>
-    <li>编写项目部署脚本、依赖环境清单，验证 10 分钟本地一键复现流程。</li>
-  </ul>
-
-  <h2>10.4 文案与视觉美化｜林宇豪（Vito）</h2>
-  <ul>
-    <li>撰写 README 文档、AI 辅助开发声明、全套技术说明书与赛事申报材料；</li>
-    <li>撰写演示视频脚本，配合完成内容准备；</li>
-    <li>负责全部技术文档排版美化、图文规整，优化文档视觉观感。</li>
-  </ul>
-
-  <div class="callout info">
-    本技术文档与仓库 README 为同一套交付材料：README 含「项目介绍 / 技术架构 / 安装运行 / 团队信息 / 版本更新日志」；技术文档为 11 章完整技术说明，二者互相指向。
-  </div>
-
-  <div class="chapter-footer">
-    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
-    <span class="cf-chapter">CHAPTER 10 · 团队信息与成员分工</span>
-  </div>
-</section>
-
-
-<!-- =============== 第 11 章 =============== -->
-<section class="chapter" id="ch11">
-  <div class="chapter-num">CHAPTER 11</div>
   <h1>版本更新日志（v1 → Beta 1.0，v23 规划中）</h1>
   <p>本日志为<strong>团队真实开发进程</strong>的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.0 当前版本），共 23 个已发布版本，并含 v23 下一步迭代规划。每个版本均可独立运行、可回归。</p>
   <div class="callout info"><strong>关于 Git 提交记录（重要说明）：</strong> 本仓库的 Git 提交历史自 <strong>Beta 版本</strong>（首次以 <code>v1.0.0-beta</code> 提交包上传）时建立，<strong>仅包含 BETA 1.0 及之后的更新</strong>；BETA 1.0 之前的 v1–v22 演进历程以本更新日志形式完整留存，未在 Git 提交记录中逐条提交。日志中所载为团队真实的版本演进，而非事后补造。</div>
@@ -2224,7 +2205,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
   </table>
   <div class="chapter-footer">
     <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
-    <span class="cf-chapter">CHAPTER 11 · 版本更新日志</span>
+    <span class="cf-chapter">CHAPTER 10 · 版本更新日志</span>
   </div>
 </section>
 
