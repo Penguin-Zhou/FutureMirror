@@ -3947,7 +3947,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
             <span class="badge badge-amber" id="llm-backend-status">检测中…</span>
             <input type="text" id="llm-api-base" placeholder="http://localhost:8000" aria-label="后端地址">
             <button class="btn btn-outline btn-sm" id="llm-api-test" onclick="testApiBase()">检测连接</button>
-            <span class="hint">🔒 推荐模式：API Key 只保存在后端环境变量（backend/.env），前端零接触；后端未启动时自动回退「面板直连 Key」或「Mock 模式」，演示不中断。</span>
+            <span class="hint">🔒 推荐模式：API Key 只保存在后端环境变量（backend/.env），前端零接触；后端未启动时自动回退「面板直连 Key」或「Mock 模式」，演示不中断。在线演示页（GitHub Pages / 镜像）为纯前端版本，未部署后端属预期。</span>
           </div>
           <div class="llm-grid">
             <label>服务商预设
@@ -4032,7 +4032,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <div class="vec-bar" id="vec-bar">
           <span class="vec-dot" id="vec-dot"></span>
           <span class="vec-status" id="vec-status">向量索引未初始化</span>
-          <button class="btn btn-outline btn-sm" id="vec-build-btn" onclick="loadVecModel()" title="在浏览器内计算 384 维句向量（Transformers.js · all-MiniLM-L6-v2），零后端、零 API">⚡ 加载端侧模型 MiniLM</button>
+          <button class="btn btn-outline btn-sm" id="vec-build-btn" onclick="loadVecModel()" title="在浏览器内计算 384 维句向量（Transformers.js · all-MiniLM-L6-v2），零后端、零 API；运行时自动选可用 CDN，权重自动走国内镜像">⚡ 加载端侧模型 MiniLM</button>
         </div>
         <p class="hint" style="margin-top:0;margin-bottom:10px">检索层为 <b>BM25 + 端侧向量混合检索</b>：BM25（k1=1.5 / b=0.75，中文 bigram 切分，标题字段加权）× <b>0.4</b> + 余弦相似度 × <b>0.6</b>，两路各自归一分后融合。<br>向量由 <b>Transformers.js</b> 在浏览器内计算（all-MiniLM-L6-v2，384 维，40 条面经向量预计算后写入 localStorage），<b>不需要后端、不需要 API、离线可跑</b>；无模型文件时自动降级为 n-gram hashing 向量（256 维），检索链路不中断。完整版技术方案为 pgvector + RRF + Rerank。</p>
         <div style="display:flex;gap:8px">
@@ -6130,10 +6130,16 @@ const VEC_CFG = {
   dimHash: 256,
   dimMinilm: 384,
   model: "Xenova/all-MiniLM-L6-v2",
+  /* 运行时库：fastly 节点在国内实测最快；cdn.jsdelivr 主域间歇不可达，降为备选 */
   cdn: [
+    "https://fastly.jsdelivr.net/npm/@xenova/transformers@2.17.2",
     "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2",
+    "https://esm.sh/@xenova/transformers@2.17.2",
     "https://unpkg.com/@xenova/transformers@2.17.2",
   ],
+  cdnTimeout: 10000,        // 单个运行时源的最长等待（避免国内网络下长时间挂起）
+  /* 权重源：transformers.js 默认拉 huggingface.co，国内不可达；镜像优先、官方兜底 */
+  hosts: ["https://hf-mirror.com/", "https://huggingface.co/"],
   storeKey: "fm_kb_vec_v1",
   wVec: 0.6,        // 融合权重：余弦相似度
   wBm25: 0.4,       // 融合权重：BM25
@@ -6364,6 +6370,17 @@ async function embedWithModel(texts) {
   return rows.map(row => Array.from(row, x => Math.round(x * 10000) / 10000));
 }
 
+/* 给动态 import 加超时：国内网络下部分 CDN 会长时间挂起而不是快速失败 */
+function importWithTimeout(url, ms) {
+  let timer = null;
+  const guard = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error("连接超时")), ms);
+  });
+  // 用 then 包一层，把「不支持动态 import」之类的同步异常也转成异步 reject
+  const task = Promise.resolve().then(() => import(url));
+  return Promise.race([task, guard]).finally(() => { if (timer) clearTimeout(timer); });
+}
+
 async function loadVecModel(silent) {
   if (vecIndex.building) return false;
   if (vecIndex.provider === "minilm" && vecIndex.extractor) {
@@ -6372,26 +6389,51 @@ async function loadVecModel(silent) {
   }
   vecIndex.building = true;
   renderVecBar();
-  setVecStatus("正在加载 Transformers.js 运行时…", "load");
+  let failReason = "";
   try {
+    /* ① 取运行时库：多个 CDN 逐个试，每个带超时 */
     let mod = null;
-    for (const url of VEC_CFG.cdn) {
+    for (let i = 0; i < VEC_CFG.cdn.length; i++) {
+      setVecStatus(`正在加载 Transformers.js 运行时（源 ${i + 1}/${VEC_CFG.cdn.length}）…`, "load");
       try {
-        const m = await import(url);
+        const m = await importWithTimeout(VEC_CFG.cdn[i], VEC_CFG.cdnTimeout);
         if (m && typeof m.pipeline === "function") { mod = m; break; }
-      } catch (e) { /* 换下一个源 */ }
+        failReason = "响应不含 pipeline";
+      } catch (e) {
+        failReason = (e && e.message) || "网络不可达";
+      }
     }
-    if (!mod) throw new Error("CDN 不可达（离线环境请继续使用 hash 向量）");
-    if (mod.env) { mod.env.allowLocalModels = false; mod.env.useBrowserCache = true; }
-    setVecStatus("模型权重加载中（首次约 23MB，之后走浏览器缓存）…", "load");
-    const extractor = await mod.pipeline("feature-extraction", VEC_CFG.model, {
-      quantized: true,
-      progress_callback: p => {
-        if (p && p.status === "progress" && p.total) {
-          setVecStatus(`模型权重下载中 ${Math.round(p.loaded / p.total * 100)}%…`, "load");
-        }
-      },
-    });
+    if (!mod) throw new Error(`运行时 CDN 均不可达（${failReason}）`);
+
+    if (mod.env) {
+      mod.env.allowLocalModels = false;
+      mod.env.useBrowserCache = true;
+      // wasm 运行时无需显式指定：transformers.js 会从运行时库自身所在 CDN 推导，
+      // 因此换成哪个可用源，wasm 也跟着走，不会指向不可达的主域
+    }
+
+    /* ② 取模型权重：镜像优先，官方兜底（默认 huggingface.co 在国内不可达） */
+    let extractor = null;
+    for (const host of VEC_CFG.hosts) {
+      const hostName = host.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      setVecStatus(`模型权重加载中（源：${hostName}，首次约 23MB，之后走浏览器缓存）…`, "load");
+      try {
+        if (mod.env) mod.env.remoteHost = host;
+        extractor = await mod.pipeline("feature-extraction", VEC_CFG.model, {
+          quantized: true,
+          progress_callback: p => {
+            if (p && p.status === "progress" && p.total) {
+              setVecStatus(`模型权重下载中 ${Math.round(p.loaded / p.total * 100)}%（${hostName}）…`, "load");
+            }
+          },
+        });
+        break;
+      } catch (e) {
+        failReason = `${hostName}: ${(e && e.message) || "下载失败"}`;
+      }
+    }
+    if (!extractor) throw new Error(`权重下载失败（${failReason}）`);
+
     vecIndex.extractor = extractor;
     setVecStatus("正在为 40 条面经计算 384 维向量…", "load");
     const rows = await embedWithModel(KB.map(docVecText));
@@ -6410,8 +6452,8 @@ async function loadVecModel(silent) {
   } catch (e) {
     vecIndex.building = false;
     renderVecBar();
-    setVecStatus(`端侧模型加载失败：${e.message} · 继续使用离线 hash 向量（${vecIndex.dim}d）`, "warn");
-    if (!silent) toast("模型加载失败，已保持离线向量索引");
+    setVecStatus(`端侧模型加载失败：${e.message} · 已自动改用离线 hash 向量（${vecIndex.dim || VEC_CFG.dimHash}d，BM25 词面检索仍可用）`, "warn");
+    if (!silent) toast("模型未能加载（网络受限），已保持离线 hash 向量；RAG 仍可用");
     return false;
   } finally {
     vecIndex.building = false;
@@ -10971,6 +11013,16 @@ const fmApi = {
   },
   backendReady() { return this.ready && !!this.health && this.health.ok; },
   backendModel() { return (this.health && this.health.model) || "后端模型"; },
+  /* 公网静态托管（GitHub Pages / 国内镜像）没有后端是设计如此，不应报成故障：
+   * 只有「https 公网 + 后端地址仍是默认 localhost」才算静态部署 */
+  isStaticDeploy() {
+    try {
+      const loc = window.location || {};
+      const host = loc.hostname || "";
+      const publicHttps = loc.protocol === "https:" && !/^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])$/.test(host);
+      return publicHttps && this.base === FM_API_DEFAULT_BASE;
+    } catch (e) { return false; }
+  },
   authHeaders() {
     const h = { "Content-Type": "application/json" };
     if (this.token) h["Authorization"] = "Bearer " + this.token;
@@ -11117,6 +11169,7 @@ async function testApiBase() {
   if (btn) btn.disabled = false;
   const h = fmApi.health;
   if (h && h.ok) toast(h.llm_ready ? `✅ 后端已连接 · ${h.model}` : "✅ 后端已连接（未配置 Key，聊天走 Mock）");
+  else if (fmApi.isStaticDeploy()) toast("ℹ️ 在线演示为纯前端版本，未部署后端（预期）：聊天走本地 Mock。需要真实模型请本地启动 backend（README 3.3）后在此填入地址");
   else toast("❌ 后端未连接（" + fmApi.base + "），将使用本地 Key 或 Mock 模式");
 }
 function refreshBackendUi() {
@@ -11126,6 +11179,9 @@ function refreshBackendUi() {
     if (h && h.ok) {
       el.textContent = h.llm_ready ? `已连接 · ${h.model}` : "已连接 · 未配置 Key";
       el.className = "badge " + (h.llm_ready ? "badge-green" : "badge-amber");
+    } else if (fmApi.isStaticDeploy()) {
+      el.textContent = "未部署（在线演示）";
+      el.className = "badge badge-amber";
     } else {
       el.textContent = "未连接";
       el.className = "badge badge-amber";
