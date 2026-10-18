@@ -596,7 +596,6 @@ futuremirror/
 ├── public/models/                  # 端侧模型权重（fetch-model.js 下载，随站点自托管，已 gitignore）
 ├── scripts/                    # split-frontend / build-demo / fetch-model / deploy-pages / stage-mirror / validate / test-* 工具与测试
 ├── docs/technical-doc.html         # 技术文档（9 章正式版，可直接在线阅读；PDF 附件由此打印导出）
-├── docs/demo-video-storyboard.md   # 演示视频分镜脚本
 ├── docs/archive/                   # 技术文档早期 Markdown 草稿（仅供演进追溯，不对外）
 ├── app/ lib/ components/ …     # Next.js 完整版
 └── README.md
