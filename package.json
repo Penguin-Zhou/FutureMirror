@@ -12,7 +12,8 @@
     "test:demo": "node scripts/test-demo-logic.js",
     "validate:demo": "node scripts/validate-demo.js",
     "deploy:pages": "node scripts/deploy-pages.js --build",
-    "mirror:stage": "node scripts/stage-mirror.js"
+    "mirror:stage": "node scripts/stage-mirror.js",
+    "model:fetch": "node scripts/fetch-model.js"
   },
   "dependencies": {
     "clsx": "^2.1.1",

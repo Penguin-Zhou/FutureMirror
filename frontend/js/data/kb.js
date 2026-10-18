@@ -85,8 +85,19 @@ const VEC_CFG = {
     "https://unpkg.com/@xenova/transformers@2.17.2",
   ],
   cdnTimeout: 10000,        // 单个运行时源的最长等待（避免国内网络下长时间挂起）
-  /* 权重源：transformers.js 默认拉 huggingface.co，国内不可达；镜像优先、官方兜底 */
-  hosts: ["https://hf-mirror.com/", "https://huggingface.co/"],
+  /**
+   * 权重源（按优先级）：
+   *   ① 本站同源的 models/ —— 权重随站点一起发布，同源读取，零跨域、零墙（首选）
+   *   ② GitHub Pages 上的 models/ —— 带 Access-Control-Allow-Origin: *
+   *   ③ hf-mirror.com —— 国内可访问，但其响应缺 ACAO，浏览器 fetch 会被 CORS 拦
+   *   ④ huggingface.co —— 国内基本不可达，仅作最后的兜底
+   */
+  hosts: [
+    "https://penguin-zhou.github.io/FutureMirror/models/",
+    "https://hf-mirror.com/",
+    "https://huggingface.co/",
+  ],
+  probeTimeout: 8000,       // 单个权重源的连通性探测上限
   storeKey: "fm_kb_vec_v1",
   wVec: 0.6,        // 融合权重：余弦相似度
   wBm25: 0.4,       // 融合权重：BM25
@@ -328,6 +339,47 @@ function importWithTimeout(url, ms) {
   return Promise.race([task, guard]).finally(() => { if (timer) clearTimeout(timer); });
 }
 
+/* 权重源列表：本站同源优先（自托管 models/），再退回公开镜像 */
+function vecHosts() {
+  const list = [];
+  try {
+    if (typeof location !== "undefined" && /^https?:$/.test(location.protocol)) {
+      list.push(new URL("models/", location.href).href);
+    }
+  } catch (e) { /* 忽略：非浏览器环境 */ }
+  list.push(...VEC_CFG.hosts);
+  return Array.from(new Set(list));
+}
+
+function hostLabel(host) {
+  try {
+    const u = new URL(host);
+    const same = typeof location !== "undefined" && u.origin === location.origin;
+    return same ? "本站 models/" : u.host;
+  } catch (e) {
+    return host;
+  }
+}
+
+/* 探测单个源：先取 config.json，能在超时内拿到合法 JSON 才值得加载 23MB 权重 */
+async function probeHost(host) {
+  if (typeof fetch !== "function") return true;   // jsdom 等无 fetch 环境，交给 pipeline 自己报错
+  const url = `${host}${VEC_CFG.model}/resolve/main/config.json`;
+  const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+  const timer = setTimeout(() => { if (ctrl) ctrl.abort(); }, VEC_CFG.probeTimeout);
+  try {
+    const res = await fetch(url, ctrl ? { signal: ctrl.signal } : {});
+    if (!res.ok) return `HTTP ${res.status}`;
+    const cfg = await res.json();
+    return cfg && cfg.model_type ? true : "config 内容异常";
+  } catch (e) {
+    if (e && e.name === "AbortError") return "探测超时";
+    return (e && e.message) || "网络不可达";
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function loadVecModel(silent) {
   if (vecIndex.building) return false;
   if (vecIndex.provider === "minilm" && vecIndex.extractor) {
@@ -359,10 +411,17 @@ async function loadVecModel(silent) {
       // 因此换成哪个可用源，wasm 也跟着走，不会指向不可达的主域
     }
 
-    /* ② 取模型权重：镜像优先，官方兜底（默认 huggingface.co 在国内不可达） */
+    /* ② 取模型权重：同源自托管优先，探测通过才下载（避免在不可达源上白等 23MB） */
     let extractor = null;
-    for (const host of VEC_CFG.hosts) {
-      const hostName = host.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    const hostErrors = [];
+    for (const host of vecHosts()) {
+      const hostName = hostLabel(host);
+      setVecStatus(`正在探测权重源：${hostName}…`, "load");
+      const probe = await probeHost(host);
+      if (probe !== true) {
+        hostErrors.push(`${hostName}: ${probe}`);
+        continue;
+      }
       setVecStatus(`模型权重加载中（源：${hostName}，首次约 23MB，之后走浏览器缓存）…`, "load");
       try {
         if (mod.env) mod.env.remoteHost = host;
@@ -376,10 +435,10 @@ async function loadVecModel(silent) {
         });
         break;
       } catch (e) {
-        failReason = `${hostName}: ${(e && e.message) || "下载失败"}`;
+        hostErrors.push(`${hostName}: ${(e && e.message) || "下载失败"}`);
       }
     }
-    if (!extractor) throw new Error(`权重下载失败（${failReason}）`);
+    if (!extractor) throw new Error(`权重下载失败（${hostErrors.join("；")}）`);
 
     vecIndex.extractor = extractor;
     setVecStatus("正在为 40 条面经计算 384 维向量…", "load");

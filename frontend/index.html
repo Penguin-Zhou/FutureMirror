@@ -820,7 +820,7 @@ try {
         <div class="vec-bar" id="vec-bar">
           <span class="vec-dot" id="vec-dot"></span>
           <span class="vec-status" id="vec-status">向量索引未初始化</span>
-          <button class="btn btn-outline btn-sm" id="vec-build-btn" onclick="loadVecModel()" title="在浏览器内计算 384 维句向量（Transformers.js · all-MiniLM-L6-v2），零后端、零 API；运行时自动选可用 CDN，权重自动走国内镜像">⚡ 加载端侧模型 MiniLM</button>
+          <button class="btn btn-outline btn-sm" id="vec-build-btn" onclick="loadVecModel()" title="在浏览器内计算 384 维句向量（Transformers.js · all-MiniLM-L6-v2），零后端、零 API；权重随站点自托管（models/），同源读取，不再依赖 huggingface">⚡ 加载端侧模型 MiniLM</button>
         </div>
         <p class="hint" style="margin-top:0;margin-bottom:10px">检索层为 <b>BM25 + 端侧向量混合检索</b>：BM25（k1=1.5 / b=0.75，中文 bigram 切分，标题字段加权）× <b>0.4</b> + 余弦相似度 × <b>0.6</b>，两路各自归一分后融合。<br>向量由 <b>Transformers.js</b> 在浏览器内计算（all-MiniLM-L6-v2，384 维，40 条面经向量预计算后写入 localStorage），<b>不需要后端、不需要 API、离线可跑</b>；无模型文件时自动降级为 n-gram hashing 向量（256 维），检索链路不中断。完整版技术方案为 pgvector + RRF + Rerank。</p>
         <div style="display:flex;gap:8px">
