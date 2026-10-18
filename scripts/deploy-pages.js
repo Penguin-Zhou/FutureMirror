@@ -44,6 +44,8 @@ if (!fs.existsSync(SRC)) {
   process.exit(1);
 }
 const HAS_DOC = fs.existsSync(DOC);
+const CHANGELOG = path.join(ROOT, "public", "changelog.html");
+const HAS_CL = fs.existsSync(CHANGELOG);
 
 /* ---------- 1) 读取远程地址 ---------- */
 const remoteUrl = sh("git", ["-C", ROOT, "remote", "get-url", "origin"]);
@@ -69,6 +71,14 @@ if (HAS_DOC) {
   fs.writeFileSync(path.join(tmp, "docs", "technical-doc.html"), doc);
 }
 
+/* 版本更新日志（独立静态页，含可点击版本索引）随演示一同发布 */
+let clKB = 0;
+if (HAS_CL) {
+  const cl = fs.readFileSync(CHANGELOG, "utf8");
+  clKB = Buffer.byteLength(cl, "utf8") / 1024;
+  fs.writeFileSync(path.join(tmp, "changelog.html"), cl);
+}
+
 /* 端侧模型权重随站点自托管：Pages 会返回 Access-Control-Allow-Origin: *，
    既满足本站同源读取，也能作为 file:// 或其他站点打开时的跨域兜底 */
 let modelMB = 0;
@@ -89,13 +99,14 @@ fs.writeFileSync(
   `# FutureMirror 在线演示（发布产物分支）\n\n` +
   `- 内容：\`public/futuremirror-demo.html\`（单文件演示版，${sizeKB}KB，CSS/JS 全内联）\n` +
   (HAS_DOC ? `- 文档：\`docs/technical-doc.html\`（技术文档 HTML 在线版，${docKB.toFixed(1)}KB）\n` : "") +
+  (HAS_CL ? `- 更新日志：\`changelog.html\`（版本更新日志静态页，${clKB.toFixed(1)}KB，可点击跳转）\n` : "") +
   (modelMB ? `- 端侧模型：\`models/\`（all-MiniLM-L6-v2，${modelMB.toFixed(1)}MB，同源可读）\n` : "") +
   `- 版本：${version}\n` +
   `- 生成时间：${stamp}\n` +
   `- 生成方式：\`node scripts/deploy-pages.js --build\`\n\n` +
   `本分支只存放构建产物，源码与提交历史见主分支 \`main\`。\n`
 );
-log("stage", `${tmp}（${sizeKB}KB${HAS_DOC ? ` + 文档 ${docKB.toFixed(1)}KB` : ""}${modelMB ? ` + 模型 ${modelMB.toFixed(1)}MB` : ""}）`);
+log("stage", `${tmp}（${sizeKB}KB${HAS_DOC ? ` + 文档 ${docKB.toFixed(1)}KB` : ""}${HAS_CL ? ` + 更新日志 ${clKB.toFixed(1)}KB` : ""}${modelMB ? ` + 模型 ${modelMB.toFixed(1)}MB` : ""}）`);
 
 if (DRY) {
   log("dry-run", "已装配，未推送；目录保留以便检查");
@@ -133,3 +144,4 @@ const repo = remoteUrl.replace(/^.*github\.com[:/]/, "").replace(/\.git$/, "");
 const [owner, name] = repo.split("/");
 log("done", `已发布 → https://${owner.toLowerCase()}.github.io/${name}/`);
 if (HAS_DOC) log("done", `技术文档 → https://${owner.toLowerCase()}.github.io/${name}/docs/technical-doc.html`);
+if (HAS_CL) log("done", `更新日志 → https://${owner.toLowerCase()}.github.io/${name}/changelog.html`);
