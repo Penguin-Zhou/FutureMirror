@@ -77,10 +77,16 @@ const VEC_CFG = {
   dimHash: 256,
   dimMinilm: 384,
   model: "Xenova/all-MiniLM-L6-v2",
+  /* 运行时库：fastly 节点在国内实测最快；cdn.jsdelivr 主域间歇不可达，降为备选 */
   cdn: [
+    "https://fastly.jsdelivr.net/npm/@xenova/transformers@2.17.2",
     "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2",
+    "https://esm.sh/@xenova/transformers@2.17.2",
     "https://unpkg.com/@xenova/transformers@2.17.2",
   ],
+  cdnTimeout: 10000,        // 单个运行时源的最长等待（避免国内网络下长时间挂起）
+  /* 权重源：transformers.js 默认拉 huggingface.co，国内不可达；镜像优先、官方兜底 */
+  hosts: ["https://hf-mirror.com/", "https://huggingface.co/"],
   storeKey: "fm_kb_vec_v1",
   wVec: 0.6,        // 融合权重：余弦相似度
   wBm25: 0.4,       // 融合权重：BM25
@@ -311,6 +317,17 @@ async function embedWithModel(texts) {
   return rows.map(row => Array.from(row, x => Math.round(x * 10000) / 10000));
 }
 
+/* 给动态 import 加超时：国内网络下部分 CDN 会长时间挂起而不是快速失败 */
+function importWithTimeout(url, ms) {
+  let timer = null;
+  const guard = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error("连接超时")), ms);
+  });
+  // 用 then 包一层，把「不支持动态 import」之类的同步异常也转成异步 reject
+  const task = Promise.resolve().then(() => import(url));
+  return Promise.race([task, guard]).finally(() => { if (timer) clearTimeout(timer); });
+}
+
 async function loadVecModel(silent) {
   if (vecIndex.building) return false;
   if (vecIndex.provider === "minilm" && vecIndex.extractor) {
@@ -319,26 +336,51 @@ async function loadVecModel(silent) {
   }
   vecIndex.building = true;
   renderVecBar();
-  setVecStatus("正在加载 Transformers.js 运行时…", "load");
+  let failReason = "";
   try {
+    /* ① 取运行时库：多个 CDN 逐个试，每个带超时 */
     let mod = null;
-    for (const url of VEC_CFG.cdn) {
+    for (let i = 0; i < VEC_CFG.cdn.length; i++) {
+      setVecStatus(`正在加载 Transformers.js 运行时（源 ${i + 1}/${VEC_CFG.cdn.length}）…`, "load");
       try {
-        const m = await import(url);
+        const m = await importWithTimeout(VEC_CFG.cdn[i], VEC_CFG.cdnTimeout);
         if (m && typeof m.pipeline === "function") { mod = m; break; }
-      } catch (e) { /* 换下一个源 */ }
+        failReason = "响应不含 pipeline";
+      } catch (e) {
+        failReason = (e && e.message) || "网络不可达";
+      }
     }
-    if (!mod) throw new Error("CDN 不可达（离线环境请继续使用 hash 向量）");
-    if (mod.env) { mod.env.allowLocalModels = false; mod.env.useBrowserCache = true; }
-    setVecStatus("模型权重加载中（首次约 23MB，之后走浏览器缓存）…", "load");
-    const extractor = await mod.pipeline("feature-extraction", VEC_CFG.model, {
-      quantized: true,
-      progress_callback: p => {
-        if (p && p.status === "progress" && p.total) {
-          setVecStatus(`模型权重下载中 ${Math.round(p.loaded / p.total * 100)}%…`, "load");
-        }
-      },
-    });
+    if (!mod) throw new Error(`运行时 CDN 均不可达（${failReason}）`);
+
+    if (mod.env) {
+      mod.env.allowLocalModels = false;
+      mod.env.useBrowserCache = true;
+      // wasm 运行时无需显式指定：transformers.js 会从运行时库自身所在 CDN 推导，
+      // 因此换成哪个可用源，wasm 也跟着走，不会指向不可达的主域
+    }
+
+    /* ② 取模型权重：镜像优先，官方兜底（默认 huggingface.co 在国内不可达） */
+    let extractor = null;
+    for (const host of VEC_CFG.hosts) {
+      const hostName = host.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      setVecStatus(`模型权重加载中（源：${hostName}，首次约 23MB，之后走浏览器缓存）…`, "load");
+      try {
+        if (mod.env) mod.env.remoteHost = host;
+        extractor = await mod.pipeline("feature-extraction", VEC_CFG.model, {
+          quantized: true,
+          progress_callback: p => {
+            if (p && p.status === "progress" && p.total) {
+              setVecStatus(`模型权重下载中 ${Math.round(p.loaded / p.total * 100)}%（${hostName}）…`, "load");
+            }
+          },
+        });
+        break;
+      } catch (e) {
+        failReason = `${hostName}: ${(e && e.message) || "下载失败"}`;
+      }
+    }
+    if (!extractor) throw new Error(`权重下载失败（${failReason}）`);
+
     vecIndex.extractor = extractor;
     setVecStatus("正在为 40 条面经计算 384 维向量…", "load");
     const rows = await embedWithModel(KB.map(docVecText));
@@ -357,8 +399,8 @@ async function loadVecModel(silent) {
   } catch (e) {
     vecIndex.building = false;
     renderVecBar();
-    setVecStatus(`端侧模型加载失败：${e.message} · 继续使用离线 hash 向量（${vecIndex.dim}d）`, "warn");
-    if (!silent) toast("模型加载失败，已保持离线向量索引");
+    setVecStatus(`端侧模型加载失败：${e.message} · 已自动改用离线 hash 向量（${vecIndex.dim || VEC_CFG.dimHash}d，BM25 词面检索仍可用）`, "warn");
+    if (!silent) toast("模型未能加载（网络受限），已保持离线 hash 向量；RAG 仍可用");
     return false;
   } finally {
     vecIndex.building = false;
