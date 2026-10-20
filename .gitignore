@@ -33,6 +33,8 @@ __pycache__/
 venv/
 *.db
 .pytest_cache/
+# backend/static/ 由 scripts/build-backend-static.js 生成（同源托管产物），永不进仓库
+backend/static/
 
 # typescript
 *.tsbuildinfo

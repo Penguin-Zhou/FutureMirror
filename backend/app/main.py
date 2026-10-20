@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import pathlib
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 
@@ -9,25 +10,50 @@ import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 load_dotenv()
 
-from .db import (Interview, Report, Turn, User, get_db, hash_password,  # noqa: E402
-                 init_db, verify_password)
+from .db import (Interview, Report, Turn, User, SessionLocal, get_db,  # noqa: E402
+                 hash_password, init_db, verify_password)
 from .llm import LLM_MODEL, llm_ready, sse_response                    # noqa: E402
 from .scoring import score_session                                     # noqa: E402
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-secret")
-CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",") if o.strip()]
+# 默认放开本地开发端口 + 两个在线演示域名（GitHub Pages / 国内镜像）；
+# 部署时可用 CORS_ORIGINS 环境变量覆盖（allow_credentials=True 不能用 *，必须列名）
+DEFAULT_CORS_ORIGINS = (
+    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,"
+    "https://penguin-zhou.github.io,https://futuremirror-demo.app.workbuddy.host"
+)
+CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", DEFAULT_CORS_ORIGINS).split(",") if o.strip()]
 TOKEN_TTL = timedelta(hours=12)
+
+# 演示账号：与前端 CONFIG.testAccount 保持一致；启动时自动种子，
+# 保证线上全新数据库开箱即可一键登录（demo 邮箱注册即 VIP，见 register）
+DEMO_EMAIL = "demo@futuremirror.app"
+DEMO_PASSWORD = "Demo123456"
+
+
+def _seed_demo_user() -> None:
+    """lifespan 启动时确保演示账号存在（幂等，已存在则跳过）。"""
+    db = SessionLocal()
+    try:
+        if not db.scalar(select(User).where(User.email == DEMO_EMAIL)):
+            db.add(User(email=DEMO_EMAIL, name="演示用户",
+                        password_hash=hash_password(DEMO_PASSWORD), is_vip=True))
+            db.commit()
+    finally:
+        db.close()
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    _seed_demo_user()
     yield
 
 
@@ -223,3 +249,16 @@ def list_interviews(user: User = Depends(current_user), db: Session = Depends(ge
                     "created_at": r.created_at.isoformat(),
                     "total": rep.total if rep else None})
     return out
+
+
+# ---------------- 静态演示页（与 API 同源部署） ----------------
+# backend/static/ 存在时（由 scripts/build-backend-static.js 生成，随源码上传至发布沙箱），
+# 将单文件演示页、技术文档、更新日志与端侧模型挂载到站点根路径：
+#   /                      演示页（apiBase=same-origin，与 API 同源，免除 CORS）
+#   /docs/technical-doc.html   技术文档
+#   /changelog.html            更新日志
+#   /models/...                端侧模型权重
+# 本地开发（无 static/）时保持纯 API 形态；挂载放在所有路由之后，/api/* 优先匹配。
+_STATIC_DIR = pathlib.Path(__file__).resolve().parent.parent / "static"
+if _STATIC_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=str(_STATIC_DIR), html=True), name="static")

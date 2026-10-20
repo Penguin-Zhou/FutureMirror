@@ -738,7 +738,7 @@ try {
             <span class="badge badge-amber" id="llm-backend-status">检测中…</span>
             <input type="text" id="llm-api-base" placeholder="http://localhost:8000" aria-label="后端地址">
             <button class="btn btn-outline btn-sm" id="llm-api-test" onclick="testApiBase()">检测连接</button>
-            <span class="hint">🔒 推荐模式：API Key 只保存在后端环境变量（backend/.env），前端零接触；后端未启动时自动回退「面板直连 Key」或「Mock 模式」，演示不中断。在线演示页（GitHub Pages / 镜像）为纯前端版本，未部署后端属预期。</span>
+            <span class="hint">🔒 推荐模式：API Key 只保存在后端环境变量（backend/.env），前端零接触；后端未启动时自动回退「面板直连 Key」或「Mock 模式」，演示不中断。CONFIG.apiBase 留空时在线演示为纯前端版本（未部署后端属预期）；填入后端地址后自动切换为真实后端模式（JWT 登录 / 会话持久化 / 服务端评分）。</span>
           </div>
           <div class="llm-grid">
             <label>服务商预设
