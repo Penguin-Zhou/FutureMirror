@@ -47,6 +47,10 @@ try {
     --brand: #60a5fa; --brand-light: #93c5fd; --brand-bg: #172554;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* hidden 属性必须战胜作者样式里的 display（如 .guest-banner 的 flex）——
+     否则 JS 置 el.hidden=true 后元素仍可见（登录后游客横幅不消失的根因）。
+     与 .modal[hidden] / .user-dropdown[hidden] 等逐条规则等效，此处一并覆盖未来新增元素。 */
+  [hidden] { display: none !important; }
   html { scroll-behavior: smooth; }
   body {
     font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
@@ -4807,7 +4811,7 @@ const CONFIG = {
   docsUrl: "https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html",  // 技术文档（HTML 在线版，PDF 版以附件提交）
   fullAppUrl: "https://github.com/Penguin-Zhou/FutureMirror",   // 完整 Next.js 项目地址（可与 repoUrl 相同）
   testAccount: "演示账号：demo@futuremirror.app / Demo123456（可在登录页一键登录，或点「一键使用演示账号」）",
-  apiBase: "",       // 后端 API 地址：填完整 URL（如 https://xxx.app.workbuddy.host）走跨域连接；
+  apiBase: "https://futuremirror-demo.app.workbuddy.host",       // 后端 API 地址：填完整 URL（如 https://xxx.app.workbuddy.host）走跨域连接；
                      // 填 "same-origin" 表示与 API 同源部署（构建时由 FM_API_BASE=same-origin 注入）；
                      // 留空 = 本地 localhost:8000，在线演示保持纯前端
 };

@@ -32,6 +32,10 @@
     --brand: #60a5fa; --brand-light: #93c5fd; --brand-bg: #172554;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* hidden 属性必须战胜作者样式里的 display（如 .guest-banner 的 flex）——
+     否则 JS 置 el.hidden=true 后元素仍可见（登录后游客横幅不消失的根因）。
+     与 .modal[hidden] / .user-dropdown[hidden] 等逐条规则等效，此处一并覆盖未来新增元素。 */
+  [hidden] { display: none !important; }
   html { scroll-behavior: smooth; }
   body {
     font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif;

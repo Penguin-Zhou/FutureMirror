@@ -209,6 +209,7 @@ export const changelogHtml = `
           <li><b>健康检查超时 4s → 8s</b>：跨境网络下更稳，避免把慢启动误判成「未部署」</li>
           <li><b>CORS 默认放开演示域名</b>：<code>backend/app/main.py</code> 默认来源包含 GitHub Pages 与国内镜像，部署零配置</li>
           <li><b>静态挂载条件化</b>：仅当 <code>backend/static/</code> 存在时挂载（本地开发保持纯 API 形态），产物目录已加入 .gitignore</li>
+          <li><b>修复游客横幅不隐藏</b>：<code>.guest-banner</code> 的 <code>display:flex</code> 覆盖了 <code>hidden</code> 属性，登录后「游客模式」提示仍旧显示；补全局 <code>[hidden] { display:none !important }</code>（同类隐患 .review-input-row 一并覆盖）</li>
         </ul>
       </div>
 
