@@ -1575,6 +1575,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     <li><strong>健康检查超时 4s → 8s</strong>：跨境网络下更稳，避免把慢启动误判成「未部署」</li>
     <li><strong>CORS 默认放开演示域名</strong>：<code>backend/app/main.py</code> 默认来源包含 GitHub Pages 与国内镜像，部署零配置</li>
     <li><strong>静态挂载条件化</strong>：仅当 <code>backend/static/</code> 存在时挂载（本地开发保持纯 API 形态），产物目录已加入 .gitignore</li>
+    <li><strong>修复游客横幅不隐藏</strong>：<code>.guest-banner</code> 的 <code>display:flex</code> 覆盖了 <code>hidden</code> 属性，登录后「游客模式」提示仍旧显示；补全局 <code>[hidden] { display:none !important }</code>（同类隐患 <code>.review-input-row</code> 一并覆盖）</li>
   </ul>
   <h4><strong>📊 数据指标</strong></h4>
   <table>
