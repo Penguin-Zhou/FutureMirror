@@ -1562,7 +1562,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     </tr></tbody>
   </table>
   <h3>Beta 1.0.1 · 后端上线 · 全渠道接通真实服务（2026.10.20 当前版本）</h3>
-  <div class="callout">FastAPI 后端正式上线：国内镜像域名从纯静态托管切换为 <strong>「演示页 + API 同源托管」</strong>——同一个域名同时提供页面与 <code>/api/*</code> 接口，彻底免除跨域配置；GitHub Pages 演示页则在构建时注入后端地址（跨域访问，CORS 已默认放行）。两个在线入口从「纯前端 Mock」升级为 <strong>真实后端模式</strong>：JWT 登录、面试会话持久化、服务端评分报告全部真实可用；未配置模型 Key 时聊天自动回退 Mock，演示不中断。本版本为 Beta 1.0 的部署补丁，功能集与版本号展示不变。</div>
+  <div class="callout">FastAPI 后端正式上线：国内镜像域名从纯静态托管切换为 <strong>「演示页 + API 同源托管」</strong>——同一个域名同时提供页面与 <code>/api/*</code> 接口，彻底免除跨域配置；GitHub Pages 演示页则在构建时注入后端地址（跨域访问，CORS 已默认放行）。两个在线入口从「纯前端 Mock」升级为 <strong>真实后端模式</strong>：JWT 登录、面试会话持久化、服务端评分报告全部真实可用；未配置模型 Key 时聊天自动回退 Mock，演示不中断。本版本为 Beta 1.0 的部署补丁，功能集与版本号展示不变。<br><br><strong>鉴权通道说明</strong>：公网托管平台的边缘网关会用自己的 JWT 覆盖请求的 <code>Authorization</code> 头，因此前端令牌主通道为自定义头 <code>X-Auth-Token</code>（网关原样透传），后端优先读取该头、<code>Authorization: Bearer</code> 保留作本地开发回退——线上登录、建会话、拉列表、生成报告的全链路鉴权均经实测可用。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>
     <li><strong>后端同源托管</strong>：<code>backend/static/</code>（演示页 + 技术文档 + 更新日志 + 41MB 端侧模型）由 FastAPI 挂载到站点根路径，镜像站一个域名同时提供页面与 API</li>
@@ -1576,6 +1576,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     <li><strong>CORS 默认放开演示域名</strong>：<code>backend/app/main.py</code> 默认来源包含 GitHub Pages 与国内镜像，部署零配置</li>
     <li><strong>静态挂载条件化</strong>：仅当 <code>backend/static/</code> 存在时挂载（本地开发保持纯 API 形态），产物目录已加入 .gitignore</li>
     <li><strong>修复游客横幅不隐藏</strong>：<code>.guest-banner</code> 的 <code>display:flex</code> 覆盖了 <code>hidden</code> 属性，登录后「游客模式」提示仍旧显示；补全局 <code>[hidden] { display:none !important }</code>（同类隐患 <code>.review-input-row</code> 一并覆盖）</li>
+    <li><strong>修复公网鉴权头被网关覆盖</strong>：托管平台边缘网关会用自己的 JWT 覆盖请求的 <code>Authorization</code> 头，导致线上登录后面试会话/报告等全部鉴权接口 401；令牌主通道改用自定义头 <code>X-Auth-Token</code>（网关原样透传），<code>Authorization</code> 保留作本地开发回退；线上实测登录→建会话→拉列表全链路真实可用</li>
   </ul>
   <h4><strong>📊 数据指标</strong></h4>
   <table>

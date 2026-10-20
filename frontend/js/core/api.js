@@ -32,7 +32,13 @@ const fmApi = {
   },
   authHeaders() {
     const h = { "Content-Type": "application/json" };
-    if (this.token) h["Authorization"] = "Bearer " + this.token;
+    if (this.token) {
+      /* 公网托管平台的边缘网关会用自己的 JWT 覆盖 Authorization 头，
+       * 因此主通道改用自定义头 X-Auth-Token（网关原样透传）；
+       * 同时保留 Authorization 供本地开发（无网关）使用。 */
+      h["X-Auth-Token"] = this.token;
+      h["Authorization"] = "Bearer " + this.token;
+    }
     return h;
   },
   async checkHealth(force) {
