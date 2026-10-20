@@ -101,8 +101,8 @@
 
 | 入口               | 地址                                              | 说明                                        |
 | ---------------- | ----------------------------------------------- | ----------------------------------------- |
-| 主站（GitHub Pages） | <https://penguin-zhou.github.io/FutureMirror/>  | 与仓库同源，随 `gh-pages` 分支更新                   |
-| 国内直连镜像           | <https://futuremirror-demo.app.workbuddy.host/> | 同一份单文件产物的逐字节副本，国内网络直连更快；github.io 打不开时用这个 |
+| 主站（GitHub Pages） | <https://penguin-zhou.github.io/FutureMirror/>  | 与仓库同源，随 `gh-pages` 分支更新；构建时注入后端地址，跨域连接真实 API       |
+| 国内直连镜像           | <https://futuremirror-demo.app.workbuddy.host/> | 由 FastAPI 后端同源托管（页面 + API + 文档 + 模型同一域名），国内网络直连更快；github.io 打不开时用这个 |
 
 **方式 2（本地离线）**：打开仓库内的 `public/futuremirror-demo.html`（约 499KB，所有 CSS/JS 内联，默认零外部请求）。
 
@@ -111,10 +111,11 @@
 # 需要连后端时改用 http 服务（见 3.3，file:// 会被 CORS 拒绝）
 ```
 
-> 两个在线入口内容完全一致（均为 `public/futuremirror-demo.html` 的逐字节副本）：
+> 两个在线入口均已接通真实后端（Beta 1.0.1 起）：JWT 登录、面试会话持久化、服务端评分全部真实可用；未配置模型 Key 时聊天自动回退 Mock，演示不中断。
 >
-> - 主站由 GitHub Pages 托管 `gh-pages` 分支（`.nojekyll` 跳过 Jekyll 处理），重新发布：`node scripts/deploy-pages.js --build`；
-> - 镜像由静态托管服务托管 `.mirror-site/` 目录，重新发布：`node scripts/stage-mirror.js` 后对该目录执行一次「发布」。镜像目录为纯产物，已被 `.gitignore` 忽略，不参与版本管理。
+> - 主站由 GitHub Pages 托管 `gh-pages` 分支（`.nojekyll` 跳过 Jekyll 处理），重新发布：`FM_API_BASE=https://futuremirror-demo.app.workbuddy.host node scripts/deploy-pages.js --build`（构建时把后端地址写进演示页）；
+> - 镜像由 FastAPI 后端同源托管，重新发布：`node scripts/build-backend-static.js` 组装 `backend/static/` 后发布 `backend/` 目录（一个域名同时提供页面与 `/api/*`，彻底免除 CORS）。`backend/static/` 为纯产物，已被 `.gitignore` 忽略，不参与版本管理；
+> - 本地调试用的 `.mirror-site/` 静态装配脚本（`stage-mirror.js`）保留，但在线镜像已改由后端托管，不再需要单独发布静态目录。
 >
 > 技术文档（`docs/technical-doc.html`）随同一条发布链路上线，两个入口地址见本文件顶部；PDF 版由该文档打印导出，以附件形式随赛事材料提交。
 

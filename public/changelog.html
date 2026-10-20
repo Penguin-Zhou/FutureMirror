@@ -162,10 +162,10 @@
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.0 · v23 规划中</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.0.1 · v23 规划中</div>
     <div class="meta">
-      <span>已发布 <b>23</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.0</b></span>
+      <span>已发布 <b>24</b> 个版本</span>
+      <span>当前版本 <b>Beta 1.0.1</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -173,19 +173,19 @@
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0，为当前正式发布版本；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.1，为当前正式发布版本（Beta 1.0 的部署补丁：后端上线，功能集不变）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
   <div class="overview">
-    <div class="ov-card"><div class="ov-num">23</div><div class="ov-label">已发布版本</div></div>
+    <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">已发布版本</div></div>
     <div class="ov-card"><div class="ov-num">10</div><div class="ov-label">功能页</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">协作 Agent</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">岗位数据库</div></div>
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">858</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">870</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -196,6 +196,7 @@
   <ul class="cl-toc-list">
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
     <li><a href="#vbeta"><span class="cl-toc-tag">Beta 1.0</span><span class="cl-toc-title-txt">检索层升级与版本定位</span></a></li>
+    <li><a href="#vbeta1-1"><span class="cl-toc-tag">Beta 1.0.1</span><span class="cl-toc-title-txt">后端上线 · 全渠道接通真实服务</span></a></li>
     <li><a href="#v22"><span class="cl-toc-tag">v22</span><span class="cl-toc-title-txt">后端适配与工程化</span></a></li>
     <li><a href="#v21"><span class="cl-toc-tag">v21</span><span class="cl-toc-title-txt">悬浮球拖拽冻结 + 移动端美化</span></a></li>
     <li><a href="#v20"><span class="cl-toc-tag">v20</span><span class="cl-toc-title-txt">题库增强 + AI 小助手 + 移动端导航顶部化</span></a></li>
@@ -293,7 +294,7 @@
     <div class="version-head">
       <span class="v-tag v-tag-current">Beta 1.0</span>
       <span class="v-title">检索层升级与版本定位</span>
-      <span class="v-date">2026.10 <span class="cur-mark">当前版本</span></span>
+      <span class="v-date">2026.10</span>
     </div>
     <div class="version-body">
       <div class="v-summary">
@@ -330,6 +331,51 @@
           <div class="metric"><div class="m-val">256d</div><div class="m-label">hashing 兜底维度</div></div>
           <div class="metric"><div class="m-val">0.6/0.4</div><div class="m-label">融合权重</div></div>
           <div class="metric"><div class="m-val">80</div><div class="m-label">新增断言</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.0.1 · 后端上线（部署补丁）
+       ======================================================== -->
+  <div class="version vbeta1-1" id="vbeta1-1">
+    <div class="version-head">
+      <span class="v-tag v-tag-current">Beta 1.0.1</span>
+      <span class="v-title">后端上线 · 全渠道接通真实服务</span>
+      <span class="v-date">2026.10.20 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        FastAPI 后端正式上线：国内镜像域名从纯静态托管切换为 <b>「演示页 + API 同源托管」</b>——同一个域名同时提供页面与 <code>/api/*</code> 接口，彻底免除跨域配置；GitHub Pages 演示页则在构建时注入后端地址（跨域访问，CORS 已默认放行）。两个在线入口从「纯前端 Mock」升级为 <b>真实后端模式</b>：JWT 登录、面试会话持久化、服务端评分报告全部真实可用；未配置模型 Key 时聊天自动回退 Mock，演示不中断。本版本为 Beta 1.0 的部署补丁，功能集与版本号展示不变。
+      </div>
+
+      <div class="cat">
+        <span class="cat-title cat-new">✨ 新增功能</span>
+        <ul class="changelog">
+          <li><b>后端同源托管</b>：<code>backend/static/</code>（演示页 + 技术文档 + 更新日志 + 41MB 端侧模型）由 FastAPI 挂载到站点根路径，镜像站一个域名同时提供页面与 API</li>
+          <li><b>演示账号自动种子</b>：后端启动时自动创建 <code>demo@futuremirror.app</code>（VIP），全新数据库开箱即可一键登录，无需预注册</li>
+          <li><b>Pages 跨域接通</b>：<code>FM_API_BASE=&lt;后端地址&gt; node scripts/deploy-pages.js --build</code> 构建时把后端地址写入演示页，CORS 默认放行两个演示域名</li>
+        </ul>
+      </div>
+
+      <div class="cat">
+        <span class="cat-title cat-improve">🔧 优化改进</span>
+        <ul class="changelog">
+          <li><b>构建脚本升级</b>：<code>build-demo.js</code> 支持 <code>--out</code> 输出路径与环境变量 <code>FM_API_BASE</code>（完整 URL 或 <code>same-origin</code>）；新增 <code>build-backend-static.js</code> 组装同源托管目录</li>
+          <li><b>健康检查超时 4s → 8s</b>：跨境网络下更稳，避免把慢启动误判成「未部署」</li>
+          <li><b>CORS 默认放开演示域名</b>：<code>backend/app/main.py</code> 默认来源包含 GitHub Pages 与国内镜像，部署零配置</li>
+          <li><b>静态挂载条件化</b>：仅当 <code>backend/static/</code> 存在时挂载（本地开发保持纯 API 形态），产物目录已加入 .gitignore</li>
+        </ul>
+      </div>
+
+      <div class="cat">
+        <span class="cat-title cat-data">📊 数据指标</span>
+        <div class="metrics">
+          <div class="metric"><div class="m-val">2</div><div class="m-label">在线入口接通</div></div>
+          <div class="metric"><div class="m-val">870</div><div class="m-label">前端断言全绿</div></div>
+          <div class="metric"><div class="m-val">6</div><div class="m-label">后端测试通过</div></div>
+          <div class="metric"><div class="m-val">42MB</div><div class="m-label">同源托管产物</div></div>
         </div>
       </div>
     </div>

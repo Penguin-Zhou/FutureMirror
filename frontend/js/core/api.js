@@ -40,7 +40,7 @@ const fmApi = {
     if (!force && this.health && now - this.healthAt < 30000) return this.health;
     if (typeof fetch !== "function") { this.ready = false; return null; }
     const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 4000);
+    setTimeout(() => ctrl.abort(), 8000);
     try {
       const res = await fetch(this.base + "/api/health", { signal: ctrl.signal });
       const j = await res.json();

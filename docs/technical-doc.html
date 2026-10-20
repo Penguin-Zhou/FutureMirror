@@ -422,7 +422,7 @@
     <li><a href="#ch7"><span class="toc-t">创新点说明</span><span class="toc-d">技术 8 项 / 应用 6 项</span></a></li>
     <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span></a></li>
     <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 交付清单</span></a></li>
-    <li><a href="#ch10"><span class="toc-t">版本更新日志</span><span class="toc-d">v1 → Beta 1.0，v23 规划</span></a></li>
+    <li><a href="#ch10"><span class="toc-t">版本更新日志</span><span class="toc-d">v1 → Beta 1.0.1，v23 规划</span></a></li>
   </ol>
 </div>
 
@@ -1212,8 +1212,8 @@
       <tr><th style="width:24%">方案</th><th style="width:28%">适用场景</th><th style="width:14%">成本</th><th>步骤</th></tr>
     </thead>
     <tbody>
-      <tr><td>GitHub Pages（当前在线演示）</td><td>纯静态、随仓库更新</td><td>零成本</td><td><code>node scripts/deploy-pages.js --build</code></td></tr>
-      <tr><td>国内直连镜像</td><td>GitHub 访问慢时的备选</td><td>零成本</td><td><code>node scripts/stage-mirror.js</code> 后发布静态目录</td></tr>
+      <tr><td>GitHub Pages（在线演示 · 静态）</td><td>免安装演示，随仓库更新</td><td>零成本</td><td><code>FM_API_BASE=&lt;后端地址&gt; node scripts/deploy-pages.js --build</code>（构建时注入后端地址，跨域访问）</td></tr>
+      <tr><td>国内直连镜像（当前在线演示）</td><td>GitHub 访问慢时的备选；已由 FastAPI 后端同源托管</td><td>零成本</td><td><code>node scripts/build-backend-static.js</code> 后发布 <code>backend/</code>（演示页 + API + 文档 + 模型同一域名，免除 CORS）</td></tr>
       <tr><td>Vercel（Next.js）</td><td>需要真实后端</td><td>免费额度</td><td>连接仓库，配置环境变量</td></tr>
       <tr><td>Render / Railway（FastAPI）</td><td>需要完整链路</td><td>免费额度</td><td><code>uvicorn app.main:app --host 0.0.0.0</code></td></tr>
       <tr><td>本地演示</td><td>现场答辩</td><td>零成本</td><td><code>python -m http.server 5173</code> + <code>uvicorn</code></td></tr>
@@ -1225,7 +1225,7 @@
     <ul style="margin: 1.5mm 0 0 4mm;">
       <li><strong>必须用 http 服务打开，不能双击 <code>file://</code></strong>——<code>file://</code> 的 Origin 是 <code>null</code>，会被后端 CORS 拒绝；</li>
       <li><code>.env</code> 永不进仓库（<code>.gitignore</code> 已包含），Key 只存在于部署环境变量；</li>
-      <li>部署后要把地址回填到 <code>CONFIG</code> 和 README。</li>
+      <li>部署后要把地址回填到构建命令：<code>FM_API_BASE=&lt;后端地址&gt;</code>（Pages 跨域）或 <code>same-origin</code>（后端同源托管），README 顶部入口同步更新。</li>
     </ul>
   </div>
 
@@ -1478,10 +1478,10 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
 <!-- =============== 第 10 章 =============== -->
 <section class="chapter" id="ch10">
   <div class="chapter-num">CHAPTER 10</div>
-  <h1>版本更新日志（v1 → Beta 1.0，v23 规划中）</h1>
-  <p>本日志为<strong>团队真实开发进程</strong>的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.0 当前版本），共 23 个已发布版本，并含 v23 下一步迭代规划。每个版本均可独立运行、可回归。</p>
+  <h1>版本更新日志（v1 → Beta 1.0.1，v23 规划中）</h1>
+  <p>本日志为<strong>团队真实开发进程</strong>的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.0.1 当前版本），共 24 个已发布版本，并含 v23 下一步迭代规划。每个版本均可独立运行、可回归。</p>
   <div class="callout info"><strong>关于 Git 提交记录（重要说明）：</strong> 本仓库的 Git 提交历史自 <strong>Beta 版本</strong>（首次以 <code>v1.0.0-beta</code> 提交包上传）时建立，<strong>仅包含 BETA 1.0 及之后的更新</strong>；BETA 1.0 之前的 v1–v22 演进历程以本更新日志形式完整留存，未在 Git 提交记录中逐条提交。日志中所载为团队真实的版本演进，而非事后补造。</div>
-  <div class="callout">阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.0，为当前正式发布版本；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。</div>
+  <div class="callout">阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.0.1，为当前正式发布版本（Beta 1.0 的部署补丁：后端上线，功能集不变）；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。</div>
   <h3>v23 · 规划中 · 完整版对齐 · 生产级 RAG · 多模态扩展（待排期）</h3>
   <div class="callout">下一阶段目标：把演示层的关键能力向生产级对齐，同时补齐多模态与部署工程化的空白。以下为规划项，尚未进入代码库。</div>
   <h4><strong>📋 RAG 升级</strong></h4>
@@ -1527,7 +1527,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <td>3</td>
     </tr></tbody>
   </table>
-  <h3>Beta 1.0 · 检索层升级与版本定位（2026.10 当前版本）</h3>
+  <h3>Beta 1.0 · 检索层升级与版本定位（2026.10）</h3>
   <div class="callout">RAG 检索从"关键词匹配"升级为 <strong>BM25 + 端侧向量混合检索</strong>——BM25 负责词面召回，Transformers.js 在浏览器内运行 <code>all-MiniLM-L6-v2</code>（384 维）负责语义召回，40 条面经向量预计算后写入 <code>localStorage</code>；无模型文件时自动降级为 n-gram hashing 向量（256 维）；两路 min-max 归一分后按 <code>cos×0.6 + bm25×0.4</code> 融合。同时统一版本号为 <strong>beta1.0</strong>，README 顶部与三处页脚补齐 AI 辅助开发声明。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>
@@ -1559,6 +1559,36 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <td>256d</td>
       <td>0.6/0.4</td>
       <td>80</td>
+    </tr></tbody>
+  </table>
+  <h3>Beta 1.0.1 · 后端上线 · 全渠道接通真实服务（2026.10.20 当前版本）</h3>
+  <div class="callout">FastAPI 后端正式上线：国内镜像域名从纯静态托管切换为 <strong>「演示页 + API 同源托管」</strong>——同一个域名同时提供页面与 <code>/api/*</code> 接口，彻底免除跨域配置；GitHub Pages 演示页则在构建时注入后端地址（跨域访问，CORS 已默认放行）。两个在线入口从「纯前端 Mock」升级为 <strong>真实后端模式</strong>：JWT 登录、面试会话持久化、服务端评分报告全部真实可用；未配置模型 Key 时聊天自动回退 Mock，演示不中断。本版本为 Beta 1.0 的部署补丁，功能集与版本号展示不变。</div>
+  <h4><strong>✨ 新增功能</strong></h4>
+  <ul>
+    <li><strong>后端同源托管</strong>：<code>backend/static/</code>（演示页 + 技术文档 + 更新日志 + 41MB 端侧模型）由 FastAPI 挂载到站点根路径，镜像站一个域名同时提供页面与 API</li>
+    <li><strong>演示账号自动种子</strong>：后端启动时自动创建 <code>demo@futuremirror.app</code>（VIP），全新数据库开箱即可一键登录，无需预注册</li>
+    <li><strong>Pages 跨域接通</strong>：<code>FM_API_BASE=&lt;后端地址&gt; node scripts/deploy-pages.js --build</code> 构建时把后端地址写入演示页，CORS 默认放行两个演示域名</li>
+  </ul>
+  <h4><strong>🔧 优化改进</strong></h4>
+  <ul>
+    <li><strong>构建脚本升级</strong>：<code>build-demo.js</code> 支持 <code>--out</code> 输出路径与环境变量 <code>FM_API_BASE</code>（完整 URL 或 <code>same-origin</code>）；新增 <code>build-backend-static.js</code> 组装同源托管目录</li>
+    <li><strong>健康检查超时 4s → 8s</strong>：跨境网络下更稳，避免把慢启动误判成「未部署」</li>
+    <li><strong>CORS 默认放开演示域名</strong>：<code>backend/app/main.py</code> 默认来源包含 GitHub Pages 与国内镜像，部署零配置</li>
+    <li><strong>静态挂载条件化</strong>：仅当 <code>backend/static/</code> 存在时挂载（本地开发保持纯 API 形态），产物目录已加入 .gitignore</li>
+  </ul>
+  <h4><strong>📊 数据指标</strong></h4>
+  <table>
+    <thead><tr>
+      <th>在线入口接通</th>
+      <th>前端断言全绿</th>
+      <th>后端测试通过</th>
+      <th>同源托管产物</th>
+    </tr></thead>
+    <tbody><tr>
+      <td>2</td>
+      <td>870</td>
+      <td>6</td>
+      <td>42MB</td>
     </tr></tbody>
   </table>
   <h3>v22 · 后端适配与工程化（2026.10）</h3>

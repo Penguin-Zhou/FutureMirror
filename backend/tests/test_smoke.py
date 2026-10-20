@@ -38,10 +38,10 @@ def test_register_login_and_report_flow():
 
 
 def test_demo_email_gets_vip():
+    """演示账号由 lifespan 自动种子（is_vip=True），登录即可验证。"""
     with TestClient(app) as c:
-        r = c.post("/api/auth/register",
-                   json={"name": "演示", "email": "demo@futuremirror.app",
-                         "password": "Demo123456"})
+        r = c.post("/api/auth/login",
+                   json={"email": "demo@futuremirror.app", "password": "Demo123456"})
         assert r.status_code == 200, r.text
         assert r.json()["user"]["is_vip"] is True
 
