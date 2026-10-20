@@ -75,11 +75,15 @@ def make_token(user: User) -> str:
 
 
 def current_user(authorization: str = Header(default=""),
+                 x_auth_token: str = Header(default="", alias="X-Auth-Token"),
                  db: Session = Depends(get_db)) -> User:
-    if not authorization.startswith("Bearer "):
+    # 令牌优先取自 X-Auth-Token：公网托管平台的边缘网关会用自己的 JWT
+    # 覆盖 Authorization 头（本地开发无网关，两种头都支持）。
+    token = x_auth_token.strip() or (authorization[7:] if authorization.startswith("Bearer ") else "")
+    if not token:
         raise HTTPException(401, "缺少访问令牌")
     try:
-        payload = jwt.decode(authorization[7:], SECRET_KEY, algorithms=["HS256"])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     except jwt.PyJWTError:
         raise HTTPException(401, "令牌无效或已过期") from None
     user = db.get(User, payload["sub"])

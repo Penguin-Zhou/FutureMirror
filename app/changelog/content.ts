@@ -210,6 +210,7 @@ export const changelogHtml = `
           <li><b>CORS 默认放开演示域名</b>：<code>backend/app/main.py</code> 默认来源包含 GitHub Pages 与国内镜像，部署零配置</li>
           <li><b>静态挂载条件化</b>：仅当 <code>backend/static/</code> 存在时挂载（本地开发保持纯 API 形态），产物目录已加入 .gitignore</li>
           <li><b>修复游客横幅不隐藏</b>：<code>.guest-banner</code> 的 <code>display:flex</code> 覆盖了 <code>hidden</code> 属性，登录后「游客模式」提示仍旧显示；补全局 <code>[hidden] { display:none !important }</code>（同类隐患 .review-input-row 一并覆盖）</li>
+          <li><b>修复公网鉴权头被网关覆盖</b>：托管平台边缘网关会用自己的 JWT 覆盖请求的 <code>Authorization</code> 头，导致线上登录后面试会话/报告等全部鉴权接口 401；令牌主通道改用自定义头 <code>X-Auth-Token</code>（网关原样透传），<code>Authorization</code> 保留作本地开发回退；线上实测登录→建会话→拉列表全链路真实可用</li>
         </ul>
       </div>
 

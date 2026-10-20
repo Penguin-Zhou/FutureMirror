@@ -465,6 +465,8 @@ curl -X POST http://localhost:8000/api/interviews \
 # {"id":"0b9d..."}
 ```
 
+> 以上示例面向本地后端（无边缘网关）。访问公网托管的演示后端时，边缘网关会用自己的 JWT 覆盖 `Authorization` 头，需改用自定义头：`-H "X-Auth-Token: $TOKEN"`（后端两种头都接受，`X-Auth-Token` 优先）。
+
 **批量同步问答（按 seq 幂等，重复调用不会产生脏数据）**
 
 ```bash
