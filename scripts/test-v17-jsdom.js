@@ -140,7 +140,7 @@ function runTests() {
 
       /* ---------- H. 版本号与回归（v18 起版本号随主线递增） ---------- */
       ok(/beta1\.0|v(1[789]|2[012])/.test(document.querySelector(".sb-footer").textContent), "侧栏版本号为 v17+ / beta1.0");
-      ok(/版本 (beta1\.0|v(1[789]|2[012])) · Arkira 风格主题已就绪/.test(html), "开发者日志版本号已就位");
+      ok(/版本 (beta1\.0(\.\d+)?|v(1[789]|2[012])) · Arkira 风格主题已就绪/.test(html), "开发者日志版本号已就位");
 
       /* v15/v16 功能回归：今日推荐 / 个人中心 */
       const picks = document.querySelectorAll("#today-picks .today-pick");
