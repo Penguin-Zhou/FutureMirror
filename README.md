@@ -6,7 +6,7 @@
 > 项目核心业务架构：多‑Agent圆桌协作机制、证据驱动可解释评分引擎、版本化Prompt约束体系、三级降级容错方案、RAG检索引用机制（BM25 + 端侧向量混合检索，余弦与词面双路融合）、全套业务产品设计与自动化测试体系均为团队独立设计与实现。演示知识库全部为人工合成示例数据，无爬取真实网络数据。  
 > 本作品为原型演示系统，仅用于竞赛演示，不直接作为生产系统使用。
 
-**版本定位：Beta 1.0 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
+**版本定位：Beta 1.0.2 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
 
 **技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 37 页。**PDF 版由该文档 A4 打印导出，随赛事材料以附件形式提交**（仓库 Release 亦提供下载）。
 
@@ -627,7 +627,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **870 项前端断言 + 6 项后端单测**，全部通过。
+合计 **879 项前端断言 + 17 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -645,7 +645,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 
 ## 十、团队信息与成员分工
 
-**面镜 FutureMirror 开发团队 · 福建农林大学桢队** · 技术文档 v1.0（对应产品 Beta 1.0）
+**面镜 FutureMirror 开发团队 · 福建农林大学桢队** · 技术文档 v1.1（对应产品 Beta 1.0.2）
 
 | 角色                  | 成员               | GitHub                                           |
 | ------------------- | ---------------- | ------------------------------------------------ |
@@ -690,7 +690,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 6 项 + 前端 870 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 17 项 + 前端 879 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
