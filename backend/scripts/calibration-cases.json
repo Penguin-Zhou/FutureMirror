@@ -1,0 +1,57 @@
+{
+  "comment": "评分引擎校准标准样本（双引擎共用：backend/app/scoring.py 与 frontend scoreSession）。每个样本的答题特征（量化数/技术词/STAR词/口头禅/防御性表述/短答/压力轮）均经过人工设计，用于验证评分的单调性、区分度与边界行为。",
+  "cases": [
+    {
+      "id": "C1",
+      "name": "量化密集的技术强答（4 轮）",
+      "turns": [
+        { "agent": "技术面试官", "question": "介绍你做过的最有性能压力的项目", "answer": "背景：我负责订单服务重构，目标是压低 P99 延迟。通过引入 Redis 缓存与 MySQL 索引优化，最终 P99 从 800ms 降到 120ms，QPS 提升 3 倍。", "notes": "有量化", "mode": "tech" },
+        { "agent": "技术面试官", "question": "消息队列那块具体怎么做的", "answer": "我主导消息队列改造，用 Kafka 替换定时轮询，日均处理 2000 万条消息，消费延迟从分钟级降到 200ms 以内。", "notes": "有量化", "mode": "tech" },
+        { "agent": "技术面试官", "question": "上线过程中踩过什么坑", "answer": "压测发现连接池是瓶颈，我调到 500 并加上监控告警，大促期间零故障。", "notes": "有复盘", "mode": "tech" },
+        { "agent": "HR 面试官", "question": "这个项目给团队带来什么", "answer": "结果：接口错误率从 2% 降到 0.1%，复盘文档被团队复用，后续两个项目都参考了这套方案。", "notes": "有结果", "mode": "comprehensive" }
+      ],
+      "match": null
+    },
+    {
+      "id": "C2",
+      "name": "结构尚可但缺量化（3 轮）",
+      "turns": [
+        { "agent": "技术面试官", "question": "介绍一个后台项目", "answer": "我负责过后台系统，主要做缓存相关的优化，效果还不错。", "notes": "", "mode": "tech" },
+        { "agent": "技术面试官", "question": "大促保障具体做了什么", "answer": "项目背景是电商大促，我负责保障稳定，通过扩容和监控解决了问题，最终没有出事。", "notes": "", "mode": "tech" },
+        { "agent": "HR 面试官", "question": "说说团队协作", "answer": "团队协作方面我比较配合，按时完成了任务。", "notes": "", "mode": "comprehensive" }
+      ],
+      "match": null
+    },
+    {
+      "id": "C3",
+      "name": "短答 + 口头禅（3 轮）",
+      "turns": [
+        { "agent": "技术面试官", "question": "介绍一个项目", "answer": "嗯，然后就是这个项目，那个，我做了很多优化。", "notes": "回答过短", "mode": "tech" },
+        { "agent": "技术面试官", "question": "上了什么优化", "answer": "就是改了改代码，然后上了线，效果还可以。", "notes": "回答过短", "mode": "tech" },
+        { "agent": "技术面试官", "question": "效果怎么衡量", "answer": "那个，反正就是体验挺好的。", "notes": "回答过短", "mode": "tech" }
+      ],
+      "match": null
+    },
+    {
+      "id": "C4",
+      "name": "压力面防御性表述（3 轮压力）",
+      "turns": [
+        { "agent": "压力面试官", "question": "这个故障为什么发生", "answer": "这个不是我的问题，跟我没关系，是上游接口不稳定。", "notes": "防御性表述", "mode": "pressure" },
+        { "agent": "压力面试官", "question": "上游你为什么没兜住", "answer": "但是我没有负责那一块，而且时间确实太紧了。", "notes": "防御性表述", "mode": "pressure" },
+        { "agent": "压力面试官", "question": "现在让你重做呢", "answer": "换人重做我也可以配合，先复盘再定方案。", "notes": "", "mode": "pressure" }
+      ],
+      "match": null
+    },
+    {
+      "id": "C5",
+      "name": "C1 强答 + 匹配报告与代码分",
+      "turns": [
+        { "agent": "技术面试官", "question": "介绍你做过的最有性能压力的项目", "answer": "背景：我负责订单服务重构，目标是压低 P99 延迟。通过引入 Redis 缓存与 MySQL 索引优化，最终 P99 从 800ms 降到 120ms，QPS 提升 3 倍。", "notes": "有量化", "mode": "tech" },
+        { "agent": "技术面试官", "question": "消息队列那块具体怎么做的", "answer": "我主导消息队列改造，用 Kafka 替换定时轮询，日均处理 2000 万条消息，消费延迟从分钟级降到 200ms 以内。", "notes": "有量化", "mode": "tech" },
+        { "agent": "技术面试官", "question": "上线过程中踩过什么坑", "answer": "压测发现连接池是瓶颈，我调到 500 并加上监控告警，大促期间零故障。", "notes": "有复盘", "mode": "tech" },
+        { "agent": "HR 面试官", "question": "这个项目给团队带来什么", "answer": "结果：接口错误率从 2% 降到 0.1%，复盘文档被团队复用，后续两个项目都参考了这套方案。", "notes": "有结果", "mode": "comprehensive" }
+      ],
+      "match": { "match_score": 88, "code_score": 0.85, "match_gaps": ["Kubernetes", "Go"] }
+    }
+  ]
+}

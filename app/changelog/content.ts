@@ -5,10 +5,10 @@ export const changelogHtml = `
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.0.1 · v23 规划中</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.0.2 · v23 规划中</div>
     <div class="meta">
-      <span>已发布 <b>24</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.0.1</b></span>
+      <span>已发布 <b>25</b> 个版本</span>
+      <span>当前版本 <b>Beta 1.0.2</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -16,19 +16,19 @@ export const changelogHtml = `
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.1，为当前正式发布版本（Beta 1.0 的部署补丁：后端上线，功能集不变）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.2，为当前正式发布版本（真实模型上线：智谱 GLM 流式接通 + 检索重排 + 评分校准）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
   <div class="overview">
-    <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">已发布版本</div></div>
+    <div class="ov-card"><div class="ov-num">25</div><div class="ov-label">已发布版本</div></div>
     <div class="ov-card"><div class="ov-num">10</div><div class="ov-label">功能页</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">协作 Agent</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">岗位数据库</div></div>
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">870</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">879</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -39,6 +39,7 @@ export const changelogHtml = `
   <ul class="cl-toc-list">
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
     <li><a href="#vbeta"><span class="cl-toc-tag">Beta 1.0</span><span class="cl-toc-title-txt">检索层升级与版本定位</span></a></li>
+    <li><a href="#vbeta1-2"><span class="cl-toc-tag">Beta 1.0.2</span><span class="cl-toc-title-txt">真实模型上线 · 检索重排与评分校准</span></a></li>
     <li><a href="#vbeta1-1"><span class="cl-toc-tag">Beta 1.0.1</span><span class="cl-toc-title-txt">后端上线 · 全渠道接通真实服务</span></a></li>
     <li><a href="#v22"><span class="cl-toc-tag">v22</span><span class="cl-toc-title-txt">后端适配与工程化</span></a></li>
     <li><a href="#v21"><span class="cl-toc-tag">v21</span><span class="cl-toc-title-txt">悬浮球拖拽冻结 + 移动端美化</span></a></li>
@@ -180,13 +181,61 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
+       Beta 1.0.2 · 真实模型上线 · 检索重排与评分校准
+       ======================================================== -->
+  <div class="version vbeta1-2" id="vbeta1-2">
+    <div class="version-head">
+      <span class="v-tag v-tag-current">Beta 1.0.2</span>
+      <span class="v-title">真实模型上线 · 检索重排与评分校准</span>
+      <span class="v-date">2026.10.21 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        智谱 GLM（glm-4-flash）Key 配置上线——服务端环境变量注入后重新发布，<b>聊天、模拟面试提问、RAG 问答全部从 Mock 切换为真实流式</b>，线上 <code>/api/health</code> 返回 <code>llm_ready:true</code>，完整面试闭环（登录 → 建会话 → LLM 提问 → 同步 → 服务端评分报告）实测通过；Key 只存服务端 <code>.env</code>，前端零接触。同期完成两项算法升级：<b>RAG 检索新增五特征重排阶段</b>（混合召回复用后的精排，引用展示三阶段得分）；<b>评分引擎修复双引擎舍入分歧</b>（Python 银行家舍入 vs JS 半价向上，对拍从 3/5 到 5/5 一致）。技术文档新增第 7 章「核心算法详解与原创性论证」，把多 Agent 调度、RAG 混合检索与重排、评分引擎设计与校准展开到算法级。
+      </div>
+
+      <div class="cat">
+        <span class="cat-title cat-new">✨ 新增功能</span>
+        <ul class="changelog">
+          <li><b>真实 LLM 流式上线</b>：<code>backend/.env</code> 配置智谱 Key（glm-4-flash，Base URL 为智谱开放平台 v4），重新发布后聊天 / 面试提问 / RAG 问答全部走真实模型；线上实测完整面试闭环：登录 → 建会话 → 面试官 Agent 真实提问 → 同步问答 → 服务端评分报告（总分 78，量化回答被内容深度维度正确识别）</li>
+          <li><b>RAG 五特征重排</b>：混合检索召回的 Top-8 候选，按标题覆盖 / 标签覆盖 / 短语命中 / 类型先验 / 长度先验五个可解释特征精排（<code>final = 0.55 × 融合归一分 + 0.45 × 特征分</code>）；实测「MySQL 索引」查询中后端 JD 条目从召回第 2 名被重排到第 3 名（标题零命中）</li>
+          <li><b>RAG 页三阶段得分展示</b>：每条引用展示 <code>bm25 · cos · 融合 · 重排</code> 四段得分，检索过程完全透明可当场核对</li>
+          <li><b>服务端同策略检索</b>：<code>lib/ai/rag.ts</code> 从纯关键词升级为 BM25 + hashing 向量 + 加权融合 + 五特征重排（与端侧演示页同一套策略，服务端形态零依赖）</li>
+          <li><b>评分校准套件</b>：<code>calibration-cases.json</code>（5 个答题质量递进的标准样本）+ <code>calibrate_scoring.py</code> / <code>calibrate-scoring.js</code> 双引擎对拍脚本 + 11 条校准不变量断言（单调性 / 维度分离 / 确定性 / 边界 / 舍入规则）</li>
+          <li><b>技术文档第 7 章「核心算法详解与原创性论证」</b>：多 Agent 两层调度算法（模式层轮转 + 内容层派发 + 连环追问状态机 + SSE 事件协议）、RAG 六阶段管线与重排实证、评分引擎设计动机与四步校准过程（含一次真实缺陷修复）、与「AI 默认模板」作品的逐条差异论证</li>
+        </ul>
+      </div>
+
+      <div class="cat">
+        <span class="cat-title cat-improve">🔧 优化改进</span>
+        <ul class="changelog">
+          <li><b>修复评分引擎双引擎舍入分歧</b>：双引擎对拍首跑发现 C1/C5 样本「内容深度」差 1 分——根因是 Python 内置 <code>round()</code> 为银行家舍入（90.5 → 90）而 JS <code>Math.round</code> 为半价向上（90.5 → 91），评分真值恰好落在 .5 边界；服务端改用 <code>floor(v + 0.5)</code> 后对拍 5/5 完全一致。该缺陷靠肉眼读代码无法发现，是对拍方法论的价值证明</li>
+          <li><b>检索层文档同步</b>：技术文档 4.3 节「三层架构」更新为「六阶段架构」并补重排行；4.2 / 4.3 / 4.7 增加第 7 章算法级细节指引</li>
+          <li><b>测试扩充</b>：vitest RAG 测试 4 → 11 项（新增 7 项重排契约）；端侧向量检索套件 91 → 99 断言（新增重排专项）；后端 pytest 6 → 17 项（新增校准套件）</li>
+        </ul>
+      </div>
+
+      <div class="cat">
+        <span class="cat-title cat-data">📊 数据指标</span>
+        <div class="metrics">
+          <div class="metric"><div class="m-val">1</div><div class="m-label">真实模型通道上线</div></div>
+          <div class="metric"><div class="m-val">5</div><div class="m-label">重排特征</div></div>
+          <div class="metric"><div class="m-val">5/5</div><div class="m-label">双引擎对拍一致</div></div>
+          <div class="metric"><div class="m-val">879</div><div class="m-label">前端断言全绿</div></div>
+          <div class="metric"><div class="m-val">17</div><div class="m-label">后端测试通过</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
        Beta 1.0.1 · 后端上线（部署补丁）
        ======================================================== -->
   <div class="version vbeta1-1" id="vbeta1-1">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.0.1</span>
+      <span class="v-tag">Beta 1.0.1</span>
       <span class="v-title">后端上线 · 全渠道接通真实服务</span>
-      <span class="v-date">2026.10.20 <span class="cur-mark">当前版本</span></span>
+      <span class="v-date">2026.10.20</span>
     </div>
     <div class="version-body">
       <div class="v-summary">

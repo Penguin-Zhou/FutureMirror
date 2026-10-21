@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import re
 from typing import Any
 
@@ -24,7 +25,11 @@ SKILL_DICT = ["React", "Vue", "TypeScript", "JavaScript", "Node.js", "Python", "
 
 
 def _clamp(v: float) -> int:
-    return max(30, min(96, round(v)))
+    # 半价向上（floor(v+0.5)），与前端 Math.round 语义逐位一致。
+    # 校准对拍（calibrate_scoring.py ↔ calibrate-scoring.js）发现：
+    # Python 内置 round() 是银行家舍入（90.5→90），JS Math.round 是半价向上
+    # （90.5→91），双引擎在 .5 边界会差 1 分——评分引擎必须消除这种不确定性。
+    return max(30, min(96, math.floor(v + 0.5)))
 
 
 def score_session(turns: list[dict[str, Any]], match_score: int | None = None,
@@ -69,7 +74,7 @@ def score_session(turns: list[dict[str, Any]], match_score: int | None = None,
         dims.append({"key": key, "dimension": name, "score": score,
                      "comment": comment, "pool": pool})
 
-    total = round(sum(d["score"] for d in dims) / len(dims))
+    total = math.floor(sum(d["score"] for d in dims) / len(dims) + 0.5)   # 半价向上，同 _clamp
     weakest = min(dims, key=lambda d: d["score"])
 
     plan, day = [], 1
