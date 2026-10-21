@@ -64,14 +64,16 @@ KB.push(
 
 
 /* ============================================================
- * beta1.0 · 检索层：BM25 + 端侧向量混合（RAG retrieval）
+ * beta1.0 · 检索层：BM25 + 端侧向量混合 + 特征重排（RAG retrieval）
  *   ① 分词：中文 bigram + 英文/数字整词（与 lib/ai/rag.ts 同款策略）
  *   ② BM25：k1=1.5 / b=0.75，标题字段加权（标题重复计入）+ 文档长度归一
  *   ③ 向量：all-MiniLM-L6-v2（Transformers.js，384 维，浏览器内推理，
  *           模型权重走浏览器缓存，零后端、零 API）；无模型文件时降级为
  *           n-gram hashing 向量（256 维，纯本地计算，离线可跑）
  *   ④ 融合：两路各自 min-max 归一分后加权求和（余弦 0.6 / BM25 0.4）
- *   ⑤ 缓存：40 条面经向量预计算一次写入 localStorage，二次访问零推理
+ *   ⑤ 重排：对融合召回的 Top-8 候选用 5 个可解释词面/结构特征精排
+ *           （标题覆盖 / 标签覆盖 / 短语命中 / 类型先验 / 长度先验）
+ *   ⑥ 缓存：40 条面经向量预计算一次写入 localStorage，二次访问零推理
  * ============================================================ */
 const VEC_CFG = {
   dimHash: 256,
@@ -288,6 +290,78 @@ function scoreAll(qTokens, queryVec) {
   return out.sort((a, b) => b.score - a.score);
 }
 
+/* ---------- 重排序：混合召回复用后的精排 ---------- */
+/* 为什么需要重排：加权融合假设「余弦高」与「词面准」等价重要，但面试
+ * 场景里「标题命中查询意图」几乎总是更强信号——用户搜「字节后端二面」，
+ * 标题含这四个字的条目应排在只含「后端」二字的条目前面。重排阶段把
+ * 这类可解释的词面/结构特征显式建模，且每个特征的得分都随证据展示。 */
+const RERANK_CFG = {
+  topN: 8,                                   // 先混合召回 8 条候选，再重排
+  wHybrid: 0.55,                             // 最终分中混合分的权重
+  wFeat: 0.45,                               // 最终分中特征分的权重
+  featW: { title: 0.34, tag: 0.22, phrase: 0.24, type: 0.12, len: 0.08 },
+  typePrior: { "合成面经": 1.0, "合成JD": 0.95, "合成题库": 0.9, "合成指南": 0.85, "合成报告": 0.8 },
+  idealLen: 170,                             // 条目正理想长度（过短信息量不足，过长稀释密度）
+};
+
+/* 查询词在文本中的覆盖率 [0,1]（bigram 已含在 qTokens 中） */
+function coverage(tokens, text) {
+  if (!tokens.length || !text) return 0;
+  const t = String(text).toLowerCase();
+  let hit = 0;
+  for (const tok of tokens) if (t.includes(tok)) hit++;
+  return hit / tokens.length;
+}
+
+/* 最长公共子串占比：raw 查询与目标文本的 LCS 长度 / 较短串长度。
+ * 滚动数组版 DP，O(n·m)，查询与条目都是短文本，开销可忽略。 */
+function lcsRatio(a, b) {
+  if (!a || !b) return 0;
+  const A = String(a).toLowerCase(), B = String(b).toLowerCase();
+  const prev = new Array(B.length + 1).fill(0);
+  let best = 0;
+  for (let i = 1; i <= A.length; i++) {
+    let diag = 0;                              // 上一行第 j-1 列的值
+    for (let j = 1; j <= B.length; j++) {
+      const above = prev[j];
+      prev[j] = A[i - 1] === B[j - 1] ? diag + 1 : 0;
+      if (prev[j] > best) best = prev[j];
+      diag = above;
+    }
+  }
+  return best / Math.max(1, Math.min(A.length, B.length));
+}
+
+/* 对混合召回的候选池重排；返回按 final 降序的完整分解（供证据展示） */
+function rerank(query, pool) {
+  if (!pool.length) return [];
+  const qToks = tokenize(query);
+  const rawQ = String(query).trim().toLowerCase();
+  const maxHybrid = pool.reduce((m, r) => Math.max(m, r.score), 0) || 1;
+  return pool.map(r => {
+    const e = r.entry;
+    const title = coverage(qToks, e.title);
+    const tag = coverage(qToks, (e.tags || []).join(" "));
+    // 标题中的完整短语比正文中的同样短语更有说服力（×1.0 vs ×0.6）
+    const phrase = Math.max(lcsRatio(rawQ, e.title), lcsRatio(rawQ, e.content) * 0.6);
+    const type = RERANK_CFG.typePrior[String(e.source).split("·")[0]] ?? 0.85;
+    const len = Math.max(0, 1 - Math.abs(String(e.content).length - RERANK_CFG.idealLen)
+      / (RERANK_CFG.idealLen * 2));
+    const feat = RERANK_CFG.featW.title * title + RERANK_CFG.featW.tag * tag
+      + RERANK_CFG.featW.phrase * phrase + RERANK_CFG.featW.type * type
+      + RERANK_CFG.featW.len * len;
+    const hybridNorm = r.score / maxHybrid;
+    const final = RERANK_CFG.wHybrid * hybridNorm + RERANK_CFG.wFeat * feat;
+    return {
+      ...r,
+      feat: { title: +title.toFixed(3), tag: +tag.toFixed(3), phrase: +phrase.toFixed(3), type, len: +len.toFixed(3) },
+      featScore: +feat.toFixed(4),
+      hybridNorm: +hybridNorm.toFixed(4),
+      final: +final.toFixed(4),
+    };
+  }).sort((a, b) => b.final - a.final);
+}
+
 /* 同步检索：无模型时（hash / 缓存命中但模型未加载）走 BM25 + hashing 余弦 */
 function hybridRetrieve(query, k = 3) {
   const qTokens = tokenize(query);
@@ -296,7 +370,9 @@ function hybridRetrieve(query, k = 3) {
   const queryVec = vecIndex.provider === "minilm" && !vecIndex.extractor
     ? null
     : hashEmbed(query, VEC_CFG.dimHash);
-  return scoreAll(qTokens, queryVec).slice(0, k);
+  // 先混合召回 Top-N，再重排取 top-k（召回管「相关」，重排管「排序」）
+  const pool = scoreAll(qTokens, queryVec).slice(0, RERANK_CFG.topN);
+  return rerank(query, pool).slice(0, k);
 }
 
 /* 异步检索：MiniLM 已加载时用模型编码 query，走真实语义余弦 */
@@ -319,7 +395,8 @@ async function hybridRetrieveAsync(query, k = 3) {
   } else {
     queryVec = hashEmbed(query, VEC_CFG.dimHash);
   }
-  return scoreAll(qTokens, queryVec).slice(0, k);
+  const pool = scoreAll(qTokens, queryVec).slice(0, RERANK_CFG.topN);
+  return rerank(query, pool).slice(0, k);
 }
 
 function retrieve(query, k = 3) { return hybridRetrieve(query, k).map(r => r.entry); }
@@ -507,7 +584,7 @@ function renderVecBar() {
   if (vecIndex.ready) {
     const tag = vecIndex.source === "cache" ? " · localStorage 缓存命中" : "";
     const sem = vecIndex.provider === "minilm" ? "语义" : "词面";
-    el.textContent = `向量索引 ${vecIndex.vectors.length} 条 · ${vecProviderLabel()}（${sem}）${tag} · 融合 余弦×${VEC_CFG.wVec} + BM25×${VEC_CFG.wBm25}`;
+    el.textContent = `向量索引 ${vecIndex.vectors.length} 条 · ${vecProviderLabel()}（${sem}）${tag} · 融合 余弦×${VEC_CFG.wVec} + BM25×${VEC_CFG.wBm25} · 重排 5 特征`;
     setVecStatus(el.textContent, vecIndex.provider === "minilm" ? "ok" : "warn");
   } else {
     setVecStatus("向量索引未初始化", "");
@@ -544,11 +621,11 @@ async function askRag(skipLlm) {
     box.innerHTML = `<div class="rag-answer weak fade-up">知识库中暂未检索到相关资料，请更换关键词，例如「STAR 法则」「MySQL 索引」「字节 二面」。</div>`;
     return;
   }
-  const citeBlock = `<div class="rag-cite"><b style="font-size:12px;color:var(--faint)">引用来源（BM25 / 余弦 两路得分）</b>
+  const citeBlock = `<div class="rag-cite"><b style="font-size:12px;color:var(--faint)">引用来源（BM25 / 余弦 / 重排 三阶段得分）</b>
       ${ranked.map((r, i) => `<p>[${i + 1}] <b style="color:var(--muted)">${r.entry.source}</b> — ${r.entry.content.slice(0, 70)}…
-        <code style="color:var(--faint)">bm25 ${r.bm25} · cos ${r.cos} · 融合 ${r.score}</code></p>`).join("")}
+        <code style="color:var(--faint)">bm25 ${r.bm25} · cos ${r.cos} · 融合 ${r.score} · 重排 ${r.final}</code></p>`).join("")}
     </div>`;
-  const retrieverTag = `hybrid(bm25×${VEC_CFG.wBm25}+cos×${VEC_CFG.wVec}) · vec=${vecProviderLabel()}`;
+  const retrieverTag = `hybrid(bm25×${VEC_CFG.wBm25}+cos×${VEC_CFG.wVec})+rerank(5特征) · vec=${vecProviderLabel()}`;
 
   // v22.1：后端在线同样走模型（Key 在服务端，前端零接触）
   const useLlm = (llm || fmApi.backendReady()) && !skipLlm;

@@ -102,8 +102,8 @@ const S = (cond, name) => ok(cond, name);
   const rowRedis = js('hybridRetrieve("Redis 缓存穿透 击穿 雪崩 区别", 3)');
   S(rowRedis.length === 3, "返回 3 条结果");
   S(rowRedis[0].entry.title.includes("Redis"), "Top1 命中 Redis 缓存三兄弟");
-  S(Math.abs(rowRedis[0].score - (0.6 * rowRedis[0].cos + 0.4 * rowRedis[0].bm25Norm)) < 0.01, "融合分 = 余弦×0.6 + BM25归一分×0.4");
-  S(rowRedis.every((r, i) => i === 0 || rowRedis[i - 1].score >= r.score), "结果按融合分降序");
+  S(Math.abs(rowRedis[0].score - (0.6 * rowRedis[0].cos + 0.4 * rowRedis[0].bm25Norm)) < 0.01, "融合分 = 余弦×0.6 + BM25归一分×0.4（重排不改变 score 语义）");
+  S(rowRedis.every((r, i) => i === 0 || rowRedis[i - 1].final >= r.final), "结果按重排分 final 降序");
   S(rowRedis.every(r => r.score > 0 && r.entry.content), "每条结果带分数与正文（可展示证据）");
   S(js('hybridRetrieve("", 3)').length === 0, "空查询返回空");
   S(js('hybridRetrieve("   ", 3)').length === 0, "纯空白查询返回空");
@@ -114,6 +114,25 @@ const S = (cond, name) => ok(cond, name);
   S(r1.length === 3 && r1[0].title.includes("STAR"), "retrieve 兼容旧接口（返回 entry，Top1 为 STAR）");
   S(r1.every(e => typeof e.title === "string" && typeof e.source === "string"), "entry 结构完整（title / source / content）");
   S(js('hybridRetrieve("MySQL 索引为什么用 B+ 树", 3)')[0].entry.title.includes("B+"), "同义改写查询命中 B+ 树条目");
+
+  /* ============ E2. 重排序 ============ */
+  console.log("\n-- E2. 特征重排（混合召回复用后的精排）--");
+  const rr = js('hybridRetrieve("字节 后端 二面", 5)');
+  S(rr.length > 0 && rr.every(r => r.feat && typeof r.final === "number"), "重排结果带 5 特征分解与 final 分");
+  S(rr.every((r, i) => i === 0 || rr[i - 1].final >= r.final), "重排后严格按 final 降序");
+  S(rr.every(r => r.feat.title >= 0 && r.feat.title <= 1 && r.feat.phrase >= 0 && r.feat.phrase <= 1), "特征值均在 [0,1]（可解释、可展示）");
+  S(rr[0].entry.title.includes("字节") && rr[0].entry.title.includes("二面"), "标题全覆盖查询的词条被重排到 Top1");
+  const rrPhrase = js('hybridRetrieve("Redis 缓存穿透", 3)');
+  S(rrPhrase[0].entry.title.includes("穿透") && rrPhrase[0].feat.phrase >= 0.9, "完整短语命中获得高 phrase 特征分");
+  const rrNoise = js('hybridRetrieve("xyzzy", 3)');
+  S(rrNoise.length === 0, "无召回时重排不硬凑结果");
+  const rrStar = js('hybridRetrieve("STAR 法则怎么讲项目", 3)');
+  S(rrStar[0].entry.title.includes("STAR"), "STAR 查询重排后 Top1 仍是 STAR 条目");
+  const pool = js('scoreAll(tokenize("字节 后端 二面"), null).slice(0, 8)');
+  const before = pool.map(r => r.entry.title);
+  const after = js('rerank("字节 后端 二面", scoreAll(tokenize("字节 后端 二面"), null).slice(0, 8))').map(r => r.entry.title);
+  S(after.length === pool.length && before.every(t => after.includes(t)), "重排是候选池的重新排列（不引入新条目）");
+  S(js('rerank("字节 后端 二面", [])').length === 0, "空候选池重排返回空");
 
   /* ============ F. RAG 页 UI ============ */
   console.log("\n-- F. RAG 页向量索引状态条 --");

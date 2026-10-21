@@ -419,7 +419,7 @@
     <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span></a></li>
     <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span></a></li>
     <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">870 + 6 项测试 / 4 种部署</span></a></li>
-    <li><a href="#ch7"><span class="toc-t">创新点说明</span><span class="toc-d">技术 8 项 / 应用 6 项</span></a></li>
+    <li><a href="#ch7"><span class="toc-t">核心算法详解与原创性论证</span><span class="toc-d">三大算法 / 校准实证 / 模板差异化</span></a></li>
     <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span></a></li>
     <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 交付清单</span></a></li>
     <li><a href="#ch10"><span class="toc-t">版本更新日志</span><span class="toc-d">v1 → Beta 1.0.1，v23 规划</span></a></li>
@@ -730,6 +730,7 @@
   </table>
 
   <h2>4.2 Agent / 工作流设计</h2>
+  <p>本节为总览；算法级细节（两层调度 / 连环追问状态机 / SSE 事件协议 / 与模板轮转的差异）见 <strong>7.1 多 Agent 协作调度算法</strong>。</p>
 
   <h3>4.2.1 五个 Agent 的角色设计</h3>
   <table>
@@ -804,7 +805,7 @@
 
   <div class="callout info">
     <strong>本版重点升级模块</strong>
-    从「关键词匹配」升级为「<strong>BM25 + 端侧向量混合检索</strong>」，且全部在浏览器内完成（零后端、零 API）。
+    从「关键词匹配」升级为「<strong>BM25 + 端侧向量混合检索 + 五特征重排</strong>」，且全部在浏览器内完成（零后端、零 API）。管线六阶段与重排的真实效果数据见 <strong>7.2 RAG 混合检索与重排序策略</strong>。
   </div>
 
   <h3>4.3.1 为什么不是「纯向量检索」</h3>
@@ -819,7 +820,7 @@
     </tbody>
   </table>
 
-  <h3>4.3.2 三层架构</h3>
+  <h3>4.3.2 六阶段架构</h3>
   <table>
     <thead>
       <tr><th style="width:16%">环节</th><th style="width:40%">实现</th><th>关键参数</th></tr>
@@ -830,6 +831,7 @@
       <tr><td><strong>语义召回</strong></td><td>Transformers.js · <code>all-MiniLM-L6-v2</code></td><td>384 维，<code>pooling=mean</code> + L2 归一，浏览器内推理</td></tr>
       <tr><td><strong>融合</strong></td><td><code>score = 0.6 × cosine + 0.4 × bm25_normalized</code></td><td>两路各自 min-max 归一后加权</td></tr>
       <tr><td><strong>门槛</strong></td><td>纯语义召回设余弦门槛</td><td>MiniLM 0.15 / hashing 0.32（防噪声）</td></tr>
+      <tr><td><strong>重排</strong></td><td>五特征精排（标题/标签/短语/类型/长度）</td><td><code>final = 0.55 × 融合归一分 + 0.45 × 特征分</code>，详见 <strong>7.2.6</strong></td></tr>
     </tbody>
   </table>
 
@@ -983,6 +985,7 @@
   </p>
 
   <h2>4.7 可解释评分引擎</h2>
+  <p>本节为规则总览；五维信号设计、边界裁剪理由、双引擎对拍与校准数据见 <strong>7.3 评分引擎设计与校准过程</strong>。</p>
 
   <h3>4.7.1 五维评分规则</h3>
   <table>
@@ -1264,9 +1267,240 @@ cd frontend && python -m http.server 5173
 <!-- =============== 第 7 章 =============== -->
 <section class="chapter" id="ch7">
   <div class="chapter-num">CHAPTER 07</div>
-  <h1>创新点说明</h1>
+  <h1>核心算法详解与原创性论证</h1>
 
-  <h2>7.1 技术创新点</h2>
+  <div class="callout info">
+    <strong>本章意图</strong>
+    本章把三个最容易被「AI 默认模板」作品含糊带过的模块——<strong>多 Agent 调度</strong>、<strong>RAG 混合检索与重排</strong>、<strong>评分引擎</strong>——展开到算法级：每一个都给出设计动机、参数、伪代码/公式、以及<strong>可当场复现的校准数据</strong>。这些细节不是装饰，是「这个作品为什么不是套壳」的核心证据。
+  </div>
+
+  <h2>7.1 多 Agent 协作调度算法</h2>
+
+  <h3>7.1.1 Agent 注册表：纯数据、双端共用</h3>
+  <p>5 个 Agent 的人设集中在 <code>lib/ai/personas.ts</code>（纯数据模块，无副作用，客户端与服务端安全共用）：</p>
+  <table>
+    <thead>
+      <tr><th style="width:14%">Agent</th><th style="width:22%">考察重点</th><th style="width:30%">风格参数</th><th>调度层职责</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>💼 HR 面试官</td><td>动机 / 稳定性 / 协作</td><td>温和但有压迫感，连环追问动机</td><td>模式层固定位 + 内容层动机路由</td></tr>
+      <tr><td>⚙️ 技术面试官</td><td>项目深挖 / 原理 / 取舍</td><td>严谨，追问到底，要求量化数据</td><td>技术关键词路由 + 连环追问主体</td></tr>
+      <tr><td>🔥 压力面试官</td><td>抗压 / 边界 / 举证</td><td>直接尖锐，只对事不对人</td><td>压力模式主体 + 结构完整时触发</td></tr>
+      <tr><td>📝 观察员 Agent</td><td>证据记录 / 风险标注</td><td>中立，只记录不提问</td><td>内容层派发的输入源（4 类标注）</td></tr>
+      <tr><td>🎯 教练 Agent</td><td>改进建议 / 学习路径</td><td>建设性、可执行</td><td>面试结束后汇总（报告页）</td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.1.2 两层调度：模式层轮转 + 内容层派发</h3>
+  <p>调度不是一层，而是<strong>两层串联</strong>——先按面试模式确定轮转骨架，再按回答内容做单次派发决策：</p>
+  <table>
+    <thead>
+      <tr><th style="width:16%">层</th><th style="width:30%">输入</th><th style="width:26%">算法</th><th>输出</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>模式层</strong></td><td>面试模式 + 轮次 turn</td><td><code>pickSpeaker(turn, mode)</code>：O(1) 查表（comprehensive 按 [hr,tech,pressure] 轮转；tech 每 3 轮插入 HR；pressure 每 4 轮插入技术；gentle 恒定 HR）</td><td>候选面试官</td></tr>
+      <tr><td><strong>内容层</strong></td><td>最近回答的关键词 + 观察员标注</td><td><code>planReason()</code>：技术词命中 → 技术面试官深挖；结构完整但缺量化/偏长 → 压力面试官边界追问；否则 → HR 考察动机</td><td>实际发言者 + <strong>可解释理由</strong> + 置信度</td></tr>
+    </tbody>
+  </table>
+<pre>function planReason(speaker, keyword, notes, mode) {
+  const k = keyword.slice(0, 12);
+  if (speaker.id === "tech")
+    return `技术关键词「${k}」${notes.includes("量化") ? " + 缺量化" : ""} → 技术面试官深挖原理`;
+  if (speaker.id === "pressure")
+    return `结构完整但${notes.includes("偏长") ? "篇幅偏长" : "细节待验证"} → 压力面试官做边界追问`;
+  return `侧重动机协作 → HR 面试官考察稳定性`;
+}
+// 置信度：min(95, 60 + turn * 6) —— 轮次越多，画像越全，决策越自信</pre>
+  <p>每次派发都会在面试间右侧时间线写一行<strong>决策理由 + 置信度</strong>，例如「📋 决策：技术关键词「Redis 缓存一致」 + 缺量化 → 技术面试官深挖原理（置信度 78%）」。<strong>Agent 的每次「换人」都有据可查</strong>——这是 Agent 决策过程的透明化，不是装饰。</p>
+
+  <h3>7.1.3 连环追问：从「轮转」到「连续决策」</h3>
+  <p>检测到技术关键词时，有 35% 概率触发连环追问——连续 2 轮深挖同一技术点，模拟真实技术面试官的追击：</p>
+<pre>function maybeStartDeepDive(keyword, mode, chance) {
+  if (deepDive.left > 0) return { started: false };        // 已在追问中，不叠加
+  if (isTechKeyword(keyword) && mode !== "pressure" && Math.random() < (chance ?? 0.35)) {
+    deepDive = { topic: keyword, left: 2 };                // 锁定主题，再挖 2 轮
+    return { started: true, left: 2 };
+  }
+  return { started: false };
+}</pre>
+  <p>固定题库轮转是「套壳」的典型特征；连环追问体现了 <strong>Agent 根据上下文做连续决策</strong>的能力，是 Agent 与「多轮问答机器人」的本质差异。</p>
+
+  <h3>7.1.4 服务端同构调度与事件协议</h3>
+  <p>Next.js 服务端路由 <code>/api/chat</code> 用同一套 <code>pickSpeaker</code> + 版本化 Prompt 模板（<code>prompts/interviewer.md</code>）组装系统提示，注入候选人画像（已确认技能 / 岗位缺口 / 匹配分），通过 SSE 事件协议向前端推送全过程：</p>
+  <table>
+    <thead>
+      <tr><th style="width:18%">事件</th><th style="width:34%">载荷</th><th>用途</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>agent</code></td><td>{ id, name, title }</td><td>前端实时显示「当前发言的是哪个 Agent」</td></tr>
+      <tr><td><code>thinking</code></td><td>{ text }</td><td>「XX 正在分析你的回答…」占位，流式期间不冷场</td></tr>
+      <tr><td><code>delta</code></td><td>{ text }</td><td>模型增量 token，逐字上屏</td></tr>
+      <tr><td><code>observer</code></td><td>{ note }</td><td>观察员 Agent 的启发式批注（过短/缺量化/偏长/口头禅）</td></tr>
+      <tr><td><code>done</code></td><td>{ text }</td><td>完整回答落库，进入评分</td></tr>
+    </tbody>
+  </table>
+  <p>隐私在调度层一并处理：只把<strong>脱敏后（<code>maskPII</code>）的最近 8 条</strong>对话发给模型。FastAPI 后端 <code>/api/chat/stream</code> 是同款代理（Key 只存服务端环境变量，前端零接触），线上已接通真实 GLM 流式（见 4.1）。</p>
+
+  <h3>7.1.5 与「固定轮转模板」的差异</h3>
+  <table>
+    <thead>
+      <tr><th style="width:22%">维度</th><th style="width:34%">模板作品常见做法</th><th>本作品</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>发言者选择</td><td>固定题库轮转，每轮换人</td><td>模式层 + 内容层两层调度，按回答内容派发</td></tr>
+      <tr><td>决策可见性</td><td>无（用户不知道下一个为什么是它）</td><td>派发理由 + 置信度实时写入时间线</td></tr>
+      <tr><td>上下文连续性</td><td>无状态轮转</td><td>连环追问状态机，锁定主题连续深挖 2 轮</td></tr>
+      <tr><td>人设工程</td><td>一个 system prompt 包打天下</td><td>5 个人设纯数据注册表 + 版本化模板 + 画像注入</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7.2 RAG 混合检索与重排序策略</h2>
+
+  <h3>7.2.1 六阶段检索管线</h3>
+  <p>检索不是「调一次 embedding API」，而是六个阶段、每阶段产出均可展示为证据的管线（端侧演示页 <code>frontend/js/data/kb.js</code> 与服务端 <code>lib/ai/rag.ts</code> 同策略实现）：</p>
+  <table>
+    <thead>
+      <tr><th style="width:8%">阶段</th><th style="width:20%">名称</th><th style="width:42%">实现</th><th>可展示证据</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>①</td><td>分词</td><td>英文/数字整词 + 中文 bigram 切分</td><td>分词结果（开发者模式）</td></tr>
+      <tr><td>②</td><td>词面召回</td><td>BM25：k1=1.5、b=0.75，标题字段重复计入 = 权重 ×2，IDF 恒正</td><td>逐条 bm25 分</td></tr>
+      <tr><td>③</td><td>语义召回</td><td>MiniLM-L6-v2（384d，浏览器内推理）；无模型文件降级 n-gram hashing（256d，纯本地）</td><td>逐条 cos 分 + 向量提供者</td></tr>
+      <tr><td>④</td><td>融合</td><td>两路各自 min-max 归一后加权：<code>0.6×cos + 0.4×bm25Norm</code>；纯语义召回设余弦门槛（MiniLM 0.15 / hashing 0.32）</td><td>融合分</td></tr>
+      <tr><td>⑤</td><td><strong>重排</strong></td><td>对融合召回的 Top-8 候选用 5 个可解释词面/结构特征精排（见 7.2.6）</td><td>重排分 + 五特征分解</td></tr>
+      <tr><td>⑥</td><td>引用构建</td><td>Top-k 条目编号成上下文，答案必须标注来源，降低幻觉</td><td>引用列表</td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.2.2 分词：为什么是 bigram 而不是接分词器</h3>
+  <p>中文用户输入通常不带空格（「字节后端二面一般问什么」）。无分词器方案下，对含中文的 token 追加<strong>二元词组（bigram）</strong>是 CJK 检索的标准做法：「缓存穿透」切出「缓存 / 存穿 / 穿透」，召回「Redis 缓存穿透/击穿/雪崩区别」条目的同时，单字词被过滤（长度 &lt; 2 丢弃）防噪声。零依赖、毫秒级、与服务端策略一致。</p>
+
+  <h3>7.2.3 为什么不是「纯向量检索」</h3>
+  <table>
+    <thead>
+      <tr><th style="width:16%">方案</th><th style="width:32%">优点</th><th style="width:34%">缺点</th><th>结论</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>纯向量检索</td><td>语义泛化好</td><td>关键词精确命中差（「B+ 树」可能召回「二叉树」）</td><td>❌</td></tr>
+      <tr><td>纯 BM25</td><td>关键词精确、快</td><td>同义改写召回差</td><td>❌</td></tr>
+      <tr><td><strong>混合 + 重排</strong></td><td>两路互补 + 词面特征精排</td><td>需处理归一与权重</td><td>✅ <strong>采用</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.2.4 端侧语义通道与四级降级</h3>
+  <p>MiniLM 权重（23MB）的获取链路按国内网络实测排序：<strong>① 站点同源 models/ → ② GitHub Pages models/（带 ACAO:*）→ ③ hf-mirror.com → ④ huggingface.co</strong>；运行时库 similarly 多 CDN 备选（fastly 节点国内实测最快），单源 10s 超时即切换。全部不可达时降级 hashing 向量（门槛抬高到 0.32，因为它没有真实语义能力），<strong>检索链路不中断</strong>。40 条向量预计算一次写入 localStorage，二次访问零推理。</p>
+
+  <h3>7.2.5 加权融合</h3>
+  <p>两路分数各自 min-max 归一后加权：<code>score = 0.6 × cos + 0.4 × bm25Norm</code>。余弦权重更高——语义通道解决「换一种说法」的召回，词面通道保证精确命中；纯语义召回的条目须过余弦门槛，防止 hashing 兜底时噪声混入。</p>
+
+  <h3>7.2.6 五特征重排：召回管「相关」，重排管「排序」</h3>
+  <p><strong>动机</strong>：加权融合隐含假设「余弦高」与「词面准」等价重要，但面试场景里「标题命中查询意图」几乎总是更强信号——用户搜「MySQL 索引」，标题含这四个字的条目应排在只在正文提及的条目前面。重排阶段把这些可解释特征显式建模：</p>
+  <table>
+    <thead>
+      <tr><th style="width:14%">特征</th><th style="width:10%">权重</th><th style="width:44%">定义</th><th>直觉</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>title</td><td>0.34</td><td>查询词（含 bigram）在标题中的覆盖率</td><td>标题最能代表条目意图</td></tr>
+      <tr><td>tag</td><td>0.22</td><td>查询词在标签中的覆盖率</td><td>标签是人工凝练的主题词</td></tr>
+      <tr><td>phrase</td><td>0.24</td><td>查询与标题/正文的最长公共子串占比（标题 ×1.0，正文 ×0.6）</td><td>完整短语 = 强意图信号</td></tr>
+      <tr><td>type</td><td>0.12</td><td>条目类型先验：面经 1.0 / JD 0.95 / 题库 0.9 / 指南 0.85 / 报告 0.8</td><td>问「怎么问」时面经优先于趋势报告</td></tr>
+      <tr><td>len</td><td>0.08</td><td>长度先验：距理想长度 170 字越近越高</td><td>过短信息量不足，过长稀释密度</td></tr>
+    </tbody>
+  </table>
+<pre>final = 0.55 × hybridNorm + 0.45 × featScore
+// hybridNorm：候选池内混合分归一；featScore：五特征加权和（权重和 = 1）</pre>
+  <p><strong>为什么不用 LLM rerank</strong>：延迟（多一次模型往返）、成本、以及最关键的——<strong>确定性</strong>。规则重排对同一查询永远给出同一结果，特征分可逐项展示给用户核对；LLM 重排三者皆无。40 条规模的知识库，规则重排的区分度已经够用。</p>
+  <p><strong>重排真实效果</strong>（线上知识库实测，召回序 → 重排序）：</p>
+  <table>
+    <thead>
+      <tr><th style="width:16%">查询</th><th style="width:36%">混合召回 Top-3</th><th>重排后 Top-3（变化）</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>MySQL 索引</td><td>B+ 树条目 / 后端 JD / 事务隔离级别</td><td>B+ 树条目 / <strong>事务隔离级别 ↑</strong> / <strong>后端 JD ↓</strong>（标题零命中，phrase 0.60 也救不回）</td></tr>
+      <tr><td>Redis 持久化</td><td>RDB 与 AOF / 分布式锁 / 缓存三兄弟</td><td>RDB 与 AOF / <strong>缓存三兄弟 ↑</strong> / <strong>分布式锁 ↓</strong></td></tr>
+      <tr><td>后端 开发 工程师</td><td>后端 JD / AI 求职趋势 / 腾讯一面</td><td>后端 JD / <strong>腾讯一面 ↑</strong> / <strong>字节二面 ↑</strong> / <strong>AI 趋势 ↓</strong></td></tr>
+    </tbody>
+  </table>
+  <p>RAG 页对每条引用逐条展示三阶段得分：<code>bm25 2.31 · cos 0.44 · 融合 0.40 · 重排 0.91</code>——<strong>检索过程完全透明，评委可以当场核对每一个数字怎么来的</strong>。</p>
+
+  <h3>7.2.7 双形态部署：同一套策略，两种工程取舍</h3>
+  <table>
+    <thead>
+      <tr><th style="width:20%">形态</th><th style="width:30%">语义通道</th><th style="width:26%">运行环境</th><th>取舍理由</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>端侧完整版</td><td>MiniLM-L6-v2 384d</td><td>浏览器（Transformers.js + wasm）</td><td>真实语义能力，权重走缓存，零后端零 API</td></tr>
+      <tr><td>服务端轻量版</td><td>hashing 256d 稀疏向量</td><td>Next.js 路由（零依赖）</td><td>服务端常驻内存无浏览器缓存机制，hashing 保证零依赖确定性，融合/重排策略完全一致</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7.3 评分引擎设计与校准过程</h2>
+
+  <h3>7.3.1 设计目标</h3>
+  <p>评分引擎要回答四个问题：<strong>① 可解释</strong>（每个分数能追溯到对话原话）；<strong>② 可复现</strong>（同一输入永远同一输出，不靠模型运气）；<strong>③ 双引擎同构</strong>（前端本地引擎与服务端引擎逐位一致，支撑三级降级）；<strong>④ 对匹配报告开放</strong>（简历匹配分作为先验进入拟合维度，而非另起一套）。规则引擎（而非让 LLM 直接打分）是同时满足四者的唯一选择。</p>
+
+  <h3>7.3.2 五维信号设计</h3>
+  <table>
+    <thead>
+      <tr><th style="width:14%">维度</th><th style="width:10%">权重</th><th style="width:42%">评分信号（可机械判定）</th><th>满分条件</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>内容深度</td><td>25%</td><td>数字个数（×2.2 上限 22）、技术词命中（×2.5 上限 18）、轮次 ≥4 +8、代码沙盒通过率（×0.8/0.2 融合）</td><td>4+ 量化且 3+ 技术词</td></tr>
+      <tr><td>结构逻辑</td><td>20%</td><td>STAR 词命中（背景/目标/负责/通过/最终/结果/因此/于是）×4 上限 30</td><td>命中 3+</td></tr>
+      <tr><td>语言表达</td><td>15%</td><td>口头禅（然后/那个/就是）×5 上限 24、短答数（&lt;40 字）×4</td><td>口头禅 ≤2 且无短答</td></tr>
+      <tr><td>岗位匹配</td><td>20%</td><td>匹配报告分 ×0.4 + 技术词命中（上限 10）；无报告时按技能命中估算</td><td>匹配分高 + 缺口少</td></tr>
+      <tr><td>抗压表现</td><td>20%</td><td>防御性表述（不是我的/跟我没关系/但是/我没有）×6 上限 20；压力轮短答 ×3 上限 12</td><td>无防御性表述</td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.3.3 边界裁剪的设计理由</h3>
+  <p>所有维度分裁剪到 <code>[30, 96]</code>：<strong>下限 30</strong>——再差的回答也有保底，避免「零分挫败」吓退用户；<strong>上限 96</strong>——不留满分，保留「还能更好」的成长空间，也与学习路径的「补强」叙事一致。总分 = 五维均值（半价向上舍入）。</p>
+
+  <h3>7.3.4 校准过程：四步，含一次真实缺陷修复</h3>
+  <ol>
+    <li><strong>规则来源</strong>：信号不是拍脑袋——量化数据（STAR 面试法的 Result 可验证化）、STAR 结构词、口头禅密度、防御性表述，分别对应面试评估中内容、结构、表达、抗压四类公认维度。</li>
+    <li><strong>双引擎对拍</strong>：<code>backend/scripts/calibrate_scoring.py</code>（服务端）与 <code>scripts/calibrate-scoring.js</code>（前端 jsdom）共用同一份标准样本 <code>calibration-cases.json</code>（5 个答题质量递进的样本），逐维度比对。</li>
+    <li><strong>发现并修复舍入分歧</strong>：对拍首跑发现 C1/C5 的「内容深度」双引擎差 1 分。根因：<strong>Python 内置 <code>round()</code> 是银行家舍入（90.5 → 90），JS <code>Math.round</code> 是半价向上（90.5 → 91）</strong>——评分真值恰好落在 .5 边界（48 + 22 + 5×2.5 + 8 = 90.5）。修复：服务端改用 <code>floor(v + 0.5)</code> 与前端逐位一致。<strong>对拍从 3/5 变为 5/5 完全一致</strong>。这个缺陷靠肉眼读代码发现不了，是对拍方法论的价值证明。</li>
+    <li><strong>不变量固化</strong>：单调性（答题质量提升 → 总分提升）、维度分离（每个维度只对目标特征敏感）、确定性（重复评分一致）、边界（全部落在 [30,96]）写成 <code>backend/tests/test_calibration.py</code>，11 条断言常驻回归。</li>
+  </ol>
+
+  <h3>7.3.5 校准数据（双引擎一致输出）</h3>
+  <table>
+    <thead>
+      <tr><th style="width:26%">标准样本</th><th style="width:8%">总分</th><th>内容深度</th><th>结构逻辑</th><th>语言表达</th><th>岗位匹配</th><th>抗压表现</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>C1 量化密集的技术强答</td><td><strong>77</strong></td><td>91</td><td>78</td><td>84</td><td>65</td><td>66</td></tr>
+      <tr><td>C2 结构尚可但缺量化</td><td><strong>64</strong></td><td>48</td><td>74</td><td>76</td><td>55</td><td>66</td></tr>
+      <tr><td>C3 短答 + 口头禅</td><td><strong>55</strong></td><td>48</td><td>54</td><td>52</td><td>55</td><td>66</td></tr>
+      <tr><td>C4 压力面防御性表述</td><td><strong>56</strong></td><td>48</td><td>58</td><td>76</td><td>55</td><td><strong>43</strong></td></tr>
+      <tr><td>C5 C1 强答 + 匹配报告与代码分</td><td><strong>82</strong></td><td>90</td><td>78</td><td>84</td><td><strong>92</strong></td><td>66</td></tr>
+    </tbody>
+  </table>
+  <p>读表方式：<strong>总分单调</strong>（55 → 56 → 64 → 77 → 82）；<strong>每个维度只对目标特征敏感</strong>——量化数据把内容深度从 48 拉到 91、STAR 结构把结构逻辑从 54 拉到 78、口头禅把语言表达压到 52、防御性表述把抗压表现孤立到 43（其他维度不动）、匹配报告把岗位匹配推到 92。<strong>区分度即校准证据</strong>。</p>
+
+  <h3>7.3.6 证据链与学习路径生成</h3>
+  <p>报告页每条证据显示 <code>[Agent 名称] "引用你的原话" 📝 观察员标注</code>（取最后 4 轮）——分数不是黑箱。学习路径按最弱维度动态分配天数（3/2/1 + 2 天基础项），用户知道为什么第 1-3 天要练这个。</p>
+
+  <h2>7.4 与「AI 默认模板」作品的差异论证</h2>
+  <table>
+    <thead>
+      <tr><th style="width:14%">模块</th><th style="width:30%">模板作品常见做法</th><th style="width:34%">本作品做法</th><th>证据位置</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>多 Agent</td><td>单 Agent + 固定题库轮转，或只会在文档里画架构图</td><td>两层调度（模式层 + 内容层）+ 可解释派发 + 连环追问状态机 + SSE 事件协议</td><td>7.1；面试间时间线实物</td></tr>
+      <tr><td>RAG</td><td>调一次 embedding API，或纯向量检索，结果不可解释</td><td>六阶段管线：bigram 分词 → BM25 → 双通道语义 → 加权融合 → 五特征重排 → 强制引用</td><td>7.2；RAG 页三阶段得分</td></tr>
+      <tr><td>评分</td><td>让 LLM 直接打分（黑箱、不可复现、每次不同）</td><td>规则引擎 + 双引擎对拍 + 舍入缺陷修复 + 单调性测试 + 证据链</td><td>7.3；校准表与 11 条断言</td></tr>
+      <tr><td>LLM 集成</td><td>前端直连 Key（泄露风险）或纯 Mock 假界面</td><td>服务端代理（Key 零前端接触）+ 三级降级 + 线上真实流式已验证</td><td>4.1；线上 /api/health</td></tr>
+      <tr><td>工程完成度</td><td>能跑演示就行</td><td>870 前端断言 + 17 后端测试 + 双引擎对拍 + 四渠道发布流水线</td><td>第 6 章</td></tr>
+    </tbody>
+  </table>
+  <div class="callout ok">
+    <strong>差异的共同点</strong>
+    每一个设计选择都绑定一个<strong>具体工程问题</strong>（中文无空格 → bigram；国内网络 → 四级权重源；评分不可复现 → 规则引擎 + 对拍；.5 边界 → 舍入规则统一），并且都有<strong>可当场验证的证据</strong>（时间线、三阶段得分、校准表、对拍脚本、测试断言）。模板作品的特征恰好相反：做法来自教程默认值，证据只有截图。
+  </div>
+
+  <h2>7.5 技术创新点</h2>
   <table>
     <thead>
       <tr><th style="width:10%">#</th><th style="width:28%">创新点</th><th style="width:38%">具体实现</th><th>为什么是创新</th></tr>
@@ -1274,8 +1508,8 @@ cd frontend && python -m http.server 5173
     <tbody>
       <tr><td><strong>T1</strong></td><td>可解释的多 Agent 派发</td><td>派发理由 + 置信度实时写入时间线</td><td>常见 Agent 系统只做派发，不解释「为什么派给这个 Agent」</td></tr>
       <tr><td><strong>T2</strong></td><td>连环追问机制</td><td>技术关键词触发 35% 概率连续深挖 2 轮</td><td>从「轮转」升级到「连续决策」，是 Agent 与机器人的分水岭</td></tr>
-      <tr><td><strong>T3</strong></td><td>BM25 + 端侧向量混合检索</td><td>参数调优 + Transformers.js + 融合权重 + 离线兜底</td><td>端侧语义检索的完整工程实现，不是调 API</td></tr>
-      <tr><td><strong>T4</strong></td><td>逐条展示两路得分的 RAG 引用</td><td><code>bm25 0.82 · cos 0.61 · 融合 0.74</code></td><td>检索过程完全透明，可当场核对</td></tr>
+      <tr><td><strong>T3</strong></td><td>BM25 + 端侧向量混合检索 + 五特征重排</td><td>参数调优 + Transformers.js + 融合权重 + 重排精排 + 离线兜底</td><td>端侧语义检索的完整工程实现，不是调 API</td></tr>
+      <tr><td><strong>T4</strong></td><td>逐条展示三阶段得分的 RAG 引用</td><td><code>bm25 2.31 · cos 0.44 · 融合 0.40 · 重排 0.91</code></td><td>检索过程完全透明，可当场核对</td></tr>
       <tr><td><strong>T5</strong></td><td>可解释评分 + 证据链</td><td>每条分数引用对话原话 + 观察员标注</td><td>评分不是黑箱，每条都能追溯</td></tr>
       <tr><td><strong>T6</strong></td><td>前后端评分引擎同构</td><td>Python 版与 JS 版算法一致，交叉验证</td><td>三级降级在评分层的具体实现</td></tr>
       <tr><td><strong>T7</strong></td><td>MCP 工具运行时可验证</td><td>开发者模式内置 MCP 控制台</td><td>支持 MCP 的产品很多，能让评委当场验证调用链路的少</td></tr>
@@ -1283,7 +1517,7 @@ cd frontend && python -m http.server 5173
     </tbody>
   </table>
 
-  <h2>7.2 应用创新点</h2>
+  <h2>7.6 应用创新点</h2>
   <table>
     <thead>
       <tr><th style="width:10%">#</th><th style="width:26%">创新点</th><th>说明</th></tr>
@@ -1298,7 +1532,7 @@ cd frontend && python -m http.server 5173
     </tbody>
   </table>
 
-  <h2>7.3 创新点总结</h2>
+  <h2>7.7 创新点总结</h2>
   <div class="callout ok">
     <strong>最大的创新不在单点技术，而在「可解释」这个设计哲学贯穿全产品</strong>
     <ul style="margin: 1.5mm 0 0 4mm;">
@@ -1315,7 +1549,7 @@ cd frontend && python -m http.server 5173
 
   <div class="chapter-footer">
     <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.0</span>
-    <span class="cf-chapter">CHAPTER 07 · 创新点说明</span>
+    <span class="cf-chapter">CHAPTER 07 · 核心算法详解与原创性论证</span>
   </div>
 </section>
 
