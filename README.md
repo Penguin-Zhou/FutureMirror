@@ -107,7 +107,7 @@
 **方式 2（本地离线）**：打开仓库内的 `public/futuremirror-demo.html`（约 499KB，所有 CSS/JS 内联，默认零外部请求）。
 
 ```bash
-# 纯离线 Mock 演示：直接双击 public/futuremirror-demo.html
+# 本地离线演示（自动走本地 Mock 降级）：直接双击 public/futuremirror-demo.html
 # 需要连后端时改用 http 服务（见 3.3，file:// 会被 CORS 拒绝）
 ```
 

@@ -3595,7 +3595,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 <div class="banner" id="demo-banner" role="note">
   <div class="wrap">
     <b>本页 = 在线演示版首页 · Beta 1.0</b>
-    <span>（Mock 数据，可离线运行；默认零外部请求，仅当点「加载端侧模型 MiniLM」时联网拉取一次模型权重）——也可以直接「接入我的 API Key」体验真实大模型驱动</span>
+    <span>（已接通真实后端：LLM 流式对话 / JWT 登录 / 服务端评分均在线可验；无后端或断网时自动降级本地 Mock，流程不中断）</span>
     <button class="btn btn-primary btn-sm" onclick="openMaterial('full')" style="margin-left:auto">前往完整项目 →</button>
     <button class="btn btn-ghost btn-sm" onclick="dismissBanner()" aria-label="关闭横幅">✕</button>
   </div>
@@ -3846,7 +3846,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       </div>
       <p>技术栈：Next.js 15 App Router · React 19 · TypeScript · Tailwind CSS v4 · Zustand · Recharts · Zod · Vitest。<br>
       AI 层：版本化 Prompt（<code>prompts/*.md</code>）· Zod 约束输出 · 流式 SSE · 自动降级 · PII 脱敏 · 注入检测。<br>
-      本静态演示页即完整项目的 <code>/demo</code> 页，Mock 逻辑与 <code>lib/ai</code> 保持一致。</p>
+      本演示页即完整项目的 <code>/demo</code> 页：在线部署时连接真实后端（LLM 流式 / JWT / 服务端评分），离线时 Mock 逻辑与 <code>lib/ai</code> 降级链路保持一致。</p>
     </div>
   </section>
 
@@ -3857,7 +3857,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     </div>
   </footer>
 
-  <div class="notice">本页面为<b>在线演示版</b>（默认 Mock 数据，可离线运行；也可粘贴自己的 API Key 体验真实 LLM 驱动）。完整功能版为 <code>futuremirror/</code> 目录下的 Next.js 项目：真实 LLM 驱动、SSE 流式输出、多模型免费额度路由、模型故障自动降级，仓库与文档可在「开发者模式」的交付材料中查看。</div>
+  <div class="notice">本页面为<b>在线演示版</b>：当前已接通真实后端——真实 LLM 流式输出、JWT 登录、面试会话持久化、服务端评分全部在线可验（断网或无后端时自动降级本地 Mock，流程不中断）。完整功能版为 <code>futuremirror/</code> 目录下的 Next.js 项目：真实 LLM 驱动、SSE 流式输出、多模型免费额度路由、模型故障自动降级，仓库与文档可在「开发者模式」的交付材料中查看。</div>
 
   </div><!-- /app-page dashboard -->
 
@@ -4392,7 +4392,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     <div class="jobs-pane" data-jobs-pane="review" hidden>
       <div class="page-card" style="margin-bottom:16px">
         <div class="card-section-title">🪞 真实面试复盘</div>
-        <p class="card-section-sub">面试结束后回来，用 6 轮对话补全经过，AI 生成可回查的复盘结论（Mock 演示，数据仅存本地）。</p>
+        <p class="card-section-sub">面试结束后回来，用 6 轮对话补全经过，AI 生成可回查的复盘结论（在线时为真实模型驱动，离线时本地 Mock，数据仅存本地）。</p>
         <div class="review-chat" id="review-chat" role="log" aria-live="polite"></div>
         <div class="review-input-row" id="review-input-row" hidden>
           <input type="text" id="review-input" placeholder="输入你的回答，Enter 提交" aria-label="复盘回答输入框">
@@ -4635,7 +4635,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         </div>
         <p>技术栈：Next.js 15 App Router · React 19 · TypeScript · Tailwind CSS v4 · Zustand · Recharts · Zod · Vitest。<br>
         AI 层：版本化 Prompt（<code>prompts/*.md</code>）· Zod 约束输出 · 流式 SSE · 自动降级 · PII 脱敏 · 注入检测。<br>
-        <b>演示版说明</b>：本单文件演示页的 Mock 逻辑与 <code>lib/ai</code> 同构，所有断言（含 MCP 工具、RAG 检索、评分引擎）均可在浏览器内验证。</p>
+        <b>演示版说明</b>：本演示页在线部署时连接真实后端（流式对话 / JWT 登录 / 服务端评分），离线时本地 Mock 逻辑与 <code>lib/ai</code> 同构；所有断言（含 MCP 工具、RAG 检索、评分引擎）均可在浏览器内验证。</p>
       </div>
     </section>
 
@@ -4687,14 +4687,14 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     <!-- 9. 已知边界 -->
     <section class="eval-section" id="eval-boundary">
       <h2 class="eval-section-title">⚠️ 已知边界与限制</h2>
-      <p class="eval-section-sub">本演示页为单文件静态版，以下为诚实的边界说明，完整工程见代码仓库。</p>
+      <p class="eval-section-sub">本演示页支持在线（真实后端）与本地（单文件离线）两种运行形态，以下为诚实的边界说明，完整工程见代码仓库。</p>
       <div class="boundary-list">
-        <div class="boundary-item"><b>演示版为单文件静态页</b>：所有 Mock 逻辑、断言、MCP 工具均为浏览器内本地执行，无后端依赖。完整 Next.js 工程包含真实 LLM 调用、SSE 流式、pgvector 混合检索。</div>
-        <div class="boundary-item"><b>登录系统为演示级</b>：密码仅做本地简单混淆存储，<b>不应用于生产</b>。完整工程采用 NextAuth + Postgres + 密码哈希。</div>
-        <div class="boundary-item"><b>向量库为浏览器内单机索引</b>：演示版用 localStorage 存 40 条面经向量（MiniLM 384 维），混合打分在浏览器内完成；完整版升级为 pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank。</div>
+        <div class="boundary-item"><b>演示页为单文件静态页，双形态运行</b>：在线部署时连接真实后端（真实 LLM 流式 / JWT 登录 / 服务端评分落库）；本地打开时全部逻辑（断言、MCP 工具、Mock 降级）在浏览器内执行，无后端依赖。完整 Next.js 工程另含 pgvector 混合检索与多模型路由。</div>
+        <div class="boundary-item"><b>本地单文件版登录为演示级</b>：密码仅做本地简单混淆存储，<b>不应用于生产</b>；在线演示已切换为真实后端 JWT 登录与会话持久化。完整工程采用 NextAuth + Postgres + 密码哈希。</div>
+        <div class="boundary-item"><b>向量库双形态</b>：本地单文件版用浏览器内单机索引（localStorage 存 40 条面经向量，MiniLM 384 维，混合打分在浏览器内完成）；在线版由服务端混合检索 + 五特征重排提供。完整工程升级为 pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank。</div>
         <div class="boundary-item"><b>代码沙盒为浏览器 Worker 隔离</b>：具备 2s 超时熔断，仅支持纯 JS 逻辑题；完整工程集成 QuickJS WASM 沙盒，支持多语言与虚拟文件系统。</div>
         <div class="boundary-item"><b>MCP 为本地模拟 Server</b>：协议结构与真实 MCP 一致，完整工程通过 <code>@mcp-b/webmcp-ts-sdk</code> 实现跨 Agent 真实发现。</div>
-        <div class="boundary-item"><b>材料链接待填写</b>：代码仓库 / 视频 / 文档 / 在线演示地址将在正式提交前通过 <code>CONFIG</code> 补齐，见本页顶部「交付材料」区块。</div>
+        <div class="boundary-item"><b>演示视频录制中</b>：代码仓库 / 技术文档 / 在线演示地址均已就位（见本页「交付材料」区块），演示视频成片后补入。</div>
       </div>
     </section>
 
