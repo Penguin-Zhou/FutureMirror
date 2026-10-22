@@ -8,6 +8,12 @@
     --red: #BE3A1E; --red-bg: #F7E4DE;
     --amber: #96690F; --amber-bg: #F5ECD4;
     --shadow: none;
+    /* v29 质感令牌：纸纹（feTurbulence 去色单色噪点）/ 毛玻璃等价纸底 / 墨阶高光 / 弹簧缓动 */
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+    --grain-op: .055;
+    --glass-bg: rgba(250, 248, 241, .9);
+    --card-2: #FFFDF7;
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
     --serif: Georgia, "Songti SC", "STSong", "SimSun", serif;
     --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
     --grid-line: rgba(28,25,19,.05);
@@ -20,6 +26,9 @@
     --red: #E85C3A; --red-bg: #3A2015;
     --amber: #D9A83C; --amber-bg: #2E2410;
     --shadow: none;
+    --grain-op: .04;
+    --glass-bg: rgba(29, 26, 21, .9);
+    --card-2: #26221A;
     --grid-line: rgba(238,232,216,.055);
   }
 

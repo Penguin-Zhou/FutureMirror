@@ -1094,8 +1094,225 @@
     background: var(--brand-bg); border: 1px solid var(--brand); padding: 6px 8px; resize: vertical; min-height: 38px;
   }
 
+  /* ============================================================
+   * v29 · 专家能力层（Blueprint Expert Layer · Beta 1.0.9）
+   * 印刷风等价表达：质感 = 纸纹 + 墨阶 + 内描边 + 外扩描边。
+   * 全程不使用 backdrop 毛玻璃滤镜 / box-shadow 投影 / 卡片 translateY 上浮。
+   * ============================================================ */
+
+  /* ① 纸纹：fixed 全屏单色噪点层，位于内容之下、不拦截交互 */
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: var(--grain); background-size: 120px 120px;
+    opacity: var(--grain-op);
+  }
+
+  /* ② 墨阶景深：底亮 + 边重 + 顶部高光发丝线，替代投影分层 */
+  .bp-z1 { position: relative; background: var(--card); border: 1px solid var(--line); }
+  .bp-z2 { position: relative; background: var(--card); border: 1px solid var(--line-2); }
+  .bp-z2::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+    background: var(--card-2); pointer-events: none;
+  }
+  .bp-z3 { position: relative; background: var(--card); border: 2px solid var(--line-2); }
+  .bp-z3::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+    background: var(--card-2); pointer-events: none;
+  }
+
+  /* ③ 毛玻璃等价：半透明纸底 + 纸纹 + 发丝线（不使用 backdrop 滤镜，见 v17 断言） */
+  .bp-glass { position: relative; background: var(--glass-bg); border: 1px solid var(--line-2); }
+  .bp-glass::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: var(--grain); background-size: 120px 120px;
+    opacity: calc(var(--grain-op) * 1.5);
+  }
+  .bp-glass > * { position: relative; }
+
+  /* ④ 光晕边框：外扩一圈浅色描边（outline，非投影） */
+  .bp-glow { outline: 1px solid var(--brand-bg); outline-offset: 3px; }
+  .bp-glow-strong { outline: 2px solid var(--brand-bg); outline-offset: 4px; }
+
+  /* ⑤ 流体字号（clamp 平滑缩放，无断点跳变） */
+  .bp-fs-hero { font-size: clamp(30px, 5vw, 54px); line-height: 1.12; }
+  .bp-fs-h2 { font-size: clamp(21px, 2.6vw, 30px); line-height: 1.25; }
+  .bp-fs-body { font-size: clamp(13.5px, 1.05vw, 15px); }
+
+  /* ⑥ 自定义准线光标（印刷十字环 + 朱红中心点，仅精细指针设备启用） */
+  .bp-cursor {
+    position: fixed; left: 0; top: 0; width: 22px; height: 22px; z-index: 9998;
+    pointer-events: none; opacity: 0; border: 1px solid var(--ink); border-radius: 50%;
+    transition: width .2s var(--spring), height .2s var(--spring),
+                border-color .2s ease, border-radius .2s ease, opacity .2s ease;
+    will-change: transform;
+  }
+  .bp-cursor.live { opacity: 1; }
+  .bp-cursor.hot { width: 34px; height: 34px; border-radius: 0; border-color: var(--brand); }
+  .bp-cursor::before, .bp-cursor::after {
+    content: ""; position: absolute; background: var(--ink); opacity: .5;
+  }
+  .bp-cursor::before { left: 50%; top: -7px; bottom: -7px; width: 1px; margin-left: -.5px; }
+  .bp-cursor::after { top: 50%; left: -7px; right: -7px; height: 1px; margin-top: -.5px; }
+  .bp-cursor-dot {
+    position: fixed; left: 0; top: 0; width: 3px; height: 3px; z-index: 9999;
+    pointer-events: none; background: var(--brand); opacity: 0; will-change: transform;
+  }
+  .bp-cursor-dot.live { opacity: 1; }
+  html.bp-cursor-on, html.bp-cursor-on * { cursor: none !important; }
+  html.bp-cursor-on input, html.bp-cursor-on textarea { cursor: text !important; }
+
+  /* ⑦ 磁铁按钮：跟随光标平移（水平位移，非上浮） */
+  .bp-magnet { transition: transform .3s var(--spring); will-change: transform; }
+
+  /* ⑧ 卡片触感反馈：scale 微放 + 墨色描边（禁 translateY 上浮、禁阴影） */
+  .bp-tactile { transition: transform .28s var(--spring), border-color .2s ease; }
+  .bp-tactile:hover { transform: scale(1.004); border-color: var(--ink); }
+
+  /* ⑨ Toast 撤销钮（与既有 toast 划入同语言：朱红描边） */
+  #toast.bp-toast-flex { display: flex; align-items: center; gap: 12px; }
+  .toast-undo {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .06em; flex: none;
+    border: 1px solid var(--brand); color: var(--brand); background: transparent;
+    padding: 2px 9px; cursor: pointer;
+  }
+  .toast-undo:hover { background: var(--brand); color: var(--card); }
+
+  /* ============ 滚动驱动 ============ */
+  /* ⑩ 导航吸顶收缩（56 → 48，下边线加深；非阴影） */
+  header { transition: border-color .2s ease; }
+  header.scrolled { border-bottom-color: var(--line-2); }
+  header.scrolled .nav { height: 48px; }
+  .nav { transition: height .22s var(--spring); }
+
+  /* ⑪ 滚动吸附 + 横向画廊 */
+  .bp-snap-y { scroll-snap-type: y proximity; }
+  .bp-snap-item { scroll-snap-align: start; }
+  .bp-gallery {
+    display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory;
+    scroll-padding-left: 24px; padding-bottom: 8px;
+  }
+  .bp-gallery > * { scroll-snap-align: start; flex: 0 0 300px; }
+  .bp-gallery::-webkit-scrollbar { height: 3px; }
+  .bp-gallery::-webkit-scrollbar-thumb { background: var(--line-2); }
+  .bp-gallery::-webkit-scrollbar-track { background: var(--bg-deep); }
+  .bp-parallax { will-change: transform; }
+
+  /* ============ 高级组件 ============ */
+  /* ⑫ 可拖拽 / 可调整大小弹窗 */
+  .bp-dialog { position: fixed; z-index: 900; }
+  .bp-dialog-grip { cursor: move; }
+  .bp-dialog-resize {
+    position: absolute; right: 0; bottom: 0; width: 15px; height: 15px; cursor: nwse-resize;
+    border-right: 2px solid var(--line-2); border-bottom: 2px solid var(--line-2);
+  }
+
+  /* ⑬ 分步向导 */
+  .bp-stepper { display: flex; align-items: center; }
+  .bp-step {
+    display: flex; align-items: center; gap: 8px; flex: none;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; color: var(--faint);
+  }
+  .bp-step.on { color: var(--brand); }
+  .bp-step.done { color: var(--muted); }
+  .bp-step::after { content: ""; width: 24px; height: 1px; background: var(--line-2); }
+  .bp-step:last-child::after { display: none; }
+
+  /* ⑭ 时间轴 */
+  .bp-tl { border-left: 1px solid var(--line-2); padding-left: 16px; }
+  .bp-tl-item { position: relative; padding: 5px 0; }
+  .bp-tl-item::before {
+    content: ""; position: absolute; left: -20px; top: 13px; width: 7px; height: 7px;
+    background: var(--card); border: 1px solid var(--line-2);
+  }
+  .bp-tl-item.on::before { background: var(--brand); border-color: var(--brand); }
+
+  /* ⑮ 可折叠侧边栏 */
+  .bp-aside { transition: width .26s var(--spring); overflow: hidden; }
+  .bp-aside.collapsed .bp-aside-label { opacity: 0; }
+  .bp-aside-toggle {
+    font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-2);
+    background: transparent; color: var(--muted); cursor: pointer; padding: 3px 8px;
+  }
+  .bp-aside-toggle:hover { color: var(--brand); border-color: var(--brand); }
+
+  /* ============ 数据可视化 ============ */
+  /* ⑯ 热力图 / 散点图 + 悬浮详情 */
+  .bp-heat { display: grid; gap: 2px; }
+  .bp-heat-cell {
+    position: relative; height: 18px; border: 1px solid transparent;
+    transition: border-color .15s ease;
+  }
+  .bp-heat-cell:hover { border-color: var(--brand); }
+  .bp-scatter {
+    position: relative; height: 160px;
+    border-left: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2);
+  }
+  .bp-scatter-dot {
+    position: absolute; width: 7px; height: 7px; background: var(--brand);
+    transform: translate(-50%, 50%); transition: width .15s ease, height .15s ease;
+  }
+  .bp-scatter-dot:hover { width: 11px; height: 11px; }
+  .bp-tip {
+    position: absolute; z-index: 6; font-family: var(--mono); font-size: 10.5px;
+    background: var(--card); border: 1px solid var(--brand); color: var(--brand);
+    padding: 4px 8px; pointer-events: none; opacity: 0; transition: opacity .15s ease;
+    white-space: nowrap;
+  }
+  .bp-tip.show { opacity: 1; }
+
+  /* ⑰ 表格工具条：排序 / 筛选 / 分页 / 导出 */
+  .bp-table-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .bp-th-sort { cursor: pointer; user-select: none; white-space: nowrap; }
+  .bp-th-sort.asc::after { content: " \25B2"; color: var(--brand); }
+  .bp-th-sort.desc::after { content: " \25BC"; color: var(--brand); }
+  .bp-pager { display: flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 11px; margin-top: 10px; }
+  .bp-pager button {
+    font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-2);
+    background: transparent; color: var(--muted); cursor: pointer; padding: 2px 9px;
+  }
+  .bp-pager button:hover:not(:disabled) { color: var(--brand); border-color: var(--brand); }
+  .bp-pager button:disabled { opacity: .35; cursor: default; }
+  /* 表格工具：筛选输入 / 导出按钮 / 行数读数 */
+  .bp-search {
+    font-family: var(--mono); font-size: 12px; color: var(--ink); min-width: 168px;
+    background: var(--card); border: 1px solid var(--line-2); padding: 4px 9px;
+  }
+  .bp-search:focus { outline: none; border-color: var(--brand); }
+  .bp-mini-btn {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+    border: 1px solid var(--line-2); background: transparent; color: var(--muted);
+    cursor: pointer; padding: 4px 10px;
+  }
+  .bp-mini-btn:hover { color: var(--brand); border-color: var(--brand); }
+  .bp-mini-note { font-family: var(--mono); font-size: 10.5px; color: var(--faint); letter-spacing: .06em; }
+
+  /* 实时数据流条目 */
+  .bp-live-item {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+    padding: 5px 0; border-bottom: 1px dashed var(--line);
+  }
+  .bp-live-k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; color: var(--faint); }
+  .bp-live-v { font-family: var(--mono); font-size: 15px; color: var(--ink); }
+
+  /* 时间轴条目 */
+  .bp-tl-t { font-family: var(--mono); font-size: 10.5px; color: var(--brand); margin-right: 8px; }
+  .bp-tl-d { font-size: 13px; color: var(--muted); }
+
+  /* ⑱ 可拖拽卡片仪表盘 */
+  .bp-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(238px, 1fr)); gap: 14px; }
+  .bp-board-card { cursor: grab; }
+  .bp-board-card.dragging { opacity: .4; border-color: var(--brand); }
+  .bp-board-card.over { border-color: var(--brand); }
+
+  /* ⑲ 视图转场（View Transition API，兜底为 clip-path 印刷揭载） */
+  ::view-transition-old(root) { animation: bpFade .2s ease both; }
+  ::view-transition-new(root) { animation: bpReveal .32s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes bpFade { to { opacity: 0; } }
+  @keyframes bpReveal { from { clip-path: inset(14px 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+
   /* ============ 打印：纸面文档 ============ */
   @media print {
     body { background: #fff; background-image: none; }
+    body::after { display: none; }
     .card, .page-card { border-color: #ccc; }
   }

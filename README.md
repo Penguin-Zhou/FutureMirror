@@ -6,7 +6,7 @@
 > 项目核心业务架构：多‑Agent圆桌协作机制、证据驱动可解释评分引擎、版本化Prompt约束体系、三级降级容错方案、RAG检索引用机制（BM25 + 端侧向量混合检索，余弦与词面双路融合）、全套业务产品设计与自动化测试体系均为团队独立设计与实现。演示知识库全部为人工合成示例数据，无爬取真实网络数据。  
 > 本作品为原型演示系统，仅用于竞赛演示，不直接作为生产系统使用。
 
-**版本定位：Beta 1.0.8 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
+**版本定位：Beta 1.0.9 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
 
 **技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 37 页。**PDF 版由该文档 A4 打印导出，随赛事材料以附件形式提交**（仓库 Release 亦提供下载）。
 
@@ -632,7 +632,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **1137 项前端断言 + 17 项后端单测**，全部通过。
+合计 **1240 项前端断言 + 17 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -650,7 +650,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 
 ## 十、团队信息与成员分工
 
-**面镜 FutureMirror 开发团队 · 福建农林大学桢队** · 技术文档 v1.7（对应产品 Beta 1.0.8）
+**面镜 FutureMirror 开发团队 · 福建农林大学桢队** · 技术文档 v1.8（对应产品 Beta 1.0.9）
 
 | 角色                  | 成员               | GitHub                                           |
 | ------------------- | ---------------- | ------------------------------------------------ |
@@ -695,7 +695,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 17 项 + 前端 1137 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 17 项 + 前端 1240 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -761,13 +761,13 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 ---
 
-## 附：版本更新日志（v1 → Beta 1.0.8，v23 规划中）
+## 附：版本更新日志（v1 → Beta 1.0.9，v23 规划中）
 
-本日志为**团队真实开发进程**的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.0.8 当前版本），共 29 个已发布版本，并含 v23 下一步迭代规划。每个版本均可独立运行、可回归。
+本日志为**团队真实开发进程**的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.0.9 当前版本），共 29 个已发布版本，并含 v23 下一步迭代规划。每个版本均可独立运行、可回归。
 
 **关于 Git 提交记录（重要说明）：** 本仓库的 Git 提交历史自 **Beta 版本**（首次以 `v1.0.0-beta` 提交包上传）时建立，**仅包含 BETA 1.0 及之后的更新**；BETA 1.0 之前的 v1–v22 演进历程以本更新日志形式完整留存，未在 Git 提交记录中逐条提交。日志中所载为团队真实的版本演进，而非事后补造。
 
-> 阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.0.8，为当前正式发布版本；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。
+> 阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.0.9，为当前正式发布版本；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。
 
 ### v23 · 规划中 · 完整版对齐 · 生产级 RAG · 多模态扩展（待排期）
 
@@ -850,7 +850,32 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
 
-### Beta 1.0.8 · 深度交互层：让每个动作都有回音（2026.10.22 当前版本）
+### Beta 1.0.9 · 专家能力层：把高级网页能力清单逐项补齐（2026.10.22 当前版本）
+
+> 在 1.0.8 深度交互层之后，本轮按「高级网页能力清单」逐项补齐 30 项能力，全部沿用**印刷风等价表达**而非照搬玻璃拟态：毛玻璃改为半透明纸底 + 纸纹 + 发丝线（全站仍不使用 backdrop 滤镜）；卡片上浮改为 `scale(1.004)` 微放 + 墨色描边；多层阴影改为墨阶叠层 + 顶部高光发丝线；渐变改为 `feTurbulence` 单色纸纹噪点。v29 测试套件 103 项断言锁定全部行为（含 reduced-motion、精细指针、系统暗色三条路径）。
+
+**✨ 新增功能**
+
+- **主题三态**（`theme.js` + `index.html` 首屏预置）：`themeMode()` / `setThemeMode(m)` / `cycleThemeMode()`，默认 `auto` 用 `matchMedia("(prefers-color-scheme: dark)")` 跟随系统明暗，`initThemeFollow()` 监听系统变更实时切换；命令面板新增「主题：跟随系统（自动明暗）」
+- **印刷风质感层**（`tokens.css` + `theme.css` v29 区）：`--grain` 为 `feTurbulence` 经 `feColorMatrix` 去色的单色噪点，由 `body::after` 固定层承载；墨阶景深 `.bp-z1/.bp-z2/.bp-z3` 用顶部高光发丝线替代投影；`.bp-glow` 用 `outline` 外扩；流体字号 `clamp()` 三档
+- **微交互四件套**（`motion.js`）：准线十字光标 `.bp-cursor` + 朱红中心点（仅 `(pointer: fine)` 且非减弱动效，输入框保留文本光标）；磁铁按钮向光标吸附 ±6px；卡片触感 `.bp-tactile` 用 scale 微放；`toast(msg, undo)` 第二参为撤销回调，「重置面试」可完整回滚会话
+- **滚动驱动增强**（`motion.js`）：导航吸顶 `header.scrolled` 收缩 56→48；落地页分段 `scroll-snap-type: y proximity` 吸附；窄屏统计卡组转 `.bp-gallery` 横向画廊；`[data-speed]` 按滚动位差速视差
+- **数据可视化**（`viz.js`）：热力图 4×6 墨阶色阶（峰值朱红标记）、散点图百分比定位，均带 `.bp-tip` 悬浮详情；`enhanceTable()` 支持表头排序、关键字筛选、分页、导出 CSV（带 UTF-8 BOM）；图表卡片 HTML5 拖拽换位并持久化顺序；`startLive()` 轮询读取真实会话状态刷新 4 条指标
+- **高级组件**（`motion.js` + `viz.js`）：弹窗可拖拽（transform 平移不破坏居中）且右下角可缩放；分步向导 `.bp-stepper`、时间轴 `.bp-tl`、可折叠侧栏 `.bp-aside`；`withVT()` 用 View Transition API 包装 `showView`，无 API 时直接执行
+
+**🔧 优化改进**
+
+- **印刷风纪律守恒**：毛玻璃 / 卡片上浮 / 多层阴影 / 渐变四项改用等价表达——半透明纸底、墨阶叠层、outline 外扩、纸纹噪点；v17 断言「全站无 backdrop 滤镜」仍为绿色
+- **无障碍与降级**：自定义光标仅桌面精细指针启用；reduced-motion 下光标 / 磁铁 / 视差 / 实时流全部停用；无 View Transition API 环境直接执行不丢行为
+
+**📊 数据指标**
+
+| 前端断言 | 后端测试 | 单元测试 | v29 新增 | jsdom 套件 |
+|---|---|---|---|---|
+| 1240 | 17 | 16（vitest） | 103 | 17 套 |
+
+
+### Beta 1.0.8 · 深度交互层：让每个动作都有回音（2026.10.22）
 
 > 在 1.0.7 把「图纸动作」铺满全站之后，本轮把交互做深：命令面板升级为 Pro——记录最近访问（`sessionStorage` 落 `RECENT_KEY`），过滤改用标签前缀 > 子串 > 子序列三级评分，面试页自动注入「清空对话 / 切换模式 / 查看评分」三条上下文指令；报告页把雷达图与维度表联动——雷达顶点自绘 `stroke-dashoffset` 描边动画，维度行 hover 与对应顶点互相反向点亮，悬浮提示显示维度评分与点评；表单聚焦时墨色发丝线自左画出；面试 AI 气泡支持实时批注，批注文本落到 `session.turns[i].notes` 并随会话持久化（零新增存储）。全部遵循蓝图编辑风与动效宪法（含 reduced-motion 静态落位）。v27 测试套件 44 项断言锁定全部行为。
 

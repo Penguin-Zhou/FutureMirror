@@ -106,6 +106,27 @@ const firstH3 = html.indexOf("<h3>", ch10Open);
 const ch10Close = html.indexOf("</section>", firstH3);
 html = html.slice(0, firstH3) + summaryTable + "\n" + html.slice(ch10Close);
 
+/* ---------- 3.5) 注入紧凑打印排版（仅打印版，不污染在线文档） ----------
+ * 目标：含封面 ≤30 页。Edge 默认页边距约 19mm、正文字号约 11pt，
+ * 这里收紧页边距并整体降一档字号，内容一字不减。 */
+const PRINT_TUNE = `<style id="bp-print-tune">
+@page { size: A4; margin: 9mm 8mm; }
+@media print {
+  html, body { font-size: 8.2pt !important; line-height: 1.3 !important; }
+  .page { max-width: none !important; padding: 0 !important; }
+  h1 { font-size: 17pt !important; }
+  h2 { font-size: 14pt !important; }
+  h3 { font-size: 11.5pt !important; }
+  h4 { font-size: 9.6pt !important; }
+  table { font-size: 7.8pt !important; }
+  .callout { padding: 6px 9px !important; margin: 8px 0 !important; }
+  li { margin-bottom: 1px !important; }
+  p { margin-bottom: 4px !important; }
+}
+</style>`;
+if (html.indexOf("</head>") > 0) html = html.replace("</head>", PRINT_TUNE + "\n</head>");
+else html = html.replace("<head>", "<head>\n" + PRINT_TUNE);
+
 /* ---------- 4) 写出打印版并用 Edge 无头打印 ---------- */
 fs.writeFileSync(TMP, html);
 console.log(`📄 打印版已生成（${(html.length / 1024).toFixed(1)}KB，原 ${(before / 1024).toFixed(1)}KB），${rows.length} 行摘要表`);

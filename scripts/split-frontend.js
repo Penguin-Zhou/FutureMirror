@@ -105,6 +105,8 @@ const jsRules = [
   ["js/features/quiz.js",        "v19 题库 + v20 题库增强", ["v19 · 题库与小测模块", "v20 · 题库增强"]],
   ["js/features/assistant.js",   "v20 AI 小助手 + v21 悬浮球", ["⑦ AI 小助手（retrieve + streamChat）", "v21 · AI 悬浮球"]],
   ["js/core/api.js",             "v22 后端适配层", ["v22 · 后端适配层"]],
+  ["js/core/motion.js",          "v29 动效与交互层", ["X. 动效与交互层 v29"]],
+  ["js/features/viz.js",         "v29 数据可视化与看板组件", ["Y. 数据可视化与看板组件 v29"]],
 ];
 
 /* 收集全部 JS 边界（标题行 → 起点），按出现位置排序 */
@@ -159,6 +161,7 @@ const LOAD_ORDER = [
   "js/bootstrap.js", "js/dev/devmode.js", "js/features/today.js",
   "js/features/profile.js", "js/features/jobs.js", "js/features/quiz.js",
   "js/features/assistant.js", "js/core/api.js",
+  "js/core/motion.js", "js/features/viz.js",
 ];
 if (LOAD_ORDER.length !== JS_SECTIONS.length ||
     new Set(LOAD_ORDER).size !== LOAD_ORDER.length ||
