@@ -54,7 +54,7 @@ function bannerStart(titleNeedle, from, to) {
 /* ---------- 3. CSS 三层 ---------- */
 const cssRules = [
   ["css/tokens.css", "基础令牌层（v1–v16：主题变量 / 暗色 / 组件增量）", ["v13 · 开发者模式（加密视图）"]],
-  ["css/theme.css", "v17 Arkira 主题重构层", ["v17 · Arkira 风格"]],
+  ["css/theme.css", "v21 蓝图编辑风视觉重构层", ["v21 · 蓝图编辑风"]],
   ["css/pages.css", "功能页面层（v18–v22：求职 / 题库 / 小助手 / 移动端 / API）",
     ["v18 · 求职管理", "v19 · 题库与小测模块", "v20 · 题库增强", "v21 · AI 悬浮球", "v22 · 后端适配层"]],
 ];

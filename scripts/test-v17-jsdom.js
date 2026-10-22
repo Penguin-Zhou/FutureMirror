@@ -1,4 +1,4 @@
-/* v17 jsdom 测试：Arkira 风格视觉升级（深海蓝主题 / 玻璃拟态 / 衬线标题 / 滚动渐入 / 微交互）
+/* v17 jsdom 测试：蓝图编辑风视觉体系（暖纸 + 蓝图网格 / 墨色 + 衬线标题 / 全直角发丝线 / 单一朱红强调）
  * 用法：NODE_PATH=<managed-node-workspace>/node_modules node scripts/test-v17-jsdom.js
  */
 const fs = require("fs");
@@ -44,48 +44,55 @@ function installFakeIO() {
 setTimeout(runTests, 300);
 
 function runTests() {
-  console.log("\n=== v17 jsdom 测试（Arkira 风格视觉升级）===");
+  console.log("\n=== v17 jsdom 测试（蓝图编辑风视觉体系）===");
 
   ok(errors.length === 0, "页面脚本加载无错误" + (errors.length ? " → " + errors.slice(0, 3).join(" | ") : ""));
 
   const css = document.querySelector("style").textContent;
   const has = (sel) => css.includes(sel);
+  /* 分组选择器友好的规则提取：sel 可出现在选择器列表任意位置 */
+  const ruleOf = (sel) => {
+    const re = new RegExp("(?:^|[,\\s{])" + sel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*[,{][^}]*}", "g");
+    return (css.match(re) || []).join("\n");
+  };
+  const ruleHas = (sel, decl) => decl.test(ruleOf(sel));
 
-  /* ---------- A. 主题变量：深海蓝 + 电光蓝 ---------- */
-  ok(/--brand:\s*#2E3FE8/.test(css), "亮色品牌色 = 电光蓝 #2E3FE8");
-  ok(/--ink:\s*#10163A/.test(css), "亮色文字 = 深海军蓝 #10163A");
-  ok(/--bg:\s*#FAFBFF/.test(css), "亮色背景 = 暖白 #FAFBFF");
-  ok(/--card:\s*rgba\(255,255,255,0\.75\)/.test(css), "卡片 = 半透明白（玻璃基底）");
-  ok(/--bg:\s*#070B1F/.test(css), "暗色背景 = 午夜蓝 #070B1F");
-  ok(/--ink:\s*#F0EEE9/.test(css), "暗色文字 = 奶油白 #F0EEE9");
-  ok(/--brand:\s*#7C8CFF/.test(css), "暗色品牌色 = 柔光电光蓝 #7C8CFF");
+  /* ---------- A. 主题变量：暖纸 + 墨色 + 单一朱红 ---------- */
+  ok(/--brand:\s*#BE3A1E/.test(css), "亮色强调色 = 朱红 #BE3A1E");
+  ok(/--ink:\s*#1C1913/.test(css), "亮色文字 = 墨色 #1C1913");
+  ok(/--bg:\s*#F4F1E8/.test(css), "亮色背景 = 暖纸 #F4F1E8");
+  ok(/--card:\s*#FAF8F1/.test(css), "卡片 = 实色纸面 #FAF8F1（非玻璃半透明）");
+  ok(/--bg:\s*#15130F/.test(css), "暗色背景 = 深墨 #15130F");
+  ok(/--ink:\s*#EEE8D8/.test(css), "暗色文字 = 纸白 #EEE8D8");
+  ok(/--brand:\s*#E85C3A/.test(css), "暗色强调色 = 提亮朱红 #E85C3A");
   ok(/--serif:\s*Georgia/.test(css), "衬线字体变量 --serif 已定义（Georgia）");
-  ok(/--glass-border:/.test(css) && /--glass-highlight:/.test(css), "玻璃边框 / 高光变量已定义");
+  ok(/--mono:\s*ui-monospace/.test(css), "等宽字体变量 --mono 已定义");
+  ok(/--glass-border:/.test(css) && /--glass-highlight:/.test(css), "兼容变量已定义（玻璃变量扁平化兜底）");
   ok(/:root\[data-accent="green"\]/.test(css) && /:root\[data-accent="blue"\]/.test(css), "主题色变体（牛客绿 / 科技蓝）保留");
 
-  /* ---------- B. 玻璃拟态 ---------- */
-  ok(/\.glass\s*\{[^}]*backdrop-filter/.test(css), ".glass 通用类含 backdrop-filter");
-  ok(/header\s*\{[^}]*backdrop-filter:[^}]*color-mix/.test(css), "顶栏玻璃化（blur + color-mix）");
-  ok(/\.card\s*\{[^}]*backdrop-filter:[^}]*var\(--glass-border\)/.test(css), ".card 玻璃拟态（blur + 玻璃边框）");
-  ok(/\.app-sidebar\s*\{[^}]*backdrop-filter/.test(css), "侧栏玻璃化");
-  ok(/\.landing-nav\s*\{[^}]*backdrop-filter/.test(css), "落地页导航玻璃化");
-  ok(/\.hero-mock\s*\{[^}]*backdrop-filter/.test(css), "产品预览 Mock 玻璃化");
-  ok(/\.user-dropdown\s*\{[^}]*backdrop-filter/.test(css), "用户下拉菜单玻璃化");
+  /* ---------- B. 去玻璃拟态 + 蓝图网格基底 ---------- */
+  ok(!/backdrop-filter/.test(css), "全站无 backdrop-filter（玻璃拟态已移除）");
+  ok(!/linear-gradient\(135deg, #(4f46e5|6366f1|8b5cf6)/.test(css), "无蓝紫渐变硬编码");
+  ok(ruleHas(".card", /background:\s*var\(--card\)/), ".card 实色纸面（无半透明玻璃）");
+  ok(ruleHas("body", /background-image:[\s\S]*linear-gradient\(var\(--grid-line\)/), "body 铺设蓝图网格");
+  ok(/--grid-line:/.test(css) && /--grid-major:/.test(css), "蓝图网格线变量已定义");
+  ok(ruleHas(".page-card", /border-top:\s*2px solid var\(--ink\)/), "page-card 文档式墨色顶规");
+  ok(ruleHas(".landing-nav", /border-bottom:\s*2px solid var\(--ink\)/), "落地页导航报头双线");
 
   /* ---------- C. 衬线标题 ---------- */
-  ok(/\.hero h1\s*\{[^}]*font-family:\s*var\(--serif\)/.test(css), "工作台 Hero 标题衬线化");
-  ok(/\.section-title\s*\{[^}]*font-family:\s*var\(--serif\)/.test(css), "区块标题衬线化");
-  ok(/\.page-header h2\s*\{[^}]*font-family:\s*var\(--serif\)/.test(css), "页头标题衬线化");
-  ok(/\.landing h1\.hero-title\s*\{[^}]*font-family:\s*var\(--serif\)/.test(css), "落地页主标题衬线化");
-  ok(/\.auth-left h2\s*\{[^}]*font-family:\s*var\(--serif\)/.test(css), "登录页标题衬线化");
-  ok(/\.feature-block h3\s*\{[^}]*font-family:\s*var\(--serif\)/.test(css), "特性卡标题衬线化");
+  ok(ruleHas(".hero h1", /font-family:\s*var\(--serif\)/), "工作台 Hero 标题衬线化");
+  ok(ruleHas(".section-title", /font-family:\s*var\(--serif\)/), "区块标题衬线化");
+  ok(ruleHas(".page-header h2", /font-family:\s*var\(--serif\)/), "页头标题衬线化");
+  ok(ruleHas(".landing h1.hero-title", /font-family:\s*var\(--serif\)/), "落地页主标题衬线化");
+  ok(ruleHas(".auth-left h2", /font-family:\s*var\(--serif\)/), "登录页标题衬线化");
+  ok(ruleHas(".feature-block h3", /font-family:\s*var\(--serif\)/), "特性卡标题衬线化");
 
-  /* ---------- D. 悬浮微交互 ---------- */
-  ok(/\.btn-primary:hover:not\(:disabled\)[^}]*translateY\(-1px\)/.test(css), "主按钮悬浮上浮");
-  ok(/\.card:hover\s*\{[^}]*translateY\(-3px\)/.test(css), "卡片悬浮上浮 + 阴影加深");
-  ok(/\.agent:hover\s*\{[^}]*translateY\(-4px\)/.test(css), "Agent 卡悬浮上浮");
-  ok(/\.agent:hover \.agent-avatar\s*\{[^}]*scale\(1\.12\)/.test(css), "Agent 头像悬浮缩放旋转");
-  ok(/\.feature-block:hover\s*\{[^}]*translateY\(-5px\)/.test(css), "特性卡悬浮上浮");
+  /* ---------- D. 悬浮微交互：平面描边，不上浮 ---------- */
+  ok(!/translateY\(-\d/.test(css), "全站无 translateY 上浮 hover");
+  ok(ruleHas(".card:hover", /border-color:\s*var\(--ink\)/), "卡片 hover = 墨色描边");
+  ok(ruleHas(".btn-primary:hover:not(:disabled)", /background:\s*var\(--brand-deep\)/), "主按钮 hover = 朱红加深");
+  ok(ruleHas(".feature-block:hover", /background:\s*var\(--bg-deep\)/), "特性卡 hover = 纸面加深");
+  ok(ruleHas(".bp-crop::before", /border-top:\s*2px solid var\(--brand\)/), "取景器角标（朱红 L 括线）");
 
   /* ---------- E. Bento Grid / 网格布局 ---------- */
   ok(/\.feature-grid\s*\{[^}]*repeat\(3,\s*1fr\)/.test(css), "特性网格 3 列（Bento）");
@@ -140,7 +147,7 @@ function runTests() {
 
       /* ---------- H. 版本号与回归（v18 起版本号随主线递增） ---------- */
       ok(/beta1\.0|v(1[789]|2[012])/.test(document.querySelector(".sb-footer").textContent), "侧栏版本号为 v17+ / beta1.0");
-      ok(/版本 (beta1\.0(\.\d+)?|v(1[789]|2[012])) · Arkira 风格主题已就绪/.test(html), "开发者日志版本号已就位");
+      ok(/版本 (beta1\.0(\.\d+)?|v(1[789]|2[012])) · 蓝图编辑风视觉体系已就绪/.test(html), "开发者日志版本号已就绪");
 
       /* v15/v16 功能回归：今日推荐 / 个人中心 */
       const picks = document.querySelectorAll("#today-picks .today-pick");

@@ -5,10 +5,10 @@ export const changelogHtml = `
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.0.2 · v23 规划中</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.0.3 · v23 规划中</div>
     <div class="meta">
-      <span>已发布 <b>25</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.0.2</b></span>
+      <span>已发布 <b>26</b> 个版本</span>
+      <span>当前版本 <b>Beta 1.0.3</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -16,19 +16,19 @@ export const changelogHtml = `
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.2，为当前正式发布版本（真实模型上线：智谱 GLM 流式接通 + 检索重排 + 评分校准）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.3，为当前正式发布版本（蓝图编辑风视觉重构 + 全渠道同风格重塑）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
   <div class="overview">
-    <div class="ov-card"><div class="ov-num">25</div><div class="ov-label">已发布版本</div></div>
+    <div class="ov-card"><div class="ov-num">26</div><div class="ov-label">已发布版本</div></div>
     <div class="ov-card"><div class="ov-num">10</div><div class="ov-label">功能页</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">协作 Agent</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">岗位数据库</div></div>
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">879</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">880</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -38,6 +38,7 @@ export const changelogHtml = `
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
+    <li><a href="#vbeta1-3"><span class="cl-toc-tag">Beta 1.0.3</span><span class="cl-toc-title-txt">蓝图编辑风视觉重构 · 去 AI 模板化</span></a></li>
     <li><a href="#vbeta"><span class="cl-toc-tag">Beta 1.0</span><span class="cl-toc-title-txt">检索层升级与版本定位</span></a></li>
     <li><a href="#vbeta1-2"><span class="cl-toc-tag">Beta 1.0.2</span><span class="cl-toc-title-txt">真实模型上线 · 检索重排与评分校准</span></a></li>
     <li><a href="#vbeta1-1"><span class="cl-toc-tag">Beta 1.0.1</span><span class="cl-toc-title-txt">后端上线 · 全渠道接通真实服务</span></a></li>
@@ -132,11 +133,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.0 · 当前版本
+       Beta 1.0 · 检索层升级与版本定位
        ======================================================== -->
   <div class="version vbeta" id="vbeta">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.0</span>
+      <span class="v-tag">Beta 1.0</span>
       <span class="v-title">检索层升级与版本定位</span>
       <span class="v-date">2026.10</span>
     </div>
@@ -181,13 +182,59 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
+       Beta 1.0.3 · 蓝图编辑风视觉重构
+       ======================================================== -->
+  <div class="version vbeta1-3" id="vbeta1-3">
+    <div class="version-head">
+      <span class="v-tag v-tag-current">Beta 1.0.3</span>
+      <span class="v-title">蓝图编辑风视觉重构 · 去 AI 模板化</span>
+      <span class="v-date">2026.10.21 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        针对「AI 默认模板」风险的视觉体系整体重构：彻底摆脱蓝紫渐变、玻璃拟态圆角卡、径向光晕与 hover 上浮的模板三件套，确立<b>「蓝图编辑风（Blueprint Editorial）」</b>设计语言——暖纸底面 + 淡蓝图网格（工程图纸感）、墨色正文 + 衬线大标题 + 等宽字体标注（编辑排版三件套）、全直角 + 发丝线分隔 + 零投影（层次靠线条而非阴影）、单一朱红强调色（红笔批注 / 印章，全局占比 ≤5%）。功能 DOM / ID / class 全保留，视觉断言随新体系同步重写。
+      </div>
+
+      <div class="cat">
+        <span class="cat-title cat-new">✨ 新增功能</span>
+        <ul class="changelog">
+          <li><b>蓝图编辑风设计系统</b>：<code>theme.css</code> 全量重写——纸 / 墨 / 线 / 朱红四组令牌、暗色主题同构、衬线 + 等宽 + 无衬线三字体栈；<code>body</code> 四层蓝图网格（36px 细线 + 180px 主线，fixed 附着不随滚动）</li>
+          <li><b>签名装置</b>：眉标（编号 + 等宽标签 + 通栏发丝线）、取景器角标（左上 + 右下朱红 L 括线，非对称）、斜置双线印章、能力走马灯（无缝循环）、规格表面板（点线引导键值行）</li>
+          <li><b>Hero 非对称重构</b>：1.4fr / 0.6fr 双栏——左栏衬线大标题 + 真实指标行（真实后端 / 5 Agent / 880 / 37 页），右栏 <code>RUNTIME SPEC</code> 规格表面板（GLM-4-Flash / 5 席 / 880 + 17 / Live 印章）；等宽窗栏替代 mac 圆点</li>
+          <li><b>changelog 与技术文档同风格重塑</b>：更新日志页、技术文档从 indigo 蓝紫系切换为纸墨 + 朱红，文档式结构不变</li>
+        </ul>
+      </div>
+
+      <div class="cat">
+        <span class="cat-title cat-improve">🔧 优化改进</span>
+        <ul class="changelog">
+          <li><b>扁平化 33 处渐变</b>：渐变按钮 / Hero 渐变文字 / CTA 通栏 / VIP 深金卡 / 骨架屏等全部改为平色或墨板反白；28 处 <code>backdrop-filter</code> 玻璃拟态三层清零</li>
+          <li><b>去圆角 / 投影 / 上浮</b>：250+ 圆角与 107 处阴影全局归零（保留 50% 圆形头像），hover 语言从 <code>translateY</code> 上浮改为描边变化</li>
+          <li><b>图标系统去 emoji</b>：9 个特性卡 emoji → 等宽编号 <code>01</code>–<code>09</code>，徽章改方形等宽，主题色 tooltip「紫」→「朱红」</li>
+          <li><b>测试基线 879 → 880</b>：v17 视觉断言随设计语言换代重写（57 → 58 项），11 套 jsdom 全绿；<code>split-frontend.js</code> / <code>build-manifest.json</code> 分区定位针同步更新，round-trip 保持可逐字节重建</li>
+        </ul>
+      </div>
+
+      <div class="cat">
+        <span class="cat-title cat-data">📊 数据指标</span>
+        <div class="metrics">
+          <div class="metric"><div class="m-val">880</div><div class="m-label">前端断言全绿</div></div>
+          <div class="metric"><div class="m-val">17</div><div class="m-label">后端测试通过</div></div>
+          <div class="metric"><div class="m-val">33</div><div class="m-label">渐变扁平化</div></div>
+          <div class="metric"><div class="m-val">28</div><div class="m-label">玻璃拟态清除</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
        Beta 1.0.2 · 真实模型上线 · 检索重排与评分校准
        ======================================================== -->
   <div class="version vbeta1-2" id="vbeta1-2">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.0.2</span>
+      <span class="v-tag">Beta 1.0.2</span>
       <span class="v-title">真实模型上线 · 检索重排与评分校准</span>
-      <span class="v-date">2026.10.21 <span class="cur-mark">当前版本</span></span>
+      <span class="v-date">2026.10.21</span>
     </div>
     <div class="version-body">
       <div class="v-summary">
@@ -1291,8 +1338,8 @@ export const changelogHtml = `
 
   <!-- ============ 页脚 ============ -->
   <div class="footer">
-    <b>面镜 FutureMirror</b> · 版本更新日志 v1 → Beta 1.0 · v23 规划中<br>
-    23 个已发布版本 · 从单文件原型到可验证的 AI Native 产品雏形<br>
+    <b>面镜 FutureMirror</b> · 版本更新日志 v1 → Beta 1.0.3 · v23 规划中<br>
+    26 个已发布版本 · 从单文件原型到可验证的 AI Native 产品雏形<br>
     <span class="notice-line">本文档为团队内部版本记录，仅描述自研功能与数据，不引用、不转载任何第三方内容</span><br>
     © 2026 面镜 FutureMirror 团队 · 内部文档
   </div>
