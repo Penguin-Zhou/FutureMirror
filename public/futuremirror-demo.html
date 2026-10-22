@@ -786,10 +786,10 @@ try {
   .landing-cta p { margin-top: 12px; font-size: 15px; opacity: .88; }
   .landing-cta .btn { padding: 13px 28px; font-size: 15px; font-weight: 700; border-radius: 0; margin-top: 26px; }
   .landing-cta .btn-white {
-    background: #fff; color: #4f46e5; box-shadow: none;
-    border: none; cursor: pointer;
+    background: var(--brand); color: #fff; box-shadow: none;
+    border: 1px solid var(--brand); cursor: pointer;
   }
-  .landing-cta .btn-white:hover { filter: brightness(1.05); }
+  .landing-cta .btn-white:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
 
   .landing-nav {
     position: sticky; top: 0; z-index: 50;
