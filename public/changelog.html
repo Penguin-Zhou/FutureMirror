@@ -280,10 +280,10 @@ body {
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.0.3 · v23 规划中</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.0.4 · v23 规划中</div>
     <div class="meta">
       <span>已发布 <b>26</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.0.3</b></span>
+      <span>当前版本 <b>Beta 1.0.4</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -291,7 +291,7 @@ body {
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.3，为当前正式发布版本（蓝图编辑风视觉重构 + 全渠道同风格重塑）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.4，为当前正式发布版本（蓝图编辑风视觉重构 + 全渠道同风格重塑）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">880</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">924</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -313,6 +313,7 @@ body {
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
+    <li><a href="#vbeta1-4"><span class="cl-toc-tag">Beta 1.0.4</span><span class="cl-toc-title-txt">体验层增强 · 交互反馈与可访问性</span></a></li>
     <li><a href="#vbeta1-3"><span class="cl-toc-tag">Beta 1.0.3</span><span class="cl-toc-title-txt">蓝图编辑风视觉重构 · 去 AI 模板化</span></a></li>
     <li><a href="#vbeta"><span class="cl-toc-tag">Beta 1.0</span><span class="cl-toc-title-txt">检索层升级与版本定位</span></a></li>
     <li><a href="#vbeta1-2"><span class="cl-toc-tag">Beta 1.0.2</span><span class="cl-toc-title-txt">真实模型上线 · 检索重排与评分校准</span></a></li>
@@ -457,13 +458,40 @@ body {
   </div>
 
   <!-- ========================================================
+       Beta 1.0.4 · 体验层增强（Blueprint Editorial UX Kit）
+       ======================================================== -->
+  <div class="version vbeta1-4" id="vbeta1-4">
+    <div class="version-head">
+      <span class="v-tag v-tag-current">Beta 1.0.4</span>
+      <span class="v-title">体验层增强 · 交互反馈与可访问性</span>
+      <span class="v-date">2026.10.22 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        视觉体系确立后的<b>体验层深化</b>：新增「蓝图 UX Kit」——打字指示器（三点墨点 stagger 脉冲，LLM 流式首字到达前的等待反馈）、面试初始空状态（虚线发丝框 + 等宽眉标 + 可点击建议 chip + 快捷键提示）、滚动进度线（fixed 顶部朱红 2px，rAF 节流）、Toast 划入动画（左侧朱红竖线 + 墨板右滑）。交互语言全面校准：渐入动画由 Arkira 时代残留的 translateY 上浮改为<b>印刷揭载</b>（clip-path 自上而下揭开，与「零上浮」设计语言统一）、视图切换退化为纯淡入、按钮新增按压反馈（1px 位移）与键盘焦点双圈（朱红外圈 + 品牌底光环）。工程侧新增<b>动效宪法</b>：prefers-reduced-motion 全局覆盖（一切动画/过渡瞬时化）、平滑滚动、触屏去蓝闪。测试侧新增 v23 体验层套件锁定全部 UX 行为。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>等待可感知</b>：墨点脉冲代替静默转圈，真实流式与 Mock 双通道均已接线</div>
+        <div class="vh-item"><b>空态有引导</b>：新用户第一眼看到建议入口而非空白，快捷键随屏提示</div>
+        <div class="vh-item"><b>动效有宪法</b>：系统级减少动效偏好优先，一切动画可瞬时退化</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">24</div><div class="m-label">体验增强项</div></div>
+        <div class="metric"><div class="m-val">44</div><div class="m-label">v23 新增断言</div></div>
+        <div class="metric"><div class="m-val">924</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">100%</div><div class="m-label">reduced-motion 覆盖</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
        Beta 1.0.3 · 蓝图编辑风视觉重构
        ======================================================== -->
   <div class="version vbeta1-3" id="vbeta1-3">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.0.3</span>
+      <span class="v-tag">Beta 1.0.3</span>
       <span class="v-title">蓝图编辑风视觉重构 · 去 AI 模板化</span>
-      <span class="v-date">2026.10.21 <span class="cur-mark">当前版本</span></span>
+      <span class="v-date">2026.10.21</span>
     </div>
     <div class="version-body">
       <div class="v-summary">
@@ -1613,8 +1641,8 @@ body {
 
   <!-- ============ 页脚 ============ -->
   <div class="footer">
-    <b>面镜 FutureMirror</b> · 版本更新日志 v1 → Beta 1.0.3 · v23 规划中<br>
-    26 个已发布版本 · 从单文件原型到可验证的 AI Native 产品雏形<br>
+    <b>面镜 FutureMirror</b> · 版本更新日志 v1 → Beta 1.0.4 · v23 规划中<br>
+    27 个已发布版本 · 从单文件原型到可验证的 AI Native 产品雏形<br>
     <span class="notice-line">本文档为团队内部版本记录，仅描述自研功能与数据，不引用、不转载任何第三方内容</span><br>
     © 2026 面镜 FutureMirror 团队 · 内部文档
   </div>

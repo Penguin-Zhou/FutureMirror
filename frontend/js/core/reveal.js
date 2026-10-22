@@ -8,6 +8,28 @@
  * ============================================================ */
 const REVEAL_SELECTOR = ".feature-block, .workflow-step, .landing-stat, .hero-mock, .agent, .mcp-item, .stat-card, .quick-entry, .today-pick, .page-card, .career-card";
 let revealIO = null;
+
+/* ---- v24 · 滚动进度线：fixed 顶部朱红 2px（rAF 节流，passive 监听） ---- */
+function initScrollProgress() {
+  if (document.querySelector(".bp-progress")) return;
+  const bar = document.createElement("div");
+  bar.className = "bp-progress";
+  bar.setAttribute("aria-hidden", "true");
+  (document.body || document.documentElement).appendChild(bar);
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    const de = document.documentElement;
+    const max = de.scrollHeight - de.clientHeight;
+    const top = window.scrollY || de.scrollTop || 0;
+    const p = max > 4 ? top / max : 0;
+    bar.style.transform = "scaleX(" + Math.min(1, Math.max(0, p)).toFixed(4) + ")";
+  };
+  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+  update();
+}
 function initRevealObserver() {
   if (revealIO) return;
   if (!("IntersectionObserver" in window)) return;
@@ -91,5 +113,7 @@ function revealScan() {
   animateLandingCounters();
   // v17：滚动渐入（落地页静态卡片）
   revealScan();
+  // v24：滚动进度线（阅读/操作进度感知）
+  initScrollProgress();
 })();
 

@@ -366,9 +366,11 @@ function sendMsgMock(text, speaker, keyword, notes) {
 
   setTimeout(() => {
     addTimeline(speaker.name, "💭 正在基于检索结果生成追问…", false);
+    showTyping("生成追问中");   // v24：等待期墨点反馈
   }, 900);
 
   setTimeout(() => {
+    hideTyping();               // v24：流式气泡接管
     const question = pickQuestion(mode, turn, keyword, speaker);
     const bubble = document.createElement("div");
     bubble.className = "msg msg-ai";
@@ -405,6 +407,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   setTimeout(() => addTimeline("规划 Agent", `📋 决策：${planReason(speaker, keyword, notes, session.mode)}（置信度 ${Math.min(95, 60 + turn * 6)}%）`, false), 320);
   addTimeline("模型调用", `🌐 ${llmLabel()} · stream=true`, "tool");
 
+  showTyping("模型生成中");     // v24：首字到达前的等待反馈
   const bubble = document.createElement("div");
   bubble.className = "msg msg-ai";
   bubble.innerHTML = '<span class="caret"></span>';
@@ -414,8 +417,10 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   const ctrl = new AbortController();
   setTimeout(() => ctrl.abort(), 60000);
   let full = "";
+  let streamStarted = false;
   try {
     await streamChat(buildMessages(text), piece => {
+      if (!streamStarted) { streamStarted = true; hideTyping(); }
       full += piece;
       bubble.textContent = full;
       body.scrollTop = body.scrollHeight;
@@ -424,6 +429,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
     v16MaybeAutoSpeak();
     $("fallback-banner").hidden = true;
   } catch (e) {
+    hideTyping();
     bubble.remove();
     const reason = e.name === "AbortError" ? "超时 60s" : e.message;
     $("fallback-reason").textContent = reason;
@@ -556,5 +562,36 @@ function addMsg(cls, text) {
   div.textContent = text;
   body.appendChild(div);
   body.scrollTop = body.scrollHeight;
+}
+
+/* ---- v24 · 打字指示器：LLM 流式前的等待反馈（三点墨点 + 等宽标签） ---- */
+function showTyping(label) {
+  hideTyping();
+  const body = $("chat-body");
+  const div = document.createElement("div");
+  div.className = "msg msg-ai msg-typing";
+  div.id = "typing-row";
+  const dots = document.createElement("span");
+  dots.className = "typing-dots";
+  dots.innerHTML = "<i></i><i></i><i></i>";
+  const tag = document.createElement("span");
+  tag.className = "typing-label";
+  tag.textContent = label || "思考中";
+  div.appendChild(dots);
+  div.appendChild(tag);
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function hideTyping() {
+  const t = document.getElementById("typing-row");
+  if (t) t.remove();
+}
+
+/* ---- v24 · 空状态建议入口：点击chip填入输入框并聚焦（游客由 focus 保护引导登录） ---- */
+function fillChatSuggestion(text) {
+  const input = $("chat-input");
+  if (!input) return;
+  input.value = text;
+  input.focus();
 }
 

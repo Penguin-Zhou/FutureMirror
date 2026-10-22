@@ -29,8 +29,22 @@ function bootApp() {
   } else {
     $("match-result").innerHTML = "";
   }
-  // 恢复面试会话
-  $("chat-body").innerHTML = '<div class="msg msg-system">面试开始：选择模式并发送第一条消息，AI 面试官团队将依次提问</div>';
+  // 恢复面试会话（v24：初始态升级为蓝图空状态引导；有历史会话时由 restoreSession 重建，不渲染空态）
+  if (!session.turns.length) {
+    $("chat-body").innerHTML = `<div class="empty-state">
+    <span class="es-eyebrow">READY · 面试待开始</span>
+    <div class="es-title">向 AI 面试官团队发出第一条消息</div>
+    <div class="es-desc">规划 / 技术 / 观察员多 Agent 将依次提问、检索知识库并记录证据，5 轮后可生成可解释评分报告。</div>
+    <div class="es-actions">
+      <button class="es-chip" onclick="fillChatSuggestion('我是计算机专业应届生，想应聘 Java 后端开发，请面试我')">Java 后端 · 校招</button>
+      <button class="es-chip" onclick="fillChatSuggestion('我有两年前端经验，想挑战大厂 P6，请模拟一场技术面试')">前端 · 社招进阶</button>
+      <button class="es-chip" onclick="fillChatSuggestion('我是产品经理，准备转行 AI 方向，请帮我做一场交叉面试')">转行 · 交叉面试</button>
+    </div>
+    <div class="es-hint"><kbd>Enter</kbd> 发送 · <kbd>Ctrl/⌘+K</kbd> 聚焦输入框 · <kbd>Ctrl/⌘+Enter</kbd> 发送</div>
+  </div>`;
+  } else {
+    $("chat-body").innerHTML = "";
+  }
   $("timeline").innerHTML = '<div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示 Agent 规划、工具调用与证据记录。</div>';
   if (session.turns.length) restoreSession();
   else { setCurrentSpeaker("规划 Agent"); $("progress-bar").style.width = "0"; }
