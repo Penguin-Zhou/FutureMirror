@@ -21,6 +21,7 @@
   const FX = (window.__bpApp = {
     choreograph: null, countUpScan: null, reportIn: null,
     cross: false, coord: false, draw: false, speaking: false,
+    reportViz: false, formFx: false, annotate: false,
   });
 
   /* ---------- ① 视图/页面切换编舞 ---------- */
@@ -69,6 +70,7 @@
           el.style.setProperty("--bp-i", String(i));
           el.classList.add("bp-in");
         });
+        try { initFormFx(); } catch (e) {}
       } else if (view === "evaluator") {
         const hero = document.querySelector(".evaluator-hero");
         if (hero) {
@@ -181,6 +183,7 @@
   /* 报告入场：总分滚动 + 维度条自 0 生长（CSS transition 兜底 .8s） */
   function reportIn() {
     try { countUpScan($("report-content")); } catch (e) { /* 纯增强 */ }
+    try { wireReportViz(); } catch (e) { /* 纯增强 */ }
     if (reduced()) return;
     try {
       [...document.querySelectorAll("#dims .dim-bar > div")].forEach((bar, i) => {
@@ -309,6 +312,95 @@
     }
   }
 
+  /* ---------- ⑨ v28 深度交互层：报告可视化联动 / 表单焦点 / 面试批注 ---------- */
+  /* 报告可视化：维度行 ↔ 雷达顶点联动高亮（hover 维度行点亮对应雷达顶点） */
+  function wireReportViz() {
+    const radar = $("radar");
+    if (!radar) return;
+    [...document.querySelectorAll("#dims .dim-row[data-dim]")].forEach(row => {
+      const i = row.getAttribute("data-dim");
+      const dot = radar.querySelector("#radar-dot-" + i);
+      if (!dot) return;
+      row.addEventListener("mouseenter", () => { row.classList.add("lit"); dot.classList.add("lit"); });
+      row.addEventListener("mouseleave", () => { row.classList.remove("lit"); dot.classList.remove("lit"); });
+    });
+    FX.reportViz = true;
+  }
+
+  /* 表单焦点微交互：登录框输入聚焦时发丝线自左画出（蓝图规尺感应） */
+  function initFormFx() {
+    try {
+      document.querySelectorAll(".auth-field").forEach(f => {
+        const inp = f.querySelector("input, textarea");
+        if (!inp || f.querySelector(".bp-field-line")) return;
+        const line = document.createElement("i");
+        line.className = "bp-field-line";
+        line.setAttribute("aria-hidden", "true");
+        inp.insertAdjacentElement("afterend", line);
+      });
+      FX.formFx = true;
+    } catch (e) { /* 纯增强 */ }
+  }
+
+  /* 面试实时批注：每条面试官提问可附批注，落到 session.turns[i].notes，
+   * 自动进入报告「评分证据」与学习路径证据链（零新增存储结构）。
+   * 零侵入：MutationObserver 装饰新增 .msg-ai，data-turn 由 interview.js 写入。 */
+  function initAnnotation() {
+    const body = $("chat-body");
+    if (!body) return;
+    const idxOf = bubble => {
+      const t = bubble.dataset.turn;
+      if (t != null && t !== "") return parseInt(t, 10);
+      return [...body.querySelectorAll(".msg-ai")].indexOf(bubble);
+    };
+    const buildBox = (bubble, idx) => {
+      const box = document.createElement("textarea");
+      box.className = "msg-annot";
+      box.placeholder = "为这条提问写批注（自动进入报告证据链）…";
+      box.value = (typeof session !== "undefined" && session.turns[idx] && session.turns[idx].notes) || "";
+      bubble.appendChild(box);
+      box.addEventListener("input", () => {
+        if (typeof session === "undefined" || !session.turns[idx]) return;
+        session.turns[idx].notes = box.value;
+        try { if (typeof persistSession === "function") persistSession(); } catch (e) {}
+        const btn = bubble.querySelector(".msg-annot-btn");
+        if (btn) btn.classList.toggle("has-note", !!box.value);
+      });
+      return box;
+    };
+    const decorate = bubble => {
+      if (!bubble || !bubble.classList || !bubble.classList.contains("msg-ai")) return;
+      if (bubble.querySelector(".msg-annot-btn")) return;
+      const idx = idxOf(bubble);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "msg-annot-btn";
+      btn.textContent = "批注";
+      btn.setAttribute("aria-label", "为这条提问添加批注");
+      bubble.appendChild(btn);
+      const note = (typeof session !== "undefined" && session.turns[idx] && session.turns[idx].notes) || "";
+      btn.classList.toggle("has-note", !!note);
+      if (note) buildBox(bubble, idx);
+      btn.addEventListener("click", () => {
+        const box = bubble.querySelector(".msg-annot");
+        if (box) { box.remove(); return; }
+        buildBox(bubble, idxOf(bubble));
+      });
+    };
+    [...body.querySelectorAll(".msg-ai")].forEach(decorate);
+    if (typeof MutationObserver !== "undefined") {
+      const mo = new MutationObserver(muts => {
+        muts.forEach(m => m.addedNodes.forEach(n => {
+          if (!n || n.nodeType !== 1) return;
+          if (n.classList && n.classList.contains("msg-ai")) decorate(n);
+          else if (n.querySelectorAll) [...n.querySelectorAll(".msg-ai")].forEach(decorate);
+        }));
+      });
+      mo.observe(body, { childList: true, subtree: false });
+    }
+    FX.annotate = true;
+  }
+
   /* ---------- 入口 ---------- */
   function boot() {
     try { initAuthFx(); } catch (e) {}
@@ -316,6 +408,8 @@
     try { initCrosshair(); } catch (e) {}
     try { initCoordReadout(); } catch (e) {}
     try { initEvalDraw(); } catch (e) {}
+    try { initFormFx(); } catch (e) {}
+    try { initAnnotation(); } catch (e) {}
     // 初始视图编舞（登录用户刷新后直接落在 app / auth 也生效）
     try {
       const active = document.querySelector(".view.active");

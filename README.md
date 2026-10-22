@@ -6,7 +6,7 @@
 > 项目核心业务架构：多‑Agent圆桌协作机制、证据驱动可解释评分引擎、版本化Prompt约束体系、三级降级容错方案、RAG检索引用机制（BM25 + 端侧向量混合检索，余弦与词面双路融合）、全套业务产品设计与自动化测试体系均为团队独立设计与实现。演示知识库全部为人工合成示例数据，无爬取真实网络数据。  
 > 本作品为原型演示系统，仅用于竞赛演示，不直接作为生产系统使用。
 
-**版本定位：Beta 1.0.7 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
+**版本定位：Beta 1.0.8 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
 
 **技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 37 页。**PDF 版由该文档 A4 打印导出，随赛事材料以附件形式提交**（仓库 Release 亦提供下载）。
 
@@ -625,13 +625,14 @@ node scripts/test-v21-jsdom.js          # 悬浮球拖拽冻结 + 移动端美�
 node scripts/test-v22-jsdom.js          # 后端适配层 + 契约修复回归（73 项）
 node scripts/test-v23-jsdom.js            # 体验层 UX Kit：揭载渐入/动效宪法/打字指示/空状态/进度线（44 项）
 node scripts/test-v24-jsdom.js            # 动态层：粒子场/涟漪/视差/微交互/降级链（43 项）
-node scripts/test-v23-jsdom.js            # 体验层 UX Kit：揭载渐入/动效宪法/打字指示/空状态/进度线（44 项）
-node scripts/test-v24-jsdom.js            # 动态层：粒子场/涟漪/视差/微交互/降级链（43 项）
+node scripts/test-v25-jsdom.jss            # 交互深化层：命令面板/滚动语言/实录播台（64 项）
+node scripts/test-v26-jsdom.jss            # 全站交互层：切页编舞/准线全站化/坐标读数（59 项）
+node scripts/test-v27-jsdom.jss            # 深度交互层：命令面板Pro/报告可视化/表单批注（44 项）
 node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向量/缓存/融合/UI/权重源（99 项）
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **1093 项前端断言 + 17 项后端单测**，全部通过。
+合计 **1137 项前端断言 + 17 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -649,7 +650,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 
 ## 十、团队信息与成员分工
 
-**面镜 FutureMirror 开发团队 · 福建农林大学桢队** · 技术文档 v1.6（对应产品 Beta 1.0.7）
+**面镜 FutureMirror 开发团队 · 福建农林大学桢队** · 技术文档 v1.7（对应产品 Beta 1.0.8）
 
 | 角色                  | 成员               | GitHub                                           |
 | ------------------- | ---------------- | ------------------------------------------------ |
@@ -694,7 +695,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 17 项 + 前端 1093 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 17 项 + 前端 1137 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -760,13 +761,13 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 ---
 
-## 附：版本更新日志（v1 → Beta 1.0.7，v23 规划中）
+## 附：版本更新日志（v1 → Beta 1.0.8，v23 规划中）
 
-本日志为**团队真实开发进程**的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.0.7 当前版本），共 28 个已发布版本，并含 v23 下一步迭代规划。每个版本均可独立运行、可回归。
+本日志为**团队真实开发进程**的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.0.8 当前版本），共 29 个已发布版本，并含 v23 下一步迭代规划。每个版本均可独立运行、可回归。
 
 **关于 Git 提交记录（重要说明）：** 本仓库的 Git 提交历史自 **Beta 版本**（首次以 `v1.0.0-beta` 提交包上传）时建立，**仅包含 BETA 1.0 及之后的更新**；BETA 1.0 之前的 v1–v22 演进历程以本更新日志形式完整留存，未在 Git 提交记录中逐条提交。日志中所载为团队真实的版本演进，而非事后补造。
 
-> 阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.0.7，为当前正式发布版本；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。
+> 阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.0.8，为当前正式发布版本；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。
 
 ### v23 · 规划中 · 完整版对齐 · 生产级 RAG · 多模态扩展（待排期）
 
@@ -849,7 +850,29 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
 
-### Beta 1.0.7 · 全站交互层：把图纸动作铺到每一个页面（2026.10.22 当前版本）
+### Beta 1.0.8 · 深度交互层：让每个动作都有回音（2026.10.22 当前版本）
+
+> 在 1.0.7 把「图纸动作」铺满全站之后，本轮把交互做深：命令面板升级为 Pro——记录最近访问（`sessionStorage` 落 `RECENT_KEY`），过滤改用标签前缀 > 子串 > 子序列三级评分，面试页自动注入「清空对话 / 切换模式 / 查看评分」三条上下文指令；报告页把雷达图与维度表联动——雷达顶点自绘 `stroke-dashoffset` 描边动画，维度行 hover 与对应顶点互相反向点亮，悬浮提示显示维度评分与点评；表单聚焦时墨色发丝线自左画出；面试 AI 气泡支持实时批注，批注文本落到 `session.turns[i].notes` 并随会话持久化（零新增存储）。全部遵循蓝图编辑风与动效宪法（含 reduced-motion 静态落位）。v27 测试套件 44 项断言锁定全部行为。
+
+**✨ 新增功能**
+
+- **命令面板 Pro**（`command.js`）：最近访问分组（`loadRecent`/`saveRecent`/`recordRecent`，经 `window.navTo` 包装记录并保持原跳转行为）；`scoreAction(a,q)` 三级评分；面试页 `dynamicActions()` 动态注入 3 条上下文指令；`cycleMode()` 切换面试模式
+- **报告可视化联动**（`report.js` + `appfx.js`）：雷达 `radar-pop` 多边形自绘描边动画，顶点 `<circle id="radar-dot-${i}">`；维度行 `data-dim` 与顶点双向 hover 点亮；`.dim-tip` 悬浮提示显示 `dimension · score` 与 `comment`
+- **表单焦点发丝线**（`appfx.js` `initFormFx`）：`.auth-field` 注入 `.bp-field-line`，聚焦时 `scaleX(1)` 自左画出
+- **面试实时批注**（`appfx.js` `initAnnotation` + `interview.js` 锚点）：`MutationObserver` 装饰 `.msg-ai` 加「批注」按钮，textarea 值落到 `session.turns[idx].notes` 并 `persistSession()`
+
+**🔧 优化改进**
+
+- **动效宪法落地**：雷达描边、发丝线、悬浮提示在 reduced-motion 下全部 `animation:none`/`transition:none` 静态落位
+- **蓝图编辑风**：描边动画沿用墨/朱红色板，无渐变、无投影、零上浮
+
+**📊 数据指标**
+
+| 1137       | 17        | 16（vitest） | 44         | 16 套       |
+| ---------- | --------- | ------------ | ---------- | ----------- |
+| 前端断言 | 后端测试 | 单元测试 | v27 新增 | jsdom 套件 |
+
+### Beta 1.0.7 · 全站交互层：把图纸动作铺到每一个页面（2026.10.22）
 
 > 上一轮的交互深化层只铺在落地页。本轮新增 `appfx.js`（v27 全站交互层），把同一套「图纸动作」语言推广到**应用内 10 个功能页 / 登录页 / 开发者页**：切页编舞（标题区与卡片自上而下 clip-path 揭载 + 面包屑等宽光标 + 侧栏规尺扫光）、登录页动态（密码强度四段计 + CapsLock 提示 + 分栏入场）、面试 LIVE 脉冲（MutationObserver 观察面试官轮转，零侵入打 `.speaking`）、报告与小测数字滚动（`#report-total` / `score-num` 计到终值 + 维度条自左生长）、十字准线全站化（由 landingfx 迁出，聚焦输入框时自动隐身）、坐标读数扩展（功能页卡 `PG-xx` / 开发者节 `SEC-xx`）、开发者页绘制线（12 节 stagger 展开）。同步把 `tokens.css` 里遗留的 `pageIn` 上浮位移统一为 clip-path 揭载——全站不再有任何上浮。v26 测试套件 59 项断言锁定全部行为（含 reduced-motion 双实例降级链）。
 

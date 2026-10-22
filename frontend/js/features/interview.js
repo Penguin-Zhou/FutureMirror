@@ -374,6 +374,7 @@ function sendMsgMock(text, speaker, keyword, notes) {
     const question = pickQuestion(mode, turn, keyword, speaker);
     const bubble = document.createElement("div");
     bubble.className = "msg msg-ai";
+    bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
     body.appendChild(bubble);
     body.scrollTop = body.scrollHeight;
     let i = 0;
@@ -410,6 +411,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   showTyping("模型生成中");     // v24：首字到达前的等待反馈
   const bubble = document.createElement("div");
   bubble.className = "msg msg-ai";
+  bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
   bubble.innerHTML = '<span class="caret"></span>';
   body.appendChild(bubble);
   body.scrollTop = body.scrollHeight;

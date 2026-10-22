@@ -404,7 +404,7 @@ setTimeout(async () => {
   try { diag = diagText ? JSON.parse(diagText) : null; } catch (e) {}
   ok(!!diag && diag.state.llmMode === "backend-real", "Minor1：诊断 llmMode=backend-real（后端真实）");
   ok(!!diag && diag.state.backend && diag.state.backend.ready === true, "Minor1：诊断包含后端连接信息");
-  ok(!!diag && diag.version === "beta1.0.7", "Minor1：诊断版本号更新为 beta1.0.7");
+  ok(!!diag && diag.version === "beta1.0.8", "Minor1：诊断版本号更新为 beta1.0.8");
 
   console.log(`\n结果：${pass} 通过 / ${fail} 失败（v22 后端适配层 + v22.1 修复回归）`);
   process.exit(fail ? 1 : 0);

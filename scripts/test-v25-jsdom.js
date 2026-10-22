@@ -178,8 +178,9 @@ async function runTests() {
   dA.dispatchEvent(new wA.KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true, cancelable: true }));
   ok(cmd().hidden === false && wA.__bpCmd.open === true, "Ctrl/⌘+K 呼出面板");
   ok(dA.activeElement === dA.getElementById("bp-cmd-input"), "打开后自动聚焦筛选框");
-  ok(dA.querySelectorAll("#bp-cmd-list .bp-cmd-item").length === 17, "列表渲染 17 项");
-  ok(dA.querySelectorAll("#bp-cmd-list .bp-cmd-group").length === 3, "分组渲染（导航 / 页面 / 动作）");
+  ok(dA.querySelectorAll("#bp-cmd-list .bp-cmd-item").length >= 17, "列表渲染 ≥17 项（基础动作 + v28 最近/上下文动态组）");
+  const gtxt = [...dA.querySelectorAll("#bp-cmd-list .bp-cmd-group")].map(g => g.textContent.trim());
+  ok(gtxt.includes("导航") && gtxt.includes("页面") && gtxt.includes("动作"), "分组含 导航/页面/动作（v28 增加「最近」动态组）");
   const cmdInput = dA.getElementById("bp-cmd-input");
   cmdInput.value = "主题";
   cmdInput.dispatchEvent(new wA.Event("input", { bubbles: true }));

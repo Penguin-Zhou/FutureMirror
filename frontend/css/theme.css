@@ -811,6 +811,10 @@
     .badge.speaking { animation: none; }
     .sec-draw { transition: none; }
     .dim-bar > div { transition: none; }
+    /* v28 */
+    .radar-pop { animation: none; stroke-dashoffset: 0; }
+    .bp-field-line { transition: none; }
+    .dim-tip { transition: none; }
   }
 
   /* ============================================================
@@ -1040,6 +1044,55 @@
 
   /* ⑧ 报告维度条生长（JS 0% → 目标宽度，transition 兜底 .8s） */
   .dim-bar > div { transition: width .8s ease; }
+
+  /* ============================================================
+   * v28 · 深度交互层（Blueprint Deep Interaction）
+   * 原则：可操作但要「安静」——雷达是图纸自绘、批注是边栏便签、
+   * 焦点线是规尺感应；全部直角 + 发丝线 + 朱红 ≤5%。
+   * ============================================================ */
+
+  /* ① 报告雷达图自绘动画：stroke-dashoffset 由周长→0 一次性绘出（clip 不浮） */
+  .radar-pop {
+    stroke-dasharray: 1400; stroke-dashoffset: 1400;
+    animation: radarDraw 1s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes radarDraw { to { stroke-dashoffset: 0; } }
+  .radar-dot { transition: r .2s ease, fill .2s ease; }
+  .radar-dot.lit { fill: var(--brand-deep); r: 5; }
+  .dim-row.lit { background: var(--brand-bg); }
+
+  /* ② 维度悬浮提示（等宽测绘 chip，hover 显形） */
+  .dim-row { position: relative; }
+  .dim-tip {
+    position: absolute; right: 10px; top: 8px; max-width: 62%;
+    font-family: var(--mono); font-size: 10.5px; line-height: 1.5; color: var(--brand);
+    border: 1px solid var(--brand); background: var(--card); padding: 6px 8px;
+    opacity: 0; visibility: hidden; transition: opacity .15s ease; pointer-events: none; z-index: 3;
+  }
+  .dim-row:hover .dim-tip { opacity: 1; visibility: visible; }
+
+  /* ③ 登录表单焦点发丝线（聚焦时自左画出，规尺感应） */
+  .auth-field { position: relative; }
+  .bp-field-line {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--brand);
+    transform: scaleX(0); transform-origin: 0 50%; transition: transform .3s cubic-bezier(.22,1,.36,1);
+  }
+  .auth-field input:focus ~ .bp-field-line,
+  .auth-field textarea:focus ~ .bp-field-line { transform: scaleX(1); }
+
+  /* ④ 面试实时批注（边栏便签式，落到 session.turns[i].notes） */
+  .msg.msg-ai { position: relative; }
+  .msg-annot-btn {
+    position: absolute; top: 4px; right: 6px; font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: .08em; color: var(--faint); background: var(--card); border: 1px solid var(--line-2);
+    padding: 1px 6px; cursor: pointer;
+  }
+  .msg-annot-btn:hover { color: var(--brand); border-color: var(--brand); }
+  .msg-annot-btn.has-note { color: var(--brand); border-color: var(--brand); }
+  .msg-annot {
+    width: 100%; margin-top: 6px; font-family: var(--mono); font-size: 12px; color: var(--ink);
+    background: var(--brand-bg); border: 1px solid var(--brand); padding: 6px 8px; resize: vertical; min-height: 38px;
+  }
 
   /* ============ 打印：纸面文档 ============ */
   @media print {
