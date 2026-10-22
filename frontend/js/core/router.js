@@ -31,8 +31,11 @@ function showView(name) {
     try { if (window.__bpLanding && window.__bpLanding.playMock) window.__bpLanding.playMock(); } catch (e) {}
     try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
   }
-  // v26：离开落地页时收起十字准线 / 清除导航点亮
-  try { if (window.__bpLanding && window.__bpLanding.applyCross) window.__bpLanding.applyCross(); } catch (e) {}
+  // v27：全站交互层编舞（app 子页由 applyRoute 负责，避免双重触发）
+  if (name !== "app") {
+    try { if (window.__bpApp && window.__bpApp.choreograph) window.__bpApp.choreograph(name); } catch (e) {}
+  }
+  // v26：离开落地页时清除导航点亮（准线已全站化，输入聚焦自动隐身）
   try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
 }
 
@@ -180,6 +183,9 @@ function applyRoute() {
   window.scrollTo(0, 0);
   // v17：新渲染内容（报告 / 个人中心等）补扫渐入
   revealScan();
+  // v27：全站交互层——切页编舞（标题揭载 / 面包屑光标 / 侧栏扫光）+ 新渲染数字滚动
+  try { if (window.__bpApp && window.__bpApp.choreograph) window.__bpApp.choreograph("app", page); } catch (e) {}
+  try { if (window.__bpApp && window.__bpApp.countUpScan) window.__bpApp.countUpScan(document.querySelector(".app-page.active")); } catch (e) {}
 }
 
 /* 状态胶囊：未登录=游客模式；已登录且接入 Key=真实·模型名；否则=Mock 模式 */

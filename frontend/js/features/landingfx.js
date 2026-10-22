@@ -6,17 +6,15 @@
  *    （steps 硬切，不用平滑渐变——终端气质）；
  * 2) 面试实录播台：Mock 对话气泡入视口依序「揭载」（clip-path 自上而下），
  *    末气泡跟一枚朱红流式光标——预告真实 SSE 的逐字体验；
- * 3) 蓝图十字准线：落地页视图内 1px 墨色十字线跟随光标（opacity .16），
- *    仅 (hover: hover) 设备 + 非 reduced-motion，出窗/切视图即隐；
- * 4) 坐标读数：特性卡 hover 显示等宽「BLK-序号 · X/Y」测绘chip，
- *    呼应取景器角标——图纸上量取位置的语言；
- * 5) 渐进增强：无 JS 时轮播为空、实录完整可见；reduced-motion 全部静态落位。
+ * 3) 渐进增强：无 JS 时轮播为空、实录完整可见；reduced-motion 全部静态落位。
+ * 注：十字准线与坐标读数已于 v27 迁入 appfx.js 并扩展为全站能力
+ * （app 功能页卡 PG 编号 / 开发者节 SEC 编号 / 输入聚焦准线隐身）。
  * ============================================================ */
 (function initLandingFx() {
   const reduced = () => {
     try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
   };
-  const FX = (window.__bpLanding = { rotator: false, mock: false, cross: false, coord: false, phrases: 0, playMock: null, applyCross: null });
+  const FX = (window.__bpLanding = { rotator: false, mock: false, phrases: 0, playMock: null });
 
   /* ---------- ① Hero 文案轮播（等宽打字机） ---------- */
   const PHRASES = [
@@ -78,79 +76,10 @@
   }
   FX.playMock = playHeroMock;
 
-  /* ---------- ③ 蓝图十字准线（落地页 · 悬停设备） ---------- */
-  function initCrosshair() {
-    if (reduced()) return;
-    try { if (window.matchMedia && window.matchMedia("(hover: none)").matches) return; } catch (e) {}
-    if (document.querySelector(".bp-cross-x")) return;
-    const cx = document.createElement("div");
-    cx.className = "bp-cross bp-cross-x";
-    cx.setAttribute("aria-hidden", "true");
-    const cy = document.createElement("div");
-    cy.className = "bp-cross bp-cross-y";
-    cy.setAttribute("aria-hidden", "true");
-    (document.body || document.documentElement).append(cx);
-    (document.body || document.documentElement).append(cy);
-    let mx = -9999, my = -9999, ticking = false, shown = false;
-    const apply = () => {
-      ticking = false;
-      const onLanding = !!document.querySelector("#view-landing.active");
-      const show = onLanding && mx > -900;
-      if (show !== shown) {
-        shown = show;
-        cx.style.visibility = show ? "visible" : "hidden";
-        cy.style.visibility = show ? "visible" : "hidden";
-      }
-      if (!show) return;
-      cx.style.top = my + "px";
-      cy.style.left = mx + "px";
-    };
-    window.addEventListener("mousemove", e => {
-      mx = e.clientX; my = e.clientY;
-      if (!ticking) { ticking = true; requestAnimationFrame(apply); }
-    }, { passive: true });
-    window.addEventListener("mouseout", () => {
-      mx = -9999; my = -9999;
-      if (!ticking) { ticking = true; requestAnimationFrame(apply); }
-    }, { passive: true });
-    apply();
-    FX.cross = true;
-    FX.applyCross = apply;                              // 暴露给视图切换：离开落地页即隐
-  }
-
-  /* ---------- ④ 特性卡坐标读数（BLK-序号 · X/Y） ---------- */
-  function initCoordReadout() {
-    if (document.querySelector(".fb-coord")) { FX.coord = true; return; }
-    const blocks = [...document.querySelectorAll("#view-landing .feature-block")];
-    if (!blocks.length) return;
-    blocks.forEach((b, i) => {
-      const tag = "BLK-" + String(i + 1).padStart(2, "0");
-      const chip = document.createElement("span");
-      chip.className = "fb-coord";
-      chip.setAttribute("aria-hidden", "true");
-      chip.textContent = tag + " · X--- Y---";
-      b.appendChild(chip);
-      let ticking = false, lx = 0, ly = 0;
-      const apply = () => {
-        ticking = false;
-        chip.textContent = tag + " · X" + String(Math.round(Math.max(0, lx))).padStart(3, "0") +
-          " Y" + String(Math.round(Math.max(0, ly))).padStart(3, "0");
-      };
-      b.addEventListener("mousemove", e => {
-        const r = b.getBoundingClientRect();
-        lx = e.clientX - r.left; ly = e.clientY - r.top;
-        if (!ticking) { ticking = true; requestAnimationFrame(apply); }
-      }, { passive: true });
-    });
-    FX.coord = true;
-  }
-
   /* ---------- 入口 ---------- */
   function boot() {
     try { initHeroRotator(); } catch (e) {}
     try { playHeroMock(); } catch (e) {}
-    try { initCrosshair(); } catch (e) {}
-    try { initCoordReadout(); } catch (e) {}
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot, { once: true });

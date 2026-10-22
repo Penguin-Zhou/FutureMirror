@@ -387,6 +387,8 @@ function renderQuizPage() {
   if (fav) fav.innerHTML = renderQuizFavPane();
   /* v20：搜索状态在重渲染后恢复（输入框 value 已随 HTML 重建） */
   if (quizSearchKw) { try { runQuizSearch(); } catch (e) {} }
+  // v27：全站交互层——小测得分数字滚动（reduced-motion 下静态落位）
+  try { if (window.__bpApp && window.__bpApp.countUpScan) window.__bpApp.countUpScan(exam); } catch (e) {}
 }
 function switchQuizTab(tab) {
   quizTab = tab;
@@ -580,7 +582,7 @@ function renderQuizResult() {
   return `
     <div class="quiz-result">
       <div class="quiz-result-score ${cls}">
-        <span class="score-num">${r.score}</span>
+        <span class="score-num" data-count="${r.score}">${r.score}</span>
         <span class="score-unit">得分</span>
       </div>
       <h3>${esc(cfg.label)} · 本轮到此结束</h3>
