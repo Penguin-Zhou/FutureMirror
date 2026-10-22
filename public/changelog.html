@@ -280,10 +280,10 @@ body {
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.0.7 · v23 规划中</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.0.8 · v23 规划中</div>
     <div class="meta">
-      <span>已发布 <b>28</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.0.7</b></span>
+      <span>已发布 <b>29</b> 个版本</span>
+      <span>当前版本 <b>Beta 1.0.8</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -291,7 +291,7 @@ body {
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.7，为当前正式发布版本（全站交互层：切页编舞 + 登录动态 + 数字滚动 + 全站测绘）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.8，为当前正式发布版本（深度交互层：命令面板 Pro + 报告可视化联动 + 表单焦点 + 面试实时批注）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1093</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1137</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -313,7 +313,8 @@ body {
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
-    <li><a href="#vbeta1-7"><span class="cl-toc-tag">Beta 1.0.7</span><span class="cl-toc-title-txt">全站交互层 · 图纸动作铺满每个页面</span></a></li>
+    <li><a href="#vbeta1-8"><span class="cl-toc-tag">Beta 1.0.8</span><span class="cl-toc-title-txt">深度交互层 · 命令面板 Pro + 报告可视化 + 实时批注</span></a></li>
+  <li><a href="#vbeta1-7"><span class="cl-toc-tag">Beta 1.0.7</span><span class="cl-toc-title-txt">全站交互层 · 图纸动作铺满每个页面</span></a></li>
     <li><a href="#vbeta1-6"><span class="cl-toc-tag">Beta 1.0.6</span><span class="cl-toc-title-txt">交互深化层 · 命令面板与滚动语言</span></a></li>
     <li><a href="#vbeta1-5"><span class="cl-toc-tag">Beta 1.0.5</span><span class="cl-toc-title-txt">动态层 · 粒子场与微交互</span></a></li>
     <li><a href="#vbeta1-4"><span class="cl-toc-tag">Beta 1.0.4</span><span class="cl-toc-title-txt">体验层增强 · 交互反馈与可访问性</span></a></li>
@@ -463,11 +464,35 @@ body {
   <!-- ========================================================
        Beta 1.0.5 · 动态层（Blueprint Motion Kit）
        ======================================================== -->
+  <div class="version vbeta1-8" id="vbeta1-8">
+    <div class="version-head">
+      <span class="v-tag v-tag-current">Beta 1.0.8</span>
+      <span class="v-title">深度交互层 · 命令面板 Pro + 报告可视化联动 + 面试实时批注</span>
+      <span class="v-date">2026.10.22 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        在 v27 全站交互层之上继续深化「可操作」：命令面板 Pro（记录最近访问并空查询置顶、子序列评分过滤替代纯子串、面试页注入清空对话 / 切换模式 / 查看评分三条上下文指令）；报告可视化联动（雷达图自绘动画 stroke-dashoffset 0→全绘、维度行 hover 与对应雷达顶点同步高亮、维度悬浮提示，顺手清掉报告雷达的 indigo 硬编码填充改为朱红 tint）；表单焦点微交互（登录输入框聚焦时发丝线自左画出）；面试实时批注（每条面试官提问可附批注，落到 session.turns[i].notes，自动进入报告「评分证据」与学习路径证据链，零新增存储结构）。全站沿用动效宪法——reduced-motion 下全部静态落位、无 JS 内容完整可见。新增 test-v27-jsdom.js 测试套件 44 项断言锁定全部行为（含降级链）。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>命令面板会记忆</b>：最近访问置顶、子序列模糊匹配、面试页专属指令，评委演示一秒直达</div>
+        <div class="vh-item"><b>报告会联动</b>：雷达自绘 + 维度行与顶点同步高亮 + 悬浮提示，数据不再静态陈列</div>
+        <div class="vh-item"><b>面试可批注</b>：每条提问随手写批注，自动沉淀进报告证据链，闭环可解释评分</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">44</div><div class="m-label">v27 新增断言</div></div>
+        <div class="metric"><div class="m-val">1137</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">16</div><div class="m-label">jsdom 测试套件</div></div>
+        <div class="metric"><div class="m-val">4</div><div class="m-label">深度交互方向</div></div>
+      </div>
+    </div>
+  </div>
+
   <div class="version vbeta1-7" id="vbeta1-7">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.0.7</span>
+      <span class="v-tag">Beta 1.0.7</span>
       <span class="v-title">全站交互层 · 图纸动作铺满每个页面</span>
-      <span class="v-date">2026.10.22 <span class="cur-mark">当前版本</span></span>
+      <span class="v-date">2026.10.22</span>
     </div>
     <div class="version-body">
       <div class="v-summary">
