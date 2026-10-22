@@ -585,12 +585,12 @@
   .view { display: none; }
   .view.active { display: block; animation: viewIn .45s cubic-bezier(.22,1,.36,1) both; }
   @keyframes viewIn {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: none; }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   @media (prefers-reduced-motion: reduce) {
     .view.active { animation: none; }
-    .reveal { opacity: 1 !important; transform: none !important; }
+    .reveal { opacity: 1 !important; clip-path: none !important; }
   }
 
   /* ---------- 落地页 ---------- */
@@ -816,9 +816,9 @@
     display: grid; place-items: center; padding: 20px;
   }
 
-  /* 滚动进场 */
-  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1); }
-  .reveal.in { opacity: 1; transform: none; }
+  /* 滚动进场 · v24 蓝图编辑风：印刷揭载（clip-path 自上而下揭开 + 淡入，零 transform 避免与 hover 语言冲突） */
+  .reveal { opacity: 0; clip-path: inset(14px 0 0 0); transition: opacity .7s cubic-bezier(.22,1,.36,1), clip-path .7s cubic-bezier(.22,1,.36,1); }
+  .reveal.in { opacity: 1; clip-path: inset(0 0 0 0); }
 
   /* ============================================================
    * v10 · 导航重构：左侧栏（桌面）+ 底部 Tab 栏（移动）+ 精简顶栏
