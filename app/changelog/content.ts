@@ -5,10 +5,10 @@ export const changelogHtml = `
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.0.5 · v23 规划中</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.0.6 · v23 规划中</div>
     <div class="meta">
-      <span>已发布 <b>26</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.0.5</b></span>
+      <span>已发布 <b>27</b> 个版本</span>
+      <span>当前版本 <b>Beta 1.0.6</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -16,19 +16,19 @@ export const changelogHtml = `
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.5，为当前正式发布版本（蓝图编辑风视觉重构 + 全渠道同风格重塑）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.6，为当前正式发布版本（交互深化层：命令面板 + 滚动驱动 + 落地页动态）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
   <div class="overview">
-    <div class="ov-card"><div class="ov-num">26</div><div class="ov-label">已发布版本</div></div>
+    <div class="ov-card"><div class="ov-num">27</div><div class="ov-label">已发布版本</div></div>
     <div class="ov-card"><div class="ov-num">10</div><div class="ov-label">功能页</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">协作 Agent</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">岗位数据库</div></div>
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">967</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1031</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -38,6 +38,7 @@ export const changelogHtml = `
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
+    <li><a href="#vbeta1-6"><span class="cl-toc-tag">Beta 1.0.6</span><span class="cl-toc-title-txt">交互深化层 · 命令面板与滚动语言</span></a></li>
     <li><a href="#vbeta1-5"><span class="cl-toc-tag">Beta 1.0.5</span><span class="cl-toc-title-txt">动态层 · 粒子场与微交互</span></a></li>
     <li><a href="#vbeta1-4"><span class="cl-toc-tag">Beta 1.0.4</span><span class="cl-toc-title-txt">体验层增强 · 交互反馈与可访问性</span></a></li>
     <li><a href="#vbeta1-3"><span class="cl-toc-tag">Beta 1.0.3</span><span class="cl-toc-title-txt">蓝图编辑风视觉重构 · 去 AI 模板化</span></a></li>
@@ -186,11 +187,35 @@ export const changelogHtml = `
   <!-- ========================================================
        Beta 1.0.5 · 动态层（Blueprint Motion Kit）
        ======================================================== -->
+  <div class="version vbeta1-6" id="vbeta1-6">
+    <div class="version-head">
+      <span class="v-tag v-tag-current">Beta 1.0.6</span>
+      <span class="v-title">交互深化层 · 命令面板与滚动语言</span>
+      <span class="v-date">2026.10.22 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        在动态层之上增加<b>交互深化层</b>：命令面板（Ctrl/⌘+K 呼出，17 项命令覆盖区块跳转 / 10 个功能页 / 主题切换 / 开发者模式 / 回顶，分组 + 过滤 + 全键盘导航，面试页保留聚焦输入框原行为）；滚动驱动三件套——返回顶部（直角墨框 + SVG 朱红进度环，600px 阈值）、落地页导航滚动侦测（当前区块点亮朱红下划线）、工作流蓝图绘制线（入视口自左画出，120ms stagger）；落地页动态四件套——Hero 等宽打字机轮播（5 条价值点 + 方块硬切光标）、面试实录气泡依序揭载 + 流式光标、蓝图十字准线（落地页光标测绘线，触屏 / reduced-motion 不注入）、特性卡坐标读数（BLK 编号 + X/Y 测绘 chip）。新增 scrollfx.js / landingfx.js / command.js 三个模块，v25 测试套件 64 项断言锁定全部行为。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>⌘K 直达一切</b>：17 项命令分组呈现，过滤 + 全键盘，评委演示时可一秒跳到任意功能页</div>
+        <div class="vh-item"><b>滚动可感知</b>：进度环 / 导航点亮 / 蓝图绘制线，长落地页有了「阅读仪表盘」</div>
+        <div class="vh-item"><b>图纸气质延续</b>：十字准线、坐标读数、打字机光标——动态全部长在蓝图语言上</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">17</div><div class="m-label">命令面板条目</div></div>
+        <div class="metric"><div class="m-val">64</div><div class="m-label">v25 新增断言</div></div>
+        <div class="metric"><div class="m-val">1031</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">3</div><div class="m-label">新增模块</div></div>
+      </div>
+    </div>
+  </div>
+
   <div class="version vbeta1-5" id="vbeta1-5">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.0.5</span>
+      <span class="v-tag">Beta 1.0.5</span>
       <span class="v-title">动态层 · 粒子场与微交互</span>
-      <span class="v-date">2026.10.22 <span class="cur-mark">当前版本</span></span>
+      <span class="v-date">2026.10.22</span>
     </div>
     <div class="version-body">
       <div class="v-summary">
@@ -1394,7 +1419,7 @@ export const changelogHtml = `
 
   <!-- ============ 页脚 ============ -->
   <div class="footer">
-    <b>面镜 FutureMirror</b> · 版本更新日志 v1 → Beta 1.0.5 · v23 规划中<br>
+    <b>面镜 FutureMirror</b> · 版本更新日志 v1 → Beta 1.0.6 · v23 规划中<br>
     28 个已发布版本 · 从单文件原型到可验证的 AI Native 产品雏形<br>
     <span class="notice-line">本文档为团队内部版本记录，仅描述自研功能与数据，不引用、不转载任何第三方内容</span><br>
     © 2026 面镜 FutureMirror 团队 · 内部文档

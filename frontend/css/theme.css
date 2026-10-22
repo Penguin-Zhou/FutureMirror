@@ -797,6 +797,174 @@
     .landing-nav-links a::after { transition: none; }
   }
 
+  /* ============================================================
+   * v26 · 交互深化层（Blueprint Interaction Kit）
+   * 原则：动态「可感知但不抢戏」——准线是测绘线、环是进度规、
+   * 打字机是终端回显、命令面板是图纸检索夹；全部直角 + 发丝线。
+   * ============================================================ */
+
+  /* ① Hero 文案轮播：等宽打字机 + 方块硬切光标 */
+  .hero-rotator {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 14px; min-height: 22px;
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .05em; color: var(--brand);
+  }
+  .hero-rotator .hr-prefix { color: var(--faint); }
+  .hero-rotator .hr-caret {
+    display: inline-block; width: 8px; height: 15px; background: var(--brand);
+    animation: caretBlink 1.05s steps(2, start) infinite;
+  }
+  @keyframes caretBlink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .hero-rotator .hr-caret { animation: none; } }
+
+  /* ⌘K 提示（Hero CTA 下方） */
+  .hero-kbd-hint {
+    margin-top: 14px; font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: .1em; color: var(--faint);
+  }
+  .hero-kbd-hint kbd {
+    font-family: var(--mono); font-size: 10px; border: 1px solid var(--line-2);
+    background: var(--bg); padding: 1px 5px; color: var(--muted);
+  }
+
+  /* ② 面试实录播台：气泡依序揭载（clip-path 语言，非上浮）+ 流式光标 */
+  .hero-mock-body.mock-play .mock-bubble { opacity: 0; }
+  .hero-mock-body.mock-play .mock-bubble.mock-in { animation: mockIn .55s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes mockIn {
+    from { opacity: 0; clip-path: inset(0 0 16px 0); }
+    to { opacity: 1; clip-path: inset(0 0 0 0); }
+  }
+  .mock-caret {
+    display: inline-block; width: 7px; height: 13px; background: var(--brand);
+    margin-left: 7px; vertical-align: -2px;
+    animation: caretBlink 1.05s steps(2, start) infinite;
+  }
+  .hmh-live { font-family: var(--mono); }
+  .hmh-live::before {
+    content: "●"; color: var(--brand); margin-right: 7px; font-size: 9px;
+    animation: livePulse 1.6s ease-in-out infinite;
+  }
+  @keyframes livePulse { 50% { opacity: .2; } }
+  @media (prefers-reduced-motion: reduce) {
+    .mock-caret { animation: none; }
+    .hmh-live::before { animation: none; }
+  }
+
+  /* ③ 蓝图十字准线：落地页光标测绘线（1px 墨色，opacity .16） */
+  .bp-cross { position: fixed; z-index: 2; pointer-events: none; background: var(--ink); opacity: .16; }
+  .bp-cross-x { left: 0; right: 0; height: 1px; }
+  .bp-cross-y { top: 0; bottom: 0; width: 1px; }
+  @media (hover: none) { .bp-cross { display: none; } }
+
+  /* ④ 特性卡坐标读数：hover 显示的等宽测绘 chip */
+  .feature-block { position: relative; }
+  .fb-coord {
+    position: absolute; top: 12px; right: 12px;
+    font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    color: var(--brand); border: 1px solid var(--brand); background: var(--card);
+    padding: 2px 7px; opacity: 0; transition: opacity .18s ease; pointer-events: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .feature-block:hover .fb-coord { opacity: 1; }
+  @media (hover: none) { .fb-coord { display: none; } }
+
+  /* ⑤ 返回顶部：直角墨框 + SVG 朱红进度环（周长映射滚动比例） */
+  .bp-top {
+    position: fixed; right: 22px; bottom: 22px; width: 46px; height: 46px;
+    border: 2px solid var(--ink); background: var(--card); color: var(--ink);
+    cursor: pointer; z-index: 1100; padding: 0;
+    display: grid; place-items: center;
+    opacity: 0; visibility: hidden; transform: translateY(8px);
+    transition: opacity .25s ease, visibility .25s ease, transform .25s cubic-bezier(.22,1,.36,1), border-color .25s ease, color .25s ease;
+  }
+  .bp-top.show { opacity: 1; visibility: visible; transform: none; }
+  .bp-top:hover { border-color: var(--brand); color: var(--brand); }
+  .bp-top:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .bp-top .bp-top-ring { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .bp-top .bp-top-ring circle { fill: none; stroke-width: 2; }
+  .bp-top .bp-top-bg { stroke: var(--line-2); }
+  .bp-top .bp-top-fg { stroke: var(--brand); }
+  .bp-top .bp-top-arrow { font-size: 15px; line-height: 1; font-weight: 700; }
+  @media (prefers-reduced-motion: reduce) { .bp-top { transition: none; } }
+
+  /* ⑥ 滚动侦测：导航当前区块点亮（与 hover 扫入共用 underline 语言） */
+  .landing-nav-links a.active::after { transform: scaleX(1); }
+
+  /* ⑦ 蓝图绘制线：工作流步骤顶部 2px 墨线入视口自左画出（stagger 120ms） */
+  .workflow-step { position: relative; }
+  .ws-draw {
+    position: absolute; left: 0; right: 0; top: 0; height: 2px;
+    background: var(--ink); transform: scaleX(0); transform-origin: 0 50%;
+    transition: transform .7s cubic-bezier(.22,1,.36,1);
+    transition-delay: calc(var(--ws-i, 0) * 120ms);
+  }
+  .workflow-step.bp-drawn .ws-draw { transform: scaleX(1); }
+
+  /* ⑧ 命令面板：直角墨框 + 等宽输入 + 朱红选中条 */
+  .bp-cmd {
+    position: fixed; inset: 0; z-index: 1300;
+    display: flex; justify-content: center; align-items: flex-start;
+    padding-top: 13vh; background: rgba(28,25,19,.45);
+  }
+  .bp-cmd[hidden] { display: none; }
+  .bp-cmd-box {
+    width: min(580px, calc(100vw - 40px));
+    background: var(--card); border: 2px solid var(--ink);
+  }
+  .bp-cmd-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-bottom: 1px solid var(--ink);
+  }
+  .bp-cmd-sig {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .06em;
+    color: var(--on-plate); background: var(--plate); border: 1px solid var(--ink); padding: 2px 7px;
+  }
+  .bp-cmd-head input {
+    flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+    font-family: var(--mono); font-size: 14px; color: var(--ink);
+  }
+  .bp-cmd-head input::placeholder { color: var(--faint); }
+  .bp-cmd-kbd {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+    border: 1px solid var(--line-2); padding: 2px 6px; color: var(--muted);
+  }
+  .bp-cmd-list { max-height: 46vh; overflow: auto; }
+  .bp-cmd-group {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--faint);
+    padding: 12px 14px 4px;
+  }
+  .bp-cmd-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 14px; cursor: pointer; font-size: 13.5px; color: var(--ink);
+    border-left: 2px solid transparent;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .bp-cmd-item .ci-key {
+    margin-left: auto; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .1em; color: var(--faint);
+  }
+  .bp-cmd-item[aria-selected="true"] {
+    border-left-color: var(--brand); background: var(--brand-bg); color: var(--brand-deep);
+  }
+  .bp-cmd-item[aria-selected="true"] .ci-key { color: var(--brand-deep); }
+  .bp-cmd-empty {
+    padding: 20px 14px; text-align: center;
+    font-family: var(--mono); font-size: 12px; color: var(--faint);
+  }
+  .bp-cmd-foot {
+    display: flex; gap: 16px; align-items: center;
+    border-top: 1px solid var(--line-2); padding: 8px 14px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .08em; color: var(--faint);
+  }
+  .bp-cmd-foot .bp-cmd-count { margin-left: auto; }
+  .bp-cmd-enter { animation: cmdIn .22s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes cmdIn {
+    from { opacity: 0; clip-path: inset(0 0 12px 0); }
+    to { opacity: 1; clip-path: inset(0 0 0 0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .bp-cmd-enter { animation: none; } }
+
   /* ============ 打印：纸面文档 ============ */
   @media print {
     body { background: #fff; background-image: none; }

@@ -27,7 +27,13 @@ function showView(name) {
     // 每次回到落地页都重播一次数字滚动
     document.querySelectorAll(".landing-stat .val[data-count]").forEach(el => { el.dataset.done = ""; });
     animateLandingCounters();
+    // v26：重播 Hero 实录播台 + 刷新导航侦测
+    try { if (window.__bpLanding && window.__bpLanding.playMock) window.__bpLanding.playMock(); } catch (e) {}
+    try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
   }
+  // v26：离开落地页时收起十字准线 / 清除导航点亮
+  try { if (window.__bpLanding && window.__bpLanding.applyCross) window.__bpLanding.applyCross(); } catch (e) {}
+  try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
 }
 
 /* 落地页 CTA：已登录进应用，未登录进登录页 */
