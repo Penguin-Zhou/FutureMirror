@@ -277,7 +277,7 @@ check("按钮同步为 🟢", $("accent-btn").textContent === "🟢");
 api.cycleAccent();
 check("切换到 blue", api.getAccent() === "blue");
 api.cycleAccent();
-check("循环回 default", api.getAccent() === "default" && $("accent-btn").textContent === "🟣");
+check("循环回 default", api.getAccent() === "default" && $("accent-btn").textContent === "🔴");
 check("g_accent 全局共享不加用户前缀", "g_accent" in localBacking);
 
 console.log("== 13. 数据看板 / Tab 图标 / 岗位跳转 ==");

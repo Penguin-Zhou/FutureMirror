@@ -160,15 +160,15 @@ function runTests() {
     ok(/\.ai-panel::before \{[^}]*width:\s*40px[^}]*height:\s*4px/.test(m900), "AI 抽屉移动端弹层把手");
     ok(/\.ai-panel-foot \{[^}]*padding-bottom:\s*calc\(10px \+ env\(safe-area-inset-bottom\)\)/.test(m900), "输入区预留底部安全区");
     ok(/\.app-main \{[^}]*padding:\s*104px 14px 32px/.test(m900), "主内容区为顶部双栏留位（104px）");
-    ok(/\.page-card \{[^}]*border-radius:\s*18px/.test(m900) && /\.card, \.page-card \{[^}]*box-shadow/.test(m900), "卡片大圆角 + 柔和投影");
+    ok(/\.page-card \{[^}]*border-top:\s*2px solid var\(--ink\)/.test(flat) && /\.page-card \{[^}]*border-radius:\s*0/.test(cssMedia("(max-width: 640px)")), "卡片直角 + 文档式墨色顶规（去圆角去投影）");
     ok(/\.btn \{[^}]*min-height:\s*42px/.test(m900), "按钮触控高度 ≥42px");
     ok(/\.tabbar-item:active \{[^}]*transform:\s*scale\(\.94\)/.test(m900), "导航项按压反馈");
     ok(/input\[type="text"\][^}]*font-size:\s*16px/.test(m900), "输入框 16px 防 iOS 聚焦放大");
     ok(/#toast \{[^}]*bottom:\s*calc\(20px \+ env\(safe-area-inset-bottom\)\)/.test(m900), "Toast 贴底含安全区");
-    ok(/\.quiz-opt \{[^}]*font-size:\s*14px[^}]*border-radius:\s*14px/.test(m900), "答题选项移动端放大");
+    ok(/\.quiz-opt \{[^}]*font-size:\s*14px[^}]*border-radius:\s*0/.test(m900), "答题选项移动端放大（直角）");
     ok(/\.app-tabbar \{[^}]*top:\s*58px/.test(m900), "顶部导航仍定位于顶栏下方（回归）");
     ok(document.querySelectorAll(".app-tabbar .tabbar-item").length === 9, "底部导航 9 项（回归）");
-    ok(/\.feature-block \{[^}]*border-radius:\s*16px/.test(cssMedia("(max-width: 640px)")), "首页特性卡小屏圆角");
+    ok(/\.feature-block \{[^}]*border-radius:\s*0/.test(cssMedia("(max-width: 640px)")), "首页特性卡小屏直角（规格表语言）");
 
     /* ============ I. 游客态 ============ */
     console.log("\n-- I. 游客态可用 --");
