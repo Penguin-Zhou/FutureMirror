@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.0.5 演示版）</title>
+<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.0.6 演示版）</title>
 <meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台（在线演示版）">
 <script>
 /* 主题预置：先于 body 渲染，避免首屏闪白/闪主题（g_theme/g_accent 为全局共享 key，不随用户隔离） */
@@ -2587,6 +2587,174 @@ try {
     .landing-nav-links a::after { transition: none; }
   }
 
+  /* ============================================================
+   * v26 · 交互深化层（Blueprint Interaction Kit）
+   * 原则：动态「可感知但不抢戏」——准线是测绘线、环是进度规、
+   * 打字机是终端回显、命令面板是图纸检索夹；全部直角 + 发丝线。
+   * ============================================================ */
+
+  /* ① Hero 文案轮播：等宽打字机 + 方块硬切光标 */
+  .hero-rotator {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 14px; min-height: 22px;
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .05em; color: var(--brand);
+  }
+  .hero-rotator .hr-prefix { color: var(--faint); }
+  .hero-rotator .hr-caret {
+    display: inline-block; width: 8px; height: 15px; background: var(--brand);
+    animation: caretBlink 1.05s steps(2, start) infinite;
+  }
+  @keyframes caretBlink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .hero-rotator .hr-caret { animation: none; } }
+
+  /* ⌘K 提示（Hero CTA 下方） */
+  .hero-kbd-hint {
+    margin-top: 14px; font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: .1em; color: var(--faint);
+  }
+  .hero-kbd-hint kbd {
+    font-family: var(--mono); font-size: 10px; border: 1px solid var(--line-2);
+    background: var(--bg); padding: 1px 5px; color: var(--muted);
+  }
+
+  /* ② 面试实录播台：气泡依序揭载（clip-path 语言，非上浮）+ 流式光标 */
+  .hero-mock-body.mock-play .mock-bubble { opacity: 0; }
+  .hero-mock-body.mock-play .mock-bubble.mock-in { animation: mockIn .55s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes mockIn {
+    from { opacity: 0; clip-path: inset(0 0 16px 0); }
+    to { opacity: 1; clip-path: inset(0 0 0 0); }
+  }
+  .mock-caret {
+    display: inline-block; width: 7px; height: 13px; background: var(--brand);
+    margin-left: 7px; vertical-align: -2px;
+    animation: caretBlink 1.05s steps(2, start) infinite;
+  }
+  .hmh-live { font-family: var(--mono); }
+  .hmh-live::before {
+    content: "●"; color: var(--brand); margin-right: 7px; font-size: 9px;
+    animation: livePulse 1.6s ease-in-out infinite;
+  }
+  @keyframes livePulse { 50% { opacity: .2; } }
+  @media (prefers-reduced-motion: reduce) {
+    .mock-caret { animation: none; }
+    .hmh-live::before { animation: none; }
+  }
+
+  /* ③ 蓝图十字准线：落地页光标测绘线（1px 墨色，opacity .16） */
+  .bp-cross { position: fixed; z-index: 2; pointer-events: none; background: var(--ink); opacity: .16; }
+  .bp-cross-x { left: 0; right: 0; height: 1px; }
+  .bp-cross-y { top: 0; bottom: 0; width: 1px; }
+  @media (hover: none) { .bp-cross { display: none; } }
+
+  /* ④ 特性卡坐标读数：hover 显示的等宽测绘 chip */
+  .feature-block { position: relative; }
+  .fb-coord {
+    position: absolute; top: 12px; right: 12px;
+    font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    color: var(--brand); border: 1px solid var(--brand); background: var(--card);
+    padding: 2px 7px; opacity: 0; transition: opacity .18s ease; pointer-events: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .feature-block:hover .fb-coord { opacity: 1; }
+  @media (hover: none) { .fb-coord { display: none; } }
+
+  /* ⑤ 返回顶部：直角墨框 + SVG 朱红进度环（周长映射滚动比例） */
+  .bp-top {
+    position: fixed; right: 22px; bottom: 22px; width: 46px; height: 46px;
+    border: 2px solid var(--ink); background: var(--card); color: var(--ink);
+    cursor: pointer; z-index: 1100; padding: 0;
+    display: grid; place-items: center;
+    opacity: 0; visibility: hidden; transform: translateY(8px);
+    transition: opacity .25s ease, visibility .25s ease, transform .25s cubic-bezier(.22,1,.36,1), border-color .25s ease, color .25s ease;
+  }
+  .bp-top.show { opacity: 1; visibility: visible; transform: none; }
+  .bp-top:hover { border-color: var(--brand); color: var(--brand); }
+  .bp-top:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .bp-top .bp-top-ring { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .bp-top .bp-top-ring circle { fill: none; stroke-width: 2; }
+  .bp-top .bp-top-bg { stroke: var(--line-2); }
+  .bp-top .bp-top-fg { stroke: var(--brand); }
+  .bp-top .bp-top-arrow { font-size: 15px; line-height: 1; font-weight: 700; }
+  @media (prefers-reduced-motion: reduce) { .bp-top { transition: none; } }
+
+  /* ⑥ 滚动侦测：导航当前区块点亮（与 hover 扫入共用 underline 语言） */
+  .landing-nav-links a.active::after { transform: scaleX(1); }
+
+  /* ⑦ 蓝图绘制线：工作流步骤顶部 2px 墨线入视口自左画出（stagger 120ms） */
+  .workflow-step { position: relative; }
+  .ws-draw {
+    position: absolute; left: 0; right: 0; top: 0; height: 2px;
+    background: var(--ink); transform: scaleX(0); transform-origin: 0 50%;
+    transition: transform .7s cubic-bezier(.22,1,.36,1);
+    transition-delay: calc(var(--ws-i, 0) * 120ms);
+  }
+  .workflow-step.bp-drawn .ws-draw { transform: scaleX(1); }
+
+  /* ⑧ 命令面板：直角墨框 + 等宽输入 + 朱红选中条 */
+  .bp-cmd {
+    position: fixed; inset: 0; z-index: 1300;
+    display: flex; justify-content: center; align-items: flex-start;
+    padding-top: 13vh; background: rgba(28,25,19,.45);
+  }
+  .bp-cmd[hidden] { display: none; }
+  .bp-cmd-box {
+    width: min(580px, calc(100vw - 40px));
+    background: var(--card); border: 2px solid var(--ink);
+  }
+  .bp-cmd-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-bottom: 1px solid var(--ink);
+  }
+  .bp-cmd-sig {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .06em;
+    color: var(--on-plate); background: var(--plate); border: 1px solid var(--ink); padding: 2px 7px;
+  }
+  .bp-cmd-head input {
+    flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+    font-family: var(--mono); font-size: 14px; color: var(--ink);
+  }
+  .bp-cmd-head input::placeholder { color: var(--faint); }
+  .bp-cmd-kbd {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+    border: 1px solid var(--line-2); padding: 2px 6px; color: var(--muted);
+  }
+  .bp-cmd-list { max-height: 46vh; overflow: auto; }
+  .bp-cmd-group {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--faint);
+    padding: 12px 14px 4px;
+  }
+  .bp-cmd-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 14px; cursor: pointer; font-size: 13.5px; color: var(--ink);
+    border-left: 2px solid transparent;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .bp-cmd-item .ci-key {
+    margin-left: auto; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .1em; color: var(--faint);
+  }
+  .bp-cmd-item[aria-selected="true"] {
+    border-left-color: var(--brand); background: var(--brand-bg); color: var(--brand-deep);
+  }
+  .bp-cmd-item[aria-selected="true"] .ci-key { color: var(--brand-deep); }
+  .bp-cmd-empty {
+    padding: 20px 14px; text-align: center;
+    font-family: var(--mono); font-size: 12px; color: var(--faint);
+  }
+  .bp-cmd-foot {
+    display: flex; gap: 16px; align-items: center;
+    border-top: 1px solid var(--line-2); padding: 8px 14px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .08em; color: var(--faint);
+  }
+  .bp-cmd-foot .bp-cmd-count { margin-left: auto; }
+  .bp-cmd-enter { animation: cmdIn .22s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes cmdIn {
+    from { opacity: 0; clip-path: inset(0 0 12px 0); }
+    to { opacity: 1; clip-path: inset(0 0 0 0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .bp-cmd-enter { animation: none; } }
+
   /* ============ 打印：纸面文档 ============ */
   @media print {
     body { background: #fff; background-image: none; }
@@ -3317,7 +3485,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <a href="changelog.html">更新日志</a>
       </div>
       <div class="landing-nav-meta">
-        <span class="bp-ver">BETA 1.0.5</span>
+        <span class="bp-ver">BETA 1.0.6</span>
         <button class="btn btn-ghost btn-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式">🌙</button>
         <button class="btn btn-ghost btn-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）">🟣</button>
         <button class="btn btn-outline btn-sm" onclick="showView('app')">免费体验</button>
@@ -3331,7 +3499,8 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     <div class="wrap">
       <div class="hero-grid">
         <div class="hero-main">
-          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.0.5</span>
+          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.0.6</span>
+          <div class="hero-rotator" aria-live="polite"><span class="hr-prefix">&gt;_</span><span class="hr-text" id="hr-text"></span><i class="hr-caret" aria-hidden="true"></i></div>
           <div class="eyebrow"><span class="eyebrow-no">VOL.1</span>AI NATIVE · 多 AGENT 模拟面试平台</div>
           <h1 class="hero-title">
             让每一次面试，<br>
@@ -3345,10 +3514,11 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
             <button class="btn btn-primary" onclick="enterAppOrAuth()">立即体验 →</button>
             <button class="btn btn-outline" onclick="showView('app')">先看看界面</button>
           </div>
+          <div class="hero-kbd-hint">按 <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> 打开命令面板 · 直达任意功能页</div>
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>967</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>1031</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>37</b> 页技术文档</span>
           </div>
         </div>
@@ -3359,7 +3529,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>服务端五维引擎</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>967 + 17</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>1031 + 17</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -3405,7 +3575,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">967 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1031 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -3415,7 +3585,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">967 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1031 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -3564,7 +3734,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   </section>
 
   <footer class="site-foot">
-    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.5<br>
+    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.6<br>
     <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
   </footer>
 
@@ -3716,7 +3886,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 <!-- ===== 演示版声明横幅（可关闭） ===== -->
 <div class="banner" id="demo-banner" role="note">
   <div class="wrap">
-    <b>本页 = 在线演示版首页 · Beta 1.0.5</b>
+    <b>本页 = 在线演示版首页 · Beta 1.0.6</b>
     <span>（已接通真实后端：LLM 流式对话 / JWT 登录 / 服务端评分均在线可验；无后端或断网时自动降级本地 Mock，流程不中断）</span>
     <button class="btn btn-primary btn-sm" onclick="openMaterial('full')" style="margin-left:auto">前往完整项目 →</button>
     <button class="btn btn-ghost btn-sm" onclick="dismissBanner()" aria-label="关闭横幅">✕</button>
@@ -3767,7 +3937,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       </a>
 
       <div class="sb-footer">
-        面镜 FutureMirror · beta1.0.5<br>
+        面镜 FutureMirror · beta1.0.6<br>
         <a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">代码仓库</a> ·
         <a href="docs/technical-doc.html">技术文档</a> ·
         <a href="changelog.html">更新日志</a> ·
@@ -3974,7 +4144,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 
   <footer>
     <div style="padding:0">
-      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.5<br>
+      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.6<br>
       <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
     </div>
   </footer>
@@ -4877,7 +5047,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     </section>
 
     <footer class="site-foot">
-      面镜 FutureMirror · 开发者模式 · Beta 1.0.5 · 仅对评委与开发者开放<br>
+      面镜 FutureMirror · 开发者模式 · Beta 1.0.6 · 仅对评委与开发者开放<br>
       <span>AI辅助开发说明：AI仅辅助样式、工具函数与文案，多Agent、评分引擎、业务架构、测试体系由团队独立设计实现，演示数据为合成示例。</span><br>
       解锁凭据保存在 sessionStorage，关闭标签页自动失效
     </footer>
@@ -4975,7 +5145,13 @@ function showView(name) {
     // 每次回到落地页都重播一次数字滚动
     document.querySelectorAll(".landing-stat .val[data-count]").forEach(el => { el.dataset.done = ""; });
     animateLandingCounters();
+    // v26：重播 Hero 实录播台 + 刷新导航侦测
+    try { if (window.__bpLanding && window.__bpLanding.playMock) window.__bpLanding.playMock(); } catch (e) {}
+    try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
   }
+  // v26：离开落地页时收起十字准线 / 清除导航点亮
+  try { if (window.__bpLanding && window.__bpLanding.applyCross) window.__bpLanding.applyCross(); } catch (e) {}
+  try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
 }
 
 /* 落地页 CTA：已登录进应用，未登录进登录页 */
@@ -5176,6 +5352,10 @@ function closeNavDropdown() { /* noop：下拉 UI 已在 v10 下线 */ }
  *                     / runQuizSearch / recordAnswer / toggleAiAssistant / sendAiAssistant
  *   ⑬ 悬浮球拖拽冻结(v21) … applyAiFabPos / initAiFabDrag / fm_ai_fab / 移动端美化
  *   ⑭ 后端适配层(v22) … fmApi / checkHealth / syncAndReport / llmLabel / testApiBase
+ *   ⑮ 体验层(v23–v24) … 打字指示器 / 空状态 / 滚动进度线 / 粒子场 / 视差 / 涟漪
+ *   ⑯ 滚动驱动层(v26) … 返回顶部进度环 / 滚动侦测 / 蓝图绘制线
+ *   ⑰ 落地页动态层(v26) … 文案轮播 / 实录播台 / 十字准线 / 坐标读数
+ *   ⑱ 命令面板(v26) …… Ctrl/⌘+K 直达功能页与动作
  * ============================================================ */
 
 /* ============================================================
@@ -7723,6 +7903,483 @@ function revealScan() {
   }
 })();
 /* ============================================================
+ * v26 · 滚动驱动层（Blueprint Scroll Kit）
+ * 设计要点：
+ * 1) 返回顶部：右下角直角墨框按钮 + SVG 朱红进度环（周长映射滚动比例），
+ *    超过 600px 才显形——克制的「可返回」感知，不常驻抢视线；
+ * 2) 滚动侦测：落地页导航链接随视口所在区块点亮朱红下划线（.active），
+ *    与 hover 扫入共用一套 underline 语言；
+ * 3) 蓝图绘制线：工作流步骤顶部 2px 墨线入视口时自左向右画出
+ *    （scaleX，nth-child stagger 120ms），入过一次即锁定 .bp-drawn；
+ * 4) 全部监听 passive + rAF 节流；动效宪法下过渡瞬时化，功能不缺失；
+ * 5) 纯增强：任何异常只静默跳过，不影响主流程与内容可见性。
+ * ============================================================ */
+(function initScrollFx() {
+  const reduced = () => {
+    try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
+  };
+  const FX = (window.__bpScroll = { top: false, spy: false, draw: false, updateSpy: null, initTop: null });
+
+  /* ---------- ① 返回顶部 + 进度环 ---------- */
+  const RING_C = 2 * Math.PI * 19;                      // r=19 的周长（viewBox 44）
+  function initBackToTop() {
+    if (document.getElementById("bp-top")) return;
+    const btn = document.createElement("button");
+    btn.id = "bp-top";
+    btn.className = "bp-top";
+    btn.type = "button";
+    btn.setAttribute("aria-label", "返回顶部");
+    btn.title = "返回顶部";
+    btn.innerHTML =
+      '<svg class="bp-top-ring" viewBox="0 0 44 44" width="44" height="44" aria-hidden="true">' +
+      '<circle class="bp-top-bg" cx="22" cy="22" r="19"></circle>' +
+      '<circle class="bp-top-fg" cx="22" cy="22" r="19" stroke-dasharray="' + RING_C.toFixed(2) + '" stroke-dashoffset="' + RING_C.toFixed(2) + '"></circle>' +
+      "</svg>" +
+      '<span class="bp-top-arrow" aria-hidden="true">↑</span>';
+    (document.body || document.documentElement).appendChild(btn);
+
+    const ring = btn.querySelector(".bp-top-fg");
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const de = document.documentElement;
+      const max = de.scrollHeight - de.clientHeight;
+      const top = window.scrollY || de.scrollTop || 0;
+      const p = max > 4 ? Math.min(1, Math.max(0, top / max)) : 0;
+      btn.classList.toggle("show", top > 600);
+      if (ring) ring.style.strokeDashoffset = (RING_C * (1 - p)).toFixed(2);
+    };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    btn.addEventListener("click", () => {
+      try {
+        window.scrollTo({ top: 0, behavior: reduced() ? "auto" : "smooth" });
+      } catch (e) {
+        try { window.scrollTo(0, 0); } catch (e2) { /* 老浏览器兜底 */ }
+      }
+    });
+    update();
+    FX.top = true;
+    FX.initTop = initBackToTop;                         // 暴露给测试（幂等验证）
+  }
+
+  /* ---------- ② 滚动侦测（落地页导航点亮） ---------- */
+  const SPY_SECTIONS = ["features", "workflow", "stats"];
+  function updateScrollSpy() {
+    const links = [...document.querySelectorAll('.landing-nav-links a[href^="#"]')];
+    if (!links.length) return;
+    const onLanding = !!document.querySelector("#view-landing.active");
+    if (!onLanding) {
+      links.forEach(a => a.classList.remove("active"));
+      return;
+    }
+    const probe = (window.scrollY || 0) + 96;
+    let hit = "";
+    for (const id of SPY_SECTIONS) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      const top = r.top + (window.scrollY || 0);
+      if (top <= probe && top + r.height > probe) { hit = id; break; }
+    }
+    links.forEach(a => a.classList.toggle("active", hit !== "" && a.getAttribute("href") === "#" + hit));
+  }
+  function initScrollSpy() {
+    if (FX.spy) return;
+    FX.spy = true;
+    FX.updateSpy = updateScrollSpy;                     // 暴露给测试与路由切换
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => { ticking = false; updateScrollSpy(); });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    updateScrollSpy();
+  }
+
+  /* ---------- ③ 蓝图绘制线（工作流步骤） ---------- */
+  function initDrawOnScroll() {
+    if (FX.draw) return;
+    const steps = [...document.querySelectorAll(".workflow-step")];
+    if (!steps.length) return;
+    steps.forEach((s, i) => {
+      if (!s.querySelector(".ws-draw")) {
+        const line = document.createElement("i");
+        line.className = "ws-draw";
+        line.setAttribute("aria-hidden", "true");
+        s.appendChild(line);
+      }
+      s.style.setProperty("--ws-i", String(i));
+    });
+    if (!("IntersectionObserver" in window)) {           // 无 IO：直接落笔
+      steps.forEach(s => s.classList.add("bp-drawn"));
+      FX.draw = true;
+      return;
+    }
+    try {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(en => {
+          if (!en.isIntersecting) return;
+          en.target.classList.add("bp-drawn");
+          io.unobserve(en.target);
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.2 });
+      steps.forEach(s => io.observe(s));
+      FX.draw = true;
+    } catch (e) {
+      steps.forEach(s => s.classList.add("bp-drawn"));   // IO 异常：静态落笔
+      FX.draw = true;
+    }
+  }
+
+  /* ---------- 入口 ---------- */
+  function boot() {
+    try { initBackToTop(); } catch (e) {}
+    try { initScrollSpy(); } catch (e) {}
+    try { initDrawOnScroll(); } catch (e) {}
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+})();
+/* ============================================================
+ * v26 · 落地页动态层（Blueprint Landing Kit）
+ * 设计要点（继续「图纸」语言，杜绝 AI 模板花活）：
+ * 1) Hero 文案轮播：等宽字体打字机逐字敲出价值点，方块光标闪烁
+ *    （steps 硬切，不用平滑渐变——终端气质）；
+ * 2) 面试实录播台：Mock 对话气泡入视口依序「揭载」（clip-path 自上而下），
+ *    末气泡跟一枚朱红流式光标——预告真实 SSE 的逐字体验；
+ * 3) 蓝图十字准线：落地页视图内 1px 墨色十字线跟随光标（opacity .16），
+ *    仅 (hover: hover) 设备 + 非 reduced-motion，出窗/切视图即隐；
+ * 4) 坐标读数：特性卡 hover 显示等宽「BLK-序号 · X/Y」测绘chip，
+ *    呼应取景器角标——图纸上量取位置的语言；
+ * 5) 渐进增强：无 JS 时轮播为空、实录完整可见；reduced-motion 全部静态落位。
+ * ============================================================ */
+(function initLandingFx() {
+  const reduced = () => {
+    try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
+  };
+  const FX = (window.__bpLanding = { rotator: false, mock: false, cross: false, coord: false, phrases: 0, playMock: null, applyCross: null });
+
+  /* ---------- ① Hero 文案轮播（等宽打字机） ---------- */
+  const PHRASES = [
+    "多 AGENT 圆桌协同追问",
+    "五维可解释评分 · 证据引用原话",
+    "RAG 混合检索 · 端侧 MINILM 向量",
+    "三级降级兜底 · 流程不中断",
+    "代码沙盒 · PII 脱敏",
+  ];
+  function initHeroRotator() {
+    const out = document.getElementById("hr-text");
+    if (!out) return;
+    FX.rotator = true;
+    FX.phrases = PHRASES.length;
+    if (reduced()) { out.textContent = PHRASES[0]; return; }
+    let pi = 0, ci = 0, del = false, timer = 0;
+    const tick = () => {
+      timer = 0;
+      const cur = PHRASES[pi];
+      if (!del) {
+        ci++;
+        out.textContent = cur.slice(0, ci);
+        if (ci >= cur.length) { del = true; timer = setTimeout(tick, 1700); return; }
+        timer = setTimeout(tick, 68);
+      } else {
+        ci--;
+        out.textContent = cur.slice(0, Math.max(0, ci));
+        if (ci <= 0) { del = false; pi = (pi + 1) % PHRASES.length; timer = setTimeout(tick, 460); return; }
+        timer = setTimeout(tick, 34);
+      }
+    };
+    timer = setTimeout(tick, 650);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) { clearTimeout(timer); timer = 0; }
+      else if (!timer) { timer = setTimeout(tick, 420); }
+    });
+  }
+
+  /* ---------- ② 面试实录播台（气泡依序揭载 + 流式光标） ---------- */
+  function playHeroMock() {
+    const body = document.querySelector(".hero-mock-body");
+    if (!body) return;
+    const bubbles = [...body.querySelectorAll(".mock-bubble")];
+    if (!bubbles.length) return;
+    FX.mock = true;
+    bubbles.forEach(b => { b.classList.remove("mock-in"); b.querySelectorAll(".mock-caret").forEach(c => c.remove()); });
+    body.classList.add("mock-play");
+    if (reduced()) { bubbles.forEach(b => b.classList.add("mock-in")); return; }
+    bubbles.forEach((b, i) => setTimeout(() => b.classList.add("mock-in"), 340 + i * 560));
+    const last = bubbles[bubbles.length - 1];
+    setTimeout(() => {
+      if (!last.querySelector(".mock-caret")) {
+        const c = document.createElement("i");
+        c.className = "mock-caret";
+        c.setAttribute("aria-hidden", "true");
+        last.appendChild(c);
+      }
+    }, 340 + (bubbles.length - 1) * 560 + 520);
+  }
+  FX.playMock = playHeroMock;
+
+  /* ---------- ③ 蓝图十字准线（落地页 · 悬停设备） ---------- */
+  function initCrosshair() {
+    if (reduced()) return;
+    try { if (window.matchMedia && window.matchMedia("(hover: none)").matches) return; } catch (e) {}
+    if (document.querySelector(".bp-cross-x")) return;
+    const cx = document.createElement("div");
+    cx.className = "bp-cross bp-cross-x";
+    cx.setAttribute("aria-hidden", "true");
+    const cy = document.createElement("div");
+    cy.className = "bp-cross bp-cross-y";
+    cy.setAttribute("aria-hidden", "true");
+    (document.body || document.documentElement).append(cx);
+    (document.body || document.documentElement).append(cy);
+    let mx = -9999, my = -9999, ticking = false, shown = false;
+    const apply = () => {
+      ticking = false;
+      const onLanding = !!document.querySelector("#view-landing.active");
+      const show = onLanding && mx > -900;
+      if (show !== shown) {
+        shown = show;
+        cx.style.visibility = show ? "visible" : "hidden";
+        cy.style.visibility = show ? "visible" : "hidden";
+      }
+      if (!show) return;
+      cx.style.top = my + "px";
+      cy.style.left = mx + "px";
+    };
+    window.addEventListener("mousemove", e => {
+      mx = e.clientX; my = e.clientY;
+      if (!ticking) { ticking = true; requestAnimationFrame(apply); }
+    }, { passive: true });
+    window.addEventListener("mouseout", () => {
+      mx = -9999; my = -9999;
+      if (!ticking) { ticking = true; requestAnimationFrame(apply); }
+    }, { passive: true });
+    apply();
+    FX.cross = true;
+    FX.applyCross = apply;                              // 暴露给视图切换：离开落地页即隐
+  }
+
+  /* ---------- ④ 特性卡坐标读数（BLK-序号 · X/Y） ---------- */
+  function initCoordReadout() {
+    if (document.querySelector(".fb-coord")) { FX.coord = true; return; }
+    const blocks = [...document.querySelectorAll("#view-landing .feature-block")];
+    if (!blocks.length) return;
+    blocks.forEach((b, i) => {
+      const tag = "BLK-" + String(i + 1).padStart(2, "0");
+      const chip = document.createElement("span");
+      chip.className = "fb-coord";
+      chip.setAttribute("aria-hidden", "true");
+      chip.textContent = tag + " · X--- Y---";
+      b.appendChild(chip);
+      let ticking = false, lx = 0, ly = 0;
+      const apply = () => {
+        ticking = false;
+        chip.textContent = tag + " · X" + String(Math.round(Math.max(0, lx))).padStart(3, "0") +
+          " Y" + String(Math.round(Math.max(0, ly))).padStart(3, "0");
+      };
+      b.addEventListener("mousemove", e => {
+        const r = b.getBoundingClientRect();
+        lx = e.clientX - r.left; ly = e.clientY - r.top;
+        if (!ticking) { ticking = true; requestAnimationFrame(apply); }
+      }, { passive: true });
+    });
+    FX.coord = true;
+  }
+
+  /* ---------- 入口 ---------- */
+  function boot() {
+    try { initHeroRotator(); } catch (e) {}
+    try { playHeroMock(); } catch (e) {}
+    try { initCrosshair(); } catch (e) {}
+    try { initCoordReadout(); } catch (e) {}
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+})();
+/* ============================================================
+ * v26 · 命令面板（Blueprint Command Palette）
+ * 设计要点：
+ * 1) Ctrl/⌘+K 呼出（面试页保留原行为：聚焦输入框，避免双入口冲突）；
+ * 2) 蓝图语言：直角墨框 + 等宽输入 + 朱红选中条（border-left 点亮），
+ *    无圆角、无阴影、无渐变——与全局视觉宪法一致；
+ * 3) 分组（导航 / 页面 / 动作）+ 子串过滤（label / 关键词 / 分组）；
+ * 4) 键盘：↑↓ 选择 · Enter 执行 · Esc 关闭 · 点击遮罩关闭；
+ * 5) 纯增强：DOM 懒建（首次打开才注入），异常只静默跳过。
+ * ============================================================ */
+(function initCommandPalette() {
+  const reduced = () => {
+    try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
+  };
+
+  /* ---------- 动作清单 ---------- */
+  function jump(hash) {
+    const el = document.querySelector(hash);
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + (window.scrollY || 0) - 72;
+    try { window.scrollTo({ top: y, behavior: reduced() ? "auto" : "smooth" }); }
+    catch (e) { try { window.scrollTo(0, y); } catch (e2) { /* 老浏览器兜底 */ } }
+  }
+  function page(p) {
+    if (typeof showView === "function") showView("app");
+    if (typeof navTo === "function") navTo(p);
+  }
+  const ACTIONS = [
+    { group: "导航", label: "功能矩阵", hint: "§ 01", kw: "features 功能 特性", run: () => jump("#features") },
+    { group: "导航", label: "使用流程", hint: "§ 02", kw: "workflow 流程 四步", run: () => jump("#workflow") },
+    { group: "导航", label: "关键数字", hint: "§ 03", kw: "stats 数据 指标", run: () => jump("#stats") },
+    { group: "导航", label: "更新日志", hint: "CHANGELOG", kw: "changelog 日志 版本", run: () => { try { window.open("changelog.html", "_blank"); } catch (e) {} } },
+    { group: "页面", label: "工作台", hint: "DASHBOARD", kw: "dashboard 首页 工作台", run: () => page("dashboard") },
+    { group: "页面", label: "简历匹配", hint: "MATCH", kw: "match 简历 匹配 jd", run: () => page("match") },
+    { group: "页面", label: "模拟面试", hint: "INTERVIEW", kw: "interview 面试 多agent", run: () => page("interview") },
+    { group: "页面", label: "面经问答", hint: "RAG", kw: "rag 面经 问答 检索", run: () => page("rag") },
+    { group: "页面", label: "简历优化", hint: "RESUME", kw: "resume 简历 优化 改写", run: () => page("resume") },
+    { group: "页面", label: "职业探索", hint: "CAREER", kw: "career 职业 探索 岗位", run: () => page("career") },
+    { group: "页面", label: "评估报告", hint: "REPORT", kw: "report 报告 评分 雷达", run: () => page("report") },
+    { group: "页面", label: "题库小测", hint: "QUIZ", kw: "quiz 题库 小测 刷题", run: () => page("quiz") },
+    { group: "页面", label: "求职管理", hint: "JOBS", kw: "jobs 求职 投递 管理", run: () => page("jobs") },
+    { group: "页面", label: "个人中心", hint: "PROFILE", kw: "profile 个人 中心 头像", run: () => page("profile") },
+    { group: "动作", label: "切换亮 / 暗主题", hint: "THEME", kw: "theme 主题 暗色 亮色", run: () => { if (typeof toggleTheme === "function") toggleTheme(); } },
+    { group: "动作", label: "开发者模式", hint: "EVALUATOR", kw: "dev evaluator 开发者 评委", run: () => { if (typeof openEvaluatorGate === "function") openEvaluatorGate(); } },
+    { group: "动作", label: "回到顶部", hint: "TOP", kw: "top 顶部 返回", run: () => { try { window.scrollTo({ top: 0, behavior: reduced() ? "auto" : "smooth" }); } catch (e) { try { window.scrollTo(0, 0); } catch (e2) {} } } },
+  ];
+
+  const CMD = (window.__bpCmd = { open: false, items: ACTIONS.length, visible: 0, sel: -1 });
+
+  let overlay = null, input = null, list = null, count = null;
+  let current = ACTIONS.slice();
+
+  function ensureDom() {
+    if (overlay) return;
+    overlay = document.createElement("div");
+    overlay.className = "bp-cmd";
+    overlay.id = "bp-cmd";
+    overlay.hidden = true;
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-label", "命令面板");
+    overlay.innerHTML =
+      '<div class="bp-cmd-box">' +
+      '<div class="bp-cmd-head">' +
+      '<span class="bp-cmd-sig" aria-hidden="true">⌘K</span>' +
+      '<input id="bp-cmd-input" type="text" placeholder="输入命令 / 页面 / 动作…" aria-label="命令筛选" autocomplete="off" spellcheck="false">' +
+      '<span class="bp-cmd-kbd" aria-hidden="true">ESC</span>' +
+      "</div>" +
+      '<div class="bp-cmd-list" id="bp-cmd-list" role="listbox" aria-label="命令列表"></div>' +
+      '<div class="bp-cmd-foot"><span>↑↓ 选择</span><span>↵ 执行</span><span>Esc 关闭</span><span class="bp-cmd-count" id="bp-cmd-count"></span></div>' +
+      "</div>";
+    (document.body || document.documentElement).appendChild(overlay);
+    input = overlay.querySelector("#bp-cmd-input");
+    list = overlay.querySelector("#bp-cmd-list");
+    count = overlay.querySelector("#bp-cmd-count");
+    input.addEventListener("input", () => render(input.value));
+    overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+    list.addEventListener("click", e => {
+      const it = e.target.closest ? e.target.closest(".bp-cmd-item") : null;
+      if (!it || !it._act) return;
+      const act = it._act;
+      close();
+      act.run();
+    });
+    list.addEventListener("mousemove", e => {
+      const it = e.target.closest ? e.target.closest(".bp-cmd-item") : null;
+      if (!it) return;
+      const idx = current.indexOf(it._act);
+      if (idx > -1 && idx !== CMD.sel) { CMD.sel = idx; paintSel(); }
+    });
+  }
+
+  function render(q) {
+    const query = (q || "").trim().toLowerCase();
+    current = query
+      ? ACTIONS.filter(a => (a.group + " " + a.label + " " + a.kw).toLowerCase().includes(query))
+      : ACTIONS.slice();
+    CMD.visible = current.length;
+    CMD.sel = current.length ? 0 : -1;
+    if (!current.length) {
+      list.innerHTML = '<div class="bp-cmd-empty">无匹配命令 · 试试「面试」「主题」…</div>';
+      if (count) count.textContent = "0 项";
+      return;
+    }
+    let html = "", lastGroup = "";
+    current.forEach((a, i) => {
+      if (a.group !== lastGroup) {
+        html += '<div class="bp-cmd-group" role="presentation">' + a.group + "</div>";
+        lastGroup = a.group;
+      }
+      html += '<div class="bp-cmd-item" role="option" data-idx="' + i + '" aria-selected="false">' +
+        "<span>" + a.label + "</span>" +
+        '<span class="ci-key">' + a.hint + "</span>" +
+        "</div>";
+    });
+    list.innerHTML = html;
+    [...list.querySelectorAll(".bp-cmd-item")].forEach((el, i) => { el._act = current[i]; });
+    if (count) count.textContent = current.length + " 项";
+    paintSel();
+  }
+
+  function paintSel() {
+    [...list.querySelectorAll(".bp-cmd-item")].forEach((el, i) => {
+      const on = i === CMD.sel;
+      el.setAttribute("aria-selected", on ? "true" : "false");
+      if (on && el.scrollIntoView) { try { el.scrollIntoView({ block: "nearest" }); } catch (e) {} }
+    });
+  }
+
+  function move(d) {
+    if (!current.length) return;
+    CMD.sel = (CMD.sel + d + current.length) % current.length;
+    paintSel();
+  }
+
+  function open() {
+    ensureDom();
+    overlay.hidden = false;
+    input.value = "";
+    render("");
+    CMD.open = true;
+    try { input.focus(); } catch (e) {}
+  }
+  function close() {
+    if (!overlay) return;
+    overlay.hidden = true;
+    CMD.open = false;
+    try { input.blur(); } catch (e) {}
+  }
+  function exec() {
+    const a = current[CMD.sel];
+    if (!a) return;
+    close();
+    a.run();
+  }
+
+  /* ---------- 键盘入口 ---------- */
+  document.addEventListener("keydown", e => {
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && (e.key === "k" || e.key === "K")) {
+      // 面试页：聚焦输入框的原行为由 reveal.js 的处理函数负责，此处让行
+      if (typeof currentPage === "function" && currentPage() === "interview") return;
+      e.preventDefault();
+      if (CMD.open) close(); else open();
+      return;
+    }
+    if (!CMD.open) return;
+    if (e.key === "Escape") { e.preventDefault(); close(); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); move(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }
+    else if (e.key === "Enter") { e.preventDefault(); exec(); }
+  });
+})();
+/* ============================================================
  * 10. 主题色变体（默认朱红 / 牛客绿 / 科技蓝）
  * ============================================================ */
 const ACCENTS = ["default", "green", "blue"];
@@ -9212,7 +9869,7 @@ function exportDiagnostic() {
     const report = {
       exportedAt: new Date().toISOString(),
       project: "面镜 FutureMirror",
-      version: "beta1.0.5",
+      version: "beta1.0.6",
       env,
       state: {
         currentUser: (typeof currentUser !== "undefined" && currentUser) ? { id: currentUser.id, email: currentUser.email, name: currentUser.name } : null,
@@ -9410,7 +10067,7 @@ runSelfCheckPanel = function () {
     }
   } catch (e) {}
   // 记录一次启动日志
-  try { logDev("ok", "页面初始化完成 · 版本 beta1.0.5 · 蓝图编辑风 · 动态层已就绪"); } catch (e) {}
+  try { logDev("ok", "页面初始化完成 · 版本 beta1.0.6 · 蓝图编辑风 · 交互深化层已就绪"); } catch (e) {}
 })();
 
 
