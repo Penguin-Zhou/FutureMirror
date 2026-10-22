@@ -734,6 +734,69 @@
     }
   }
 
+  /* ============================================================
+   * v25 · 动态层（Blueprint Motion Kit）
+   * 原则：动态必须「可感知但不抢戏」——粒子是图纸上的测绘点、
+   * 涟漪是方形墨框、视差是空间深度；全部服从动效宪法。
+   * ============================================================ */
+
+  /* ① 粒子画布：全站 fixed 背景层（pointer-events 零拦截） */
+  .bp-particles {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
+  /* 内容容器抬升：landing / app 永远在粒子之上 */
+  .landing, .app-shell { position: relative; z-index: 1; }
+
+  /* ② 按钮涟漪：方形 currentColor 扩散（直角语言） */
+  .btn { position: relative; overflow: hidden; }
+  .btn::after {
+    content: ""; position: absolute; inset: 0; background: currentColor;
+    opacity: 0; pointer-events: none;
+  }
+  .btn:active::after { animation: btnRipple .5s ease-out; }
+  @keyframes btnRipple {
+    from { opacity: .22; transform: scale(0); }
+    to { opacity: 0; transform: scale(1.6); }
+  }
+
+  /* ③ 消息气泡进入：左侧淡入（X 轴语言，非上浮） */
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: none; }
+  }
+  .msg { animation: msgIn .32s cubic-bezier(.22,1,.36,1) both; }
+
+  /* ④ 雷达扫描线：朱红细线绕心旋转（4s 一圈，opacity .3） */
+  .radar-sweep { transform-origin: 100px 100px; animation: radarSpin 4s linear infinite; }
+  @keyframes radarSpin { to { transform: rotate(360deg); } }
+
+  /* ⑤ 导航下划线扫入：从左展开 2px 朱红 */
+  .landing-nav-links a { position: relative; }
+  .landing-nav-links a::after {
+    content: ""; position: absolute; left: 8px; right: 8px; bottom: 3px; height: 2px;
+    background: var(--brand); transform: scaleX(0); transform-origin: 0 50%;
+    transition: transform .25s cubic-bezier(.22,1,.36,1);
+  }
+  .landing-nav-links a:hover::after,
+  .landing-nav-links a:focus-visible::after { transform: scaleX(1); }
+
+  /* ⑥ 取景角标延展：hover 时 L 括线 13px → 20px（克制的对焦感） */
+  .bp-crop::before, .bp-crop::after { transition: width .25s ease, height .25s ease; }
+  .bp-crop:hover::before, .bp-crop:hover::after { width: 20px; height: 20px; }
+
+  /* ⑦ 文档顶规点亮：page-card hover 时 2px 墨色顶规变朱红 */
+  .page-card { transition: border-top-color .25s ease; }
+  .page-card:hover { border-top-color: var(--brand); }
+
+  /* ⑧ Hero 视差元素：transform 由 JS 写入，CSS 只声明过渡兜底（mouseout 回弹） */
+  .hero-spec, .hero-mock { transition: transform .45s cubic-bezier(.22,1,.36,1); }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-spec, .hero-mock { transition: none; }
+    .radar-sweep { animation: none; }
+    .landing-nav-links a::after { transition: none; }
+  }
+
   /* ============ 打印：纸面文档 ============ */
   @media print {
     body { background: #fff; background-image: none; }

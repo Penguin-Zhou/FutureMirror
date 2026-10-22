@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.0.4 演示版）</title>
+<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.0.5 演示版）</title>
 <meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台（在线演示版）">
 <script>
 /* 主题预置：先于 body 渲染，避免首屏闪白/闪主题（g_theme/g_accent 为全局共享 key，不随用户隔离） */
@@ -2524,6 +2524,69 @@ try {
     }
   }
 
+  /* ============================================================
+   * v25 · 动态层（Blueprint Motion Kit）
+   * 原则：动态必须「可感知但不抢戏」——粒子是图纸上的测绘点、
+   * 涟漪是方形墨框、视差是空间深度；全部服从动效宪法。
+   * ============================================================ */
+
+  /* ① 粒子画布：全站 fixed 背景层（pointer-events 零拦截） */
+  .bp-particles {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
+  /* 内容容器抬升：landing / app 永远在粒子之上 */
+  .landing, .app-shell { position: relative; z-index: 1; }
+
+  /* ② 按钮涟漪：方形 currentColor 扩散（直角语言） */
+  .btn { position: relative; overflow: hidden; }
+  .btn::after {
+    content: ""; position: absolute; inset: 0; background: currentColor;
+    opacity: 0; pointer-events: none;
+  }
+  .btn:active::after { animation: btnRipple .5s ease-out; }
+  @keyframes btnRipple {
+    from { opacity: .22; transform: scale(0); }
+    to { opacity: 0; transform: scale(1.6); }
+  }
+
+  /* ③ 消息气泡进入：左侧淡入（X 轴语言，非上浮） */
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: none; }
+  }
+  .msg { animation: msgIn .32s cubic-bezier(.22,1,.36,1) both; }
+
+  /* ④ 雷达扫描线：朱红细线绕心旋转（4s 一圈，opacity .3） */
+  .radar-sweep { transform-origin: 100px 100px; animation: radarSpin 4s linear infinite; }
+  @keyframes radarSpin { to { transform: rotate(360deg); } }
+
+  /* ⑤ 导航下划线扫入：从左展开 2px 朱红 */
+  .landing-nav-links a { position: relative; }
+  .landing-nav-links a::after {
+    content: ""; position: absolute; left: 8px; right: 8px; bottom: 3px; height: 2px;
+    background: var(--brand); transform: scaleX(0); transform-origin: 0 50%;
+    transition: transform .25s cubic-bezier(.22,1,.36,1);
+  }
+  .landing-nav-links a:hover::after,
+  .landing-nav-links a:focus-visible::after { transform: scaleX(1); }
+
+  /* ⑥ 取景角标延展：hover 时 L 括线 13px → 20px（克制的对焦感） */
+  .bp-crop::before, .bp-crop::after { transition: width .25s ease, height .25s ease; }
+  .bp-crop:hover::before, .bp-crop:hover::after { width: 20px; height: 20px; }
+
+  /* ⑦ 文档顶规点亮：page-card hover 时 2px 墨色顶规变朱红 */
+  .page-card { transition: border-top-color .25s ease; }
+  .page-card:hover { border-top-color: var(--brand); }
+
+  /* ⑧ Hero 视差元素：transform 由 JS 写入，CSS 只声明过渡兜底（mouseout 回弹） */
+  .hero-spec, .hero-mock { transition: transform .45s cubic-bezier(.22,1,.36,1); }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-spec, .hero-mock { transition: none; }
+    .radar-sweep { animation: none; }
+    .landing-nav-links a::after { transition: none; }
+  }
+
   /* ============ 打印：纸面文档 ============ */
   @media print {
     body { background: #fff; background-image: none; }
@@ -3254,7 +3317,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <a href="changelog.html">更新日志</a>
       </div>
       <div class="landing-nav-meta">
-        <span class="bp-ver">BETA 1.0.4</span>
+        <span class="bp-ver">BETA 1.0.5</span>
         <button class="btn btn-ghost btn-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式">🌙</button>
         <button class="btn btn-ghost btn-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）">🟣</button>
         <button class="btn btn-outline btn-sm" onclick="showView('app')">免费体验</button>
@@ -3268,7 +3331,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     <div class="wrap">
       <div class="hero-grid">
         <div class="hero-main">
-          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.0.4</span>
+          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.0.5</span>
           <div class="eyebrow"><span class="eyebrow-no">VOL.1</span>AI NATIVE · 多 AGENT 模拟面试平台</div>
           <h1 class="hero-title">
             让每一次面试，<br>
@@ -3285,7 +3348,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>924</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>967</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>37</b> 页技术文档</span>
           </div>
         </div>
@@ -3296,7 +3359,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>服务端五维引擎</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>924 + 17</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>967 + 17</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -3322,6 +3385,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
               <polygon points="100,30 165,65 165,135 100,170 35,135 35,65" fill="none" stroke="var(--line)"/>
               <polygon points="100,60 145,82 145,118 100,140 55,118 55,82" fill="none" stroke="var(--line)"/>
               <polygon points="100,50 155,78 145,128 100,155 45,120 60,80" fill="color-mix(in srgb,var(--brand) 30%,transparent)" stroke="var(--brand)" stroke-width="2"/>
+              <g class="radar-sweep"><line x1="100" y1="100" x2="100" y2="30" stroke="var(--brand)" stroke-width="1.5" opacity="0.3"/></g>
               <text x="100" y="20" text-anchor="middle" font-size="10" fill="var(--muted)">内容</text>
               <text x="180" y="65" text-anchor="end" font-size="10" fill="var(--muted)">结构</text>
               <text x="180" y="145" text-anchor="end" font-size="10" fill="var(--muted)">表达</text>
@@ -3341,7 +3405,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">924 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">967 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -3351,7 +3415,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">924 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">967 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -3500,7 +3564,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   </section>
 
   <footer class="site-foot">
-    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.4<br>
+    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.5<br>
     <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
   </footer>
 
@@ -3652,7 +3716,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 <!-- ===== 演示版声明横幅（可关闭） ===== -->
 <div class="banner" id="demo-banner" role="note">
   <div class="wrap">
-    <b>本页 = 在线演示版首页 · Beta 1.0.4</b>
+    <b>本页 = 在线演示版首页 · Beta 1.0.5</b>
     <span>（已接通真实后端：LLM 流式对话 / JWT 登录 / 服务端评分均在线可验；无后端或断网时自动降级本地 Mock，流程不中断）</span>
     <button class="btn btn-primary btn-sm" onclick="openMaterial('full')" style="margin-left:auto">前往完整项目 →</button>
     <button class="btn btn-ghost btn-sm" onclick="dismissBanner()" aria-label="关闭横幅">✕</button>
@@ -3703,7 +3767,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       </a>
 
       <div class="sb-footer">
-        面镜 FutureMirror · beta1.0.4<br>
+        面镜 FutureMirror · beta1.0.5<br>
         <a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">代码仓库</a> ·
         <a href="docs/technical-doc.html">技术文档</a> ·
         <a href="changelog.html">更新日志</a> ·
@@ -3910,7 +3974,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 
   <footer>
     <div style="padding:0">
-      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.4<br>
+      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.5<br>
       <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
     </div>
   </footer>
@@ -4813,7 +4877,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     </section>
 
     <footer class="site-foot">
-      面镜 FutureMirror · 开发者模式 · Beta 1.0.4 · 仅对评委与开发者开放<br>
+      面镜 FutureMirror · 开发者模式 · Beta 1.0.5 · 仅对评委与开发者开放<br>
       <span>AI辅助开发说明：AI仅辅助样式、工具函数与文案，多Agent、评分引擎、业务架构、测试体系由团队独立设计实现，演示数据为合成示例。</span><br>
       解锁凭据保存在 sessionStorage，关闭标签页自动失效
     </footer>
@@ -7444,6 +7508,221 @@ function revealScan() {
 })();
 
 /* ============================================================
+ * v25 · 蓝图粒子层（Canvas 粒子场 + Hero 视差 + 点击涟漪）
+ * 设计要点（Blueprint Editorial 语言，杜绝 AI 模板星空）：
+ * 1) 方形墨点 + 发丝线连线 + 稀疏朱红标记点——工程图纸「测绘点」气质；
+ *    严禁圆形光点 / 发光 blur / 彩色渐变，密度刻意压低（≤90 点）；
+ * 2) 全站 fixed 背景层（z-index 0 · pointer-events none），
+ *    .landing / .app-shell 抬升 z-index 1，内容永不被粒子遮挡；
+ * 3) 交互：光标 110px 半径内粒子受轻微斥力（推开而非吸附），
+ *    窗口点击产生朱红方形涟漪（仅落地页视图激活，避免应用内误触）；
+ * 4) Hero 视差：鼠标移动时规格面板与预览窗反向微移（±7px），
+ *    空间深度感而非「上浮」——与零上浮设计语言不冲突；
+ * 5) 性能护栏：DPR 适配（上限 2x）、面积封顶、document.hidden 暂停、
+ *    连线仅阈值内计算（n≤90 时 O(n²) 可接受）、主题切换重读色板；
+ * 6) 降级链：无 canvas → 无 2d context → reduced-motion → 静态渲染一帧停笔。
+ * ============================================================ */
+(function initBlueprintFx() {
+  const FX = (window.__bpFx = { running: false, staticOnly: false, particles: 0 });
+  const reduced = () => {
+    try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
+  };
+
+  /* ---------- 色板：跟随 data-theme 重读 ---------- */
+  let palette = { dot: "#1C1913", mark: "#BE3A1E", line: "28,25,19", theme: "" };
+  function readPalette() {
+    const cs = getComputedStyle(document.documentElement);
+    const t = document.documentElement.dataset.theme || "light";
+    if (t === palette.theme) return palette;
+    palette = {
+      theme: t,
+      dot: (cs.getPropertyValue("--ink") || "#1C1913").trim(),
+      mark: (cs.getPropertyValue("--brand") || "#BE3A1E").trim(),
+      line: t === "dark" ? "238,232,216" : "28,25,19",
+    };
+    return palette;
+  }
+
+  /* ---------- 粒子场 ---------- */
+  function startParticles() {
+    const canvas = document.createElement("canvas");
+    canvas.className = "bp-particles";
+    canvas.setAttribute("aria-hidden", "true");
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext && canvas.getContext("2d");
+    if (!ctx) { canvas.remove(); return; }               // 无 2d 上下文：整体降级
+
+    const P = readPalette();
+    let W = 0, H = 0, dpr = 1, raf = 0, frame = 0;
+    const mouse = { x: -9999, y: -9999, active: false };
+    const ripples = [];
+    const N = () => Math.min(90, Math.max(30, Math.round((innerWidth * innerHeight) / 22000)));
+    let dots = [];
+
+    function seed() {
+      const n = N();
+      dots = [];
+      for (let i = 0; i < n; i++) {
+        dots.push({
+          x: Math.random() * W, y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
+          s: Math.random() < 0.14 ? 3 : 2,                 // 稀疏大点（朱红标记）
+          mark: Math.random() < 0.12,                      // ≈1/8 朱红测绘标记
+        });
+      }
+      FX.particles = dots.length;
+    }
+    function resize() {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = innerWidth; H = innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      canvas.style.width = W + "px";
+      canvas.style.height = H + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      seed();
+    }
+    function drawOnce() {
+      ctx.clearRect(0, 0, W, H);
+      const P2 = readPalette();
+      ctx.lineWidth = 1;
+      for (let i = 0; i < dots.length; i++) {
+        const a = dots[i];
+        for (let j = i + 1; j < dots.length; j++) {
+          const b = dots[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < 16900) {                              // 130px 阈值内连线
+            const o = (1 - Math.sqrt(d2) / 130) * 0.1;
+            ctx.strokeStyle = "rgba(" + P2.line + "," + o.toFixed(3) + ")";
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+      for (const a of dots) {
+        ctx.fillStyle = a.mark ? P2.mark : P2.dot;
+        ctx.globalAlpha = a.mark ? 0.5 : 0.14;
+        ctx.fillRect(a.x - a.s / 2, a.y - a.s / 2, a.s, a.s);   // 方点（直角语言）
+      }
+      ctx.globalAlpha = 1;
+    }
+    function step() {
+      frame++;
+      if (frame % 45 === 0) readPalette();                // 周期校准主题色
+      const P2 = readPalette();
+      for (const a of dots) {
+        a.x += a.vx; a.y += a.vy;
+        if (a.x < 0 || a.x > W) a.vx *= -1;
+        if (a.y < 0 || a.y > H) a.vy *= -1;
+        if (mouse.active) {                               // 光标斥力（图纸上「吹散」）
+          const dx = a.x - mouse.x, dy = a.y - mouse.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < 12100 && d2 > 1) {
+            const d = Math.sqrt(d2), f = (1 - d / 110) * 0.6;
+            a.x += (dx / d) * f; a.y += (dy / d) * f;
+          }
+        }
+      }
+      ctx.clearRect(0, 0, W, H);
+      ctx.lineWidth = 1;
+      for (let i = 0; i < dots.length; i++) {
+        const a = dots[i];
+        for (let j = i + 1; j < dots.length; j++) {
+          const b = dots[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < 16900) {
+            const o = (1 - Math.sqrt(d2) / 130) * 0.1;
+            ctx.strokeStyle = "rgba(" + P2.line + "," + o.toFixed(3) + ")";
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+      for (const a of dots) {
+        ctx.fillStyle = a.mark ? P2.mark : P2.dot;
+        ctx.globalAlpha = a.mark ? 0.5 : 0.14;
+        ctx.fillRect(a.x - a.s / 2, a.y - a.s / 2, a.s, a.s);
+      }
+      ctx.globalAlpha = 1;
+      for (let i = ripples.length - 1; i >= 0; i--) {     // 方形涟漪
+        const r = ripples[i];
+        r.t += 16;
+        const k = r.t / 620;
+        if (k >= 1) { ripples.splice(i, 1); continue; }
+        ctx.strokeStyle = P2.mark;
+        ctx.globalAlpha = (1 - k) * 0.55;
+        ctx.lineWidth = 2;
+        const sz = 14 + k * 54;
+        ctx.strokeRect(r.x - sz / 2, r.y - sz / 2, sz, sz);
+        ctx.globalAlpha = 1;
+      }
+      if (FX.running) raf = requestAnimationFrame(step);
+    }
+
+    resize();
+    addEventListener("resize", resize, { passive: true });
+    addEventListener("mousemove", e => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true; }, { passive: true });
+    addEventListener("mouseout", () => { mouse.active = false; }, { passive: true });
+    addEventListener("click", e => {                     // 仅落地页视图激活涟漪
+      try {
+        if (!document.querySelector("#view-landing.active")) return;
+        if (e.target.closest && e.target.closest("button, a, input, textarea, select")) return;
+      } catch (err) { /* closest 不可用时放行 */ }
+      ripples.push({ x: e.clientX, y: e.clientY, t: 0 });
+      if (ripples.length > 6) ripples.shift();
+    }, { passive: true });
+
+    if (reduced()) { FX.staticOnly = true; drawOnce(); return; }   // 动效宪法：静态一帧
+    FX.running = true;
+    raf = requestAnimationFrame(step);
+
+    document.addEventListener("visibilitychange", () => {
+      if (FX.staticOnly) return;
+      if (document.hidden) {
+        if (raf) cancelAnimationFrame(raf); raf = 0; FX.running = false;
+      } else if (!FX.running) {
+        FX.running = true; raf = requestAnimationFrame(step);
+      }
+    });
+  }
+
+  /* ---------- Hero 视差（规格面板 / 预览窗反向微移） ---------- */
+  function startParallax() {
+    const spec = document.querySelector(".hero-spec");
+    const mock = document.querySelector(".hero-mock");
+    if (!spec && !mock) return;
+    let ticking = false;
+    const apply = e => {
+      ticking = false;
+      if (reduced()) return;
+      const cx = innerWidth / 2, cy = innerHeight / 2;
+      const dx = (e.clientX - cx) / cx, dy = (e.clientY - cy) / cy;
+      if (spec) spec.style.transform = "translate3d(" + (dx * 7).toFixed(2) + "px," + (dy * 5).toFixed(2) + "px,0)";
+      if (mock) mock.style.transform = "translate3d(" + (-dx * 5).toFixed(2) + "px," + (-dy * 4).toFixed(2) + "px,0)";
+    };
+    addEventListener("mousemove", e => {
+      if (!ticking) { ticking = true; requestAnimationFrame(() => apply(e)); }
+    }, { passive: true });
+    addEventListener("mouseout", () => {
+      if (spec) spec.style.transform = "";
+      if (mock) mock.style.transform = "";
+    }, { passive: true });
+  }
+
+  /* ---------- 入口（bootstrap 之后由 init 链调用；此处自执行兜底） ---------- */
+  function boot() {
+    try {
+      startParticles();
+      startParallax();
+    } catch (e) { /* 粒子层为纯增强，任何异常不影响主流程 */ }
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+})();
+/* ============================================================
  * 10. 主题色变体（默认朱红 / 牛客绿 / 科技蓝）
  * ============================================================ */
 const ACCENTS = ["default", "green", "blue"];
@@ -8933,7 +9212,7 @@ function exportDiagnostic() {
     const report = {
       exportedAt: new Date().toISOString(),
       project: "面镜 FutureMirror",
-      version: "beta1.0.4",
+      version: "beta1.0.5",
       env,
       state: {
         currentUser: (typeof currentUser !== "undefined" && currentUser) ? { id: currentUser.id, email: currentUser.email, name: currentUser.name } : null,
@@ -9131,7 +9410,7 @@ runSelfCheckPanel = function () {
     }
   } catch (e) {}
   // 记录一次启动日志
-  try { logDev("ok", "页面初始化完成 · 版本 beta1.0.4 · 蓝图编辑风 · 体验层增强已就绪"); } catch (e) {}
+  try { logDev("ok", "页面初始化完成 · 版本 beta1.0.5 · 蓝图编辑风 · 动态层已就绪"); } catch (e) {}
 })();
 
 
