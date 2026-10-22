@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.0.7 演示版）</title>
+<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.0.8 演示版）</title>
 <meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台（在线演示版）">
 <script>
 /* 主题预置：先于 body 渲染，避免首屏闪白/闪主题（g_theme/g_accent 为全局共享 key，不随用户隔离） */
@@ -2602,6 +2602,10 @@ try {
     .badge.speaking { animation: none; }
     .sec-draw { transition: none; }
     .dim-bar > div { transition: none; }
+    /* v28 */
+    .radar-pop { animation: none; stroke-dashoffset: 0; }
+    .bp-field-line { transition: none; }
+    .dim-tip { transition: none; }
   }
 
   /* ============================================================
@@ -2831,6 +2835,55 @@ try {
 
   /* ⑧ 报告维度条生长（JS 0% → 目标宽度，transition 兜底 .8s） */
   .dim-bar > div { transition: width .8s ease; }
+
+  /* ============================================================
+   * v28 · 深度交互层（Blueprint Deep Interaction）
+   * 原则：可操作但要「安静」——雷达是图纸自绘、批注是边栏便签、
+   * 焦点线是规尺感应；全部直角 + 发丝线 + 朱红 ≤5%。
+   * ============================================================ */
+
+  /* ① 报告雷达图自绘动画：stroke-dashoffset 由周长→0 一次性绘出（clip 不浮） */
+  .radar-pop {
+    stroke-dasharray: 1400; stroke-dashoffset: 1400;
+    animation: radarDraw 1s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes radarDraw { to { stroke-dashoffset: 0; } }
+  .radar-dot { transition: r .2s ease, fill .2s ease; }
+  .radar-dot.lit { fill: var(--brand-deep); r: 5; }
+  .dim-row.lit { background: var(--brand-bg); }
+
+  /* ② 维度悬浮提示（等宽测绘 chip，hover 显形） */
+  .dim-row { position: relative; }
+  .dim-tip {
+    position: absolute; right: 10px; top: 8px; max-width: 62%;
+    font-family: var(--mono); font-size: 10.5px; line-height: 1.5; color: var(--brand);
+    border: 1px solid var(--brand); background: var(--card); padding: 6px 8px;
+    opacity: 0; visibility: hidden; transition: opacity .15s ease; pointer-events: none; z-index: 3;
+  }
+  .dim-row:hover .dim-tip { opacity: 1; visibility: visible; }
+
+  /* ③ 登录表单焦点发丝线（聚焦时自左画出，规尺感应） */
+  .auth-field { position: relative; }
+  .bp-field-line {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--brand);
+    transform: scaleX(0); transform-origin: 0 50%; transition: transform .3s cubic-bezier(.22,1,.36,1);
+  }
+  .auth-field input:focus ~ .bp-field-line,
+  .auth-field textarea:focus ~ .bp-field-line { transform: scaleX(1); }
+
+  /* ④ 面试实时批注（边栏便签式，落到 session.turns[i].notes） */
+  .msg.msg-ai { position: relative; }
+  .msg-annot-btn {
+    position: absolute; top: 4px; right: 6px; font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: .08em; color: var(--faint); background: var(--card); border: 1px solid var(--line-2);
+    padding: 1px 6px; cursor: pointer;
+  }
+  .msg-annot-btn:hover { color: var(--brand); border-color: var(--brand); }
+  .msg-annot-btn.has-note { color: var(--brand); border-color: var(--brand); }
+  .msg-annot {
+    width: 100%; margin-top: 6px; font-family: var(--mono); font-size: 12px; color: var(--ink);
+    background: var(--brand-bg); border: 1px solid var(--brand); padding: 6px 8px; resize: vertical; min-height: 38px;
+  }
 
   /* ============ 打印：纸面文档 ============ */
   @media print {
@@ -3562,7 +3615,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <a href="changelog.html">更新日志</a>
       </div>
       <div class="landing-nav-meta">
-        <span class="bp-ver">BETA 1.0.7</span>
+        <span class="bp-ver">BETA 1.0.8</span>
         <button class="btn btn-ghost btn-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式">🌙</button>
         <button class="btn btn-ghost btn-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）">🟣</button>
         <button class="btn btn-outline btn-sm" onclick="showView('app')">免费体验</button>
@@ -3576,7 +3629,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     <div class="wrap">
       <div class="hero-grid">
         <div class="hero-main">
-          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.0.7</span>
+          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.0.8</span>
           <div class="hero-rotator" aria-live="polite"><span class="hr-prefix">&gt;_</span><span class="hr-text" id="hr-text"></span><i class="hr-caret" aria-hidden="true"></i></div>
           <div class="eyebrow"><span class="eyebrow-no">VOL.1</span>AI NATIVE · 多 AGENT 模拟面试平台</div>
           <h1 class="hero-title">
@@ -3811,7 +3864,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   </section>
 
   <footer class="site-foot">
-    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.7<br>
+    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.8<br>
     <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
   </footer>
 
@@ -3963,7 +4016,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 <!-- ===== 演示版声明横幅（可关闭） ===== -->
 <div class="banner" id="demo-banner" role="note">
   <div class="wrap">
-    <b>本页 = 在线演示版首页 · Beta 1.0.7</b>
+    <b>本页 = 在线演示版首页 · Beta 1.0.8</b>
     <span>（已接通真实后端：LLM 流式对话 / JWT 登录 / 服务端评分均在线可验；无后端或断网时自动降级本地 Mock，流程不中断）</span>
     <button class="btn btn-primary btn-sm" onclick="openMaterial('full')" style="margin-left:auto">前往完整项目 →</button>
     <button class="btn btn-ghost btn-sm" onclick="dismissBanner()" aria-label="关闭横幅">✕</button>
@@ -4014,7 +4067,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       </a>
 
       <div class="sb-footer">
-        面镜 FutureMirror · beta1.0.7<br>
+        面镜 FutureMirror · beta1.0.8<br>
         <a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">代码仓库</a> ·
         <a href="docs/technical-doc.html">技术文档</a> ·
         <a href="changelog.html">更新日志</a> ·
@@ -4221,7 +4274,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 
   <footer>
     <div style="padding:0">
-      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.7<br>
+      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.8<br>
       <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
     </div>
   </footer>
@@ -5124,7 +5177,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     </section>
 
     <footer class="site-foot">
-      面镜 FutureMirror · 开发者模式 · Beta 1.0.7 · 仅对评委与开发者开放<br>
+      面镜 FutureMirror · 开发者模式 · Beta 1.0.8 · 仅对评委与开发者开放<br>
       <span>AI辅助开发说明：AI仅辅助样式、工具函数与文案，多Agent、评分引擎、业务架构、测试体系由团队独立设计实现，演示数据为合成示例。</span><br>
       解锁凭据保存在 sessionStorage，关闭标签页自动失效
     </footer>
@@ -6272,6 +6325,7 @@ function sendMsgMock(text, speaker, keyword, notes) {
     const question = pickQuestion(mode, turn, keyword, speaker);
     const bubble = document.createElement("div");
     bubble.className = "msg msg-ai";
+    bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
     body.appendChild(bubble);
     body.scrollTop = body.scrollHeight;
     let i = 0;
@@ -6308,6 +6362,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   showTyping("模型生成中");     // v24：首字到达前的等待反馈
   const bubble = document.createElement("div");
   bubble.className = "msg msg-ai";
+  bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
   bubble.innerHTML = '<span class="caret"></span>';
   body.appendChild(bubble);
   body.scrollTop = body.scrollHeight;
@@ -7233,7 +7288,7 @@ function radarSVG(data) {
   });
   data.forEach((_, i) => { const [x, y] = pt(i, R); axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--line)"/>`; });
   const vpts = data.map((d, i) => pt(i, R * d.score / 100).join(",")).join(" ");
-  const dots = data.map((d, i) => { const [x, y] = pt(i, R * d.score / 100); return `<circle cx="${x}" cy="${y}" r="3.5" fill="var(--brand)"/>`; }).join("");
+  const dots = data.map((d, i) => { const [x, y] = pt(i, R * d.score / 100); return `<circle id="radar-dot-${i}" class="radar-dot" cx="${x}" cy="${y}" r="3.5" fill="var(--brand)"/>`; }).join("");
   const labels = data.map((d, i) => {
     const [x, y] = pt(i, R + 24);
     return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="12.5" fill="var(--muted)">${d.dimension}</text>
@@ -7241,7 +7296,7 @@ function radarSVG(data) {
   }).join("");
   return `<svg viewBox="0 0 330 330" style="width:100%;max-width:340px" role="img" aria-label="能力雷达图">
     ${rings}${axes}
-    <polygon class="radar-pop" points="${vpts}" fill="rgba(99,102,241,.3)" stroke="var(--brand)" stroke-width="2"/>
+    <polygon class="radar-pop" points="${vpts}" fill="var(--brand-bg)" stroke="var(--brand)" stroke-width="2"/>
     ${dots}${labels}
   </svg>`;
 }
@@ -7342,11 +7397,12 @@ async function renderReport(force) {
     <div class="notice-info">ⓘ ${serverScored ? "本报告由<b>服务端评分引擎</b>生成（评分规则与前端演示版一致，问答记录已写入 SQLite，可跨设备恢复）" : "本报告由<b>无 API Key 时的兜底规则引擎</b>生成，用于演示「可解释评分」的结构与证据链（每条证据引用真实回答、学习路径按最弱维度动态生成）"}。完整版使用 LLM 评分（Zod 约束输出）+ 校准样本集量化一致性，详见技术文档。</div>
     <div class="report-grid" style="margin-top:16px">
       <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims)}</div></div>
-      <div><div class="pane-title">维度得分</div><div id="dims">${dims.map(d => `
-        <div class="dim-row${d === weakest ? " lowest" : ""}">
+      <div><div class="pane-title">维度得分</div><div id="dims">${dims.map((d, i) => `
+        <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}">
           <div class="dim-head"><b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b><span style="color:var(--muted)">${d.score}</span></div>
           <div class="dim-bar"><div style="width:${d.score}%"></div></div>
           <div class="dim-comment">${d.comment}</div>
+          <div class="dim-tip" role="tooltip">${d.dimension} · ${d.score}<br>${d.comment}</div>
         </div>`).join("")}</div></div>
     </div>
     <div class="pane-title" style="margin-top:18px">评分证据（引用你的真实回答）</div>
@@ -8269,7 +8325,66 @@ function revealScan() {
     { group: "动作", label: "回到顶部", hint: "TOP", kw: "top 顶部 返回", run: () => { try { window.scrollTo({ top: 0, behavior: reduced() ? "auto" : "smooth" }); } catch (e) { try { window.scrollTo(0, 0); } catch (e2) {} } } },
   ];
 
-  const CMD = (window.__bpCmd = { open: false, items: ACTIONS.length, visible: 0, sel: -1 });
+  const CMD = (window.__bpCmd = { open: false, items: ACTIONS.length, visible: 0, sel: -1, recent: [] });
+
+  /* v28 · 命令面板 Pro：页面 id 映射 + 最近访问 + 子序列评分 + 面试上下文指令 */
+  const PAGE_OF = {
+    "工作台": "dashboard", "简历匹配": "match", "模拟面试": "interview", "面经问答": "rag",
+    "简历优化": "resume", "职业探索": "career", "评估报告": "report", "题库小测": "quiz",
+    "求职管理": "jobs", "个人中心": "profile",
+  };
+  ACTIONS.forEach(a => { if (PAGE_OF[a.label]) a.page = PAGE_OF[a.label]; });
+
+  const RECENT_KEY = "fm_recent_pages";
+  function loadRecent() { try { return JSON.parse(sessionStorage.getItem(RECENT_KEY) || "[]"); } catch (e) { return []; } }
+  function saveRecent(arr) { try { sessionStorage.setItem(RECENT_KEY, JSON.stringify(arr.slice(0, 5))); } catch (e) {} }
+  function recordRecent(page) {
+    if (!page) return;
+    const cur = loadRecent().filter(p => p !== page);
+    cur.unshift(page);
+    saveRecent(cur);
+    CMD.recent = cur.slice(0, 5);
+  }
+  /* 包装 navTo 以记录最近访问（行为完全不变，仅旁路记录） */
+  try {
+    const _navTo = window.navTo;
+    if (typeof _navTo === "function" && !_navTo.__wrapped) {
+      window.navTo = function (p) { try { recordRecent(p); } catch (e) {} return _navTo.apply(this, arguments); };
+      window.navTo.__wrapped = true;
+    }
+  } catch (e) {}
+  CMD.recent = loadRecent().slice(0, 5);
+
+  /* 子序列评分：标签前缀 > 子串 > 子序列（按字符顺序出现） */
+  function scoreAction(a, q) {
+    const f = (a.label + " " + a.group + " " + a.kw).toLowerCase();
+    if (f.includes(q)) {
+      if (a.label.toLowerCase().startsWith(q)) return 100;
+      if (a.label.toLowerCase().includes(q)) return 60;
+      return 40;
+    }
+    let qi = 0;
+    for (let i = 0; i < f.length && qi < q.length; i++) if (f[i] === q[qi]) qi++;
+    return qi === q.length ? 10 : 0;
+  }
+  /* 面试页上下文指令（动态注入，仅在该页出现） */
+  function dynamicActions() {
+    if (typeof currentPage !== "function" || currentPage() !== "interview") return [];
+    return [
+      { group: "面试", label: "清空对话记录", hint: "RESET", kw: "清空 重置 重来 对话 面试", run: () => { if (typeof restartInterview === "function") restartInterview(); } },
+      { group: "面试", label: "切换面试模式", hint: "MODE", kw: "模式 综合 技术 压力 切换", run: () => { try { cycleMode(); } catch (e) {} } },
+      { group: "面试", label: "查看能力评分", hint: "REPORT", kw: "评分 报告 能力 查看", run: () => { if (typeof showView === "function") showView("app"); if (typeof navTo === "function") navTo("report"); } },
+    ];
+  }
+  function cycleMode() {
+    const order = ["general", "tech", "pressure"];
+    const cur = (typeof session !== "undefined" && session && session.mode) || "general";
+    const next = order[(order.indexOf(cur) + 1) % order.length];
+    if (typeof setMode === "function") setMode(next);
+  }
+  /* 测试钩子：暴露动态指令与评分函数，供 v28 jsdom 测试断言（不影响生产行为） */
+  CMD._dyn = dynamicActions;
+  CMD._score = scoreAction;
 
   let overlay = null, input = null, list = null, count = null;
   let current = ACTIONS.slice();
@@ -8316,9 +8431,21 @@ function revealScan() {
 
   function render(q) {
     const query = (q || "").trim().toLowerCase();
-    current = query
-      ? ACTIONS.filter(a => (a.group + " " + a.label + " " + a.kw).toLowerCase().includes(query))
-      : ACTIONS.slice();
+    const dyn = dynamicActions();
+    if (!query) {
+      const recent = loadRecent().slice(0, 5);
+      CMD.recent = recent;
+      const recentItems = recent.map(p => {
+        const src = ACTIONS.find(a => a.page === p);
+        const label = src ? src.label : p;
+        return { group: "最近", label, hint: "↺", kw: p,
+          run: () => { if (typeof showView === "function") showView("app"); if (typeof navTo === "function") navTo(p); } };
+      });
+      current = [...recentItems, ...dyn, ...ACTIONS.slice()];
+    } else {
+      current = [...dyn, ...ACTIONS].map(a => ({ a, s: scoreAction(a, query) }))
+        .filter(x => x.s > 0).sort((x, y) => y.s - x.s).map(x => x.a);
+    }
     CMD.visible = current.length;
     CMD.sel = current.length ? 0 : -1;
     if (!current.length) {
@@ -8417,6 +8544,7 @@ function revealScan() {
   const FX = (window.__bpApp = {
     choreograph: null, countUpScan: null, reportIn: null,
     cross: false, coord: false, draw: false, speaking: false,
+    reportViz: false, formFx: false, annotate: false,
   });
 
   /* ---------- ① 视图/页面切换编舞 ---------- */
@@ -8465,6 +8593,7 @@ function revealScan() {
           el.style.setProperty("--bp-i", String(i));
           el.classList.add("bp-in");
         });
+        try { initFormFx(); } catch (e) {}
       } else if (view === "evaluator") {
         const hero = document.querySelector(".evaluator-hero");
         if (hero) {
@@ -8577,6 +8706,7 @@ function revealScan() {
   /* 报告入场：总分滚动 + 维度条自 0 生长（CSS transition 兜底 .8s） */
   function reportIn() {
     try { countUpScan($("report-content")); } catch (e) { /* 纯增强 */ }
+    try { wireReportViz(); } catch (e) { /* 纯增强 */ }
     if (reduced()) return;
     try {
       [...document.querySelectorAll("#dims .dim-bar > div")].forEach((bar, i) => {
@@ -8705,6 +8835,95 @@ function revealScan() {
     }
   }
 
+  /* ---------- ⑨ v28 深度交互层：报告可视化联动 / 表单焦点 / 面试批注 ---------- */
+  /* 报告可视化：维度行 ↔ 雷达顶点联动高亮（hover 维度行点亮对应雷达顶点） */
+  function wireReportViz() {
+    const radar = $("radar");
+    if (!radar) return;
+    [...document.querySelectorAll("#dims .dim-row[data-dim]")].forEach(row => {
+      const i = row.getAttribute("data-dim");
+      const dot = radar.querySelector("#radar-dot-" + i);
+      if (!dot) return;
+      row.addEventListener("mouseenter", () => { row.classList.add("lit"); dot.classList.add("lit"); });
+      row.addEventListener("mouseleave", () => { row.classList.remove("lit"); dot.classList.remove("lit"); });
+    });
+    FX.reportViz = true;
+  }
+
+  /* 表单焦点微交互：登录框输入聚焦时发丝线自左画出（蓝图规尺感应） */
+  function initFormFx() {
+    try {
+      document.querySelectorAll(".auth-field").forEach(f => {
+        const inp = f.querySelector("input, textarea");
+        if (!inp || f.querySelector(".bp-field-line")) return;
+        const line = document.createElement("i");
+        line.className = "bp-field-line";
+        line.setAttribute("aria-hidden", "true");
+        inp.insertAdjacentElement("afterend", line);
+      });
+      FX.formFx = true;
+    } catch (e) { /* 纯增强 */ }
+  }
+
+  /* 面试实时批注：每条面试官提问可附批注，落到 session.turns[i].notes，
+   * 自动进入报告「评分证据」与学习路径证据链（零新增存储结构）。
+   * 零侵入：MutationObserver 装饰新增 .msg-ai，data-turn 由 interview.js 写入。 */
+  function initAnnotation() {
+    const body = $("chat-body");
+    if (!body) return;
+    const idxOf = bubble => {
+      const t = bubble.dataset.turn;
+      if (t != null && t !== "") return parseInt(t, 10);
+      return [...body.querySelectorAll(".msg-ai")].indexOf(bubble);
+    };
+    const buildBox = (bubble, idx) => {
+      const box = document.createElement("textarea");
+      box.className = "msg-annot";
+      box.placeholder = "为这条提问写批注（自动进入报告证据链）…";
+      box.value = (typeof session !== "undefined" && session.turns[idx] && session.turns[idx].notes) || "";
+      bubble.appendChild(box);
+      box.addEventListener("input", () => {
+        if (typeof session === "undefined" || !session.turns[idx]) return;
+        session.turns[idx].notes = box.value;
+        try { if (typeof persistSession === "function") persistSession(); } catch (e) {}
+        const btn = bubble.querySelector(".msg-annot-btn");
+        if (btn) btn.classList.toggle("has-note", !!box.value);
+      });
+      return box;
+    };
+    const decorate = bubble => {
+      if (!bubble || !bubble.classList || !bubble.classList.contains("msg-ai")) return;
+      if (bubble.querySelector(".msg-annot-btn")) return;
+      const idx = idxOf(bubble);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "msg-annot-btn";
+      btn.textContent = "批注";
+      btn.setAttribute("aria-label", "为这条提问添加批注");
+      bubble.appendChild(btn);
+      const note = (typeof session !== "undefined" && session.turns[idx] && session.turns[idx].notes) || "";
+      btn.classList.toggle("has-note", !!note);
+      if (note) buildBox(bubble, idx);
+      btn.addEventListener("click", () => {
+        const box = bubble.querySelector(".msg-annot");
+        if (box) { box.remove(); return; }
+        buildBox(bubble, idxOf(bubble));
+      });
+    };
+    [...body.querySelectorAll(".msg-ai")].forEach(decorate);
+    if (typeof MutationObserver !== "undefined") {
+      const mo = new MutationObserver(muts => {
+        muts.forEach(m => m.addedNodes.forEach(n => {
+          if (!n || n.nodeType !== 1) return;
+          if (n.classList && n.classList.contains("msg-ai")) decorate(n);
+          else if (n.querySelectorAll) [...n.querySelectorAll(".msg-ai")].forEach(decorate);
+        }));
+      });
+      mo.observe(body, { childList: true, subtree: false });
+    }
+    FX.annotate = true;
+  }
+
   /* ---------- 入口 ---------- */
   function boot() {
     try { initAuthFx(); } catch (e) {}
@@ -8712,6 +8931,8 @@ function revealScan() {
     try { initCrosshair(); } catch (e) {}
     try { initCoordReadout(); } catch (e) {}
     try { initEvalDraw(); } catch (e) {}
+    try { initFormFx(); } catch (e) {}
+    try { initAnnotation(); } catch (e) {}
     // 初始视图编舞（登录用户刷新后直接落在 app / auth 也生效）
     try {
       const active = document.querySelector(".view.active");
@@ -10217,7 +10438,7 @@ function exportDiagnostic() {
     const report = {
       exportedAt: new Date().toISOString(),
       project: "面镜 FutureMirror",
-      version: "beta1.0.7",
+      version: "beta1.0.8",
       env,
       state: {
         currentUser: (typeof currentUser !== "undefined" && currentUser) ? { id: currentUser.id, email: currentUser.email, name: currentUser.name } : null,
@@ -10415,7 +10636,7 @@ runSelfCheckPanel = function () {
     }
   } catch (e) {}
   // 记录一次启动日志
-  try { logDev("ok", "页面初始化完成 · 版本 beta1.0.7 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
+  try { logDev("ok", "页面初始化完成 · 版本 beta1.0.8 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
 })();
 
 

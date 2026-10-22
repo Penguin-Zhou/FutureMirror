@@ -80,7 +80,7 @@ function radarSVG(data) {
   });
   data.forEach((_, i) => { const [x, y] = pt(i, R); axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--line)"/>`; });
   const vpts = data.map((d, i) => pt(i, R * d.score / 100).join(",")).join(" ");
-  const dots = data.map((d, i) => { const [x, y] = pt(i, R * d.score / 100); return `<circle cx="${x}" cy="${y}" r="3.5" fill="var(--brand)"/>`; }).join("");
+  const dots = data.map((d, i) => { const [x, y] = pt(i, R * d.score / 100); return `<circle id="radar-dot-${i}" class="radar-dot" cx="${x}" cy="${y}" r="3.5" fill="var(--brand)"/>`; }).join("");
   const labels = data.map((d, i) => {
     const [x, y] = pt(i, R + 24);
     return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="12.5" fill="var(--muted)">${d.dimension}</text>
@@ -88,7 +88,7 @@ function radarSVG(data) {
   }).join("");
   return `<svg viewBox="0 0 330 330" style="width:100%;max-width:340px" role="img" aria-label="能力雷达图">
     ${rings}${axes}
-    <polygon class="radar-pop" points="${vpts}" fill="rgba(99,102,241,.3)" stroke="var(--brand)" stroke-width="2"/>
+    <polygon class="radar-pop" points="${vpts}" fill="var(--brand-bg)" stroke="var(--brand)" stroke-width="2"/>
     ${dots}${labels}
   </svg>`;
 }
@@ -189,11 +189,12 @@ async function renderReport(force) {
     <div class="notice-info">ⓘ ${serverScored ? "本报告由<b>服务端评分引擎</b>生成（评分规则与前端演示版一致，问答记录已写入 SQLite，可跨设备恢复）" : "本报告由<b>无 API Key 时的兜底规则引擎</b>生成，用于演示「可解释评分」的结构与证据链（每条证据引用真实回答、学习路径按最弱维度动态生成）"}。完整版使用 LLM 评分（Zod 约束输出）+ 校准样本集量化一致性，详见技术文档。</div>
     <div class="report-grid" style="margin-top:16px">
       <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims)}</div></div>
-      <div><div class="pane-title">维度得分</div><div id="dims">${dims.map(d => `
-        <div class="dim-row${d === weakest ? " lowest" : ""}">
+      <div><div class="pane-title">维度得分</div><div id="dims">${dims.map((d, i) => `
+        <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}">
           <div class="dim-head"><b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b><span style="color:var(--muted)">${d.score}</span></div>
           <div class="dim-bar"><div style="width:${d.score}%"></div></div>
           <div class="dim-comment">${d.comment}</div>
+          <div class="dim-tip" role="tooltip">${d.dimension} · ${d.score}<br>${d.comment}</div>
         </div>`).join("")}</div></div>
     </div>
     <div class="pane-title" style="margin-top:18px">评分证据（引用你的真实回答）</div>

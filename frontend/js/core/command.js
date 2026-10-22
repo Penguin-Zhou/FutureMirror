@@ -46,7 +46,66 @@
     { group: "动作", label: "回到顶部", hint: "TOP", kw: "top 顶部 返回", run: () => { try { window.scrollTo({ top: 0, behavior: reduced() ? "auto" : "smooth" }); } catch (e) { try { window.scrollTo(0, 0); } catch (e2) {} } } },
   ];
 
-  const CMD = (window.__bpCmd = { open: false, items: ACTIONS.length, visible: 0, sel: -1 });
+  const CMD = (window.__bpCmd = { open: false, items: ACTIONS.length, visible: 0, sel: -1, recent: [] });
+
+  /* v28 · 命令面板 Pro：页面 id 映射 + 最近访问 + 子序列评分 + 面试上下文指令 */
+  const PAGE_OF = {
+    "工作台": "dashboard", "简历匹配": "match", "模拟面试": "interview", "面经问答": "rag",
+    "简历优化": "resume", "职业探索": "career", "评估报告": "report", "题库小测": "quiz",
+    "求职管理": "jobs", "个人中心": "profile",
+  };
+  ACTIONS.forEach(a => { if (PAGE_OF[a.label]) a.page = PAGE_OF[a.label]; });
+
+  const RECENT_KEY = "fm_recent_pages";
+  function loadRecent() { try { return JSON.parse(sessionStorage.getItem(RECENT_KEY) || "[]"); } catch (e) { return []; } }
+  function saveRecent(arr) { try { sessionStorage.setItem(RECENT_KEY, JSON.stringify(arr.slice(0, 5))); } catch (e) {} }
+  function recordRecent(page) {
+    if (!page) return;
+    const cur = loadRecent().filter(p => p !== page);
+    cur.unshift(page);
+    saveRecent(cur);
+    CMD.recent = cur.slice(0, 5);
+  }
+  /* 包装 navTo 以记录最近访问（行为完全不变，仅旁路记录） */
+  try {
+    const _navTo = window.navTo;
+    if (typeof _navTo === "function" && !_navTo.__wrapped) {
+      window.navTo = function (p) { try { recordRecent(p); } catch (e) {} return _navTo.apply(this, arguments); };
+      window.navTo.__wrapped = true;
+    }
+  } catch (e) {}
+  CMD.recent = loadRecent().slice(0, 5);
+
+  /* 子序列评分：标签前缀 > 子串 > 子序列（按字符顺序出现） */
+  function scoreAction(a, q) {
+    const f = (a.label + " " + a.group + " " + a.kw).toLowerCase();
+    if (f.includes(q)) {
+      if (a.label.toLowerCase().startsWith(q)) return 100;
+      if (a.label.toLowerCase().includes(q)) return 60;
+      return 40;
+    }
+    let qi = 0;
+    for (let i = 0; i < f.length && qi < q.length; i++) if (f[i] === q[qi]) qi++;
+    return qi === q.length ? 10 : 0;
+  }
+  /* 面试页上下文指令（动态注入，仅在该页出现） */
+  function dynamicActions() {
+    if (typeof currentPage !== "function" || currentPage() !== "interview") return [];
+    return [
+      { group: "面试", label: "清空对话记录", hint: "RESET", kw: "清空 重置 重来 对话 面试", run: () => { if (typeof restartInterview === "function") restartInterview(); } },
+      { group: "面试", label: "切换面试模式", hint: "MODE", kw: "模式 综合 技术 压力 切换", run: () => { try { cycleMode(); } catch (e) {} } },
+      { group: "面试", label: "查看能力评分", hint: "REPORT", kw: "评分 报告 能力 查看", run: () => { if (typeof showView === "function") showView("app"); if (typeof navTo === "function") navTo("report"); } },
+    ];
+  }
+  function cycleMode() {
+    const order = ["general", "tech", "pressure"];
+    const cur = (typeof session !== "undefined" && session && session.mode) || "general";
+    const next = order[(order.indexOf(cur) + 1) % order.length];
+    if (typeof setMode === "function") setMode(next);
+  }
+  /* 测试钩子：暴露动态指令与评分函数，供 v28 jsdom 测试断言（不影响生产行为） */
+  CMD._dyn = dynamicActions;
+  CMD._score = scoreAction;
 
   let overlay = null, input = null, list = null, count = null;
   let current = ACTIONS.slice();
@@ -93,9 +152,21 @@
 
   function render(q) {
     const query = (q || "").trim().toLowerCase();
-    current = query
-      ? ACTIONS.filter(a => (a.group + " " + a.label + " " + a.kw).toLowerCase().includes(query))
-      : ACTIONS.slice();
+    const dyn = dynamicActions();
+    if (!query) {
+      const recent = loadRecent().slice(0, 5);
+      CMD.recent = recent;
+      const recentItems = recent.map(p => {
+        const src = ACTIONS.find(a => a.page === p);
+        const label = src ? src.label : p;
+        return { group: "最近", label, hint: "↺", kw: p,
+          run: () => { if (typeof showView === "function") showView("app"); if (typeof navTo === "function") navTo(p); } };
+      });
+      current = [...recentItems, ...dyn, ...ACTIONS.slice()];
+    } else {
+      current = [...dyn, ...ACTIONS].map(a => ({ a, s: scoreAction(a, query) }))
+        .filter(x => x.s > 0).sort((x, y) => y.s - x.s).map(x => x.a);
+    }
     CMD.visible = current.length;
     CMD.sel = current.length ? 0 : -1;
     if (!current.length) {
