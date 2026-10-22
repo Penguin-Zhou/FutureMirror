@@ -394,7 +394,7 @@
   </div>
 
   <dl class="cover-meta">
-    <dt>文档版本</dt>       <dd>v1.5（对应产品 Beta 1.0.6）</dd>
+    <dt>文档版本</dt>       <dd>v1.6（对应产品 Beta 1.0.7）</dd>
     <dt>应用方向</dt>       <dd>AI Agent 智能助手 / RAG 知识问答 / AI 教育与学习平台</dd>
     <dt>技术栈</dt>         <dd>Next.js 15 · React 19 · TypeScript · FastAPI · GLM-4-Flash · Transformers.js</dd>
     <dt>代码仓库</dt>       <dd><a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">github.com/Penguin-Zhou/FutureMirror</a></dd>
@@ -416,11 +416,11 @@
     <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级</span></a></li>
     <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span></a></li>
     <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span></a></li>
-    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1031 + 17 项测试 / 4 种部署</span></a></li>
+    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1093 + 17 项测试 / 4 种部署</span></a></li>
     <li><a href="#ch7"><span class="toc-t">核心算法详解与原创性论证</span><span class="toc-d">三大算法 / 校准实证 / 模板差异化</span></a></li>
     <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span></a></li>
     <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 交付清单</span></a></li>
-    <li><a href="#ch10"><span class="toc-t">版本更新日志</span><span class="toc-d">v1 → Beta 1.0.6，v23 规划</span></a></li>
+    <li><a href="#ch10"><span class="toc-t">版本更新日志</span><span class="toc-d">v1 → Beta 1.0.7，v23 规划</span></a></li>
   </ol>
 </div>
 
@@ -472,7 +472,7 @@
     <div class="stat"><div class="stat-num">5</div><div class="stat-label">协作 Agent</div></div>
     <div class="stat"><div class="stat-num">24</div><div class="stat-label">岗位数据库</div></div>
     <div class="stat"><div class="stat-num">40</div><div class="stat-label">面经知识库</div></div>
-    <div class="stat"><div class="stat-num">1031</div><div class="stat-label">前端自动化断言</div></div>
+    <div class="stat"><div class="stat-num">1093</div><div class="stat-label">前端自动化断言</div></div>
   </div>
 
   <table>
@@ -486,7 +486,7 @@
       <tr><td>面经知识库</td><td>40 条</td><td>全部人工合成，含 <code>source</code> 字段可溯源</td></tr>
       <tr><td>题库</td><td>24 题 / 5 分类</td><td>SQL / 网络 / 操作系统 / 算法 / STAR</td></tr>
       <tr><td>MCP 工具</td><td>3 个</td><td><code>search_job_db</code> / <code>fetch_interview_experience</code> / <code>schedule_mock</code></td></tr>
-      <tr><td>前端自动化断言</td><td>1031 项</td><td>单文件版 + 模块版 jsdom 测试</td></tr>
+      <tr><td>前端自动化断言</td><td>1093 项</td><td>单文件版 + 模块版 jsdom 测试</td></tr>
       <tr><td>后端单元测试</td><td>17 项</td><td>pytest 冒烟 + 评分引擎</td></tr>
       <tr><td>部署形态</td><td>4 种</td><td>单文件 / 模块版 / FastAPI 后端 / Next.js 完整版</td></tr>
     </tbody>
@@ -1063,7 +1063,7 @@
       </tr>
       <tr>
         <td><strong>L2 回归防线</strong></td>
-        <td>1031 + 17 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
+        <td>1093 + 17 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
         <td>任何 Prompt / 规则 / 检索参数变更，先过测试再合入</td>
       </tr>
       <tr>
@@ -1190,7 +1190,7 @@
       <tr><td>jsdom 集成测试</td><td>jsdom</td><td>11 文件 / 722 项</td><td>v15-v24 + beta1 向量检索，覆盖所有功能模块、体验层 UX Kit 与动态层粒子场</td></tr>
       <tr><td>模块版启动测试</td><td>jsdom</td><td>28 项</td><td>拆分后的模块版能否独立启动</td></tr>
       <tr><td>后端集成测试</td><td>TestClient</td><td>—</td><td>API 契约一致性</td></tr>
-      <tr><td><strong>合计</strong></td><td>—</td><td><strong>1031 + 17</strong></td><td>全部通过</td></tr>
+      <tr><td><strong>合计</strong></td><td>—</td><td><strong>1093 + 17</strong></td><td>全部通过</td></tr>
     </tbody>
   </table>
 
@@ -1490,7 +1490,7 @@ cd frontend && python -m http.server 5173
       <tr><td>RAG</td><td>调一次 embedding API，或纯向量检索，结果不可解释</td><td>六阶段管线：bigram 分词 → BM25 → 双通道语义 → 加权融合 → 五特征重排 → 强制引用</td><td>7.2；RAG 页三阶段得分</td></tr>
       <tr><td>评分</td><td>让 LLM 直接打分（黑箱、不可复现、每次不同）</td><td>规则引擎 + 双引擎对拍 + 舍入缺陷修复 + 单调性测试 + 证据链</td><td>7.3；校准表与 11 条断言</td></tr>
       <tr><td>LLM 集成</td><td>前端直连 Key（泄露风险）或纯 Mock 假界面</td><td>服务端代理（Key 零前端接触）+ 三级降级 + 线上真实流式已验证</td><td>4.1；线上 /api/health</td></tr>
-      <tr><td>工程完成度</td><td>能跑演示就行</td><td>1031 前端断言 + 17 后端测试 + 双引擎对拍 + 四渠道发布流水线</td><td>第 6 章</td></tr>
+      <tr><td>工程完成度</td><td>能跑演示就行</td><td>1093 前端断言 + 17 后端测试 + 双引擎对拍 + 四渠道发布流水线</td><td>第 6 章</td></tr>
     </tbody>
   </table>
   <div class="callout ok">
@@ -1562,7 +1562,7 @@ cd frontend && python -m http.server 5173
     <li><strong>BM25 + 端侧向量混合检索</strong>的 RAG 层，含缓存、降级、可解释得分；</li>
     <li><strong>可解释评分 + 证据链 + 动态学习路径</strong>的报告引擎；</li>
     <li><strong>三级降级</strong>的完整链路（后端 → 直连 → Mock），演示不中断；</li>
-    <li><strong>1031 + 17 项自动化测试</strong>，覆盖所有功能；</li>
+    <li><strong>1093 + 17 项自动化测试</strong>，覆盖所有功能；</li>
     <li><strong>开发者模式</strong>作为面向评委的技术透明度工具。</li>
   </ul>
 
@@ -1689,7 +1689,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <tr><td>README（架构 / 安装 / 测试）</td><td>✅</td><td>本仓库根目录</td></tr>
       <tr><td><code>.env.example</code>（无真实密钥）</td><td>✅</td><td><code>backend/.env.example</code></td></tr>
       <tr><td>Git 真实提交历史</td><td>✅</td><td>分阶段提交，非一次性推送</td></tr>
-      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>1031 + 17</td></tr>
+      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>1093 + 17</td></tr>
       <tr><td>单文件静态演示页</td><td>✅</td><td><code>public/futuremirror-demo.html</code></td></tr>
       <tr><td>演示视频 5-8 分钟 1080p</td><td>⬜</td><td>录制中</td></tr>
       <tr><td>技术文档（HTML 在线版）</td><td>✅</td><td><a href="https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror/docs/technical-doc.html</a>（仓库内 <code>docs/technical-doc.html</code>）</td></tr>
@@ -1703,17 +1703,17 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
 
   <div class="doc-footer">
     <strong>面镜 FutureMirror 开发团队 · 福建农林大学桢队</strong><br>
-    技术文档 v1.5（Beta 1.0.6）
+    技术文档 v1.6（Beta 1.0.7）
   </div>
 </section>
 
 <!-- =============== 第 10 章 =============== -->
 <section class="chapter" id="ch10">
   <div class="chapter-num">CHAPTER 10</div>
-  <h1>版本更新日志（v1 → Beta 1.0.6，v23 规划中）</h1>
-  <p>本日志为<strong>团队真实开发进程</strong>的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.0.6 当前版本），共 27 个已发布版本，并含 v23 下一步迭代规划。每个版本均可独立运行、可回归。</p>
+  <h1>版本更新日志（v1 → Beta 1.0.7，v23 规划中）</h1>
+  <p>本日志为<strong>团队真实开发进程</strong>的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.0.7 当前版本），共 28 个已发布版本，并含 v23 下一步迭代规划。每个版本均可独立运行、可回归。</p>
   <div class="callout info"><strong>关于 Git 提交记录（重要说明）：</strong> 本仓库的 Git 提交历史自 <strong>Beta 版本</strong>（首次以 <code>v1.0.0-beta</code> 提交包上传）时建立，<strong>仅包含 BETA 1.0 及之后的更新</strong>；BETA 1.0 之前的 v1–v22 演进历程以本更新日志形式完整留存，未在 Git 提交记录中逐条提交。日志中所载为团队真实的版本演进，而非事后补造。</div>
-  <div class="callout">阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.0.6，为当前正式发布版本（蓝图编辑风视觉重构 + 全渠道同风格重塑；Beta 1.0.2 为原创性论证与真实度提升，Beta 1.0.1 为后端上线部署补丁）；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。</div>
+  <div class="callout">阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.0.7，为当前正式发布版本（蓝图编辑风视觉重构 + 全渠道同风格重塑；Beta 1.0.2 为原创性论证与真实度提升，Beta 1.0.1 为后端上线部署补丁）；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。</div>
   <h3>v23 · 规划中 · 完整版对齐 · 生产级 RAG · 多模态扩展（待排期）</h3>
   <div class="callout">下一阶段目标：把演示层的关键能力向生产级对齐，同时补齐多模态与部署工程化的空白。以下为规划项，尚未进入代码库。</div>
   <h4><strong>📋 RAG 升级</strong></h4>
@@ -1825,7 +1825,42 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <td>42MB</td>
     </tr></tbody>
   </table>
-    <h3>Beta 1.0.6 · 交互深化层：命令面板与滚动语言（2026.10.22 当前版本）</h3>
+      <h3>Beta 1.0.7 · 全站交互层：把图纸动作铺到每一个页面（2026.10.22 当前版本）</h3>
+  <div class="callout">上一轮的交互深化层只铺在落地页。本轮新增 <code>appfx.js</code>（v27 全站交互层），把同一套「图纸动作」语言推广到<strong>应用内 10 个功能页 / 登录页 / 开发者页</strong>：切页编舞（标题区与卡片自上而下 clip-path 揭载 + 面包屑等宽光标 + 侧栏规尺扫光）、登录页动态（密码强度四段计 + CapsLock 提示 + 分栏入场）、面试 LIVE 脉冲（MutationObserver 观察面试官轮转，零侵入打 <code>.speaking</code>）、报告与小测数字滚动（<code>#report-total</code> / <code>score-num</code> 计到终值 + 维度条自左生长）、十字准线全站化（由 landingfx 迁出，聚焦输入框时自动隐身）、坐标读数扩展（功能页卡 <code>PG-xx</code> / 开发者节 <code>SEC-xx</code>）、开发者页绘制线（12 节 stagger 展开）。同步把 <code>tokens.css</code> 里遗留的 <code>pageIn</code> 上浮位移统一为 clip-path 揭载——全站不再有任何上浮。v26 测试套件 59 项断言锁定全部行为（含 reduced-motion 双实例降级链）。</div>
+  <h4><strong>✨ 新增功能</strong></h4>
+  <ul>
+    <li><strong>切页编舞</strong>：<code>showView</code> / <code>applyRoute</code> 挂钩 <code>choreograph()</code>——标题区、卡片按 <code>--bp-i</code> 索引 stagger 揭载；面包屑末级跟一枚等宽方块光标（1.2s 自消，图纸重定位）；侧栏当前项扫过一道朱红规尺光</li>
+    <li><strong>登录页动态</strong>：密码强度四段计（长度 / 数字 / 大小写 / 符号，满格朱红）、CapsLock 大写锁定提示、分栏与卡片入场；纯增强，不影响原有校验</li>
+    <li><strong>面试 LIVE 脉冲</strong>：<code>MutationObserver</code> 监听聊天流，面试官轮转时为徽章打 <code>.speaking</code>（朱红 tint 呼吸），替代直接改业务代码</li>
+    <li><strong>数字滚动 + 维度条生长</strong>：报告总分、小测得分计到终值；能力维度条先记录目标宽度再回填触发 .8s 生长；已计数元素打标，重复扫描不重跑</li>
+    <li><strong>十字准线全站化</strong>：从 <code>landingfx.js</code> 迁到 <code>appfx.js</code>，应用视图下同样跟随光标，聚焦输入框 / 光标出窗即隐身</li>
+    <li><strong>坐标读数扩展</strong>：14 张功能页卡挂 <code>PG-01…</code> 编号、12 个开发者节挂 <code>SEC-01…</code> 编号，hover 显示 X/Y 测绘读数</li>
+    <li><strong>开发者绘制线</strong>：每个 <code>eval-section</code> 顶部注入 2px 墨线，入视口自左画出，按索引 120ms stagger</li>
+  </ul>
+  <h4><strong>🔧 优化改进</strong></h4>
+  <ul>
+    <li><strong>揭载语言统一</strong>：<code>tokens.css</code> 中与 <code>theme.css</code> 同名的 <code>@keyframes pageIn</code> 去掉 <code>translateY(8px)</code>，统一为 <code>clip-path: inset(18px 0 0 0)</code> 自上而下裁切，消除重复定义与唯一一处上浮位移</li>
+    <li><strong>模块职责收敛</strong>：<code>landingfx.js</code> 交出十字准线 / 坐标读数，专注落地页轮播与实录播台；<code>appfx.js</code> 统一承载全站测绘语言</li>
+    <li><strong>渐进增强</strong>：无 JS 时所有内容完整可见；reduced-motion 下编舞、脉冲、扫光、光标、绘制线全部静态落位，功能不缺失</li>
+  </ul>
+  <h4><strong>📊 数据指标</strong></h4>
+  <table>
+    <thead><tr>
+      <th>前端断言</th>
+      <th>后端测试</th>
+      <th>单元测试</th>
+      <th>v26 新增</th>
+      <th>jsdom 套件</th>
+    </tr></thead>
+    <tbody><tr>
+      <td>1093</td>
+      <td>17</td>
+      <td>16（vitest）</td>
+      <td>59</td>
+      <td>15 套</td>
+    </tr></tbody>
+  </table>
+  <h3>Beta 1.0.6 · 交互深化层：命令面板与滚动语言（2026.10.22）</h3>
   <div class="callout">在动态层之上增加<strong>交互深化层</strong>：命令面板（Ctrl/⌘+K 呼出，17 项命令覆盖区块跳转 / 10 个功能页 / 主题切换 / 开发者模式 / 回顶，分组 + 过滤 + 全键盘导航，面试页保留聚焦输入框原行为）；滚动驱动三件套——返回顶部（直角墨框 + SVG 朱红进度环，600px 阈值）、落地页导航滚动侦测（当前区块点亮朱红下划线）、工作流蓝图绘制线（入视口自左画出，120ms stagger）；落地页动态四件套——Hero 等宽打字机轮播（5 条价值点 + 方块硬切光标）、面试实录气泡依序揭载 + 流式光标、蓝图十字准线（落地页光标测绘线，触屏 / reduced-motion 不注入）、特性卡坐标读数（BLK 编号 + X/Y 测绘 chip）。新增 <code>scrollfx.js</code> / <code>landingfx.js</code> / <code>command.js</code> 三个模块，v25 测试套件 64 项断言锁定全部行为。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>

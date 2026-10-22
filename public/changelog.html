@@ -280,10 +280,10 @@ body {
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.0.6 · v23 规划中</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.0.7 · v23 规划中</div>
     <div class="meta">
-      <span>已发布 <b>27</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.0.6</b></span>
+      <span>已发布 <b>28</b> 个版本</span>
+      <span>当前版本 <b>Beta 1.0.7</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -291,19 +291,19 @@ body {
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.6，为当前正式发布版本（交互深化层：命令面板 + 滚动驱动 + 落地页动态）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.7，为当前正式发布版本（全站交互层：切页编舞 + 登录动态 + 数字滚动 + 全站测绘）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
   <div class="overview">
-    <div class="ov-card"><div class="ov-num">27</div><div class="ov-label">已发布版本</div></div>
+    <div class="ov-card"><div class="ov-num">28</div><div class="ov-label">已发布版本</div></div>
     <div class="ov-card"><div class="ov-num">10</div><div class="ov-label">功能页</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">协作 Agent</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">岗位数据库</div></div>
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1031</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1093</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -313,6 +313,7 @@ body {
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
+    <li><a href="#vbeta1-7"><span class="cl-toc-tag">Beta 1.0.7</span><span class="cl-toc-title-txt">全站交互层 · 图纸动作铺满每个页面</span></a></li>
     <li><a href="#vbeta1-6"><span class="cl-toc-tag">Beta 1.0.6</span><span class="cl-toc-title-txt">交互深化层 · 命令面板与滚动语言</span></a></li>
     <li><a href="#vbeta1-5"><span class="cl-toc-tag">Beta 1.0.5</span><span class="cl-toc-title-txt">动态层 · 粒子场与微交互</span></a></li>
     <li><a href="#vbeta1-4"><span class="cl-toc-tag">Beta 1.0.4</span><span class="cl-toc-title-txt">体验层增强 · 交互反馈与可访问性</span></a></li>
@@ -462,11 +463,35 @@ body {
   <!-- ========================================================
        Beta 1.0.5 · 动态层（Blueprint Motion Kit）
        ======================================================== -->
+  <div class="version vbeta1-7" id="vbeta1-7">
+    <div class="version-head">
+      <span class="v-tag v-tag-current">Beta 1.0.7</span>
+      <span class="v-title">全站交互层 · 图纸动作铺满每个页面</span>
+      <span class="v-date">2026.10.22 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        上一轮的交互深化层只铺在落地页。本轮新增 appfx.js（v27 全站交互层），把同一套「图纸动作」语言推广到<b>应用内 10 个功能页 / 登录页 / 开发者页</b>：切页编舞（标题区与卡片自上而下 clip-path 揭载 + 面包屑等宽光标 + 侧栏规尺扫光）、登录页动态（密码强度四段计 + CapsLock 提示 + 分栏入场）、面试 LIVE 脉冲（MutationObserver 观察面试官轮转，零侵入打 .speaking）、报告与小测数字滚动（#report-total / score-num 计到终值 + 维度条自左生长）、十字准线全站化（由 landingfx 迁出，聚焦输入框时自动隐身）、坐标读数扩展（功能页卡 PG-xx / 开发者节 SEC-xx）、开发者页绘制线（12 节 stagger 展开）。同步把 tokens.css 里遗留的 pageIn 上浮位移统一为 clip-path 揭载——全站不再有任何上浮。v26 测试套件 59 项断言锁定全部行为（含 reduced-motion 双实例降级链）。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>每个页面都会动</b>：切页有揭载与光标、登录有强度计、面试有 LIVE 脉冲、报告有数字滚动</div>
+        <div class="vh-item"><b>测绘语言贯穿全站</b>：十字准线 + PG / SEC 坐标读数，功能页与开发者页同样「在图纸上量取」</div>
+        <div class="vh-item"><b>零上浮收尾</b>：清掉最后一处 translateY 入场，全站动效只剩裁切、扫光与脉冲三种图纸动作</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">26</div><div class="m-label">坐标读数卡片</div></div>
+        <div class="metric"><div class="m-val">59</div><div class="m-label">v26 新增断言</div></div>
+        <div class="metric"><div class="m-val">1093</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">15</div><div class="m-label">jsdom 测试套件</div></div>
+      </div>
+    </div>
+  </div>
+
   <div class="version vbeta1-6" id="vbeta1-6">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.0.6</span>
+      <span class="v-tag">Beta 1.0.6</span>
       <span class="v-title">交互深化层 · 命令面板与滚动语言</span>
-      <span class="v-date">2026.10.22 <span class="cur-mark">当前版本</span></span>
+      <span class="v-date">2026.10.22</span>
     </div>
     <div class="version-body">
       <div class="v-summary">
@@ -1694,7 +1719,7 @@ body {
 
   <!-- ============ 页脚 ============ -->
   <div class="footer">
-    <b>面镜 FutureMirror</b> · 版本更新日志 v1 → Beta 1.0.6 · v23 规划中<br>
+    <b>面镜 FutureMirror</b> · 版本更新日志 v1 → Beta 1.0.7 · v23 规划中<br>
     28 个已发布版本 · 从单文件原型到可验证的 AI Native 产品雏形<br>
     <span class="notice-line">本文档为团队内部版本记录，仅描述自研功能与数据，不引用、不转载任何第三方内容</span><br>
     © 2026 面镜 FutureMirror 团队 · 内部文档

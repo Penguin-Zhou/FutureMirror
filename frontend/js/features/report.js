@@ -180,7 +180,7 @@ async function renderReport(force) {
           <button class="btn btn-outline btn-sm" onclick="restartInterview()">🔄 再来一次</button>
         </div>
         <div>
-          <div style="font-size:36px;font-weight:800;color:var(--brand);line-height:1" id="report-total">${total}</div>
+          <div style="font-size:36px;font-weight:800;color:var(--brand);line-height:1" id="report-total" data-count="${total}">${total}</div>
           <div class="hint" style="margin-top:0">综合得分 / 100</div>
         </div>
       </div>
@@ -220,6 +220,9 @@ async function renderReport(force) {
       <div id="history-box"></div>
     </div>
     ${reviewEntryCard()}`;
+
+  // v27：全站交互层——总分滚动 + 维度条生长（reduced-motion 下静态落位）
+  try { if (window.__bpApp && window.__bpApp.reportIn) window.__bpApp.reportIn(); } catch (e) {}
 
   // 历史记录（同一会话不重复写入）
   const sig = total + ":" + session.turns.length;

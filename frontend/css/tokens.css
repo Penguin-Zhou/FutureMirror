@@ -975,9 +975,10 @@
   /* 应用内页面容器 */
   .app-page { display: none; animation: pageIn .35s cubic-bezier(.22,1,.36,1) both; }
   .app-page.active { display: block; }
+  /* v27：揭载统一为「自上而下的裁切」，全站不再有上浮位移（蓝图语言） */
   @keyframes pageIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: none; }
+    from { opacity: 0; clip-path: inset(18px 0 0 0); }
+    to   { opacity: 1; clip-path: inset(0 0 0 0); }
   }
   @media (prefers-reduced-motion: reduce) { .app-page.active { animation: none; } }
 

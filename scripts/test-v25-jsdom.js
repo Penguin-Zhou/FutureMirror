@@ -136,19 +136,27 @@ async function runTests() {
   ok(!!lastB.querySelector(".mock-caret"), "末气泡跟流式光标（预告 SSE 逐字体验）");
   ok(/@keyframes mockIn\s*\{\s*from\s*\{\s*opacity:\s*0;\s*clip-path/.test(cssA) && !/mockIn[\s\S]{0,140}translateY/.test(cssA), "CSS：播台揭载用 clip-path（零上浮）");
 
-  /* ---------- A6. 蓝图十字准线 ---------- */
+  /* ---------- A6. 蓝图十字准线（v27 起全站化：输入聚焦隐身） ---------- */
   console.log("\n--- A6. 十字准线 ---");
-  wA.eval("showView('landing')");                       // A2 切到过应用视图，先回落地页
-  await wait(50);
+  wA.eval("currentUser = { id: 'u1', email: 'demo@futuremirror.app', name: 'Demo' }");  // 免游客保护 blur
+  wA.eval("navTo('interview')");                       // 落到面试页（含 chat-input）
+  await wait(90);
   const cx = dA.querySelector(".bp-cross-x"), cy = dA.querySelector(".bp-cross-y");
   ok(!!cx && !!cy && cx.getAttribute("aria-hidden") === "true", "十字准线已注入且对辅助技术隐藏");
   wA.dispatchEvent(new wA.MouseEvent("mousemove", { clientX: 300, clientY: 200 }));
   await raf2(wA);
   ok(cx.style.top === "200px" && cy.style.left === "300px", "准线跟随光标定位（" + cx.style.top + " / " + cy.style.left + "）");
-  wA.eval("showView('app')");
+  ok(cx.style.visibility !== "hidden", "应用视图下准线可见（v27 全站化，不再限定落地页）");
+  dA.getElementById("chat-input").focus();
   await raf2(wA);
-  ok(cx.style.visibility === "hidden" && cy.style.visibility === "hidden", "切离落地页 → 准线隐藏");
+  ok(cx.style.visibility === "hidden" && cy.style.visibility === "hidden", "聚焦输入框 → 准线隐身（不干扰录入）");
+  dA.getElementById("chat-input").blur();
+  await raf2(wA);
+  ok(cx.style.visibility !== "hidden", "失焦 → 准线恢复");
   wA.eval("showView('landing')");
+  await raf2(wA);
+  ok(cx.style.visibility !== "hidden" && cx.style.top === "200px", "回到落地页准线仍在（全站常驻）");
+  wA.eval("history.replaceState(null, '', location.pathname)");   // 清掉 #/interview，恢复 A8 前置（⌘K 弹面板）
   ok(/\.bp-cross\s*\{[^}]*pointer-events:\s*none/.test(cssA) && /\.bp-cross\s*\{[^}]*opacity:\s*\.16/.test(cssA), "CSS：准线零指针拦截 + 墨色 .16");
 
   /* ---------- A7. 特性卡坐标读数 ---------- */
