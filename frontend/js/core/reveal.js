@@ -115,5 +115,7 @@ function revealScan() {
   revealScan();
   // v24：滚动进度线（阅读/操作进度感知）
   initScrollProgress();
+  // v29：主题三态（默认 auto 跟随系统明暗，切换后为显式覆盖）
+  initThemeFollow();
 })();
 

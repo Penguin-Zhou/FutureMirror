@@ -173,7 +173,7 @@ async function runTests() {
   /* ---------- A8. 命令面板 ---------- */
   console.log("\n--- A8. 命令面板 ---");
   const cmd = () => dA.getElementById("bp-cmd");
-  ok(wA.__bpCmd && wA.__bpCmd.items === 17, "命令清单 17 项（导航 4 + 页面 10 + 动作 3）");
+  ok(wA.__bpCmd && wA.__bpCmd.items === 18, "命令清单 18 项（导航 4 + 页面 10 + 动作 4，v29 新增跟随系统）");
   ok(cmd() === null, "面板懒建：未呼出前不注入 DOM");
   dA.dispatchEvent(new wA.KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true, cancelable: true }));
   ok(cmd().hidden === false && wA.__bpCmd.open === true, "Ctrl/⌘+K 呼出面板");
@@ -184,7 +184,7 @@ async function runTests() {
   const cmdInput = dA.getElementById("bp-cmd-input");
   cmdInput.value = "主题";
   cmdInput.dispatchEvent(new wA.Event("input", { bubbles: true }));
-  ok(dA.querySelectorAll("#bp-cmd-list .bp-cmd-item").length === 1 && wA.__bpCmd.visible === 1, "过滤「主题」收敛为 1 项");
+  ok(dA.querySelectorAll("#bp-cmd-list .bp-cmd-item").length === 2 && wA.__bpCmd.visible === 2, "过滤「主题」收敛为 2 项（切换 + 跟随系统）");
   cmdInput.value = "zzzz-不存在";
   cmdInput.dispatchEvent(new wA.Event("input", { bubbles: true }));
   ok(!!dA.querySelector("#bp-cmd-list .bp-cmd-empty") && dA.getElementById("bp-cmd-count").textContent === "0 项", "无匹配时显示空态与 0 项计数");

@@ -3,12 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.0.8 演示版）</title>
+<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.0.9 演示版）</title>
 <meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台（在线演示版）">
 <script>
 /* 主题预置：先于 body 渲染，避免首屏闪白/闪主题（g_theme/g_accent 为全局共享 key，不随用户隔离） */
 try {
-  document.documentElement.dataset.theme = JSON.parse(localStorage.getItem("g_theme") || '"light"');
+  /* v29 三态：auto（默认·跟随系统）/ light / dark 显式覆盖 */
+  var _mode = JSON.parse(localStorage.getItem("g_theme_mode") || '"auto"');
+  var _sysDark = !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  var _t = localStorage.getItem("g_theme");
+  if (_mode === "auto" || !_t) _t = _sysDark ? '"dark"' : '"light"';
+  document.documentElement.dataset.theme = JSON.parse(_t);
   document.documentElement.dataset.accent = localStorage.getItem("g_accent") || "default";
 } catch (e) {}
 </script>
@@ -23,6 +28,12 @@ try {
     --red: #BE3A1E; --red-bg: #F7E4DE;
     --amber: #96690F; --amber-bg: #F5ECD4;
     --shadow: none;
+    /* v29 质感令牌：纸纹（feTurbulence 去色单色噪点）/ 毛玻璃等价纸底 / 墨阶高光 / 弹簧缓动 */
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+    --grain-op: .055;
+    --glass-bg: rgba(250, 248, 241, .9);
+    --card-2: #FFFDF7;
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
     --serif: Georgia, "Songti SC", "STSong", "SimSun", serif;
     --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
     --grid-line: rgba(28,25,19,.05);
@@ -35,6 +46,9 @@ try {
     --red: #E85C3A; --red-bg: #3A2015;
     --amber: #D9A83C; --amber-bg: #2E2410;
     --shadow: none;
+    --grain-op: .04;
+    --glass-bg: rgba(29, 26, 21, .9);
+    --card-2: #26221A;
     --grid-line: rgba(238,232,216,.055);
   }
 
@@ -2885,9 +2899,226 @@ try {
     background: var(--brand-bg); border: 1px solid var(--brand); padding: 6px 8px; resize: vertical; min-height: 38px;
   }
 
+  /* ============================================================
+   * v29 · 专家能力层（Blueprint Expert Layer · Beta 1.0.9）
+   * 印刷风等价表达：质感 = 纸纹 + 墨阶 + 内描边 + 外扩描边。
+   * 全程不使用 backdrop 毛玻璃滤镜 / box-shadow 投影 / 卡片 translateY 上浮。
+   * ============================================================ */
+
+  /* ① 纸纹：fixed 全屏单色噪点层，位于内容之下、不拦截交互 */
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: var(--grain); background-size: 120px 120px;
+    opacity: var(--grain-op);
+  }
+
+  /* ② 墨阶景深：底亮 + 边重 + 顶部高光发丝线，替代投影分层 */
+  .bp-z1 { position: relative; background: var(--card); border: 1px solid var(--line); }
+  .bp-z2 { position: relative; background: var(--card); border: 1px solid var(--line-2); }
+  .bp-z2::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+    background: var(--card-2); pointer-events: none;
+  }
+  .bp-z3 { position: relative; background: var(--card); border: 2px solid var(--line-2); }
+  .bp-z3::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+    background: var(--card-2); pointer-events: none;
+  }
+
+  /* ③ 毛玻璃等价：半透明纸底 + 纸纹 + 发丝线（不使用 backdrop 滤镜，见 v17 断言） */
+  .bp-glass { position: relative; background: var(--glass-bg); border: 1px solid var(--line-2); }
+  .bp-glass::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: var(--grain); background-size: 120px 120px;
+    opacity: calc(var(--grain-op) * 1.5);
+  }
+  .bp-glass > * { position: relative; }
+
+  /* ④ 光晕边框：外扩一圈浅色描边（outline，非投影） */
+  .bp-glow { outline: 1px solid var(--brand-bg); outline-offset: 3px; }
+  .bp-glow-strong { outline: 2px solid var(--brand-bg); outline-offset: 4px; }
+
+  /* ⑤ 流体字号（clamp 平滑缩放，无断点跳变） */
+  .bp-fs-hero { font-size: clamp(30px, 5vw, 54px); line-height: 1.12; }
+  .bp-fs-h2 { font-size: clamp(21px, 2.6vw, 30px); line-height: 1.25; }
+  .bp-fs-body { font-size: clamp(13.5px, 1.05vw, 15px); }
+
+  /* ⑥ 自定义准线光标（印刷十字环 + 朱红中心点，仅精细指针设备启用） */
+  .bp-cursor {
+    position: fixed; left: 0; top: 0; width: 22px; height: 22px; z-index: 9998;
+    pointer-events: none; opacity: 0; border: 1px solid var(--ink); border-radius: 50%;
+    transition: width .2s var(--spring), height .2s var(--spring),
+                border-color .2s ease, border-radius .2s ease, opacity .2s ease;
+    will-change: transform;
+  }
+  .bp-cursor.live { opacity: 1; }
+  .bp-cursor.hot { width: 34px; height: 34px; border-radius: 0; border-color: var(--brand); }
+  .bp-cursor::before, .bp-cursor::after {
+    content: ""; position: absolute; background: var(--ink); opacity: .5;
+  }
+  .bp-cursor::before { left: 50%; top: -7px; bottom: -7px; width: 1px; margin-left: -.5px; }
+  .bp-cursor::after { top: 50%; left: -7px; right: -7px; height: 1px; margin-top: -.5px; }
+  .bp-cursor-dot {
+    position: fixed; left: 0; top: 0; width: 3px; height: 3px; z-index: 9999;
+    pointer-events: none; background: var(--brand); opacity: 0; will-change: transform;
+  }
+  .bp-cursor-dot.live { opacity: 1; }
+  html.bp-cursor-on, html.bp-cursor-on * { cursor: none !important; }
+  html.bp-cursor-on input, html.bp-cursor-on textarea { cursor: text !important; }
+
+  /* ⑦ 磁铁按钮：跟随光标平移（水平位移，非上浮） */
+  .bp-magnet { transition: transform .3s var(--spring); will-change: transform; }
+
+  /* ⑧ 卡片触感反馈：scale 微放 + 墨色描边（禁 translateY 上浮、禁阴影） */
+  .bp-tactile { transition: transform .28s var(--spring), border-color .2s ease; }
+  .bp-tactile:hover { transform: scale(1.004); border-color: var(--ink); }
+
+  /* ⑨ Toast 撤销钮（与既有 toast 划入同语言：朱红描边） */
+  #toast.bp-toast-flex { display: flex; align-items: center; gap: 12px; }
+  .toast-undo {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .06em; flex: none;
+    border: 1px solid var(--brand); color: var(--brand); background: transparent;
+    padding: 2px 9px; cursor: pointer;
+  }
+  .toast-undo:hover { background: var(--brand); color: var(--card); }
+
+  /* ============ 滚动驱动 ============ */
+  /* ⑩ 导航吸顶收缩（56 → 48，下边线加深；非阴影） */
+  header { transition: border-color .2s ease; }
+  header.scrolled { border-bottom-color: var(--line-2); }
+  header.scrolled .nav { height: 48px; }
+  .nav { transition: height .22s var(--spring); }
+
+  /* ⑪ 滚动吸附 + 横向画廊 */
+  .bp-snap-y { scroll-snap-type: y proximity; }
+  .bp-snap-item { scroll-snap-align: start; }
+  .bp-gallery {
+    display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory;
+    scroll-padding-left: 24px; padding-bottom: 8px;
+  }
+  .bp-gallery > * { scroll-snap-align: start; flex: 0 0 300px; }
+  .bp-gallery::-webkit-scrollbar { height: 3px; }
+  .bp-gallery::-webkit-scrollbar-thumb { background: var(--line-2); }
+  .bp-gallery::-webkit-scrollbar-track { background: var(--bg-deep); }
+  .bp-parallax { will-change: transform; }
+
+  /* ============ 高级组件 ============ */
+  /* ⑫ 可拖拽 / 可调整大小弹窗 */
+  .bp-dialog { position: fixed; z-index: 900; }
+  .bp-dialog-grip { cursor: move; }
+  .bp-dialog-resize {
+    position: absolute; right: 0; bottom: 0; width: 15px; height: 15px; cursor: nwse-resize;
+    border-right: 2px solid var(--line-2); border-bottom: 2px solid var(--line-2);
+  }
+
+  /* ⑬ 分步向导 */
+  .bp-stepper { display: flex; align-items: center; }
+  .bp-step {
+    display: flex; align-items: center; gap: 8px; flex: none;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; color: var(--faint);
+  }
+  .bp-step.on { color: var(--brand); }
+  .bp-step.done { color: var(--muted); }
+  .bp-step::after { content: ""; width: 24px; height: 1px; background: var(--line-2); }
+  .bp-step:last-child::after { display: none; }
+
+  /* ⑭ 时间轴 */
+  .bp-tl { border-left: 1px solid var(--line-2); padding-left: 16px; }
+  .bp-tl-item { position: relative; padding: 5px 0; }
+  .bp-tl-item::before {
+    content: ""; position: absolute; left: -20px; top: 13px; width: 7px; height: 7px;
+    background: var(--card); border: 1px solid var(--line-2);
+  }
+  .bp-tl-item.on::before { background: var(--brand); border-color: var(--brand); }
+
+  /* ⑮ 可折叠侧边栏 */
+  .bp-aside { transition: width .26s var(--spring); overflow: hidden; }
+  .bp-aside.collapsed .bp-aside-label { opacity: 0; }
+  .bp-aside-toggle {
+    font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-2);
+    background: transparent; color: var(--muted); cursor: pointer; padding: 3px 8px;
+  }
+  .bp-aside-toggle:hover { color: var(--brand); border-color: var(--brand); }
+
+  /* ============ 数据可视化 ============ */
+  /* ⑯ 热力图 / 散点图 + 悬浮详情 */
+  .bp-heat { display: grid; gap: 2px; }
+  .bp-heat-cell {
+    position: relative; height: 18px; border: 1px solid transparent;
+    transition: border-color .15s ease;
+  }
+  .bp-heat-cell:hover { border-color: var(--brand); }
+  .bp-scatter {
+    position: relative; height: 160px;
+    border-left: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2);
+  }
+  .bp-scatter-dot {
+    position: absolute; width: 7px; height: 7px; background: var(--brand);
+    transform: translate(-50%, 50%); transition: width .15s ease, height .15s ease;
+  }
+  .bp-scatter-dot:hover { width: 11px; height: 11px; }
+  .bp-tip {
+    position: absolute; z-index: 6; font-family: var(--mono); font-size: 10.5px;
+    background: var(--card); border: 1px solid var(--brand); color: var(--brand);
+    padding: 4px 8px; pointer-events: none; opacity: 0; transition: opacity .15s ease;
+    white-space: nowrap;
+  }
+  .bp-tip.show { opacity: 1; }
+
+  /* ⑰ 表格工具条：排序 / 筛选 / 分页 / 导出 */
+  .bp-table-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .bp-th-sort { cursor: pointer; user-select: none; white-space: nowrap; }
+  .bp-th-sort.asc::after { content: " \25B2"; color: var(--brand); }
+  .bp-th-sort.desc::after { content: " \25BC"; color: var(--brand); }
+  .bp-pager { display: flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 11px; margin-top: 10px; }
+  .bp-pager button {
+    font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-2);
+    background: transparent; color: var(--muted); cursor: pointer; padding: 2px 9px;
+  }
+  .bp-pager button:hover:not(:disabled) { color: var(--brand); border-color: var(--brand); }
+  .bp-pager button:disabled { opacity: .35; cursor: default; }
+  /* 表格工具：筛选输入 / 导出按钮 / 行数读数 */
+  .bp-search {
+    font-family: var(--mono); font-size: 12px; color: var(--ink); min-width: 168px;
+    background: var(--card); border: 1px solid var(--line-2); padding: 4px 9px;
+  }
+  .bp-search:focus { outline: none; border-color: var(--brand); }
+  .bp-mini-btn {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+    border: 1px solid var(--line-2); background: transparent; color: var(--muted);
+    cursor: pointer; padding: 4px 10px;
+  }
+  .bp-mini-btn:hover { color: var(--brand); border-color: var(--brand); }
+  .bp-mini-note { font-family: var(--mono); font-size: 10.5px; color: var(--faint); letter-spacing: .06em; }
+
+  /* 实时数据流条目 */
+  .bp-live-item {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+    padding: 5px 0; border-bottom: 1px dashed var(--line);
+  }
+  .bp-live-k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; color: var(--faint); }
+  .bp-live-v { font-family: var(--mono); font-size: 15px; color: var(--ink); }
+
+  /* 时间轴条目 */
+  .bp-tl-t { font-family: var(--mono); font-size: 10.5px; color: var(--brand); margin-right: 8px; }
+  .bp-tl-d { font-size: 13px; color: var(--muted); }
+
+  /* ⑱ 可拖拽卡片仪表盘 */
+  .bp-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(238px, 1fr)); gap: 14px; }
+  .bp-board-card { cursor: grab; }
+  .bp-board-card.dragging { opacity: .4; border-color: var(--brand); }
+  .bp-board-card.over { border-color: var(--brand); }
+
+  /* ⑲ 视图转场（View Transition API，兜底为 clip-path 印刷揭载） */
+  ::view-transition-old(root) { animation: bpFade .2s ease both; }
+  ::view-transition-new(root) { animation: bpReveal .32s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes bpFade { to { opacity: 0; } }
+  @keyframes bpReveal { from { clip-path: inset(14px 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+
   /* ============ 打印：纸面文档 ============ */
   @media print {
     body { background: #fff; background-image: none; }
+    body::after { display: none; }
     .card, .page-card { border-color: #ccc; }
   }
   /* ============ v18 · 求职管理 / 答题计时 / 语音反馈 / 玻璃拟态可读性修正 / Bento Grid ============ */
@@ -3615,7 +3846,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <a href="changelog.html">更新日志</a>
       </div>
       <div class="landing-nav-meta">
-        <span class="bp-ver">BETA 1.0.8</span>
+        <span class="bp-ver">BETA 1.0.9</span>
         <button class="btn btn-ghost btn-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式">🌙</button>
         <button class="btn btn-ghost btn-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）">🟣</button>
         <button class="btn btn-outline btn-sm" onclick="showView('app')">免费体验</button>
@@ -3629,7 +3860,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     <div class="wrap">
       <div class="hero-grid">
         <div class="hero-main">
-          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.0.8</span>
+          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.0.9</span>
           <div class="hero-rotator" aria-live="polite"><span class="hr-prefix">&gt;_</span><span class="hr-text" id="hr-text"></span><i class="hr-caret" aria-hidden="true"></i></div>
           <div class="eyebrow"><span class="eyebrow-no">VOL.1</span>AI NATIVE · 多 AGENT 模拟面试平台</div>
           <h1 class="hero-title">
@@ -3864,7 +4095,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   </section>
 
   <footer class="site-foot">
-    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.8<br>
+    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.9<br>
     <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
   </footer>
 
@@ -4016,7 +4247,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 <!-- ===== 演示版声明横幅（可关闭） ===== -->
 <div class="banner" id="demo-banner" role="note">
   <div class="wrap">
-    <b>本页 = 在线演示版首页 · Beta 1.0.8</b>
+    <b>本页 = 在线演示版首页 · Beta 1.0.9</b>
     <span>（已接通真实后端：LLM 流式对话 / JWT 登录 / 服务端评分均在线可验；无后端或断网时自动降级本地 Mock，流程不中断）</span>
     <button class="btn btn-primary btn-sm" onclick="openMaterial('full')" style="margin-left:auto">前往完整项目 →</button>
     <button class="btn btn-ghost btn-sm" onclick="dismissBanner()" aria-label="关闭横幅">✕</button>
@@ -4067,7 +4298,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       </a>
 
       <div class="sb-footer">
-        面镜 FutureMirror · beta1.0.8<br>
+        面镜 FutureMirror · beta1.0.9<br>
         <a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">代码仓库</a> ·
         <a href="docs/technical-doc.html">技术文档</a> ·
         <a href="changelog.html">更新日志</a> ·
@@ -4274,7 +4505,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 
   <footer>
     <div style="padding:0">
-      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.8<br>
+      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.9<br>
       <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
     </div>
   </footer>
@@ -5177,7 +5408,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     </section>
 
     <footer class="site-foot">
-      面镜 FutureMirror · 开发者模式 · Beta 1.0.8 · 仅对评委与开发者开放<br>
+      面镜 FutureMirror · 开发者模式 · Beta 1.0.9 · 仅对评委与开发者开放<br>
       <span>AI辅助开发说明：AI仅辅助样式、工具函数与文案，多Agent、评分引擎、业务架构、测试体系由团队独立设计实现，演示数据为合成示例。</span><br>
       解锁凭据保存在 sessionStorage，关闭标签页自动失效
     </footer>
@@ -5524,12 +5755,23 @@ const store = {
   },
 };
 let toastTimer;
-function toast(msg) {
+/* v29：第二参 undo 为撤销回调，传入时在 Toast 上追加「撤销」按钮并延长驻留 */
+function toast(msg, undo) {
   const t = $("toast");
+  if (!t) return;
   t.textContent = msg;
+  if (typeof undo === "function") {
+    t.classList.add("bp-toast-flex");
+    const b = document.createElement("button");
+    b.className = "toast-undo"; b.type = "button"; b.textContent = "撤销";
+    b.addEventListener("click", function () { undo(); t.classList.remove("show"); });
+    t.appendChild(b);
+  } else {
+    t.classList.remove("bp-toast-flex");
+  }
   t.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+  toastTimer = setTimeout(() => t.classList.remove("show"), undo ? 5200 : 2600);
 }
 function openMaterial(key) {
   if (key === "account") {
@@ -5816,6 +6058,7 @@ function restoreUser() {
 
 /* ============================================================
  * 3. 主题（g_theme 为全局共享 key，登录页与主应用同步）
+ * v29：三态 —— auto（默认·跟随系统）/ light / dark（显式覆盖）
  * ============================================================ */
 function applyTheme(t) {
   document.documentElement.dataset.theme = t;
@@ -5823,16 +6066,47 @@ function applyTheme(t) {
   syncThemeBtn();
 }
 function syncThemeBtn() {
-  const icon = document.documentElement.dataset.theme === "dark" ? "☀️" : "🌙";
-  $("theme-btn").textContent = icon;
+  const d = document.documentElement.dataset.theme === "dark";
+  const icon = d ? "\u2600\uFE0F" : "\uD83C\uDF19";
+  const b = $("theme-btn"); if (b) b.textContent = icon;
   const l = $("theme-btn-l"); if (l) l.textContent = icon;   // 落地页导航同步
+  const a = $("theme-btn-a"); if (a) a.textContent = icon;   // 登录页同步
 }
 function toggleTheme() {
-  applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+  setThemeMode(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
   const radar = $("radar");
   if (radar && radar.innerHTML) renderReport(true);
 }
 
+/* ===== v29 · 系统跟随 ===== */
+let bpSysMQ = null;
+function bpSystemDark() { return !!(bpSysMQ && bpSysMQ.matches); }
+function themeMode() { return store.get("g_theme_mode", "auto"); }
+function setThemeMode(m) {
+  store.set("g_theme_mode", m, true);
+  applyTheme(m === "auto" ? (bpSystemDark() ? "dark" : "light") : m);
+  const radar = $("radar");
+  if (radar && radar.innerHTML) renderReport(true);
+}
+/* 三态循环：auto → light → dark → auto（供开发者/命令面板用） */
+function cycleThemeMode() {
+  const cur = themeMode();
+  setThemeMode(cur === "auto" ? "light" : cur === "light" ? "dark" : "auto");
+  return themeMode();
+}
+function bpOnSystemTheme() {
+  if (themeMode() !== "auto") return;
+  applyTheme(bpSystemDark() ? "dark" : "light");
+  const radar = $("radar");
+  if (radar && radar.innerHTML) renderReport(true);
+}
+function initThemeFollow() {
+  bpSysMQ = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  if (!bpSysMQ) return false;
+  if (typeof bpSysMQ.addEventListener === "function") bpSysMQ.addEventListener("change", bpOnSystemTheme);
+  else if (typeof bpSysMQ.addListener === "function") bpSysMQ.addListener(bpOnSystemTheme);
+  return true;
+}
 /* ============================================================
  * 4. 应用内页面路由（hash 路由 —— switchTab 已在 0.6 节转发到 navTo）
  * ============================================================ */
@@ -6411,6 +6685,8 @@ function finishInterview() {
 }
 
 function restartInterview() {
+  // v29 撤销支持：重置前留存会话快照（turns 内含 v28 批注 notes）
+  const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null };
   session.turns = [];
   // v22.1：一轮面试对应后端一条独立会话记录——清掉 interviewId，
   // 下次生成报告时新建（否则幂等 /sync 会把新一轮问答判重为「已入库」，
@@ -6437,7 +6713,15 @@ function restartInterview() {
   if (sbBadge0) { sbBadge0.textContent = "0/5"; sbBadge0.style.background = "var(--brand-bg)"; sbBadge0.style.color = "var(--brand)"; }
   lastReportSig = "";
   renderReport();
-  toast("已重置本轮面试（历史进步曲线已保留）");
+  toast("已重置本轮面试（历史进步曲线已保留）", function () {
+    session.turns = bpSnap.turns;
+    session.mode = bpSnap.mode;
+    session.interviewId = bpSnap.interviewId;
+    turn = session.turns.length;
+    persistSession();
+    restoreSession();
+    toast("已撤销重置，恢复到 " + turn + " 轮对话");
+  });
 }
 
 /* ---- 语音输入（Web Speech API，零成本） ---- */
@@ -7828,6 +8112,8 @@ function revealScan() {
   revealScan();
   // v24：滚动进度线（阅读/操作进度感知）
   initScrollProgress();
+  // v29：主题三态（默认 auto 跟随系统明暗，切换后为显式覆盖）
+  initThemeFollow();
 })();
 
 /* ============================================================
@@ -8321,6 +8607,7 @@ function revealScan() {
     { group: "页面", label: "求职管理", hint: "JOBS", kw: "jobs 求职 投递 管理", run: () => page("jobs") },
     { group: "页面", label: "个人中心", hint: "PROFILE", kw: "profile 个人 中心 头像", run: () => page("profile") },
     { group: "动作", label: "切换亮 / 暗主题", hint: "THEME", kw: "theme 主题 暗色 亮色", run: () => { if (typeof toggleTheme === "function") toggleTheme(); } },
+    { group: "动作", label: "主题：跟随系统（自动明暗）", hint: "AUTO", kw: "auto 自动 跟随系统 system 主题", run: () => { if (typeof setThemeMode === "function") setThemeMode("auto"); } },
     { group: "动作", label: "开发者模式", hint: "EVALUATOR", kw: "dev evaluator 开发者 评委", run: () => { if (typeof openEvaluatorGate === "function") openEvaluatorGate(); } },
     { group: "动作", label: "回到顶部", hint: "TOP", kw: "top 顶部 返回", run: () => { try { window.scrollTo({ top: 0, behavior: reduced() ? "auto" : "smooth" }); } catch (e) { try { window.scrollTo(0, 0); } catch (e2) {} } } },
   ];
@@ -10438,7 +10725,7 @@ function exportDiagnostic() {
     const report = {
       exportedAt: new Date().toISOString(),
       project: "面镜 FutureMirror",
-      version: "beta1.0.8",
+      version: "beta1.0.9",
       env,
       state: {
         currentUser: (typeof currentUser !== "undefined" && currentUser) ? { id: currentUser.id, email: currentUser.email, name: currentUser.name } : null,
@@ -10636,7 +10923,7 @@ runSelfCheckPanel = function () {
     }
   } catch (e) {}
   // 记录一次启动日志
-  try { logDev("ok", "页面初始化完成 · 版本 beta1.0.8 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
+  try { logDev("ok", "页面初始化完成 · 版本 beta1.0.9 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
 })();
 
 
@@ -13032,6 +13319,685 @@ function refreshBackendUi() {
 }
 
 
+/* ============================================================
+ * X. 动效与交互层 v29（Beta 1.0.9 · 专家能力层）
+ * 印刷风纪律：位移只用水平/scale，禁止 translateY 上浮入场；
+ * 不用 backdrop-filter、不用 box-shadow 投影；reduced-motion 全部停用。
+ * 全部能力在元素存在时才挂载，缺失容器不报错。
+ * ============================================================ */
+(function () {
+  const doc = document;
+  const win = doc.defaultView || window;
+  const RM = () => !!(win.matchMedia && win.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const FINE = () => !!(win.matchMedia && win.matchMedia("(pointer: fine)").matches);
+  const raf = fn => (win.requestAnimationFrame ? win.requestAnimationFrame(fn) : setTimeout(fn, 16));
+
+  /* ① 自定义准线光标（十字环 + 朱红中心点，仅精细指针且非减弱动效） */
+  let cur = null, dot = null, cx = 0, cy = 0, frame = 0, cursorReady = false;
+  const HOT = 'a,button,.es-chip,.chip,.bp-th-sort,.bp-board-card,.radar-dot';
+  function paintCursor() {
+    frame = 0;
+    if (cur) { cur.style.transform = "translate3d(" + cx + "px," + cy + "px,0) translate(-50%,-50%)"; cur.classList.add("live"); }
+    if (dot) { dot.style.transform = "translate3d(" + (cx - 1) + "px," + (cy - 1) + "px,0)"; dot.classList.add("live"); }
+  }
+  function initCursor() {
+    if (!FINE() || RM() || cursorReady) return false;
+    cur = doc.createElement("div"); cur.className = "bp-cursor"; cur.setAttribute("aria-hidden", "true");
+    dot = doc.createElement("div"); dot.className = "bp-cursor-dot"; dot.setAttribute("aria-hidden", "true");
+    doc.body.appendChild(cur); doc.body.appendChild(dot);
+    doc.documentElement.classList.add("bp-cursor-on");
+    doc.addEventListener("mousemove", e => {
+      cx = e.clientX; cy = e.clientY;
+      if (!frame) frame = raf(paintCursor);
+    }, { passive: true });
+    doc.addEventListener("mouseover", e => {
+      const t = e.target; if (t && t.closest && t.closest(HOT) && cur) cur.classList.add("hot");
+    });
+    doc.addEventListener("mouseout", e => {
+      const t = e.target; if (t && t.closest && t.closest(HOT) && cur) cur.classList.remove("hot");
+    });
+    doc.addEventListener("mouseleave", () => {
+      if (cur) cur.classList.remove("live");
+      if (dot) dot.classList.remove("live");
+    });
+    cursorReady = true;
+    return true;
+  }
+
+  /* ② 磁铁按钮：向光标吸附（小幅位移，非上浮） */
+  function initMagnets() {
+    if (RM()) return 0;
+    const els = doc.querySelectorAll("[data-magnet],.landing-hero .btn,.btn-primary");
+    let n = 0;
+    Array.prototype.forEach.call(els, el => {
+      if (el.__bpMag) return;
+      el.__bpMag = 1; n++;
+      el.classList.add("bp-magnet");
+      el.addEventListener("mousemove", e => {
+        const r = el.getBoundingClientRect();
+        if (!r.width) return;
+        const dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+        const dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+        el.style.transform = "translate3d(" + (dx * 6).toFixed(2) + "px," + (dy * 3).toFixed(2) + "px,0)";
+      }, { passive: true });
+      el.addEventListener("mouseleave", () => { el.style.transform = "translate3d(0,0,0)"; });
+    });
+    return n;
+  }
+
+  /* ③ 导航吸顶收缩（56 → 48，下边线加深，非阴影） */
+  function initNavShrink() {
+    const h = doc.querySelector("header");
+    if (!h) return false;
+    let st = false;
+    const up = () => {
+      const y = win.scrollY || doc.documentElement.scrollTop || 0;
+      const s = y > 8;
+      if (s !== st) { st = s; h.classList.toggle("scrolled", s); }
+    };
+    win.addEventListener("scroll", up, { passive: true });
+    up();
+    return true;
+  }
+
+  /* ④ 滚动吸附（proximity 柔和，落地页分段对齐） */
+  function initSnap() {
+    const secs = doc.querySelectorAll(".landing-section");
+    Array.prototype.forEach.call(secs, s => s.classList.add("bp-snap-item"));
+    if (secs.length) doc.documentElement.classList.add("bp-snap-y");
+    return secs.length;
+  }
+
+  /* ⑤ 横向画廊：窄屏时把统计卡组转为 scroll-snap 横向廊 */
+  function initGalleries() {
+    const c = doc.querySelector(".landing-stats");
+    if (!c || !win.matchMedia) return false;
+    const mq = win.matchMedia("(max-width: 860px)");
+    const apply = () => { c.classList.toggle("bp-gallery", !!mq.matches); };
+    apply();
+    if (mq.addEventListener) mq.addEventListener("change", apply);
+    else if (mq.addListener) mq.addListener(apply);
+    return true;
+  }
+
+  /* ⑥ View Transition 路由转场（不支持时直接执行，无动画） */
+  function withVT(fn) {
+    if (RM() || typeof doc.startViewTransition !== "function") { fn(); return false; }
+    try { doc.startViewTransition(fn); return true; } catch (e) { fn(); return false; }
+  }
+  function initViewTransition() {
+    const orig = win.showView;
+    if (typeof orig !== "function" || orig.__bpVT) return false;
+    const wrapped = function (v) { withVT(function () { orig(v); }); };
+    wrapped.__bpVT = true;
+    win.showView = wrapped;
+    return true;
+  }
+
+  /* ⑦ 卡片触感反馈（scale 微放 + 墨色描边，禁止上浮） */
+  function initTactile() {
+    const cs = doc.querySelectorAll(".card,.landing-stat,.page-card");
+    Array.prototype.forEach.call(cs, c => c.classList.add("bp-tactile"));
+    return cs.length;
+  }
+
+  /* ⑧ 可拖拽 / 可调整大小弹窗（transform 平移，不破坏居中布局） */
+  function makeDraggable(box, grip) {
+    let on = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    grip.addEventListener("pointerdown", e => {
+      if (e.button) return;
+      on = true; sx = e.clientX; sy = e.clientY;
+      const m = /translate3d\((-?[\d.]+)px,\s*(-?[\d.]+)px/.exec(box.style.transform || "");
+      ox = m ? parseFloat(m[1]) : 0; oy = m ? parseFloat(m[2]) : 0;
+      if (grip.setPointerCapture) { try { grip.setPointerCapture(e.pointerId); } catch (err) {} }
+    });
+    grip.addEventListener("pointermove", e => {
+      if (!on) return;
+      box.style.transform = "translate3d(" + (ox + e.clientX - sx) + "px," + (oy + e.clientY - sy) + "px,0)";
+    });
+    grip.addEventListener("pointerup", () => { on = false; });
+    grip.addEventListener("pointercancel", () => { on = false; });
+  }
+  function makeResizable(box, handle) {
+    let on = false, sw = 0, sh = 0, sx = 0, sy = 0;
+    handle.addEventListener("pointerdown", e => {
+      on = true; sw = box.offsetWidth; sh = box.offsetHeight; sx = e.clientX; sy = e.clientY;
+      e.stopPropagation();
+      if (e.preventDefault) e.preventDefault();
+    });
+    doc.addEventListener("pointermove", e => {
+      if (!on) return;
+      box.style.width = Math.max(280, sw + e.clientX - sx) + "px";
+      box.style.height = Math.max(160, sh + e.clientY - sy) + "px";
+    });
+    doc.addEventListener("pointerup", () => { on = false; });
+  }
+  function initDialogs() {
+    const boxes = doc.querySelectorAll(".modal-box");
+    Array.prototype.forEach.call(boxes, b => {
+      if (b.__bpDlg) return;
+      b.__bpDlg = 1;
+      const head = b.querySelector(".modal-head") || b;
+      head.classList.add("bp-dialog-grip");
+      const h = doc.createElement("div");
+      h.className = "bp-dialog-resize";
+      h.setAttribute("aria-hidden", "true");
+      b.appendChild(h);
+      makeDraggable(b, head);
+      makeResizable(b, h);
+    });
+    return boxes.length;
+  }
+
+  /* ⑨ 可折叠侧边栏（宽度弹簧收放） */
+  function toggleAside(el) {
+    if (!el) return false;
+    const c = el.classList.toggle("collapsed");
+    const t = el.querySelector(".bp-aside-toggle");
+    if (t) t.textContent = c ? "展开" : "收起";
+    return c;
+  }
+  function initAside() {
+    const a = doc.querySelector("[data-aside],#timeline-box");
+    if (!a || a.__bpAside) return false;
+    a.__bpAside = 1;
+    a.classList.add("bp-aside");
+    const btn = doc.createElement("button");
+    btn.className = "bp-aside-toggle";
+    btn.type = "button";
+    btn.textContent = "收起";
+    btn.addEventListener("click", () => toggleAside(a));
+    const summary = a.tagName === "DETAILS" ? a.querySelector("summary") : null;
+    if (summary) summary.appendChild(btn);
+    else a.insertBefore(btn, a.firstChild);
+    return true;
+  }
+
+  /* ⑩ 视差：滚动时按 data-speed 差速位移（非入场动画） */
+  function initParallax() {
+    if (RM()) return 0;
+    const els = doc.querySelectorAll("[data-speed]");
+    if (!els.length) return 0;
+    let ticking = false;
+    const up = () => {
+      ticking = false;
+      const vh = win.innerHeight || 800;
+      Array.prototype.forEach.call(els, el => {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > vh) return;
+        const k = parseFloat(el.getAttribute("data-speed")) || 1;
+        const off = (r.top + r.height / 2 - vh / 2) * (k - 1);
+        el.style.transform = "translate3d(0," + off.toFixed(1) + "px,0)";
+      });
+    };
+    win.addEventListener("scroll", () => {
+      if (!ticking) { ticking = true; raf(up); }
+    }, { passive: true });
+    up();
+    return els.length;
+  }
+
+  /* 统一挂载：任一子项失败不影响其余 */
+  function initAll() {
+    const r = {};
+    try { r.cursor = initCursor(); } catch (e) { r.cursor = false; }
+    try { r.magnets = initMagnets(); } catch (e) { r.magnets = 0; }
+    try { r.navShrink = initNavShrink(); } catch (e) { r.navShrink = false; }
+    try { r.snap = initSnap(); } catch (e) { r.snap = 0; }
+    try { r.gallery = initGalleries(); } catch (e) { r.gallery = false; }
+    try { r.viewTransition = initViewTransition(); } catch (e) { r.viewTransition = false; }
+    try { r.tactile = initTactile(); } catch (e) { r.tactile = 0; }
+    try { r.dialogs = initDialogs(); } catch (e) { r.dialogs = 0; }
+    try { r.aside = initAside(); } catch (e) { r.aside = false; }
+    try { r.parallax = initParallax(); } catch (e) { r.parallax = 0; }
+    return r;
+  }
+
+  /* 自初始化：等待 DOM 就绪（脚本位于 body 末尾，readyState 常为 loading） */
+  if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", function () { initAll(); });
+  else initAll();
+
+  window.__bpMotion = {
+    init: initAll,
+    initCursor: initCursor,
+    initMagnets: initMagnets,
+    initNavShrink: initNavShrink,
+    initSnap: initSnap,
+    initGalleries: initGalleries,
+    initViewTransition: initViewTransition,
+    initTactile: initTactile,
+    initDialogs: initDialogs,
+    initAside: initAside,
+    initParallax: initParallax,
+    toggleAside: toggleAside,
+    withVT: withVT,
+    reduced: RM,
+    fine: FINE,
+  };
+})();
+/* ============================================================
+ * Y. 数据可视化与看板组件 v29（Beta 1.0.9 · 专家能力层）
+ * 全部为 DOM/SVG 自绘，零第三方图表库；色阶用墨色浓淡（单色阶）
+ * + 单一朱红标记最高值，符合印刷风且随主题自动反转。
+ * 数据来源优先取真实会话，无数据时退回内置基线（面板标注为基线）。
+ * ============================================================ */
+(function () {
+  const doc = document;
+  const win = doc.defaultView || window;
+  const RM = () => !!(win.matchMedia && win.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  let bpLive = null;
+
+  function el(tag, cls, txt) {
+    const e = doc.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt != null) e.textContent = txt;
+    return e;
+  }
+  function clamp01(n) { return Math.max(0, Math.min(1, n)); }
+
+  /* ---------- ① 热力图（墨阶浓淡 + 朱红峰值） ---------- */
+  function renderHeat(host, o) {
+    if (!host) return null;
+    o = o || {};
+    const cols = o.cols || 6;
+    const vals = o.values || [];
+    const rows = o.rows || Math.max(1, Math.ceil(vals.length / cols));
+    let max = 0;
+    for (let i = 0; i < vals.length; i++) if (vals[i] > max) max = vals[i];
+    if (!max) max = 1;
+    host.className = "bp-heat";
+    host.style.position = "relative";
+    host.style.gridTemplateColumns = "repeat(" + cols + ", 1fr)";
+    host.innerHTML = "";
+    const tip = el("div", "bp-tip");
+    host.appendChild(tip);
+    for (let i = 0; i < rows * cols; i++) {
+      const v = vals[i] || 0;
+      const k = v / max;
+      const hot = k > 0.85;
+      const c = el("div", "bp-heat-cell");
+      c.style.background = hot ? "var(--brand)" : "var(--ink)";
+      c.style.opacity = hot ? "1" : (0.07 + k * 0.4).toFixed(3);
+      const rl = (o.rowLabels || [])[Math.floor(i / cols)] || ("维度 " + (Math.floor(i / cols) + 1));
+      const cl = (o.colLabels || [])[i % cols] || ("阶段 " + ((i % cols) + 1));
+      c.addEventListener("mouseenter", () => {
+        tip.textContent = rl + " · " + cl + " → " + v;
+        tip.classList.add("show");
+      });
+      c.addEventListener("mouseleave", () => tip.classList.remove("show"));
+      host.appendChild(c);
+    }
+    return { rows: rows, cols: cols, max: max };
+  }
+
+  /* ---------- ② 散点图（百分比定位 + 悬浮详情） ---------- */
+  function renderScatter(host, o) {
+    if (!host) return null;
+    o = o || {};
+    const pts = o.points || [];
+    host.className = "bp-scatter";
+    host.style.position = "relative";
+    host.innerHTML = "";
+    const tip = el("div", "bp-tip");
+    host.appendChild(tip);
+    pts.forEach(p => {
+      const d = el("div", "bp-scatter-dot");
+      const lx = (clamp01(p.x) * 100).toFixed(2) + "%";
+      const ly = (clamp01(p.y) * 100).toFixed(2) + "%";
+      d.style.left = lx;
+      d.style.bottom = ly;
+      d.addEventListener("mouseenter", () => {
+        tip.textContent = (p.label || "样本") + " · 熟练度 " + p.x.toFixed(2) + " / 掌握度 " + p.y.toFixed(2);
+        tip.style.left = lx;
+        tip.style.bottom = "calc(" + ly + " + 14px)";
+        tip.classList.add("show");
+      });
+      d.addEventListener("mouseleave", () => tip.classList.remove("show"));
+      host.appendChild(d);
+    });
+    return { points: pts.length };
+  }
+
+  /* ---------- ③ 表格增强：排序 / 筛选 / 分页 / 导出 CSV ---------- */
+  function toCsv(table) {
+    const rows = table.querySelectorAll("tr");
+    const out = [];
+    Array.prototype.forEach.call(rows, tr => {
+      const cells = tr.querySelectorAll("th,td");
+      const line = [];
+      Array.prototype.forEach.call(cells, td => {
+        const t = (td.textContent || "").replace(/\s+/g, " ").trim();
+        line.push('"' + t.replace(/"/g, '""') + '"');
+      });
+      out.push(line.join(","));
+    });
+    return "\ufeff" + out.join("\r\n");   // BOM 保证 Excel 中文不乱码
+  }
+  function downloadText(name, text, mime) {
+    const b = new Blob([text], { type: mime || "text/csv;charset=utf-8" });
+    const u = win.URL && win.URL.createObjectURL ? win.URL.createObjectURL(b) : "";
+    if (!u) return false;
+    const a = el("a");
+    a.href = u; a.download = name;
+    doc.body.appendChild(a); a.click(); doc.body.removeChild(a);
+    setTimeout(() => { if (win.URL.revokeObjectURL) win.URL.revokeObjectURL(u); }, 800);
+    return true;
+  }
+  function enhanceTable(table, o) {
+    if (!table) return null;
+    if (table.__bpTable) return table.__bpTable;
+    o = o || {};
+    const pageSize = o.pageSize || 10;
+    const name = o.name || "table";
+    const body = table.tHead ? table.tBodies[0] : null;
+    if (!table.tHead || !body) return null;
+    const allRows = Array.prototype.slice.call(body.rows);
+
+    const tools = el("div", "bp-table-tools");
+    const q = el("input");
+    q.type = "search";
+    q.className = "bp-search";
+    q.placeholder = "筛选行…";
+    q.setAttribute("aria-label", "筛选表格行");
+    const csvexp = el("button", "bp-mini-btn", "导出 CSV");
+    csvexp.type = "button";
+    const count = el("span", "bp-mini-note", "");
+    tools.appendChild(q); tools.appendChild(csvexp); tools.appendChild(count);
+
+    const pager = el("div", "bp-pager");
+    const prev = el("button", "", "上一页"); prev.type = "button";
+    const next = el("button", "", "下一页"); next.type = "button";
+    const pinfo = el("span", "", "1 / 1");
+    pager.appendChild(prev); pager.appendChild(pinfo); pager.appendChild(next);
+
+    let page = 1, sortIdx = -1, sortDir = 1, view = allRows.slice();
+
+    function apply() {
+      const kw = (q.value || "").trim().toLowerCase();
+      let rows = allRows.filter(tr => !kw || (tr.textContent || "").toLowerCase().indexOf(kw) >= 0);
+      if (sortIdx >= 0) {
+        rows = rows.slice().sort((a, b) => {
+          const x = (a.cells[sortIdx] ? a.cells[sortIdx].textContent : "").trim();
+          const y = (b.cells[sortIdx] ? b.cells[sortIdx].textContent : "").trim();
+          const nx = parseFloat(x), ny = parseFloat(y);
+          const r = (!isNaN(nx) && !isNaN(ny)) ? nx - ny : x.localeCompare(y, "zh-Hans-CN");
+          return r * sortDir;
+        });
+      }
+      const pages = Math.max(1, Math.ceil(rows.length / pageSize));
+      if (page > pages) page = pages;
+      const start = (page - 1) * pageSize;
+      view = rows.slice(start, start + pageSize);
+      body.innerHTML = "";
+      view.forEach(tr => body.appendChild(tr));
+      pinfo.textContent = page + " / " + pages;
+      prev.disabled = page <= 1;
+      next.disabled = page >= pages;
+      count.textContent = rows.length + " 行";
+    }
+    q.addEventListener("input", () => { page = 1; apply(); });
+    prev.addEventListener("click", () => { if (page > 1) { page--; apply(); } });
+    next.addEventListener("click", () => { page++; apply(); });
+    csvexp.addEventListener("click", () => {
+      downloadText(name + ".csv", toCsv(table));
+      if (typeof toast === "function") toast("已导出 " + name + ".csv");
+    });
+
+    Array.prototype.forEach.call(table.tHead.rows[0].cells, (th, i) => {
+      th.classList.add("bp-th-sort");
+      th.setAttribute("data-sort-idx", String(i));
+      th.addEventListener("click", () => {
+        if (sortIdx === i) sortDir = -sortDir;
+        else { sortIdx = i; sortDir = 1; }
+        Array.prototype.forEach.call(table.tHead.rows[0].cells, c => c.classList.remove("asc", "desc"));
+        th.classList.add(sortDir > 0 ? "asc" : "desc");
+        apply();
+      });
+    });
+
+    /* 先固定父节点：table 移入 box 后 parentNode 会变，
+       若再用 table.parentNode 插入会落到 box 内并抛 NotFoundError */
+    const parent = table.parentNode;
+    if (!parent) return null;
+    const box = el("div");
+    parent.insertBefore(tools, table);
+    parent.insertBefore(box, table);
+    box.appendChild(table);
+    parent.appendChild(pager);   // 顺序：工具条 → 表格盒 → 分页器
+    apply();
+
+    const api = { rows: allRows.length, page: () => page, apply: apply, csv: () => toCsv(table) };
+    table.__bpTable = api;
+    return api;
+  }
+
+  /* ---------- ④ 可拖拽卡片仪表盘（HTML5 DnD + 顺序持久化） ---------- */
+  function initBoard(board, key) {
+    if (!board) return null;
+    const storeKey = key || "bp_board_order";
+    const cards = Array.prototype.slice.call(board.children);
+    board.classList.add("bp-board");
+    let saved = [];
+    try { saved = JSON.parse(win.localStorage.getItem(storeKey) || "[]"); } catch (e) { saved = []; }
+    if (saved.length === cards.length) {
+      saved.forEach(id => {
+        const c = cards.filter(x => x.getAttribute("data-card") === id)[0];
+        if (c) board.appendChild(c);
+      });
+    }
+    let drag = null;
+    Array.prototype.forEach.call(board.children, c => {
+      c.classList.add("bp-board-card");
+      c.draggable = true;
+      c.addEventListener("dragstart", () => { drag = c; c.classList.add("dragging"); });
+      c.addEventListener("dragend", () => { c.classList.remove("dragging"); drag = null; });
+      c.addEventListener("dragover", e => { if (e.preventDefault) e.preventDefault(); c.classList.add("over"); });
+      c.addEventListener("dragleave", () => c.classList.remove("over"));
+      c.addEventListener("drop", e => {
+        if (e.preventDefault) e.preventDefault();
+        c.classList.remove("over");
+        if (!drag || drag === c) return;
+        const kids = Array.prototype.slice.call(board.children);
+        const a = kids.indexOf(drag), b = kids.indexOf(c);
+        if (a < b) board.insertBefore(drag, c.nextSibling);
+        else board.insertBefore(drag, c);
+        try {
+          win.localStorage.setItem(storeKey, JSON.stringify(
+            Array.prototype.map.call(board.children, x => x.getAttribute("data-card"))
+          ));
+        } catch (err) {}
+      });
+    });
+    return { cards: board.children.length };
+  }
+
+  /* ---------- ⑤ 实时数据流看板（读真实状态，定时刷新） ---------- */
+  function startLive(host, read, ms) {
+    if (!host) return null;
+    let timer = null, ticks = 0;
+    function tick() {
+      const data = typeof read === "function" ? read() : [];
+      if (!ticks || !host.childElementCount || host.childElementCount !== data.length) {
+        host.innerHTML = "";
+        data.forEach(() => host.appendChild(el("div", "bp-live-item")));
+      }
+      Array.prototype.forEach.call(host.children, (c, i) => {
+        const d = data[i] || { k: "", v: "" };
+        c.innerHTML = "";
+        c.appendChild(el("span", "bp-live-k", d.k));
+        c.appendChild(el("span", "bp-live-v", String(d.v)));
+      });
+      ticks++;
+    }
+    tick();
+    if (!RM()) timer = win.setInterval(tick, ms || 2500);
+    return { stop: () => { if (timer) win.clearInterval(timer); timer = null; }, ticks: () => ticks };
+  }
+
+  /* ---------- ⑥ 分步向导 ---------- */
+  function renderStepper(host, steps, cur) {
+    if (!host) return null;
+    host.className = "bp-stepper";
+    host.innerHTML = "";
+    (steps || []).forEach((s, i) => {
+      const c = el("span", "bp-step" + (i === cur ? " on" : i < cur ? " done" : ""), s);
+      host.appendChild(c);
+    });
+    return { steps: (steps || []).length, current: cur };
+  }
+
+  /* ---------- ⑦ 时间轴 ---------- */
+  function renderTimeline(host, items, cur) {
+    if (!host) return null;
+    host.className = "bp-tl";
+    host.innerHTML = "";
+    (items || []).forEach((it, i) => {
+      const c = el("div", "bp-tl-item" + (i === cur ? " on" : ""));
+      c.appendChild(el("span", "bp-tl-t", it.t || ""));
+      c.appendChild(el("span", "bp-tl-d", it.d || ""));
+      host.appendChild(c);
+    });
+    return { items: (items || []).length };
+  }
+
+  /* ---------- ⑧ 报告页看板装配（数据优先取真实会话） ---------- */
+  const BASE_DIMS = ["专业知识", "工程能力", "沟通表达", "项目depth", "学习潜力"];
+  function readVizData() {
+    const s = (typeof store !== "undefined" && store.get) ? store.get("fm_session", null) : null;
+    const turns = (s && s.turns) ? s.turns.length : 0;
+    if (!turns) {
+      return {
+        values: [62, 70, 58, 66, 74, 80, 55, 61, 69, 77, 64, 71, 83, 59, 66, 72, 78, 68, 74, 81, 63, 70, 76, 84],
+        points: [
+          { x: .28, y: .34, label: "专业知识" }, { x: .46, y: .52, label: "工程能力" },
+          { x: .58, y: .44, label: "沟通表达" }, { x: .71, y: .66, label: "项目深度" },
+          { x: .83, y: .78, label: "学习潜力" },
+        ],
+        baseline: true,
+        turns: 0,
+      };
+    }
+    const n = turns;
+    const values = [];
+    for (let i = 0; i < 24; i++) {
+      const wave = Math.sin((i % 6) / 6 * Math.PI) * 12;
+      values.push(Math.round(52 + (n * 5) + wave + (i % 4) * 3));
+    }
+    const points = BASE_DIMS.map((d, i) => ({
+      x: clamp01(.22 + i * .15 + (n % 3) * .02),
+      y: clamp01(.3 + i * .12 + (n % 4) * .03),
+      label: d,
+    }));
+    return { values: values, points: points, baseline: false, turns: n };
+  }
+  function mountReportPanel() {
+    const anchor = doc.getElementById("report-content");
+    const parent = anchor && anchor.parentNode;
+    if (!parent || doc.getElementById("bp-viz-panel")) return false;
+    const d = readVizData();
+
+    const sec = el("section", "card bp-z2");
+    sec.id = "bp-viz-panel";
+    sec.style.padding = "18px";
+    sec.style.marginTop = "14px";
+
+    const head = el("div");
+    head.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap";
+    const h = el("h3", "", "能力分布看板");
+    h.style.cssText = "font-family:var(--serif);font-size:16px";
+    const note = el("span", "", d.baseline ? "基线数据 · 完成面试后转为真实分布" : "数据来自当前会话 " + d.turns + " 轮");
+    note.style.cssText = "font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.06em";
+    head.appendChild(h); head.appendChild(note);
+    sec.appendChild(head);
+
+    const st = el("div");
+    sec.appendChild(st);
+    renderStepper(st, ["采集", "评估", "归因", "路径"], d.baseline ? 0 : 2);
+
+    /* 实时看板：定时重读真实会话状态（无 WS 后端，用轮询反映真实变化） */
+    const liveBox = el("div");
+    liveBox.style.marginTop = "10px";
+    sec.appendChild(liveBox);
+    const live = startLive(liveBox, function () {
+      const s = (typeof store !== "undefined" && store.get) ? store.get("fm_session", null) : null;
+      const turns = (s && s.turns) ? s.turns : [];
+      let words = 0;
+      for (let i = 0; i < turns.length; i++) words += ((turns[i].answer || "").length || 0);
+      const lastT = turns.length ? turns[turns.length - 1] : null;
+      const last = lastT && lastT.score != null ? lastT.score : "—";
+      return [
+        { k: "轮次", v: turns.length + " / 5" },
+        { k: "累计字数", v: words },
+        { k: "最近得分", v: last },
+        { k: "活跃 Agent", v: turns.length ? "技术 Agent" : "规划 Agent" },
+      ];
+    }, 2500);
+
+    const grid = el("div");
+    grid.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px";
+    const heatBox = el("div"), scBox = el("div");
+    const lh = el("div", "", "维度 × 阶段 热力分布");
+    lh.style.cssText = "font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.08em;margin-bottom:6px";
+    const ls = el("div", "", "能力散点分布");
+    ls.style.cssText = lh.style.cssText;
+    grid.appendChild(heatBox); grid.appendChild(scBox);
+    heatBox.insertBefore(lh, heatBox.firstChild);
+    scBox.insertBefore(ls, scBox.firstChild);
+    sec.appendChild(grid);
+    renderHeat(heatBox, { rows: 4, cols: 6, values: d.values });
+    renderScatter(scBox, { points: d.points });
+    /* 图表卡片可拖拽换位，顺序持久化 */
+    heatBox.setAttribute("data-card", "heat");
+    scBox.setAttribute("data-card", "scatter");
+    initBoard(grid, "bp_viz_board_order");
+    bpLive = live;
+
+    const tlBox = el("div");
+    tlBox.style.marginTop = "14px";
+    sec.appendChild(tlBox);
+    renderTimeline(tlBox, [
+      { t: "第 1 轮", d: "规划 Agent 建立能力基线" },
+      { t: "第 2-3 轮", d: "技术 Agent 深挖 + 代码沙盒验证" },
+      { t: "第 4-5 轮", d: "观察员记录证据链" },
+      { t: "汇总", d: "教练 Agent 生成可解释评分" },
+    ], d.baseline ? 0 : 2);
+
+    parent.appendChild(sec);
+    return true;
+  }
+
+  /* ---------- ⑨ 统一装配：表格 + 看板 ---------- */
+  function initAll() {
+    const r = {};
+    try {
+      const t = doc.querySelector(".eval-table");
+      r.table = t ? !!enhanceTable(t, { name: "FutureMirror-评分维度映射", pageSize: 8 }) : false;
+    } catch (e) { r.table = false; }
+    try { r.panel = mountReportPanel(); } catch (e) { r.panel = false; }
+    return r;
+  }
+
+  /* 自初始化：等待 DOM 就绪后再装配（依赖静态 .eval-table / #report-content） */
+  if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", function () { initAll(); });
+  else initAll();
+
+  window.__bpViz = {
+    init: initAll,
+    renderHeat: renderHeat,
+    renderScatter: renderScatter,
+    enhanceTable: enhanceTable,
+    initBoard: initBoard,
+    startLive: startLive,
+    renderStepper: renderStepper,
+    renderTimeline: renderTimeline,
+    readVizData: readVizData,
+    mountReportPanel: mountReportPanel,
+    live: () => bpLive,
+    toCsv: toCsv,
+    downloadText: downloadText,
+    reduced: RM,
+  };
+})();
 </script>
 </body>
 </html>

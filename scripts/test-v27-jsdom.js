@@ -66,7 +66,7 @@ async function runTests() {
 
   /* ---------- A1. 命令面板 Pro：基础 + 最近访问记录 ---------- */
   console.log("\n--- A1. 命令面板 Pro · 最近访问 ---");
-  ok(!!wA.__bpCmd && wA.__bpCmd.items === 17, "__bpCmd 已启动且 ACTIONS 仍为 17（兼容 v26）");
+  ok(!!wA.__bpCmd && wA.__bpCmd.items === 18, "__bpCmd 已启动且 ACTIONS 为 18（v29 新增跟随系统）");
   ok(typeof wA.__bpCmd._dyn === "function" && typeof wA.__bpCmd._score === "function", "测试钩子 _dyn / _score 已暴露");
   wA.eval("navTo('match')");
   wA.eval("navTo('report')");

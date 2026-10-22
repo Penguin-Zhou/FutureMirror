@@ -280,10 +280,10 @@ body {
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.0.8 · v23 规划中</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.0.9 · v23 规划中</div>
     <div class="meta">
       <span>已发布 <b>29</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.0.8</b></span>
+      <span>当前版本 <b>Beta 1.0.9</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -291,7 +291,7 @@ body {
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.8，为当前正式发布版本（深度交互层：命令面板 Pro + 报告可视化联动 + 表单焦点 + 面试实时批注）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.9，为当前正式发布版本（专家能力层：主题跟随系统 + 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化 + 高级组件）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
@@ -313,6 +313,7 @@ body {
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
+    <li><a href="#vbeta1-9"><span class="cl-toc-tag">Beta 1.0.9</span><span class="cl-toc-title-txt">专家能力层 · 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化</span></a></li>
     <li><a href="#vbeta1-8"><span class="cl-toc-tag">Beta 1.0.8</span><span class="cl-toc-title-txt">深度交互层 · 命令面板 Pro + 报告可视化 + 实时批注</span></a></li>
   <li><a href="#vbeta1-7"><span class="cl-toc-tag">Beta 1.0.7</span><span class="cl-toc-title-txt">全站交互层 · 图纸动作铺满每个页面</span></a></li>
     <li><a href="#vbeta1-6"><span class="cl-toc-tag">Beta 1.0.6</span><span class="cl-toc-title-txt">交互深化层 · 命令面板与滚动语言</span></a></li>
@@ -464,11 +465,40 @@ body {
   <!-- ========================================================
        Beta 1.0.5 · 动态层（Blueprint Motion Kit）
        ======================================================== -->
+  <!-- ========================================================
+       Beta 1.0.9 · 专家能力层（Blueprint Expert Layer）
+       ======================================================== -->
+  <div class="version vbeta1-9" id="vbeta1-9">
+    <div class="version-head">
+      <span class="v-tag v-tag-current">Beta 1.0.9</span>
+      <span class="v-title">专家能力层 · 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化</span>
+      <span class="v-date">2026.10.22 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        在 1.0.8 深度交互层之后，按「高级网页能力清单」逐项补齐 30 项能力，全部沿用印刷风<strong>等价表达</strong>而非照搬玻璃拟态：主题三态（默认 auto 跟随系统明暗，light / dark 显式覆盖，系统切换即时响应）；质感层（<code>feTurbulence</code> 纸纹噪点固定层、墨阶景深 z1/z2/z3 用顶部高光发丝线替代投影、毛玻璃等价 <code>.bp-glass</code> 用半透明纸底 + 纸纹 + 发丝线、光晕边框用 outline 外扩）；微交互（准线十字光标 + 朱红中心点、磁铁按钮向光标吸附、卡片触感 scale 微放而非上浮、Toast 撤销钮可回滚面试重置）；滚动驱动（导航吸顶收缩 56→48、分段 scroll-snap 吸附、窄屏横向画廊、<code>data-speed</code> 视差）；数据可视化（热力图 / 散点图自绘 + 悬浮详情、表格排序筛选分页导出 CSV（含 UTF-8 BOM）、图表卡片可拖拽换位并持久化、基于真实会话的轮询实时看板）；高级组件（可拖拽可调整大小弹窗、分步向导、时间轴、可折叠侧栏、View Transition 路由转场，无 API 时兜底为 clip-path 印刷揭载）。新增 test-v29-jsdom.js 测试套件 103 项断言锁定全部行为（含 reduced-motion 与精细指针双路径）。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>主题会跟随系统</b>：auto / light / dark 三态，系统明暗切换即时响应，命令面板可一键回到自动</div>
+        <div class="vh-item"><b>质感不用毛玻璃</b>：纸纹 + 墨阶 + 发丝线 + outline 外扩，印刷风本来的样子</div>
+        <div class="vh-item"><b>图表与表格能操作</b>：热力 / 散点悬浮详情、排序筛选分页导出 CSV、卡片拖拽换位</div>
+        <div class="vh-item"><b>每个细节可撤销</b>：Toast 撤销钮完整回滚面试重置，弹窗可拖动可缩放</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">103</div><div class="m-label">v29 新增断言</div></div>
+        <div class="metric"><div class="m-val">1240</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">17</div><div class="m-label">jsdom 测试套件</div></div>
+        <div class="metric"><div class="m-val">6</div><div class="m-label">能力方向</div></div>
+      </div>
+    </div>
+  </div>
+
+
   <div class="version vbeta1-8" id="vbeta1-8">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.0.8</span>
+      <span class="v-tag">Beta 1.0.8</span>
       <span class="v-title">深度交互层 · 命令面板 Pro + 报告可视化联动 + 面试实时批注</span>
-      <span class="v-date">2026.10.22 <span class="cur-mark">当前版本</span></span>
+      <span class="v-date">2026.10.22</span>
     </div>
     <div class="version-body">
       <div class="v-summary">

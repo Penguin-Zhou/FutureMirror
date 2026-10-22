@@ -460,6 +460,8 @@ function finishInterview() {
 }
 
 function restartInterview() {
+  // v29 撤销支持：重置前留存会话快照（turns 内含 v28 批注 notes）
+  const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null };
   session.turns = [];
   // v22.1：一轮面试对应后端一条独立会话记录——清掉 interviewId，
   // 下次生成报告时新建（否则幂等 /sync 会把新一轮问答判重为「已入库」，
@@ -486,7 +488,15 @@ function restartInterview() {
   if (sbBadge0) { sbBadge0.textContent = "0/5"; sbBadge0.style.background = "var(--brand-bg)"; sbBadge0.style.color = "var(--brand)"; }
   lastReportSig = "";
   renderReport();
-  toast("已重置本轮面试（历史进步曲线已保留）");
+  toast("已重置本轮面试（历史进步曲线已保留）", function () {
+    session.turns = bpSnap.turns;
+    session.mode = bpSnap.mode;
+    session.interviewId = bpSnap.interviewId;
+    turn = session.turns.length;
+    persistSession();
+    restoreSession();
+    toast("已撤销重置，恢复到 " + turn + " 轮对话");
+  });
 }
 
 /* ---- 语音输入（Web Speech API，零成本） ---- */
