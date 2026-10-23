@@ -103,3 +103,45 @@ def test_live_stats_rest_and_websocket():
         with c.websocket_connect("/ws/live") as ws:
             first = ws.receive_json()
             assert first["ok"] is True and first["turns"] >= 0
+
+def test_secret_key_is_never_the_hardcoded_default():
+    """安全回归：未配置 SECRET_KEY 时不得回退到硬编码常量（否则令牌可伪造）。"""
+    from app import main as m
+    assert m.SECRET_KEY != "dev-only-secret"
+    assert len(m.SECRET_KEY) >= 32
+
+
+def test_chat_stream_rejects_oversized_input(monkeypatch):
+    """输入长度上限：挡住粘贴整本简历式的误用与按量计费模型的滥用。"""
+    from app import main as m
+    monkeypatch.setattr(m, "llm_ready", lambda: True)
+    with TestClient(app) as c:
+        email = f"t{__import__('time').time_ns()}@ex.com"
+        reg = c.post("/api/auth/register",
+                     json={"name": "测试", "email": email, "password": "abc123"})
+        assert reg.status_code == 200, reg.text
+        auth = {"X-Auth-Token": reg.json()["token"]}
+        long_msg = "x" * (m.MAX_MESSAGE_CHARS + 1)
+        r = c.post("/api/chat/stream", json={"messages": [{"role": "user", "content": long_msg}]},
+                   headers=auth)
+        assert r.status_code == 400 and "单条消息过长" in r.json()["detail"]
+
+        many = [{"role": "user", "content": "y" * m.MAX_MESSAGE_CHARS}] * 10
+        r2 = c.post("/api/chat/stream", json={"messages": many},
+                    headers=auth)
+        assert r2.status_code == 400 and "会话上下文过长" in r2.json()["detail"]
+
+
+def test_websocket_connection_counter_is_released():
+    """看板连接计数必须回收，否则达到上限后所有新连接都会被永久拒绝。"""
+    from app import main as m
+    with TestClient(app) as c:
+        before = m._ws_connections
+        with c.websocket_connect("/ws/live"):
+            assert m._ws_connections == before + 1
+        # 断开事件由事件循环异步投递，给服务端一点时间跑完 finally
+        for _ in range(50):
+            if m._ws_connections == before:
+                break
+            __import__("time").sleep(0.05)
+        assert m._ws_connections == before
