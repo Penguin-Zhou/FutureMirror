@@ -3,8 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.1.0 演示版）</title>
+<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.1.1 演示版）</title>
 <meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台（在线演示版）">
+<meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1C1913" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="面镜 FutureMirror · 多 Agent 模拟面试平台">
+<meta property="og:description" content="五个 Agent 协作完成一场可解释的模拟面试：规划、技术深挖、代码沙盒验证、证据记录、可解释评分与成长路径。">
+<meta name="twitter:card" content="summary">
+<!-- 站点图标：内联 SVG（墨底取景器），零额外请求、不引入二进制资源 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect width='26' height='26' fill='%231C1913'/%3E%3Cellipse cx='13' cy='13' rx='8.5' ry='5' fill='none' stroke='%23F4F1E8' stroke-width='1.6'/%3E%3Ccircle cx='13' cy='13' r='2.4' fill='%23F4F1E8'/%3E%3C/svg%3E">
 <script>
 /* 主题预置：先于 body 渲染，避免首屏闪白/闪主题（g_theme/g_accent 为全局共享 key，不随用户隔离） */
 try {
@@ -485,13 +493,16 @@ try {
   /* 头部玻璃效果加强 */
   header { background: var(--bg); }
 
-  /* Hero 光晕 */
+  /* Hero 光晕：单一品牌色极淡晕染。
+   * 印刷风等价表达——不用多色渐变、不用 blur 滤镜，
+   * 透明度交给 opacity，色相交给 var(--brand)，随主题与强调色自动切换。 */
   .hero { position: relative; }
   .hero::before {
     content: ""; position: absolute; left: 50%; top: 0; transform: translateX(-50%);
     width: 620px; height: 320px; max-width: 100%;
-    background: radial-gradient(circle, rgba(99,102,241,.22) 0%, transparent 70%);
-    z-index: -1; pointer-events: none; filter: blur(30px);
+    background: radial-gradient(circle, var(--brand) 0%, transparent 70%);
+    opacity: .1;
+    z-index: -1; pointer-events: none;
   }
   .hero h1 { font-size: 46px; color: var(--ink); }
   .hero h1 span { -webkit-text-fill-color: var(--brand); }
@@ -624,19 +635,12 @@ try {
 
   /* ---------- 落地页 ---------- */
   .landing { background: var(--bg); }
+  /* 早期 Arkira 版的三色蓝紫光晕已移除：与「无渐变 · 单色阶」的印刷风纪律冲突。
+   * 现由 theme.css 的 .landing-hero 统一接管（纯纸底 + 墨色底规）。 */
   .landing-hero {
     position: relative; overflow: hidden;
     padding: 72px 0 88px; text-align: center;
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,.28), transparent 60%),
-                radial-gradient(ellipse 60% 50% at 85% 15%, rgba(139,92,246,.18), transparent 60%),
-                radial-gradient(ellipse 50% 40% at 10% 30%, rgba(59,130,246,.12), transparent 65%),
-                var(--bg);
-  }
-  [data-theme="dark"] .landing-hero {
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,.22), transparent 60%),
-                radial-gradient(ellipse 60% 50% at 85% 15%, rgba(139,92,246,.14), transparent 60%),
-                radial-gradient(ellipse 50% 40% at 10% 30%, rgba(59,130,246,.10), transparent 65%),
-                var(--bg);
+    background: var(--bg);
   }
   .landing-hero::before {
     content: ""; position: absolute; inset: 0;
@@ -3897,7 +3901,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <a href="changelog.html">更新日志</a>
       </div>
       <div class="landing-nav-meta">
-        <span class="bp-ver">BETA 1.1.0</span>
+        <span class="bp-ver">BETA 1.1.1</span>
         <button class="btn btn-ghost btn-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式">🌙</button>
         <button class="btn btn-ghost btn-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）">🟣</button>
         <button class="btn btn-outline btn-sm" onclick="showView('app')">免费体验</button>
@@ -3911,7 +3915,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     <div class="wrap">
       <div class="hero-grid">
         <div class="hero-main">
-          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.1.0</span>
+          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.1.1</span>
           <div class="hero-rotator" aria-live="polite"><span class="hr-prefix">&gt;_</span><span class="hr-text" id="hr-text"></span><i class="hr-caret" aria-hidden="true"></i></div>
           <div class="eyebrow"><span class="eyebrow-no">VOL.1</span>AI NATIVE · 多 AGENT 模拟面试平台</div>
           <h1 class="hero-title">
@@ -3941,7 +3945,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>服务端五维引擎</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>1314 + 18</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>1317 + 21</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -4146,7 +4150,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   </section>
 
   <footer class="site-foot">
-    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.1.0<br>
+    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.1.1<br>
     <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
   </footer>
 
@@ -4298,7 +4302,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 <!-- ===== 演示版声明横幅（可关闭） ===== -->
 <div class="banner" id="demo-banner" role="note">
   <div class="wrap">
-    <b>本页 = 在线演示版首页 · Beta 1.1.0</b>
+    <b>本页 = 在线演示版首页 · Beta 1.1.1</b>
     <span>（已接通真实后端：LLM 流式对话 / JWT 登录 / 服务端评分均在线可验；无后端或断网时自动降级本地 Mock，流程不中断）</span>
     <button class="btn btn-primary btn-sm" onclick="openMaterial('full')" style="margin-left:auto">前往完整项目 →</button>
     <button class="btn btn-ghost btn-sm" onclick="dismissBanner()" aria-label="关闭横幅">✕</button>
@@ -4349,7 +4353,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       </a>
 
       <div class="sb-footer">
-        面镜 FutureMirror · beta1.1.0<br>
+        面镜 FutureMirror · beta1.1.1<br>
         <a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">代码仓库</a> ·
         <a href="docs/technical-doc.html">技术文档</a> ·
         <a href="changelog.html">更新日志</a> ·
@@ -4556,7 +4560,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 
   <footer>
     <div style="padding:0">
-      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.1.0<br>
+      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.1.1<br>
       <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
     </div>
   </footer>
@@ -5459,7 +5463,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     </section>
 
     <footer class="site-foot">
-      面镜 FutureMirror · 开发者模式 · Beta 1.1.0 · 仅对评委与开发者开放<br>
+      面镜 FutureMirror · 开发者模式 · Beta 1.1.1 · 仅对评委与开发者开放<br>
       <span>AI辅助开发说明：AI仅辅助样式、工具函数与文案，多Agent、评分引擎、业务架构、测试体系由团队独立设计实现，演示数据为合成示例。</span><br>
       解锁凭据保存在 sessionStorage，关闭标签页自动失效
     </footer>
@@ -5783,6 +5787,13 @@ function closeNavDropdown() { /* noop：下拉 UI 已在 v10 下线 */ }
 const $ = id => document.getElementById(id);
 let currentUser = null;   // { id, email, name, passHash, createdAt }
 
+/* HTML 转义：凡是把用户输入（简历原文、面试回答、岗位名、笔记）拼进 innerHTML
+ * 的地方都必须先过这一层，否则一段带标签的文本就能改变 DOM 结构。 */
+const ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+function escHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ESC_MAP[c]);
+}
+
 /* 数据隔离 key：g_ 前缀表示全局共享；其余按当前用户加前缀（用户 id 自带 u_ 前缀） */
 function kk(k) {
   if (k.startsWith("g_")) return k;
@@ -5855,11 +5866,12 @@ function simpleHash(s) {
 }
 function genId() { return "u_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-/* 根据名字生成头像渐变底色（同名同色） */
+/* 根据名字生成头像渐变底色（同名同色）
+ * 调色板沿用蓝图编辑风的墨阶 + 单一朱红：早期版本的蓝紫/粉青撞色已移除。 */
 function avatarStyle(name) {
   const palettes = [
-    ["#6366f1", "#8b5cf6"], ["#ec4899", "#f43f5e"], ["#0ea5e9", "#22d3ee"],
-    ["#f59e0b", "#f97316"], ["#10b981", "#14b8a6"], ["#8b5cf6", "#d946ef"],
+    ["#1C1913", "#57503E"], ["#57503E", "#948C77"], ["#948C77", "#B9B29A"],
+    ["#BE3A1E", "#9C2B12"], ["#1C1913", "#BE3A1E"], ["#57503E", "#D6552F"],
   ];
   let h = 0;
   for (const c of (name || "?")) h = (h * 31 + c.charCodeAt(0)) | 0;
@@ -6239,11 +6251,11 @@ function analyze() {
       ${ringSVG(p.matchScore)}
       <div class="match-body">
         <div style="margin-bottom:10px"><b style="font-size:13.5px">✅ 已具备技能</b><br>
-          ${p.skills.length ? p.skills.map(s => `<span class="chip chip-green">${s}</span>`).join("") : '<span style="color:var(--faint);font-size:13px">未识别到</span>'}</div>
+          ${p.skills.length ? p.skills.map(s => `<span class="chip chip-green">${escHtml(s)}</span>`).join("") : '<span style="color:var(--faint);font-size:13px">未识别到</span>'}</div>
         <div style="margin-bottom:10px"><b style="font-size:13.5px">⚠️ 能力缺口</b><br>
-          ${p.gaps.length ? p.gaps.map(g => `<span class="chip chip-red">${g}</span>`).join("") : '<span style="color:var(--faint);font-size:13px">无明显缺口</span>'}</div>
+          ${p.gaps.length ? p.gaps.map(g => `<span class="chip chip-red">${escHtml(g)}</span>`).join("") : '<span style="color:var(--faint);font-size:13px">无明显缺口</span>'}</div>
         <div><b style="font-size:13.5px">💡 补强建议</b>
-          <ul style="padding-left:18px;font-size:13px;color:var(--muted);line-height:1.9">${p.suggestions.map(s => `<li>${s}</li>`).join("")}</ul></div>
+          <ul style="padding-left:18px;font-size:13px;color:var(--muted);line-height:1.9">${p.suggestions.map(s => `<li>${escHtml(s)}</li>`).join("")}</ul></div>
         <div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="switchTab('interview')">开始多 Agent 模拟面试 →</button></div>
       </div>
     </div>`;
@@ -6580,7 +6592,7 @@ function addTimeline(agent, text, kind) {
   const div = document.createElement("div");
   div.className = "tl-item" + (kind ? " " + kind : "");
   const icon = kind === "note" ? "📝 " : kind === "tool" ? "🔧 " : "";
-  div.innerHTML = `<span class="tl-agent">${agent}</span><br>${icon}${text}`;
+  div.innerHTML = `<span class="tl-agent">${escHtml(agent)}</span><br>${icon}${escHtml(text)}`;
   tl.appendChild(div);
   tl.scrollTop = tl.scrollHeight;
 }
@@ -6655,7 +6667,12 @@ function sendMsgMock(text, speaker, keyword, notes) {
     body.scrollTop = body.scrollHeight;
     let i = 0;
     const timer = setInterval(() => {
-      bubble.innerHTML = question.slice(0, ++i) + '<span class="caret"></span>';
+      /* 用 textContent 逐字推进再挂光标，避免把问题文本当 HTML 解析
+       * （innerHTML 拼接会让文本里的标签改变 DOM 结构） */
+      bubble.textContent = question.slice(0, ++i);
+      const caret = document.createElement("span");
+      caret.className = "caret";
+      bubble.appendChild(caret);
       body.scrollTop = body.scrollHeight;
       if (i >= question.length) {
         clearInterval(timer);
@@ -6693,7 +6710,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   body.scrollTop = body.scrollHeight;
 
   const ctrl = new AbortController();
-  setTimeout(() => ctrl.abort(), 60000);
+  const killTimer = setTimeout(() => ctrl.abort(), 60000);
   let full = "";
   let streamStarted = false;
   try {
@@ -6707,6 +6724,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
     v16MaybeAutoSpeak();
     $("fallback-banner").hidden = true;
   } catch (e) {
+    clearTimeout(killTimer);
     hideTyping();
     bubble.remove();
     const reason = e.name === "AbortError" ? "超时 60s" : e.message;
@@ -6718,6 +6736,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
     sendMsgMock(text, speaker, keyword, notes);
     return;
   }
+  clearTimeout(killTimer);
   addTimeline("观察员 Agent", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
   startAnswerTimer();
   session.turns.push({ agent: speaker.name, question: full, answer: text, notes, mode: session.mode });
@@ -7749,8 +7768,8 @@ async function renderReport(force) {
     </div>
     <div class="pane-title" style="margin-top:18px">评分证据（引用你的真实回答）</div>
     <div id="evidence">${evidence.map(e => `
-      <div class="evidence"><span class="badge badge-brand">${e.agent}</span><br>
-        <q>“${e.quote}”</q><p>📝 ${e.note}</p></div>`).join("")}</div>
+      <div class="evidence"><span class="badge badge-brand">${esc(e.agent)}</span><br>
+        <q>“${esc(e.quote)}”</q><p>📝 ${esc(e.note)}</p></div>`).join("")}</div>
     ${rewrites.length ? `<div class="pane-title" style="margin-top:18px">✍️ 句子级改写建议 <span class="tag-demo">规则引擎 · 无需 LLM</span></div>
     <div id="rewrites">${rewrites.map(r => `
       <div class="evidence"><span class="badge badge-amber rw-dim">${r.dimension}</span><q>“${esc(r.original)}”</q><p>✍️ ${esc(r.advice)}</p></div>`).join("")}</div>` : ""}
@@ -7829,7 +7848,7 @@ function liveRadarSVG(dims) {
   const vpts = dims.map((d, i) => pt(i, R * d.score / 100).join(",")).join(" ");
   return `<svg viewBox="0 0 140 140" style="width:100%;max-width:150px" role="img" aria-label="实时能力雷达">
     ${ring}${axes}
-    <polygon points="${vpts}" fill="rgba(99,102,241,.35)" stroke="var(--brand)" stroke-width="1.8" style="transition:all .4s"/>
+    <polygon points="${vpts}" fill="var(--brand)" fill-opacity=".28" stroke="var(--brand)" stroke-width="1.8" style="transition:all .4s"/>
   </svg>`;
 }
 
@@ -9461,9 +9480,9 @@ function analyzeResume() {
         ${r.rewrites.length
           ? r.rewrites.slice(0, 5).map(w => `
               <div class="evidence">
-                <span class="badge badge-red">${w.issue}</span>
-                <p style="margin-top:6px"><b>原文：</b><q>${w.original}</q></p>
-                <p><b>改写：</b>${w.suggestion}</p>
+                <span class="badge badge-red">${escHtml(w.issue)}</span>
+                <p style="margin-top:6px"><b>原文：</b><q>${escHtml(w.original)}</q></p>
+                <p><b>改写：</b>${escHtml(w.suggestion)}</p>
               </div>`).join("")
           : '<div class="evidence"><span class="badge badge-green">结构较好</span><p>未检测到明显的量化缺失或动词问题，建议进一步用 LLM 深度打磨。</p></div>'}
       </div>
@@ -10783,7 +10802,7 @@ function exportDiagnostic() {
     const report = {
       exportedAt: new Date().toISOString(),
       project: "面镜 FutureMirror",
-      version: "beta1.1.0",
+      version: "beta1.1.1",
       env,
       state: {
         currentUser: (typeof currentUser !== "undefined" && currentUser) ? { id: currentUser.id, email: currentUser.email, name: currentUser.name } : null,
@@ -10981,7 +11000,7 @@ runSelfCheckPanel = function () {
     }
   } catch (e) {}
   // 记录一次启动日志
-  try { logDev("ok", "页面初始化完成 · 版本 beta1.1.0 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
+  try { logDev("ok", "页面初始化完成 · 版本 beta1.1.1 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
 })();
 
 
@@ -11031,9 +11050,10 @@ const PROFILE_DEFAULTS = {
   vip: false,
 };
 
-/* HTML 转义（资料字段均为用户输入，渲染前必须转义） */
+/* HTML 转义（资料字段均为用户输入，渲染前必须转义）
+ * 统一走 store.js 的 escHtml，避免两份转义实现各自漂移。 */
 function esc(s) {
-  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  return escHtml(s);
 }
 
 function getProfile() {
@@ -13188,7 +13208,9 @@ const fmApi = {
     let saved = "";
     try { saved = localStorage.getItem("fm_api_base") || ""; } catch (e) {}
     this.base = (window.FM_API_BASE || saved || FM_API_DEFAULT_BASE).replace(/\/+$/, "");
-    this.token = sessionStorage.getItem("fm_token") || "";
+    /* sessionStorage 在隐私模式 / 沙箱 iframe 下可能直接抛异常，
+     * 与上面的 localStorage 一样必须包起来，否则整个 init() 会中断。 */
+    try { this.token = sessionStorage.getItem("fm_token") || ""; } catch (e) { this.token = ""; }
   },
   backendReady() { return this.ready && !!this.health && this.health.ok; },
   backendModel() { return (this.health && this.health.model) || "后端模型"; },
@@ -13218,13 +13240,16 @@ const fmApi = {
     if (!force && this.health && now - this.healthAt < 30000) return this.health;
     if (typeof fetch !== "function") { this.ready = false; return null; }
     const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 8000);
+    /* 超时定时器必须在请求结束后清掉，否则每次健康检测都会留下一个 8 秒的空转定时器 */
+    const kill = setTimeout(() => ctrl.abort(), 8000);
     try {
       const res = await fetch(this.base + "/api/health", { signal: ctrl.signal });
       const j = await res.json();
       this.health = { ok: !!j.ok, llm_ready: !!j.llm_ready, model: j.model || null };
     } catch (e) {
       this.health = { ok: false, llm_ready: false, model: null };
+    } finally {
+      clearTimeout(kill);
     }
     this.healthAt = Date.now();
     this.ready = this.health.ok;
@@ -13335,8 +13360,10 @@ const fmApi = {
 
 function llmLabel() {
   if (fmApi.backendReady()) return `后端 ${fmApi.backendModel()} @ ${hostOf(fmApi.base)}`;
-  if (llm) return `${llm.model} @ ${hostOf(llm.baseUrl)}`;
-  return "Mock 模式";   // v22.1：llm 为空时不再抛 TypeError
+  /* llm 是另一个模块声明的全局变量：未加载时直接引用会抛 ReferenceError，
+   * 用 typeof 先探活，保证降级文案一定能输出。 */
+  if (typeof llm !== "undefined" && llm) return `${llm.model} @ ${hostOf(llm.baseUrl)}`;
+  return "Mock 模式";
 }
 
 function saveApiBase() {
@@ -14209,6 +14236,12 @@ function refreshBackendUi() {
     const anchor = doc.getElementById("report-content");
     const parent = anchor && anchor.parentNode;
     if (!parent || doc.getElementById("bp-viz-panel")) return false;
+    /* 单实例守卫：报告重渲染会先清空 report-content 再重建面板，
+     * 若不先停掉上一个 live，每次重渲染都会留下一条孤儿定时器 / WebSocket。 */
+    if (bpLive && typeof bpLive.stop === "function") {
+      try { bpLive.stop(); } catch (e) {}
+      bpLive = null;
+    }
     const d = readVizData();
 
     const sec = el("section", "card bp-z2");
