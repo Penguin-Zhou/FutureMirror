@@ -73,6 +73,13 @@ function runTests() {
   /* ---------- B. 去玻璃拟态 + 蓝图网格基底 ---------- */
   ok(!/backdrop-filter/.test(css), "全站无 backdrop-filter（玻璃拟态已移除）");
   ok(!/linear-gradient\(135deg, #(4f46e5|6366f1|8b5cf6)/.test(css), "无蓝紫渐变硬编码");
+  /* 补充：早期残留是以 radial-gradient 的 rgba 形式存活的（indigo / violet / blue），
+   * 上面那条只查了 linear-gradient + hex，抓不到。这里按色值本身兜底。 */
+  ok(!/rgba?\(\s*(99,\s*102,\s*241|139,\s*92,\s*246|59,\s*130,\s*246|79,\s*70,\s*229)/i.test(css),
+     "无蓝紫系色值残留（含 radial-gradient 的 rgba 写法）");
+  ok(!/#(4f46e5|6366f1|8b5cf6|ec4899|f43f5e|0ea5e9|22d3ee|10b981|14b8a6|d946ef)\b/i.test(css),
+     "无多色撞色硬编码（头像/装饰统一走墨阶 + 单一朱红）");
+  ok(!/\.hero::before\s*\{[^}]*filter:\s*blur/.test(css), "装饰性光晕不使用 blur 滤镜（改用 opacity 控浓淡）");
   ok(ruleHas(".card", /background:\s*var\(--card\)/), ".card 实色纸面（无半透明玻璃）");
   ok(ruleHas("body", /background-image:[\s\S]*linear-gradient\(var\(--grid-line\)/), "body 铺设蓝图网格");
   ok(/--grid-line:/.test(css) && /--grid-major:/.test(css), "蓝图网格线变量已定义");

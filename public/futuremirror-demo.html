@@ -493,13 +493,16 @@ try {
   /* 头部玻璃效果加强 */
   header { background: var(--bg); }
 
-  /* Hero 光晕 */
+  /* Hero 光晕：单一品牌色极淡晕染。
+   * 印刷风等价表达——不用多色渐变、不用 blur 滤镜，
+   * 透明度交给 opacity，色相交给 var(--brand)，随主题与强调色自动切换。 */
   .hero { position: relative; }
   .hero::before {
     content: ""; position: absolute; left: 50%; top: 0; transform: translateX(-50%);
     width: 620px; height: 320px; max-width: 100%;
-    background: radial-gradient(circle, rgba(99,102,241,.22) 0%, transparent 70%);
-    z-index: -1; pointer-events: none; filter: blur(30px);
+    background: radial-gradient(circle, var(--brand) 0%, transparent 70%);
+    opacity: .1;
+    z-index: -1; pointer-events: none;
   }
   .hero h1 { font-size: 46px; color: var(--ink); }
   .hero h1 span { -webkit-text-fill-color: var(--brand); }
@@ -632,19 +635,12 @@ try {
 
   /* ---------- 落地页 ---------- */
   .landing { background: var(--bg); }
+  /* 早期 Arkira 版的三色蓝紫光晕已移除：与「无渐变 · 单色阶」的印刷风纪律冲突。
+   * 现由 theme.css 的 .landing-hero 统一接管（纯纸底 + 墨色底规）。 */
   .landing-hero {
     position: relative; overflow: hidden;
     padding: 72px 0 88px; text-align: center;
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,.28), transparent 60%),
-                radial-gradient(ellipse 60% 50% at 85% 15%, rgba(139,92,246,.18), transparent 60%),
-                radial-gradient(ellipse 50% 40% at 10% 30%, rgba(59,130,246,.12), transparent 65%),
-                var(--bg);
-  }
-  [data-theme="dark"] .landing-hero {
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,.22), transparent 60%),
-                radial-gradient(ellipse 60% 50% at 85% 15%, rgba(139,92,246,.14), transparent 60%),
-                radial-gradient(ellipse 50% 40% at 10% 30%, rgba(59,130,246,.10), transparent 65%),
-                var(--bg);
+    background: var(--bg);
   }
   .landing-hero::before {
     content: ""; position: absolute; inset: 0;
@@ -5870,11 +5866,12 @@ function simpleHash(s) {
 }
 function genId() { return "u_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-/* 根据名字生成头像渐变底色（同名同色） */
+/* 根据名字生成头像渐变底色（同名同色）
+ * 调色板沿用蓝图编辑风的墨阶 + 单一朱红：早期版本的蓝紫/粉青撞色已移除。 */
 function avatarStyle(name) {
   const palettes = [
-    ["#6366f1", "#8b5cf6"], ["#ec4899", "#f43f5e"], ["#0ea5e9", "#22d3ee"],
-    ["#f59e0b", "#f97316"], ["#10b981", "#14b8a6"], ["#8b5cf6", "#d946ef"],
+    ["#1C1913", "#57503E"], ["#57503E", "#948C77"], ["#948C77", "#B9B29A"],
+    ["#BE3A1E", "#9C2B12"], ["#1C1913", "#BE3A1E"], ["#57503E", "#D6552F"],
   ];
   let h = 0;
   for (const c of (name || "?")) h = (h * 31 + c.charCodeAt(0)) | 0;
@@ -7851,7 +7848,7 @@ function liveRadarSVG(dims) {
   const vpts = dims.map((d, i) => pt(i, R * d.score / 100).join(",")).join(" ");
   return `<svg viewBox="0 0 140 140" style="width:100%;max-width:150px" role="img" aria-label="实时能力雷达">
     ${ring}${axes}
-    <polygon points="${vpts}" fill="rgba(99,102,241,.35)" stroke="var(--brand)" stroke-width="1.8" style="transition:all .4s"/>
+    <polygon points="${vpts}" fill="var(--brand)" fill-opacity=".28" stroke="var(--brand)" stroke-width="1.8" style="transition:all .4s"/>
   </svg>`;
 }
 
