@@ -465,13 +465,16 @@
   /* 头部玻璃效果加强 */
   header { background: var(--bg); }
 
-  /* Hero 光晕 */
+  /* Hero 光晕：单一品牌色极淡晕染。
+   * 印刷风等价表达——不用多色渐变、不用 blur 滤镜，
+   * 透明度交给 opacity，色相交给 var(--brand)，随主题与强调色自动切换。 */
   .hero { position: relative; }
   .hero::before {
     content: ""; position: absolute; left: 50%; top: 0; transform: translateX(-50%);
     width: 620px; height: 320px; max-width: 100%;
-    background: radial-gradient(circle, rgba(99,102,241,.22) 0%, transparent 70%);
-    z-index: -1; pointer-events: none; filter: blur(30px);
+    background: radial-gradient(circle, var(--brand) 0%, transparent 70%);
+    opacity: .1;
+    z-index: -1; pointer-events: none;
   }
   .hero h1 { font-size: 46px; color: var(--ink); }
   .hero h1 span { -webkit-text-fill-color: var(--brand); }
@@ -604,19 +607,12 @@
 
   /* ---------- 落地页 ---------- */
   .landing { background: var(--bg); }
+  /* 早期 Arkira 版的三色蓝紫光晕已移除：与「无渐变 · 单色阶」的印刷风纪律冲突。
+   * 现由 theme.css 的 .landing-hero 统一接管（纯纸底 + 墨色底规）。 */
   .landing-hero {
     position: relative; overflow: hidden;
     padding: 72px 0 88px; text-align: center;
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,.28), transparent 60%),
-                radial-gradient(ellipse 60% 50% at 85% 15%, rgba(139,92,246,.18), transparent 60%),
-                radial-gradient(ellipse 50% 40% at 10% 30%, rgba(59,130,246,.12), transparent 65%),
-                var(--bg);
-  }
-  [data-theme="dark"] .landing-hero {
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,.22), transparent 60%),
-                radial-gradient(ellipse 60% 50% at 85% 15%, rgba(139,92,246,.14), transparent 60%),
-                radial-gradient(ellipse 50% 40% at 10% 30%, rgba(59,130,246,.10), transparent 65%),
-                var(--bg);
+    background: var(--bg);
   }
   .landing-hero::before {
     content: ""; position: absolute; inset: 0;

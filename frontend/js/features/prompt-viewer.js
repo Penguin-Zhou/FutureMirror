@@ -22,7 +22,7 @@ function liveRadarSVG(dims) {
   const vpts = dims.map((d, i) => pt(i, R * d.score / 100).join(",")).join(" ");
   return `<svg viewBox="0 0 140 140" style="width:100%;max-width:150px" role="img" aria-label="实时能力雷达">
     ${ring}${axes}
-    <polygon points="${vpts}" fill="rgba(99,102,241,.35)" stroke="var(--brand)" stroke-width="1.8" style="transition:all .4s"/>
+    <polygon points="${vpts}" fill="var(--brand)" fill-opacity=".28" stroke="var(--brand)" stroke-width="1.8" style="transition:all .4s"/>
   </svg>`;
 }
 

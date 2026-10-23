@@ -19,11 +19,12 @@ function simpleHash(s) {
 }
 function genId() { return "u_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-/* 根据名字生成头像渐变底色（同名同色） */
+/* 根据名字生成头像渐变底色（同名同色）
+ * 调色板沿用蓝图编辑风的墨阶 + 单一朱红：早期版本的蓝紫/粉青撞色已移除。 */
 function avatarStyle(name) {
   const palettes = [
-    ["#6366f1", "#8b5cf6"], ["#ec4899", "#f43f5e"], ["#0ea5e9", "#22d3ee"],
-    ["#f59e0b", "#f97316"], ["#10b981", "#14b8a6"], ["#8b5cf6", "#d946ef"],
+    ["#1C1913", "#57503E"], ["#57503E", "#948C77"], ["#948C77", "#B9B29A"],
+    ["#BE3A1E", "#9C2B12"], ["#1C1913", "#BE3A1E"], ["#57503E", "#D6552F"],
   ];
   let h = 0;
   for (const c of (name || "?")) h = (h * 31 + c.charCodeAt(0)) | 0;
