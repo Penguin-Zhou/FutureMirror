@@ -513,6 +513,12 @@
     const anchor = doc.getElementById("report-content");
     const parent = anchor && anchor.parentNode;
     if (!parent || doc.getElementById("bp-viz-panel")) return false;
+    /* 单实例守卫：报告重渲染会先清空 report-content 再重建面板，
+     * 若不先停掉上一个 live，每次重渲染都会留下一条孤儿定时器 / WebSocket。 */
+    if (bpLive && typeof bpLive.stop === "function") {
+      try { bpLive.stop(); } catch (e) {}
+      bpLive = null;
+    }
     const d = readVizData();
 
     const sec = el("section", "card bp-z2");

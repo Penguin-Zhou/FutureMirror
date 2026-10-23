@@ -5,6 +5,13 @@
 const $ = id => document.getElementById(id);
 let currentUser = null;   // { id, email, name, passHash, createdAt }
 
+/* HTML 转义：凡是把用户输入（简历原文、面试回答、岗位名、笔记）拼进 innerHTML
+ * 的地方都必须先过这一层，否则一段带标签的文本就能改变 DOM 结构。 */
+const ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+function escHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ESC_MAP[c]);
+}
+
 /* 数据隔离 key：g_ 前缀表示全局共享；其余按当前用户加前缀（用户 id 自带 u_ 前缀） */
 function kk(k) {
   if (k.startsWith("g_")) return k;
