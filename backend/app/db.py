@@ -4,12 +4,21 @@ import hashlib
 import hmac
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (Boolean, DateTime, ForeignKey, Integer, String, Text,
                         create_engine, select)
 from sqlalchemy.orm import (DeclarativeBase, Mapped, Session, mapped_column,
                             sessionmaker)
+
+def utcnow() -> datetime:
+    """naive UTC 时间戳。
+
+    datetime.utcnow() 在 Python 3.12+ 已弃用（3.13 起有 DeprecationWarning），
+    这里改用带时区的 now() 再去掉 tzinfo：列里存的仍是 naive UTC，语义不变。
+    """
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
 
 DB_URL = os.getenv("DATABASE_URL", "sqlite:///./futuremirror.db")
 engine = create_engine(
@@ -31,7 +40,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(40))
     password_hash: Mapped[str] = mapped_column(String(200))
     is_vip: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
 class Interview(Base):
@@ -42,7 +51,7 @@ class Interview(Base):
     mode: Mapped[str] = mapped_column(String(20), default="general")
     job: Mapped[str] = mapped_column(String(80), default="")
     status: Mapped[str] = mapped_column(String(20), default="running")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
 class Turn(Base):
@@ -64,7 +73,7 @@ class Report(Base):
     total: Mapped[int] = mapped_column(Integer)
     dims_json: Mapped[str] = mapped_column(Text)
     plan_json: Mapped[str] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
 def init_db() -> None:

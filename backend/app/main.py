@@ -3,8 +3,10 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import secrets
+import sys
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import asyncio
 import jwt
@@ -23,7 +25,32 @@ from .db import (Interview, Report, Turn, User, SessionLocal, get_db,  # noqa: E
 from .llm import LLM_MODEL, llm_ready, sse_response                    # noqa: E402
 from .scoring import score_session                                     # noqa: E402
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-secret")
+def _resolve_secret_key() -> str:
+    """JWT 签名密钥。
+
+    早期版本在未配置时回退到硬编码常量，等于任何人都能伪造令牌——
+    这里改为「未配置则进程启动时随机生成」：开发体验不变，
+    生产漏配时最坏结果只是重启后旧令牌失效，而不是令牌可伪造。
+    """
+    key = (os.getenv("SECRET_KEY") or "").strip()
+    if key:
+        return key
+    generated = secrets.token_urlsafe(48)
+    print("[warn] SECRET_KEY 未设置，已随机生成临时密钥（进程重启后旧令牌失效）。"
+          "生产环境请在 backend/.env 中显式配置。", file=sys.stderr)
+    return generated
+
+
+SECRET_KEY = _resolve_secret_key()
+
+
+def _utcnow() -> datetime:
+    """naive UTC 时间戳。
+
+    datetime.utcnow() 在 Python 3.12+ 已弃用（3.13 起有 DeprecationWarning），
+    这里改用带时区的 now() 再去掉 tzinfo，语义完全一致且无告警。
+    """
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 # 默认放开本地开发端口 + 两个在线演示域名（GitHub Pages / 国内镜像）；
 # 部署时可用 CORS_ORIGINS 环境变量覆盖（allow_credentials=True 不能用 *，必须列名）
 DEFAULT_CORS_ORIGINS = (
@@ -35,8 +62,9 @@ TOKEN_TTL = timedelta(hours=12)
 
 # 演示账号：与前端 CONFIG.testAccount 保持一致；启动时自动种子，
 # 保证线上全新数据库开箱即可一键登录（demo 邮箱注册即 VIP，见 register）
-DEMO_EMAIL = "demo@futuremirror.app"
-DEMO_PASSWORD = "Demo123456"
+DEMO_EMAIL = os.getenv("DEMO_EMAIL", "demo@futuremirror.app")
+# 默认口令与前端 CONFIG.testAccount 保持一致，可通过环境变量覆盖（改了需同步前端）
+DEMO_PASSWORD = os.getenv("DEMO_PASSWORD", "Demo123456")
 
 
 def _seed_demo_user() -> None:
@@ -71,7 +99,7 @@ app.add_middleware(
 # ---------------- 鉴权 ----------------
 def make_token(user: User) -> str:
     return jwt.encode(
-        {"sub": user.id, "exp": datetime.utcnow() + TOKEN_TTL}, SECRET_KEY, algorithm="HS256"
+        {"sub": user.id, "exp": _utcnow() + TOKEN_TTL}, SECRET_KEY, algorithm="HS256"
     )
 
 
@@ -114,7 +142,7 @@ def register(body: RegisterIn, db: Session = Depends(get_db)):
         raise HTTPException(400, "该邮箱已注册")
     user = User(email=body.email, name=body.name,
                 password_hash=hash_password(body.password),
-                is_vip=body.email == "demo@futuremirror.app")
+                is_vip=body.email == DEMO_EMAIL)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -147,12 +175,26 @@ class ChatIn(BaseModel):
     temperature: float | None = None
 
 
+# 单条消息 / 整段会话的字符上限：既能挡住粘贴整本简历式的误用，
+# 也能避免把上游按量计费的模型当成免费算力。
+MAX_MESSAGE_CHARS = 4000
+MAX_CONVERSATION_CHARS = 24000
+
+
 @app.post("/api/chat/stream")
 def chat_stream(body: ChatIn, user: User = Depends(current_user)):
     if not llm_ready():
         raise HTTPException(503, "服务端未配置 LLM_API_KEY，请使用 Mock 模式")
     if not body.messages or len(body.messages) > 40:
         raise HTTPException(400, "messages 数量异常")
+    total = 0
+    for m in body.messages:
+        c = len(str(m.get("content") or ""))
+        if c > MAX_MESSAGE_CHARS:
+            raise HTTPException(400, f"单条消息过长（上限 {MAX_MESSAGE_CHARS} 字）")
+        total += c
+    if total > MAX_CONVERSATION_CHARS:
+        raise HTTPException(400, f"会话上下文过长（上限 {MAX_CONVERSATION_CHARS} 字）")
     temp = body.temperature if body.temperature is not None else 0.6
     return sse_response(body.messages, temperature=max(0.0, min(1.2, temp)))
 
@@ -265,7 +307,7 @@ def _live_stats(db: Session) -> dict:
     avg = db.scalar(select(func.avg(Report.total)))
     return {
         "ok": True,
-        "ts": datetime.utcnow().isoformat() + "Z",
+        "ts": _utcnow().isoformat() + "Z",
         "interviews": interviews,
         "finished": finished,
         "turns": turns,
@@ -280,6 +322,12 @@ def live_stats(db: Session = Depends(get_db)):
     return _live_stats(db)
 
 
+# 同时在线的看板连接上限：超限时直接拒绝并给出明确关闭码，
+# 避免异常客户端反复重连把数据库查询打满。
+MAX_WS_CONNECTIONS = 50
+_ws_connections = 0
+
+
 @app.websocket("/ws/live")
 async def ws_live(ws: WebSocket):
     """实时数据流：每 3 秒推送一次聚合指标；客户端断开即结束。
@@ -287,7 +335,12 @@ async def ws_live(ws: WebSocket):
     前端 startLive() 优先连这里，连不上（如 Pages 纯静态环境无后端 WS）
     自动降级为 /api/live/stats 轮询，功能不缺失。
     """
+    global _ws_connections
+    if _ws_connections >= MAX_WS_CONNECTIONS:
+        await ws.close(code=1008, reason="too many connections")
+        return
     await ws.accept()
+    _ws_connections += 1
     try:
         while True:
             db = SessionLocal()
@@ -303,6 +356,8 @@ async def ws_live(ws: WebSocket):
             await ws.close()
         except Exception:
             pass
+    finally:
+        _ws_connections = max(0, _ws_connections - 1)
 
 
 # ---------------- 静态演示页（与 API 同源部署） ----------------
