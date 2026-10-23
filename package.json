@@ -1,6 +1,6 @@
 {
   "name": "futuremirror",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "description": "面镜 FutureMirror：多 Agent 驱动的 AI 模拟面试与能力成长平台",
   "scripts": {
@@ -9,8 +9,13 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:demo": "node scripts/test-demo-logic.js",
+    "test:jsdom": "node scripts/run-tests.js",
+    "test:demo": "node scripts/run-tests.js test-demo-logic",
+    "test:all": "node scripts/run-tests.js && vitest run && tsc --noEmit -p .",
     "validate:demo": "node scripts/validate-demo.js",
+    "build:demo": "node scripts/build-demo.js",
+    "build:changelog": "node scripts/build-changelog.js",
+    "build:doc": "node scripts/build-print-doc.js",
     "deploy:pages": "node scripts/deploy-pages.js --build",
     "mirror:stage": "node scripts/stage-mirror.js",
     "model:fetch": "node scripts/fetch-model.js"
