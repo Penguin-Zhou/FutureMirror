@@ -1,17 +1,24 @@
 /* ============================================================
- * push-main-api.js —— 经 GitHub Data API 把本地 HEAD 推到 main
+ * push-main-api.js —— 经 GitHub Data API 把本地提交推到 main
  *   场景：git 传输被代理 502 拦截时，用 api.github.com 推送源码提交
- *   前提：远端 main 头 = 本地 HEAD~1 的内容等价提交（同 tree）
- *   策略：对比 HEAD~1 → HEAD 的变化文件建 blob → 基于远端 tree 建新树
- *        → 以远端 main 为 parent 建提交（保留作者信息）→ 更新 ref
+ *
+ *   策略（v2：支持一次补推多个提交）：
+ *     ① 远端 main 的 tree 在本地历史里回溯定位「已推送到的那个提交」base
+ *     ② 若 base = HEAD~1 → 单提交快路径（原有行为）
+ *     ③ 否则 → 把 base..HEAD 之间的每个本地提交按顺序逐个重建到远端，
+ *        各自的提交信息 / 作者 / 日期都保留，远端历史与本地一一对应
+ *
+ *   安全：base 找不到（真分叉）时拒绝推送，不做强制覆盖。
  *   用法：node scripts/push-main-api.js
  * ============================================================ */
 "use strict";
 const { execFileSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 
 const REPO = "Penguin-Zhou/FutureMirror";
 const BRANCH = "main";
-const CWD = require("path").join(__dirname, "..");
+const CWD = path.join(__dirname, "..");
 
 function git(args) {
   return execFileSync("git", ["-C", CWD, ...args], { encoding: "utf8", maxBuffer: 1024 * 1024 * 64 }).trim();
@@ -21,58 +28,72 @@ function gh(args, input) {
     input: input || undefined, encoding: "utf8", maxBuffer: 1024 * 1024 * 512,
   }).trim();
 }
+function ghJson(args, input) {
+  return JSON.parse(gh(args, input));
+}
 
-/* 0) 本地提交信息 */
-const headSha = git(["rev-parse", "HEAD"]);
-const parentSha = git(["rev-parse", "HEAD~1"]);
-const parentTree = git(["rev-parse", "HEAD~1^{tree}"]);
-const headTree = git(["rev-parse", "HEAD^{tree}"]);
-const message = git(["log", "-1", "--format=%B"]);
-const authorName = git(["log", "-1", "--format=%an"]);
-const authorEmail = git(["log", "-1", "--format=%ae"]);
-const authorDate = git(["log", "-1", "--format=%aI"]);
-console.log(`本地 HEAD: ${headSha.slice(0, 7)}（parent ${parentSha.slice(0, 7)}，tree ${headTree.slice(0, 7)}）`);
-
-/* 1) 远端 main 头与树 */
-const remoteSha = gh([`repos/${REPO}/commits/${BRANCH}`, "--jq", ".sha"]);
-const remoteTree = gh([`repos/${REPO}/commits/${BRANCH}`, "--jq", ".commit.tree.sha"]);
+/* 0) 远端 main 头与树 */
+const remoteSha = ghJson([`repos/${REPO}/commits/${BRANCH}`, "--jq", "."]).sha;
+let remoteTree = ghJson([`repos/${REPO}/commits/${BRANCH}`, "--jq", "."]).commit.tree.sha;
 console.log(`远端 ${BRANCH}: ${remoteSha.slice(0, 7)}（tree ${remoteTree.slice(0, 7)}）`);
 
-/* 2) 校验：远端树应等于本地 parent 树（内容等价） */
-if (remoteTree !== parentTree) {
-  console.error(`❌ 远端 tree ${remoteTree.slice(0, 7)} ≠ 本地 parent tree ${parentTree.slice(0, 7)}，历史已分叉，需先合并或改用全量推送`);
+/* 1) 在本地历史里回溯：哪个提交的 tree 与远端一致 → 它就是「已推送到」的位置 */
+const history = git(["log", "--format=%H %T"]).split("\n").map(l => {
+  const [sha, tree] = l.split(" ");
+  return { sha, tree };
+});
+const baseIdx = history.findIndex(c => c.tree === remoteTree);
+if (baseIdx < 0) {
+  console.error("❌ 远端 tree 在本地历史中找不到对应提交，疑似真分叉，已中止（不会强制覆盖）");
   process.exit(1);
 }
+const base = history[baseIdx];
+if (baseIdx === 0) {
+  console.log("✅ 远端已与本地 HEAD 一致，无需推送");
+  process.exit(0);
+}
+/* history 是从新到旧；baseIdx 之前的都是待补推的，倒序后按时间从早到晚 */
+const pending = history.slice(0, baseIdx).reverse();
+console.log(`本地已推送到 ${base.sha.slice(0, 7)}；待补推 ${pending.length} 个提交`);
 
-/* 3) 变化文件（HEAD~1 → HEAD） */
-const changed = git(["diff", "--name-only", "HEAD~1", "HEAD"]).split("\n").filter(Boolean);
-console.log(`变化文件 ${changed.length} 个：${changed.join(", ")}`);
+/* 2) 逐个重建提交 */
+let parent = remoteSha;
+let prevTree = remoteTree;
+for (const c of pending) {
+  const message = git(["log", "-1", "--format=%B", c.sha]);
+  const authorName = git(["log", "-1", "--format=%an", c.sha]);
+  const authorEmail = git(["log", "-1", "--format=%ae", c.sha]);
+  const authorDate = git(["log", "-1", "--format=%aI", c.sha]);
 
-/* 4) 建 blob */
-const entries = [];
-for (const rel of changed) {
-  const b64 = require("fs").readFileSync(require("path").join(CWD, rel)).toString("base64");
-  const body = JSON.stringify({ content: b64, encoding: "base64" });
-  const sha = JSON.parse(gh([`repos/${REPO}/git/blobs`, "-X", "POST"], body)).sha;
-  console.log(`  blob ${rel}: ${sha.slice(0, 7)}（${(b64.length / 1024 / 1024).toFixed(2)}MB base64）`);
-  entries.push({ path: rel, mode: "100644", type: "blob", sha });
+  const changed = git(["diff", "--name-only", c.sha + "~1", c.sha]).split("\n").filter(Boolean);
+  const entries = [];
+  for (const rel of changed) {
+    const p = path.join(CWD, rel);
+    if (!fs.existsSync(p)) {          // 删除的文件：mode 置 0 表示移除
+      entries.push({ path: rel, mode: "100644", type: "blob", sha: null });
+      continue;
+    }
+    const b64 = fs.readFileSync(p).toString("base64");
+    const sha = ghJson([`repos/${REPO}/git/blobs`, "-X", "POST"],
+      JSON.stringify({ content: b64, encoding: "base64" })).sha;
+    entries.push({ path: rel, mode: "100644", type: "blob", sha });
+  }
+
+  const treeSha = ghJson([`repos/${REPO}/git/trees`, "-X", "POST"],
+    JSON.stringify({ base_tree: prevTree, tree: entries })).sha;
+  const commitSha = ghJson([`repos/${REPO}/git/commits`, "-X", "POST"],
+    JSON.stringify({
+      message,
+      tree: treeSha,
+      parents: [parent],
+      author: { name: authorName, email: authorEmail, date: authorDate },
+    })).sha;
+
+  console.log(`  ↳ ${commitSha.slice(0, 7)}  ${message.split("\n")[0].slice(0, 62)}（${changed.length} 文件）`);
+  parent = commitSha;
+  prevTree = treeSha;
 }
 
-/* 5) 新树（基于远端树） */
-const treeBody = JSON.stringify({ base_tree: remoteTree, tree: entries });
-const treeSha = JSON.parse(gh([`repos/${REPO}/git/trees`, "-X", "POST"], treeBody)).sha;
-console.log(`新树: ${treeSha.slice(0, 7)}`);
-
-/* 6) 提交（parent = 远端 main，保留原作者与日期） */
-const commitBody = JSON.stringify({
-  message,
-  tree: treeSha,
-  parents: [remoteSha],
-  author: { name: authorName, email: authorEmail, date: authorDate },
-});
-const commitSha = JSON.parse(gh([`repos/${REPO}/git/commits`, "-X", "POST"], commitBody)).sha;
-console.log(`新提交: ${commitSha.slice(0, 7)}`);
-
-/* 7) 快进更新 ref */
-gh([`repos/${REPO}/git/refs/heads/${BRANCH}`, "-X", "PATCH", "-f", `sha=${commitSha}`, "-F", "force=false"]);
-console.log(`✅ main 已更新 → ${commitSha.slice(0, 7)}（https://github.com/${REPO}/commit/${commitSha}）`);
+/* 3) 快进更新 ref */
+gh([`repos/${REPO}/git/refs/heads/${BRANCH}`, "-X", "PATCH", "-f", `sha=${parent}`, "-F", "force=false"]);
+console.log(`✅ main 已更新 → ${parent.slice(0, 7)}（https://github.com/${REPO}/commit/${parent}）`);
