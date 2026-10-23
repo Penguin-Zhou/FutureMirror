@@ -119,9 +119,9 @@ function analyzeResume() {
         ${r.rewrites.length
           ? r.rewrites.slice(0, 5).map(w => `
               <div class="evidence">
-                <span class="badge badge-red">${w.issue}</span>
-                <p style="margin-top:6px"><b>原文：</b><q>${w.original}</q></p>
-                <p><b>改写：</b>${w.suggestion}</p>
+                <span class="badge badge-red">${escHtml(w.issue)}</span>
+                <p style="margin-top:6px"><b>原文：</b><q>${escHtml(w.original)}</q></p>
+                <p><b>改写：</b>${escHtml(w.suggestion)}</p>
               </div>`).join("")
           : '<div class="evidence"><span class="badge badge-green">结构较好</span><p>未检测到明显的量化缺失或动词问题，建议进一步用 LLM 深度打磨。</p></div>'}
       </div>

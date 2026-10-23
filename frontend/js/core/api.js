@@ -16,7 +16,9 @@ const fmApi = {
     let saved = "";
     try { saved = localStorage.getItem("fm_api_base") || ""; } catch (e) {}
     this.base = (window.FM_API_BASE || saved || FM_API_DEFAULT_BASE).replace(/\/+$/, "");
-    this.token = sessionStorage.getItem("fm_token") || "";
+    /* sessionStorage 在隐私模式 / 沙箱 iframe 下可能直接抛异常，
+     * 与上面的 localStorage 一样必须包起来，否则整个 init() 会中断。 */
+    try { this.token = sessionStorage.getItem("fm_token") || ""; } catch (e) { this.token = ""; }
   },
   backendReady() { return this.ready && !!this.health && this.health.ok; },
   backendModel() { return (this.health && this.health.model) || "后端模型"; },
@@ -46,13 +48,16 @@ const fmApi = {
     if (!force && this.health && now - this.healthAt < 30000) return this.health;
     if (typeof fetch !== "function") { this.ready = false; return null; }
     const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 8000);
+    /* 超时定时器必须在请求结束后清掉，否则每次健康检测都会留下一个 8 秒的空转定时器 */
+    const kill = setTimeout(() => ctrl.abort(), 8000);
     try {
       const res = await fetch(this.base + "/api/health", { signal: ctrl.signal });
       const j = await res.json();
       this.health = { ok: !!j.ok, llm_ready: !!j.llm_ready, model: j.model || null };
     } catch (e) {
       this.health = { ok: false, llm_ready: false, model: null };
+    } finally {
+      clearTimeout(kill);
     }
     this.healthAt = Date.now();
     this.ready = this.health.ok;
@@ -163,8 +168,10 @@ const fmApi = {
 
 function llmLabel() {
   if (fmApi.backendReady()) return `后端 ${fmApi.backendModel()} @ ${hostOf(fmApi.base)}`;
-  if (llm) return `${llm.model} @ ${hostOf(llm.baseUrl)}`;
-  return "Mock 模式";   // v22.1：llm 为空时不再抛 TypeError
+  /* llm 是另一个模块声明的全局变量：未加载时直接引用会抛 ReferenceError，
+   * 用 typeof 先探活，保证降级文案一定能输出。 */
+  if (typeof llm !== "undefined" && llm) return `${llm.model} @ ${hostOf(llm.baseUrl)}`;
+  return "Mock 模式";
 }
 
 function saveApiBase() {

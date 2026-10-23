@@ -304,7 +304,7 @@ function addTimeline(agent, text, kind) {
   const div = document.createElement("div");
   div.className = "tl-item" + (kind ? " " + kind : "");
   const icon = kind === "note" ? "📝 " : kind === "tool" ? "🔧 " : "";
-  div.innerHTML = `<span class="tl-agent">${agent}</span><br>${icon}${text}`;
+  div.innerHTML = `<span class="tl-agent">${escHtml(agent)}</span><br>${icon}${escHtml(text)}`;
   tl.appendChild(div);
   tl.scrollTop = tl.scrollHeight;
 }
@@ -379,7 +379,12 @@ function sendMsgMock(text, speaker, keyword, notes) {
     body.scrollTop = body.scrollHeight;
     let i = 0;
     const timer = setInterval(() => {
-      bubble.innerHTML = question.slice(0, ++i) + '<span class="caret"></span>';
+      /* 用 textContent 逐字推进再挂光标，避免把问题文本当 HTML 解析
+       * （innerHTML 拼接会让文本里的标签改变 DOM 结构） */
+      bubble.textContent = question.slice(0, ++i);
+      const caret = document.createElement("span");
+      caret.className = "caret";
+      bubble.appendChild(caret);
       body.scrollTop = body.scrollHeight;
       if (i >= question.length) {
         clearInterval(timer);
@@ -417,7 +422,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   body.scrollTop = body.scrollHeight;
 
   const ctrl = new AbortController();
-  setTimeout(() => ctrl.abort(), 60000);
+  const killTimer = setTimeout(() => ctrl.abort(), 60000);
   let full = "";
   let streamStarted = false;
   try {
@@ -431,6 +436,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
     v16MaybeAutoSpeak();
     $("fallback-banner").hidden = true;
   } catch (e) {
+    clearTimeout(killTimer);
     hideTyping();
     bubble.remove();
     const reason = e.name === "AbortError" ? "超时 60s" : e.message;
@@ -442,6 +448,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
     sendMsgMock(text, speaker, keyword, notes);
     return;
   }
+  clearTimeout(killTimer);
   addTimeline("观察员 Agent", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
   startAnswerTimer();
   session.turns.push({ agent: speaker.name, question: full, answer: text, notes, mode: session.mode });
