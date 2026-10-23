@@ -394,7 +394,7 @@
   </div>
 
   <dl class="cover-meta">
-    <dt>文档版本</dt>       <dd>v1.8（对应产品 Beta 1.0.9）</dd>
+    <dt>文档版本</dt>       <dd>v1.9（对应产品 Beta 1.1.0）</dd>
     <dt>应用方向</dt>       <dd>AI Agent 智能助手 / RAG 知识问答 / AI 教育与学习平台</dd>
     <dt>技术栈</dt>         <dd>Next.js 15 · React 19 · TypeScript · FastAPI · GLM-4-Flash · Transformers.js</dd>
     <dt>代码仓库</dt>       <dd><a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">github.com/Penguin-Zhou/FutureMirror</a></dd>
@@ -416,11 +416,11 @@
     <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级</span></a></li>
     <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span></a></li>
     <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span></a></li>
-    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1137 + 17 项测试 / 4 种部署</span></a></li>
+    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1314 + 18 项测试 / 4 种部署</span></a></li>
     <li><a href="#ch7"><span class="toc-t">核心算法详解与原创性论证</span><span class="toc-d">三大算法 / 校准实证 / 模板差异化</span></a></li>
     <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span></a></li>
     <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 交付清单</span></a></li>
-    <li><a href="#ch10"><span class="toc-t">版本更新日志</span><span class="toc-d">v1 → Beta 1.0.9，v23 规划</span></a></li>
+    <li><a href="#ch10"><span class="toc-t">版本更新日志</span><span class="toc-d">v1 → Beta 1.1.0</span></a></li>
   </ol>
 </div>
 
@@ -487,7 +487,7 @@
       <tr><td>题库</td><td>24 题 / 5 分类</td><td>SQL / 网络 / 操作系统 / 算法 / STAR</td></tr>
       <tr><td>MCP 工具</td><td>3 个</td><td><code>search_job_db</code> / <code>fetch_interview_experience</code> / <code>schedule_mock</code></td></tr>
       <tr><td>前端自动化断言</td><td>1137 项</td><td>单文件版 + 模块版 jsdom 测试</td></tr>
-      <tr><td>后端单元测试</td><td>17 项</td><td>pytest 冒烟 + 评分引擎</td></tr>
+      <tr><td>后端单元测试</td><td>18 项</td><td>pytest 冒烟 + 评分引擎</td></tr>
       <tr><td>部署形态</td><td>4 种</td><td>单文件 / 模块版 / FastAPI 后端 / Next.js 完整版</td></tr>
     </tbody>
   </table>
@@ -1063,7 +1063,7 @@
       </tr>
       <tr>
         <td><strong>L2 回归防线</strong></td>
-        <td>1137 + 17 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
+        <td>1314 + 18 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
         <td>任何 Prompt / 规则 / 检索参数变更，先过测试再合入</td>
       </tr>
       <tr>
@@ -1184,7 +1184,7 @@
       <tr><th style="width:22%">层级</th><th style="width:20%">工具</th><th style="width:14%">数量</th><th>覆盖内容</th></tr>
     </thead>
     <tbody>
-      <tr><td>后端单元测试</td><td>pytest</td><td>17 项</td><td>健康检查、注册登录流程、评分引擎</td></tr>
+      <tr><td>后端单元测试</td><td>pytest</td><td>18 项</td><td>健康检查、注册登录流程、评分引擎</td></tr>
       <tr><td>静态验证</td><td>Node + 正则</td><td>—</td><td>JS 语法、DOM id 引用、onclick 处理器、标签配平</td></tr>
       <tr><td>无头逻辑测试</td><td>Node</td><td>217 项</td><td>store / 用户系统 / 简历优化 / 职业探索 / 主题 / 报告</td></tr>
       <tr><td>jsdom 集成测试</td><td>jsdom</td><td>11 文件 / 722 项</td><td>v15-v24 + beta1 向量检索，覆盖所有功能模块、体验层 UX Kit 与动态层粒子场</td></tr>
@@ -1562,7 +1562,7 @@ cd frontend && python -m http.server 5173
     <li><strong>BM25 + 端侧向量混合检索</strong>的 RAG 层，含缓存、降级、可解释得分；</li>
     <li><strong>可解释评分 + 证据链 + 动态学习路径</strong>的报告引擎；</li>
     <li><strong>三级降级</strong>的完整链路（后端 → 直连 → Mock），演示不中断；</li>
-    <li><strong>1137 + 17 项自动化测试</strong>，覆盖所有功能；</li>
+    <li><strong>1314 + 18 项自动化测试</strong>，覆盖所有功能；</li>
     <li><strong>开发者模式</strong>作为面向评委的技术透明度工具。</li>
   </ul>
 
@@ -1703,15 +1703,15 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
 
   <div class="doc-footer">
     <strong>面镜 FutureMirror 开发团队 · 福建农林大学桢队</strong><br>
-    技术文档 v1.8（Beta 1.0.9）
+    技术文档 v1.9（Beta 1.1.0）
   </div>
 </section>
 
 <!-- =============== 第 10 章 =============== -->
 <section class="chapter" id="ch10">
   <div class="chapter-num">CHAPTER 10</div>
-  <h1>版本更新日志（v1 → Beta 1.0.9，v23 规划中）</h1>
-  <p>本日志为<strong>团队真实开发进程</strong>的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.0.9 当前版本），共 30 个已发布版本，并含 v23 下一步迭代规划。每个版本均可独立运行、可回归。</p>
+  <h1>版本更新日志（v1 → Beta 1.1.0）</h1>
+  <p>本日志为<strong>团队真实开发进程</strong>的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.1.0 当前版本），共 31 个已发布版本。每个版本均可独立运行、可回归。</p>
   <div class="callout info"><strong>关于 Git 提交记录（重要说明）：</strong> 本仓库的 Git 提交历史自 <strong>Beta 版本</strong>（首次以 <code>v1.0.0-beta</code> 提交包上传）时建立，<strong>仅包含 BETA 1.0 及之后的更新</strong>；BETA 1.0 之前的 v1–v22 演进历程以本更新日志形式完整留存，未在 Git 提交记录中逐条提交。日志中所载为团队真实的版本演进，而非事后补造。</div>
   <div class="callout">阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.0.9，为当前正式发布版本（专家能力层：主题跟随系统 + 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化 + 高级组件）；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。</div>
   <h3>v23 · 规划中 · 完整版对齐 · 生产级 RAG · 多模态扩展（待排期）</h3>
@@ -1825,7 +1825,41 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <td>42MB</td>
     </tr></tbody>
   </table>
-      <h3>Beta 1.0.9 · 专家能力层：把高级网页能力清单逐项补齐（2026.10.22 当前版本）</h3>
+            <h3>Beta 1.1.0 · 完整性补全层：把能力清单的缺口逐项封死（2026.10.23 当前版本）</h3>
+  <div class="callout">对「高级网页能力清单」做第二轮逐项复核，把上一轮只有样式雏形、尚未真正接线的 6 处补齐为<strong>可运行、可测试、可降级</strong>：骨架屏（此前只有 CSS 定义，无实际渲染）、图片懒加载 / 渐进加载 / 悬停预览（此前站内无媒体通道）、表格导出 Excel（此前仅 CSV）、实时看板 WebSocket（此前仅本地轮询）、图表悬停详情（折线与柱状此前无 tooltip）、键盘可达性（此前无 skip link 与焦点陷阱）。新增 <code>skeleton.js</code> / <code>media.js</code> 两个模块，v30 测试套件 74 项断言锁定全部行为（含 reduced-motion 路径与 WebSocket mock 路径）。</div>
+  <h4><strong>✨ 新增功能</strong></h4>
+  <ul>
+    <li><strong>骨架屏</strong>（<code>skeleton.js</code>）：<code>mount(host, opts)</code> 生成 <code>.bp-skel</code> 占位块（同容器幂等），<code>clear(force)</code> 带最小驻留（默认 260ms）避免秒回闪烁；<code>during()</code> 可包裹同步或异步任务并在结束后自动清除。真实接入点：报告页等待服务端评分引擎期间（<code>report.js</code> → <code>fmApi.syncAndReport</code>）</li>
+    <li><strong>媒体三层</strong>（<code>media.js</code>）：<code>initLazy()</code> 用 IntersectionObserver 接管 <code>[data-src]</code>（无 IO 时退化为立即加载），并补 <code>loading="lazy"</code> 原生兜底；<code>data-src-sm</code> 先落低清模糊占位，高清后台预载完成后淡入；<code>[data-preview]</code> 悬停或键盘聚焦弹出预览浮层，Esc / 移出即收起。报告看板的图表快照（内联 SVG data-URI，零外链资源）即走此通道</li>
+    <li><strong>导出 Excel</strong>（<code>viz.js</code> <code>toExcelHtml()</code>）：UTF-8 BOM + <code>application/vnd.ms-excel</code> 的 HTML table，Excel 可直接打开，与既有 CSV 导出并存</li>
+    <li><strong>WebSocket 实时看板</strong>（后端 <code>/ws/live</code> + 前端 <code>startLive()</code>）：服务端每 3 秒推送聚合指标（会话数 / 完成数 / 轮次数 / 平均分 / LLM 就绪，不含任何个人数据）；前端按 apiBase 推导 ws / wss 地址，连接失败或断开自动降级到 <code>/api/live/stats</code> 轮询，通道状态由 <code>.bp-live-state</code> 明示</li>
+    <li><strong>图表悬停详情</strong>（<code>viz.js</code> <code>initChartTips()</code>）：对 <code>[data-tip]</code> 统一接管，鼠标 hover 与键盘 focus 双通道，Esc 关闭；报告进步曲线的每个数据点与小测趋势柱均已带 <code>data-tip</code></li>
+    <li><strong>键盘可达性</strong>（<code>motion.js</code>）：<code>initSkipLink()</code> 注入「跳到主内容」并为首个 main 补 id 与 tabindex；<code>trapFocus()</code> 为弹窗补 <code>role=dialog</code> + <code>aria-modal</code>，Tab / Shift+Tab 在容器内循环，<code>release()</code> 可释放</li>
+  </ul>
+  <h4><strong>🔧 优化改进</strong></h4>
+  <ul>
+    <li><strong>降级链完整</strong>：WebSocket 不可用 → REST 轮询 → 本地状态；懒加载无 IntersectionObserver → 立即加载；reduced-motion 下保留全部功能、只停过场动画</li>
+    <li><strong>口径同步</strong>：落地页真实指标行与规格面板刷新为 1314 项断言 / 29 页技术文档 / 18 项后端测试，消除页面上的过期数字</li>
+  </ul>
+  <h4><strong>📊 数据指标</strong></h4>
+  <table>
+    <thead><tr>
+      <th>前端断言</th>
+      <th>后端测试</th>
+      <th>单元测试</th>
+      <th>v30 新增</th>
+      <th>jsdom 套件</th>
+    </tr></thead>
+    <tbody><tr>
+      <td>1314</td>
+      <td>18</td>
+      <td>16（vitest）</td>
+      <td>74</td>
+      <td>18 套</td>
+    </tr></tbody>
+  </table>
+
+<h3>Beta 1.0.9 · 专家能力层：把高级网页能力清单逐项补齐（2026.10.22）</h3>
   <div class="callout">在 1.0.8 深度交互层之后，本轮按「高级网页能力清单」逐项补齐 30 项能力，全部沿用<strong>印刷风等价表达</strong>而非照搬玻璃拟态：毛玻璃改为 <code>--glass-bg</code> 半透明纸底 + 纸纹 + 发丝线（全站仍不使用 backdrop 滤镜）；卡片上浮改为 <code>scale(1.004)</code> 微放 + 墨色描边；多层阴影改为墨阶叠层 <code>.bp-z1/.bp-z2/.bp-z3</code> 顶部高光发丝线；渐变改为 <code>feTurbulence</code> 单色纸纹噪点。v29 测试套件 103 项断言锁定全部行为（含 reduced-motion、精细指针、系统暗色三条路径）。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>

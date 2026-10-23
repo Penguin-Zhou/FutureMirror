@@ -81,7 +81,7 @@ function runChecks(w, jsErrors) {
 
   console.log("\n-- B. 应用初始化（init + bootstrapV10 已跑） --");
   const foot = w.document.querySelector(".sb-footer");
-  ok(foot && foot.textContent.includes("beta1.0"), "侧栏版本号 beta1.0（启动流程完整）");
+  ok(foot && foot.textContent.includes("beta1.1"), "侧栏版本号 beta1.x（启动流程完整）");
   ok(w.document.querySelectorAll(".app-page[data-page]").length === 10, "10 个应用页面容器就位");
   ok(w.document.querySelectorAll(".app-tabbar .tabbar-item").length === 9, "底部 Tab 9 项就位");
   ok(!!w.document.getElementById("ai-fab"), "AI 悬浮球已注入 DOM");

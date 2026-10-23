@@ -1310,6 +1310,57 @@
   @keyframes bpFade { to { opacity: 0; } }
   @keyframes bpReveal { from { clip-path: inset(14px 0 0 0); } to { clip-path: inset(0 0 0 0); } }
 
+  /* ============ v30 · 完整性补全层（Beta 1.1.0） ============ */
+  /* ⑳ 骨架屏容器：占位块 .skeleton 的呼吸脉冲已在 tokens.css 定义 */
+  .bp-skel { padding: 2px 0; }
+  .bp-skel-row { align-items: center; }
+
+  /* ㉑ 媒体渐进加载：低清先落（blur）→ 高清预载完成淡入，不做位移 */
+  .bp-media { opacity: 0; filter: blur(8px); transition: opacity .45s ease, filter .45s ease; }
+  .bp-media.bp-media-in { opacity: 1; filter: none; }
+  @media (prefers-reduced-motion: reduce) { .bp-media { transition: none; filter: none; opacity: 1; } }
+
+  /* ㉒ 悬停 / 聚焦预览浮层：纸底 + 墨色发丝线（零投影） */
+  .bp-preview {
+    position: fixed; z-index: 80; width: 260px; max-width: 76vw;
+    background: var(--card); border: 1px solid var(--ink);
+    padding: 7px; opacity: 0; pointer-events: none; transition: opacity .18s ease;
+  }
+  .bp-preview.show { opacity: 1; }
+  .bp-preview img { display: block; width: 100%; height: auto; }
+
+  /* ㉓ 图表悬停详情（折线 / 柱状 / 雷达统一） */
+  .bp-chart-tip {
+    position: fixed; z-index: 90; font-family: var(--mono); font-size: 10.5px;
+    background: var(--card); border: 1px solid var(--brand); color: var(--brand);
+    padding: 4px 8px; opacity: 0; pointer-events: none; transition: opacity .15s ease;
+    white-space: nowrap;
+  }
+  .bp-chart-tip.show { opacity: 1; }
+  .bp-chart-dot { cursor: help; }
+  .bp-chart-dot:focus-visible, .trend-bar:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  /* ㉔ 实时流通道标记：WS 实时 / 服务端轮询 / 本地 */
+  .bp-live-state {
+    display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+    color: var(--faint); border: 1px solid var(--line); padding: 1px 6px; margin-bottom: 6px;
+  }
+  .bp-live-state[data-mode="ws"] { color: var(--brand); border-color: var(--brand); }
+
+  /* ㉕ 图表快照：懒加载缩略图 + 悬停放大预览 */
+  .bp-shots { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+  .bp-shot { margin: 0; flex: 0 0 auto; }
+  .bp-shot img { display: block; width: 140px; height: 104px; object-fit: cover; border: 1px solid var(--line); }
+  .bp-shot figcaption { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 4px; letter-spacing: .06em; }
+
+  /* ㉖ 键盘可达：跳到主内容（默认移出屏幕，聚焦时显现） */
+  .bp-skip {
+    position: fixed; left: -9999px; top: 10px; z-index: 120;
+    background: var(--card); border: 1px solid var(--ink); color: var(--ink);
+    font-family: var(--mono); font-size: 11px; padding: 6px 10px;
+  }
+  .bp-skip:focus { left: 12px; }
+
   /* ============ 打印：纸面文档 ============ */
   @media print {
     body { background: #fff; background-image: none; }

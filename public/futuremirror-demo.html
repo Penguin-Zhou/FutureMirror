@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.0.9 演示版）</title>
+<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.1.0 演示版）</title>
 <meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台（在线演示版）">
 <script>
 /* 主题预置：先于 body 渲染，避免首屏闪白/闪主题（g_theme/g_accent 为全局共享 key，不随用户隔离） */
@@ -3115,6 +3115,57 @@ try {
   @keyframes bpFade { to { opacity: 0; } }
   @keyframes bpReveal { from { clip-path: inset(14px 0 0 0); } to { clip-path: inset(0 0 0 0); } }
 
+  /* ============ v30 · 完整性补全层（Beta 1.1.0） ============ */
+  /* ⑳ 骨架屏容器：占位块 .skeleton 的呼吸脉冲已在 tokens.css 定义 */
+  .bp-skel { padding: 2px 0; }
+  .bp-skel-row { align-items: center; }
+
+  /* ㉑ 媒体渐进加载：低清先落（blur）→ 高清预载完成淡入，不做位移 */
+  .bp-media { opacity: 0; filter: blur(8px); transition: opacity .45s ease, filter .45s ease; }
+  .bp-media.bp-media-in { opacity: 1; filter: none; }
+  @media (prefers-reduced-motion: reduce) { .bp-media { transition: none; filter: none; opacity: 1; } }
+
+  /* ㉒ 悬停 / 聚焦预览浮层：纸底 + 墨色发丝线（零投影） */
+  .bp-preview {
+    position: fixed; z-index: 80; width: 260px; max-width: 76vw;
+    background: var(--card); border: 1px solid var(--ink);
+    padding: 7px; opacity: 0; pointer-events: none; transition: opacity .18s ease;
+  }
+  .bp-preview.show { opacity: 1; }
+  .bp-preview img { display: block; width: 100%; height: auto; }
+
+  /* ㉓ 图表悬停详情（折线 / 柱状 / 雷达统一） */
+  .bp-chart-tip {
+    position: fixed; z-index: 90; font-family: var(--mono); font-size: 10.5px;
+    background: var(--card); border: 1px solid var(--brand); color: var(--brand);
+    padding: 4px 8px; opacity: 0; pointer-events: none; transition: opacity .15s ease;
+    white-space: nowrap;
+  }
+  .bp-chart-tip.show { opacity: 1; }
+  .bp-chart-dot { cursor: help; }
+  .bp-chart-dot:focus-visible, .trend-bar:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  /* ㉔ 实时流通道标记：WS 实时 / 服务端轮询 / 本地 */
+  .bp-live-state {
+    display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+    color: var(--faint); border: 1px solid var(--line); padding: 1px 6px; margin-bottom: 6px;
+  }
+  .bp-live-state[data-mode="ws"] { color: var(--brand); border-color: var(--brand); }
+
+  /* ㉕ 图表快照：懒加载缩略图 + 悬停放大预览 */
+  .bp-shots { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+  .bp-shot { margin: 0; flex: 0 0 auto; }
+  .bp-shot img { display: block; width: 140px; height: 104px; object-fit: cover; border: 1px solid var(--line); }
+  .bp-shot figcaption { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 4px; letter-spacing: .06em; }
+
+  /* ㉖ 键盘可达：跳到主内容（默认移出屏幕，聚焦时显现） */
+  .bp-skip {
+    position: fixed; left: -9999px; top: 10px; z-index: 120;
+    background: var(--card); border: 1px solid var(--ink); color: var(--ink);
+    font-family: var(--mono); font-size: 11px; padding: 6px 10px;
+  }
+  .bp-skip:focus { left: 12px; }
+
   /* ============ 打印：纸面文档 ============ */
   @media print {
     body { background: #fff; background-image: none; }
@@ -3846,7 +3897,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <a href="changelog.html">更新日志</a>
       </div>
       <div class="landing-nav-meta">
-        <span class="bp-ver">BETA 1.0.9</span>
+        <span class="bp-ver">BETA 1.1.0</span>
         <button class="btn btn-ghost btn-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式">🌙</button>
         <button class="btn btn-ghost btn-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）">🟣</button>
         <button class="btn btn-outline btn-sm" onclick="showView('app')">免费体验</button>
@@ -3860,7 +3911,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     <div class="wrap">
       <div class="hero-grid">
         <div class="hero-main">
-          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.0.9</span>
+          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.1.0</span>
           <div class="hero-rotator" aria-live="polite"><span class="hr-prefix">&gt;_</span><span class="hr-text" id="hr-text"></span><i class="hr-caret" aria-hidden="true"></i></div>
           <div class="eyebrow"><span class="eyebrow-no">VOL.1</span>AI NATIVE · 多 AGENT 模拟面试平台</div>
           <h1 class="hero-title">
@@ -3879,8 +3930,8 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>1093</b> 项自动化断言</span><span class="dot-sep">/</span>
-            <span><b>37</b> 页技术文档</span>
+            <span><b>1314</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>29</b> 页技术文档</span>
           </div>
         </div>
         <aside class="hero-spec bp-crop">
@@ -3890,7 +3941,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>服务端五维引擎</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>1093 + 17</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>1314 + 18</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -3936,7 +3987,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">1093 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1314 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -3946,7 +3997,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">1093 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1314 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -4095,7 +4146,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   </section>
 
   <footer class="site-foot">
-    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.9<br>
+    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.1.0<br>
     <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
   </footer>
 
@@ -4247,7 +4298,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 <!-- ===== 演示版声明横幅（可关闭） ===== -->
 <div class="banner" id="demo-banner" role="note">
   <div class="wrap">
-    <b>本页 = 在线演示版首页 · Beta 1.0.9</b>
+    <b>本页 = 在线演示版首页 · Beta 1.1.0</b>
     <span>（已接通真实后端：LLM 流式对话 / JWT 登录 / 服务端评分均在线可验；无后端或断网时自动降级本地 Mock，流程不中断）</span>
     <button class="btn btn-primary btn-sm" onclick="openMaterial('full')" style="margin-left:auto">前往完整项目 →</button>
     <button class="btn btn-ghost btn-sm" onclick="dismissBanner()" aria-label="关闭横幅">✕</button>
@@ -4298,7 +4349,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       </a>
 
       <div class="sb-footer">
-        面镜 FutureMirror · beta1.0.9<br>
+        面镜 FutureMirror · beta1.1.0<br>
         <a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">代码仓库</a> ·
         <a href="docs/technical-doc.html">技术文档</a> ·
         <a href="changelog.html">更新日志</a> ·
@@ -4505,7 +4556,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 
   <footer>
     <div style="padding:0">
-      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.0.9<br>
+      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.1.0<br>
       <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
     </div>
   </footer>
@@ -5408,7 +5459,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     </section>
 
     <footer class="site-foot">
-      面镜 FutureMirror · 开发者模式 · Beta 1.0.9 · 仅对评委与开发者开放<br>
+      面镜 FutureMirror · 开发者模式 · Beta 1.1.0 · 仅对评委与开发者开放<br>
       <span>AI辅助开发说明：AI仅辅助样式、工具函数与文案，多Agent、评分引擎、业务架构、测试体系由团队独立设计实现，演示数据为合成示例。</span><br>
       解锁凭据保存在 sessionStorage，关闭标签页自动失效
     </footer>
@@ -7592,7 +7643,7 @@ function historySVG(history) {
   const x = i => pad + (W - pad * 2) * (history.length === 1 ? 0.5 : i / (history.length - 1));
   const y = v => H - 18 - (H - 36) * (v - min) / Math.max(1, max - min);
   const pts = history.map((h, i) => `${x(i)},${y(h.total)}`).join(" ");
-  const dots = history.map((h, i) => `<circle cx="${x(i)}" cy="${y(h.total)}" r="3" fill="var(--brand)"/><text x="${x(i)}" y="${y(h.total) - 8}" text-anchor="middle" font-size="9.5" fill="var(--faint)">${h.total}</text>`).join("");
+  const dots = history.map((h, i) => `<circle class="bp-chart-dot" cx="${x(i)}" cy="${y(h.total)}" r="4" fill="var(--brand)" data-tip="第 ${i + 1} 次 · 总分 ${h.total}" tabindex="0"/><text x="${x(i)}" y="${y(h.total) - 8}" text-anchor="middle" font-size="9.5" fill="var(--faint)">${h.total}</text>`).join("");
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:340px" role="img" aria-label="历史进步曲线">
     <line x1="${pad}" y1="${H - 18}" x2="${W - pad}" y2="${H - 18}" stroke="var(--line)"/>
     <polyline points="${pts}" fill="none" stroke="var(--brand)" stroke-width="2"/>
@@ -7630,11 +7681,18 @@ async function renderReport(force) {
                            matchResult ? matchResult.matchScore : "-",
                            typeof session.codeScore === "number" ? session.codeScore : "-"].join(":");
     if (force || syncSig() !== lastSyncSig) {
+      /* v30：等待服务端评分期间先铺骨架屏，避免报告区高度抖动 */
+      let skel = null;
+      if (typeof bpSkeleton === "function") {
+        box.innerHTML = "";
+        skel = bpSkeleton(box, { rows: 4, cols: 2, height: 14 });
+      }
       try {
         backendPayload = await fmApi.syncAndReport(session, matchResult);
         lastSyncSig = syncSig();   // 同步后 interviewId 已生成，签名此刻才稳定
         try { persistSession(); } catch (e) {}   // interviewId 落本地，刷新后仍归属同一会话
       } catch (e) {}
+      if (skel) skel.clear();
     }
   }
   let dims, total, evidence, plan, weakest, serverScored = false;
@@ -10725,7 +10783,7 @@ function exportDiagnostic() {
     const report = {
       exportedAt: new Date().toISOString(),
       project: "面镜 FutureMirror",
-      version: "beta1.0.9",
+      version: "beta1.1.0",
       env,
       state: {
         currentUser: (typeof currentUser !== "undefined" && currentUser) ? { id: currentUser.id, email: currentUser.email, name: currentUser.name } : null,
@@ -10923,7 +10981,7 @@ runSelfCheckPanel = function () {
     }
   } catch (e) {}
   // 记录一次启动日志
-  try { logDev("ok", "页面初始化完成 · 版本 beta1.0.9 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
+  try { logDev("ok", "页面初始化完成 · 版本 beta1.1.0 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
 })();
 
 
@@ -12483,9 +12541,10 @@ function renderQuizStats() {
     <div class="qs-panel-card">
       <div class="qs-panel-title">📈 最近成绩趋势 <span>最近 ${trend.length} 轮小测</span></div>
       <div class="trend-row">
-        ${trend.map(x => {
+        ${trend.map((x, ti) => {
           const cls = x.score >= 80 ? "good" : "";
-          return `<div class="trend-bar"><div class="trend-bar-track"><div class="trend-bar-fill ${cls}" style="height:${Math.max(4, x.score)}%"></div></div><span class="trend-bar-label">${x.score}</span></div>`;
+          const tipTxt = `第 ${ti + 1} 轮 · ${x.score} 分 · ${x.score >= 80 ? "优秀" : x.score >= 60 ? "及格" : "待提高"}`;
+          return `<div class="trend-bar" tabindex="0" data-tip="${tipTxt}"><div class="trend-bar-track"><div class="trend-bar-fill ${cls}" style="height:${Math.max(4, x.score)}%"></div></div><span class="trend-bar-label">${x.score}</span></div>`;
         }).join("")}
       </div>
     </div>` : ""}
@@ -13320,7 +13379,7 @@ function refreshBackendUi() {
 
 
 /* ============================================================
- * X. 动效与交互层 v29（Beta 1.0.9 · 专家能力层）
+ * X. 动效与交互层 v29（Beta 1.1.0 · 完整性补全层）
  * 印刷风纪律：位移只用水平/scale，禁止 translateY 上浮入场；
  * 不用 backdrop-filter、不用 box-shadow 投影；reduced-motion 全部停用。
  * 全部能力在元素存在时才挂载，缺失容器不报错。
@@ -13537,6 +13596,62 @@ function refreshBackendUi() {
     return els.length;
   }
 
+  /* ⑪ 焦点陷阱：弹窗 / 命令面板打开时 Tab 不跑出容器（键盘可达性） */
+  const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),' +
+    'textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  function trapFocus(box) {
+    if (!box) return null;
+    if (box.__bpTrap) return box.__bpTrap;
+    const onKey = function (e) {
+      if (e.key !== "Tab") return;
+      const items = Array.prototype.filter.call(
+        box.querySelectorAll(FOCUSABLE),
+        x => (x.offsetWidth || x.offsetHeight || x.getClientRects().length)
+      );
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+      else if (items.indexOf(doc.activeElement) < 0) { e.preventDefault(); first.focus(); }
+    };
+    box.addEventListener("keydown", onKey);
+    if (!box.getAttribute("role")) box.setAttribute("role", "dialog");
+    box.setAttribute("aria-modal", "true");
+    const api = {
+      release: function () {
+        box.removeEventListener("keydown", onKey);
+        box.removeAttribute("aria-modal");
+        box.__bpTrap = null;
+        return true;
+      },
+    };
+    box.__bpTrap = api;
+    return api;
+  }
+  function initFocusTraps() {
+    const boxes = doc.querySelectorAll(".modal-box,.bp-command,[data-trap]");
+    let n = 0;
+    Array.prototype.forEach.call(boxes, b => { if (trapFocus(b)) n++; });
+    return n;
+  }
+
+  /* ⑫ 跳转到主内容：键盘首个 Tab 即可跳过导航（屏幕阅读器 / 键盘用户） */
+  function initSkipLink() {
+    if (doc.querySelector(".bp-skip")) return false;
+    let target = doc.getElementById("main");
+    if (!target) {
+      target = doc.querySelector("main");
+      if (target && !target.id) target.id = "main";
+    }
+    const a = doc.createElement("a");
+    a.className = "bp-skip";
+    a.href = target ? "#main" : "#app";
+    a.textContent = "跳到主内容";
+    doc.body.insertBefore(a, doc.body.firstChild);
+    if (target && !target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+    return true;
+  }
+
   /* 统一挂载：任一子项失败不影响其余 */
   function initAll() {
     const r = {};
@@ -13550,6 +13665,8 @@ function refreshBackendUi() {
     try { r.dialogs = initDialogs(); } catch (e) { r.dialogs = 0; }
     try { r.aside = initAside(); } catch (e) { r.aside = false; }
     try { r.parallax = initParallax(); } catch (e) { r.parallax = 0; }
+    try { r.focusTraps = initFocusTraps(); } catch (e) { r.focusTraps = 0; }
+    try { r.skipLink = initSkipLink(); } catch (e) { r.skipLink = false; }
     return r;
   }
 
@@ -13569,6 +13686,9 @@ function refreshBackendUi() {
     initDialogs: initDialogs,
     initAside: initAside,
     initParallax: initParallax,
+    trapFocus: trapFocus,
+    initFocusTraps: initFocusTraps,
+    initSkipLink: initSkipLink,
     toggleAside: toggleAside,
     withVT: withVT,
     reduced: RM,
@@ -13576,10 +13696,12 @@ function refreshBackendUi() {
   };
 })();
 /* ============================================================
- * Y. 数据可视化与看板组件 v29（Beta 1.0.9 · 专家能力层）
+ * Y. 数据可视化与看板组件 v30（Beta 1.1.0 · 完整性补全层）
  * 全部为 DOM/SVG 自绘，零第三方图表库；色阶用墨色浓淡（单色阶）
  * + 单一朱红标记最高值，符合印刷风且随主题自动反转。
  * 数据来源优先取真实会话，无数据时退回内置基线（面板标注为基线）。
+ * v30 增补：Excel 导出、WebSocket 实时流（失败降级轮询）、图表悬停详情、
+ *           图表快照（懒加载 + 渐进 + 悬停放大预览）。
  * ============================================================ */
 (function () {
   const doc = document;
@@ -13673,6 +13795,24 @@ function refreshBackendUi() {
     });
     return "\ufeff" + out.join("\r\n");   // BOM 保证 Excel 中文不乱码
   }
+  /* Excel 可打开的表格导出：HTML table + BOM + vnd.ms-excel（零依赖、离线可用） */
+  function toExcelHtml(table) {
+    const rows = table.querySelectorAll("tr");
+    let out = '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+      'xmlns:x="urn:schemas-microsoft-com:office:excel">' +
+      '<head><meta charset="utf-8"></head><body><table border="1">';
+    Array.prototype.forEach.call(rows, tr => {
+      out += "<tr>";
+      Array.prototype.forEach.call(tr.querySelectorAll("th,td"), td => {
+        const t = (td.textContent || "").replace(/\s+/g, " ").trim()
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const isNum = /^-?\d+(\.\d+)?$/.test(t);
+        out += "<td" + (isNum ? ' x:num' : "") + ">" + t + "</td>";
+      });
+      out += "</tr>";
+    });
+    return "﻿" + out + "</table></body></html>";
+  }
   function downloadText(name, text, mime) {
     const b = new Blob([text], { type: mime || "text/csv;charset=utf-8" });
     const u = win.URL && win.URL.createObjectURL ? win.URL.createObjectURL(b) : "";
@@ -13701,8 +13841,10 @@ function refreshBackendUi() {
     q.setAttribute("aria-label", "筛选表格行");
     const csvexp = el("button", "bp-mini-btn", "导出 CSV");
     csvexp.type = "button";
+    const xlexp = el("button", "bp-mini-btn", "导出 Excel");
+    xlexp.type = "button";
     const count = el("span", "bp-mini-note", "");
-    tools.appendChild(q); tools.appendChild(csvexp); tools.appendChild(count);
+    tools.appendChild(q); tools.appendChild(csvexp); tools.appendChild(xlexp); tools.appendChild(count);
 
     const pager = el("div", "bp-pager");
     const prev = el("button", "", "上一页"); prev.type = "button";
@@ -13741,6 +13883,10 @@ function refreshBackendUi() {
     csvexp.addEventListener("click", () => {
       downloadText(name + ".csv", toCsv(table));
       if (typeof toast === "function") toast("已导出 " + name + ".csv");
+    });
+    xlexp.addEventListener("click", () => {
+      downloadText(name + ".xls", toExcelHtml(table), "application/vnd.ms-excel;charset=utf-8");
+      if (typeof toast === "function") toast("已导出 " + name + ".xls（Excel 可直接打开）");
     });
 
     Array.prototype.forEach.call(table.tHead.rows[0].cells, (th, i) => {
@@ -13811,12 +13957,35 @@ function refreshBackendUi() {
     return { cards: board.children.length };
   }
 
-  /* ---------- ⑤ 实时数据流看板（读真实状态，定时刷新） ---------- */
-  function startLive(host, read, ms) {
+  /* ---------- ⑤ 实时数据流看板（本地状态 + 服务端 WebSocket，失败降级轮询） ---------- */
+  function apiBase() {
+    let b = "";
+    try { b = (typeof CONFIG !== "undefined" && CONFIG && CONFIG.apiBase) ? String(CONFIG.apiBase) : ""; } catch (e) { b = ""; }
+    return b;
+  }
+  /* WebSocket 地址：same-origin 时按当前协议推导，跨域时用 apiBase 换协议头 */
+  function wsEndpoint() {
+    const b = apiBase();
+    if (!b || b === "same-origin") {
+      if (!win.location) return "";
+      return (win.location.protocol === "https:" ? "wss://" : "ws://") + win.location.host + "/ws/live";
+    }
+    return b.replace(/^http/, "ws").replace(/\/+$/, "") + "/ws/live";
+  }
+  function statsEndpoint() {
+    const b = apiBase();
+    if (!b || b === "same-origin") return win.location ? "/api/live/stats" : "";
+    return b.replace(/\/+$/, "") + "/api/live/stats";
+  }
+  function startLive(host, read, ms, o) {
     if (!host) return null;
-    let timer = null, ticks = 0;
-    function tick() {
-      const data = typeof read === "function" ? read() : [];
+    o = o || {};
+    let timer = null, pollTimer = null, ticks = 0, sock = null;
+    let mode = "local";
+    const state = el("span", "bp-live-state", "本地");
+    if (host.parentNode) host.parentNode.insertBefore(state, host);
+
+    function paint(data) {
       if (!ticks || !host.childElementCount || host.childElementCount !== data.length) {
         host.innerHTML = "";
         data.forEach(() => host.appendChild(el("div", "bp-live-item")));
@@ -13829,9 +13998,106 @@ function refreshBackendUi() {
       });
       ticks++;
     }
+    function paintRemote(j) {
+      paint([
+        { k: "在线会话", v: j.interviews },
+        { k: "已完成", v: j.finished },
+        { k: "累计轮次", v: j.turns },
+        { k: "平均总分", v: j.avg_score },
+        { k: "LLM", v: j.llm_ready ? "在线" : "Mock" },
+      ]);
+    }
+    function setMode(m, label) {
+      mode = m;
+      state.textContent = label;
+      state.setAttribute("data-mode", m);
+    }
+    function tick() {
+      paint(typeof read === "function" ? read() : []);
+    }
+    /* 降级通道：REST 轮询（Pages 纯静态等无 WS 环境） */
+    function pollStats() {
+      const url = statsEndpoint();
+      if (!url || typeof win.fetch !== "function") return;
+      win.fetch(url).then(r => (r && r.json ? r.json() : null)).then(j => {
+        if (j && j.ok) { setMode("poll", "服务端轮询"); paintRemote(j); }
+      }).catch(() => {});
+    }
+    function startPoll() {
+      if (pollTimer) return;
+      pollStats();
+      if (RM()) return;                       // 减弱动效：只取一次快照，不做周期刷新
+      pollTimer = win.setInterval(pollStats, o.pollMs || 5000);
+    }
+    function connect() {
+      const url = wsEndpoint();
+      if (!url || typeof win.WebSocket !== "function") { startPoll(); return; }
+      try { sock = new win.WebSocket(url); } catch (e) { startPoll(); return; }
+      sock.onopen = () => setMode("ws", "WS 实时");
+      sock.onmessage = e => {
+        try {
+          const j = JSON.parse(e.data);
+          if (j && j.ok) { setMode("ws", "WS 实时"); paintRemote(j); }
+        } catch (err) {}
+      };
+      sock.onerror = () => {};
+      sock.onclose = () => { setMode("poll", "轮询降级"); startPoll(); };
+    }
+
     tick();
     if (!RM()) timer = win.setInterval(tick, ms || 2500);
-    return { stop: () => { if (timer) win.clearInterval(timer); timer = null; }, ticks: () => ticks };
+    if (o.remote) {
+      try { connect(); } catch (e) { startPoll(); }
+    }
+    return {
+      stop: () => {
+        if (timer) win.clearInterval(timer);
+        if (pollTimer) win.clearInterval(pollTimer);
+        timer = null; pollTimer = null;
+        if (sock) { try { sock.close(); } catch (e) {} sock = null; }
+      },
+      ticks: () => ticks,
+      mode: () => mode,
+      ws: () => sock,
+    };
+  }
+
+  /* ---------- ⑤b 图表悬停详情（折线 / 柱状 / 雷达 / 热力统一接管 [data-tip]） ---------- */
+  let chartTip = null;
+  function initChartTips() {
+    if (chartTip) return true;
+    chartTip = el("div", "bp-chart-tip");
+    chartTip.setAttribute("role", "tooltip");
+    doc.body.appendChild(chartTip);
+    const show = target => {
+      if (!target) return;
+      chartTip.textContent = target.getAttribute("data-tip") || "";
+      chartTip.classList.add("show");
+      const r = target.getBoundingClientRect ? target.getBoundingClientRect() : null;
+      if (r) {
+        chartTip.style.left = Math.max(8, r.left) + "px";
+        chartTip.style.top = Math.max(8, r.top - 28) + "px";
+      }
+    };
+    const hide = target => { if (target && chartTip) chartTip.classList.remove("show"); };
+    doc.addEventListener("mouseover", e => {
+      const t = e.target && e.target.closest ? e.target.closest("[data-tip]") : null;
+      if (t) show(t);
+    });
+    doc.addEventListener("mouseout", e => {
+      const t = e.target && e.target.closest ? e.target.closest("[data-tip]") : null;
+      hide(t);
+    });
+    doc.addEventListener("focusin", e => {
+      const t = e.target && e.target.closest ? e.target.closest("[data-tip]") : null;
+      if (t) show(t);
+    });
+    doc.addEventListener("focusout", e => {
+      const t = e.target && e.target.closest ? e.target.closest("[data-tip]") : null;
+      hide(t);
+    });
+    doc.addEventListener("keydown", e => { if (e.key === "Escape" && chartTip) chartTip.classList.remove("show"); });
+    return true;
   }
 
   /* ---------- ⑥ 分步向导 ---------- */
@@ -13890,6 +14156,55 @@ function refreshBackendUi() {
     }));
     return { values: values, points: points, baseline: false, turns: n };
   }
+  /* ---------- ⑧b 图表快照（内联 SVG → data-URI，供媒体层懒加载 / 渐进 / 预览） ---------- */
+  function svgUri(svg) {
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  }
+  function radarSnap(size, detail) {
+    const s = size || 360, c = s / 2, r = s * 0.34;
+    const dims = ["内容", "结构", "表达", "匹配", "抗压"];
+    const vals = [0.72, 0.64, 0.58, 0.81, 0.66];
+    const pt = i => {
+      const a = -Math.PI / 2 + i * (Math.PI * 2 / dims.length);
+      const k = r * (0.35 + vals[i] * 0.65);
+      return (c + Math.cos(a) * k).toFixed(1) + "," + (c + Math.sin(a) * k).toFixed(1);
+    };
+    const poly = dims.map((_, i) => pt(i)).join(" ");
+    const grid = dims.map((_, i) => {
+      const a = -Math.PI / 2 + i * (Math.PI * 2 / dims.length);
+      return (c + Math.cos(a) * r).toFixed(1) + "," + (c + Math.sin(a) * r).toFixed(1);
+    }).join(" ");
+    const labels = detail ? dims.map((t, i) => {
+      const a = -Math.PI / 2 + i * (Math.PI * 2 / dims.length);
+      return "<text x='" + (c + Math.cos(a) * (r + 16)).toFixed(1) + "' y='" +
+        (c + Math.sin(a) * (r + 16)).toFixed(1) + "' font-size='" + (s / 26).toFixed(0) +
+        "' fill='%23555' text-anchor='middle'>" + t + "</text>";
+    }).join("") : "";
+    return svgUri(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='" + s + "' height='" + s + "' viewBox='0 0 " + s + " " + s + "'>" +
+      "<rect width='100%' height='100%' fill='%23F4F1E8'/>" +
+      "<polygon points='" + grid + "' fill='none' stroke='%23B9B29A'/>" +
+      "<polygon points='" + poly + "' fill='%23BE3A1E' fill-opacity='0.25' stroke='%23BE3A1E' stroke-width='2'/>" +
+      labels + "</svg>"
+    );
+  }
+  function heatSnap(size) {
+    const s = size || 360, n = 24, cols = 6, rows = n / cols;
+    const w = s / cols, h = s / rows;
+    let out = "";
+    const vals = readVizData().values;
+    for (let i = 0; i < n; i++) {
+      const k = (vals[i] || 0) / 100;
+      const op = (0.08 + k * 0.5).toFixed(2);
+      out += "<rect x='" + ((i % cols) * w).toFixed(1) + "' y='" + (Math.floor(i / cols) * h).toFixed(1) +
+        "' width='" + (w - 2).toFixed(1) + "' height='" + (h - 2).toFixed(1) +
+        "' fill='%231C1913' fill-opacity='" + op + "'/>";
+    }
+    return svgUri(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='" + s + "' height='" + s + "' viewBox='0 0 " + s + " " + s + "'>" +
+      "<rect width='100%' height='100%' fill='%23F4F1E8'/>" + out + "</svg>"
+    );
+  }
   function mountReportPanel() {
     const anchor = doc.getElementById("report-content");
     const parent = anchor && anchor.parentNode;
@@ -13931,7 +14246,7 @@ function refreshBackendUi() {
         { k: "最近得分", v: last },
         { k: "活跃 Agent", v: turns.length ? "技术 Agent" : "规划 Agent" },
       ];
-    }, 2500);
+    }, 2500, { remote: true });
 
     const grid = el("div");
     grid.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px";
@@ -13962,11 +14277,25 @@ function refreshBackendUi() {
       { t: "汇总", d: "教练 Agent 生成可解释评分" },
     ], d.baseline ? 0 : 2);
 
+    /* 图表快照：data-URI SVG，走媒体层的懒加载 + 渐进 + 悬停放大（纯离线，无外链资源） */
+    const shots = el("div", "bp-shots");
+    sec.appendChild(shots);
+    shots.innerHTML =
+      '<figure class="bp-shot"><img alt="能力雷达快照" width="140" height="104"' +
+      ' data-src="' + radarSnap(360, true) + '" data-src-sm="' + radarSnap(120, false) + '"' +
+      ' data-preview="' + radarSnap(360, true) + '"><figcaption>能力雷达快照 · 悬停放大</figcaption></figure>' +
+      '<figure class="bp-shot"><img alt="热力分布快照" width="140" height="104"' +
+      ' data-src="' + heatSnap(360) + '" data-src-sm="' + heatSnap(120) + '"' +
+      ' data-preview="' + heatSnap(360) + '"><figcaption>热力分布快照 · 悬停放大</figcaption></figure>';
+    if (win.__bpMedia) {
+      try { win.__bpMedia.initLazy(shots); win.__bpMedia.initPreview(shots); } catch (e) {}
+    }
+
     parent.appendChild(sec);
     return true;
   }
 
-  /* ---------- ⑨ 统一装配：表格 + 看板 ---------- */
+  /* ---------- ⑨ 统一装配：表格 + 看板 + 图表提示 ---------- */
   function initAll() {
     const r = {};
     try {
@@ -13974,6 +14303,7 @@ function refreshBackendUi() {
       r.table = t ? !!enhanceTable(t, { name: "FutureMirror-评分维度映射", pageSize: 8 }) : false;
     } catch (e) { r.table = false; }
     try { r.panel = mountReportPanel(); } catch (e) { r.panel = false; }
+    try { r.tips = initChartTips(); } catch (e) { r.tips = false; }
     return r;
   }
 
@@ -13994,7 +14324,277 @@ function refreshBackendUi() {
     mountReportPanel: mountReportPanel,
     live: () => bpLive,
     toCsv: toCsv,
+    toExcelHtml: toExcelHtml,
+    initChartTips: initChartTips,
+    wsEndpoint: wsEndpoint,
+    statsEndpoint: statsEndpoint,
+    radarSnap: radarSnap,
+    heatSnap: heatSnap,
     downloadText: downloadText,
+    reduced: RM,
+  };
+})();
+/* ============================================================
+ * Z1. 骨架屏 v30（Beta 1.1.0 · 完整性补全层）
+ * 数据到位之前先渲染占位块，避免内容到达时布局抖动（CLS）。
+ * 印刷风纪律：占位块用 --line 灰阶 + 纸底，脉冲是透明度呼吸（非位移、非投影）；
+ * reduced-motion 下由 CSS 关闭动画（占位块本身仍保留，功能不缺失）。
+ * 最小驻留（minDwell）：请求秒回时不闪一下骨架，避免视觉噪声。
+ * ============================================================ */
+(function () {
+  const doc = document;
+  const win = doc.defaultView || window;
+  const DEFAULTS = { rows: 3, cols: 2, gap: 10, height: 12, minDwell: 260 };
+  let pending = 0;
+
+  function el(tag, cls) {
+    const e = doc.createElement(tag);
+    e.className = cls;
+    return e;
+  }
+
+  /* 挂载骨架：同一容器幂等（重复调用返回已挂载实例） */
+  function mount(host, o) {
+    if (!host) return null;
+    if (host.__bpSkel) return host.__bpSkel;
+    o = o || {};
+    const rows = Math.max(1, o.rows || DEFAULTS.rows);
+    const cols = Math.max(1, o.cols || DEFAULTS.cols);
+    const gap = o.gap == null ? DEFAULTS.gap : o.gap;
+    const h = o.height || DEFAULTS.height;
+
+    const box = el("div", "bp-skel");
+    box.setAttribute("aria-hidden", "true");
+    box.style.cssText = "display:flex;flex-direction:column;gap:" + gap + "px";
+    for (let r = 0; r < rows; r++) {
+      const row = el("div", "bp-skel-row");
+      row.style.cssText = "display:flex;gap:" + gap + "px";
+      for (let c = 0; c < cols; c++) {
+        const b = el("div", "skeleton");
+        b.style.height = h + "px";
+        b.style.flex = (cols > 1 && c === cols - 1) ? "0 0 38%" : "1 1 auto";
+        row.appendChild(b);
+      }
+      box.appendChild(row);
+    }
+    const t0 = Date.now();
+    host.appendChild(box);
+    pending++;
+
+    const api = {
+      host: host,
+      mounted: true,
+      blocks: rows * cols,
+      clear: function (force) {
+        if (!api.mounted) return false;
+        const wait = force ? 0
+          : Math.max(0, (o.minDwell == null ? DEFAULTS.minDwell : o.minDwell) - (Date.now() - t0));
+        const drop = function () {
+          if (!api.mounted) return;
+          api.mounted = false;
+          if (box.parentNode) box.parentNode.removeChild(box);
+          host.__bpSkel = null;
+          pending = Math.max(0, pending - 1);
+        };
+        if (wait) win.setTimeout(drop, wait);
+        else drop();
+        return true;
+      },
+    };
+    host.__bpSkel = api;
+    return api;
+  }
+
+  function clear(host, force) {
+    if (!host) return false;
+    const s = host.__bpSkel;
+    return s ? s.clear(force) : false;
+  }
+
+  /* 包一段同步/异步任务：任务期间显示骨架，结束（或失败）后清除 */
+  function during(host, o, fn) {
+    const s = mount(host, o);
+    let out;
+    try {
+      out = fn();
+    } catch (e) {
+      if (s) s.clear(true);
+      throw e;
+    }
+    if (out && typeof out.then === "function") {
+      return out.then(
+        v => { if (s) s.clear(); return v; },
+        e => { if (s) s.clear(true); throw e; }
+      );
+    }
+    if (s) s.clear();
+    return out;
+  }
+
+  window.bpSkeleton = mount;
+  window.__bpSkeleton = {
+    mount: mount,
+    clear: clear,
+    during: during,
+    pending: () => pending,
+  };
+})();
+/* ============================================================
+ * Z2. 媒体加载 v30（Beta 1.1.0 · 完整性补全层）
+ * ① 懒加载：<img/iframe data-src> 进入视口才真正取资源（IntersectionObserver，
+ *    无 IO 时退化为立即加载，功能不缺失），并补 loading="lazy" 走浏览器原生兜底。
+ * ② 渐进加载：data-src-sm 先上低清占位（blur），高清在后台预载完成后无缝替换淡入。
+ * ③ 悬停预览：[data-preview] 元素 hover / 键盘 focus 时弹出放大预览浮层，
+ *    Esc 或移出即收起；浮层图片同样按需加载。
+ * 印刷风纪律：浮层为纸底 + 墨色发丝线（零投影），过渡只做透明度与模糊，不做位移。
+ * ============================================================ */
+(function () {
+  const doc = document;
+  const win = doc.defaultView || window;
+  const RM = () => !!(win.matchMedia && win.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  let lazyIO = null, panel = null, panelImg = null, previewFor = null;
+
+  function el(tag, cls, txt) {
+    const e = doc.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt != null) e.textContent = txt;
+    return e;
+  }
+
+  /* ---------- ① + ② 懒加载 / 渐进加载 ---------- */
+  function reveal(node) {
+    if (!node) return;
+    node.classList.add("bp-media-in");
+    node.setAttribute("data-loaded", "1");
+  }
+  function loadMedia(node) {
+    if (!node || node.__bpLoaded) return false;
+    node.__bpLoaded = 1;
+    const full = node.getAttribute("data-src");
+    if (!full) return false;
+    node.classList.add("bp-media");
+    if (!node.getAttribute("loading")) node.setAttribute("loading", "lazy");
+    if (!node.getAttribute("decoding")) node.setAttribute("decoding", "async");
+
+    const small = node.getAttribute("data-src-sm");
+    if (small && small !== full && win.Image) {
+      /* 先落低清占位，高清在后台预载完成后再替换（渐进 blur-up） */
+      node.src = small;
+      const pre = new win.Image();
+      pre.onload = function () {
+        node.src = full;
+        reveal(node);
+      };
+      pre.onerror = function () { reveal(node); };   // 高清失败：低清照样可读
+      pre.src = full;
+    } else {
+      node.addEventListener("load", function () { reveal(node); });
+      node.addEventListener("error", function () { reveal(node); });
+      node.src = full;
+    }
+    node.removeAttribute("data-src");
+    return true;
+  }
+  function initLazy(root) {
+    const scope = root || doc;
+    const nodes = scope.querySelectorAll("img[data-src],iframe[data-src]");
+    let n = 0;
+    Array.prototype.forEach.call(nodes, node => {
+      if (node.__bpLazy) return;
+      node.__bpLazy = 1;
+      n++;
+      if (!("IntersectionObserver" in win)) { loadMedia(node); return; }
+      if (!lazyIO) {
+        lazyIO = new win.IntersectionObserver(entries => {
+          Array.prototype.forEach.call(entries, e => {
+            if (e.isIntersecting && e.target) { loadMedia(e.target); lazyIO.unobserve(e.target); }
+          });
+        }, { rootMargin: "120px" });
+      }
+      lazyIO.observe(node);
+    });
+    return n;
+  }
+
+  /* ---------- ③ 悬停 / 聚焦预览 ---------- */
+  function ensurePanel() {
+    if (panel) return panel;
+    panel = el("div", "bp-preview");
+    panel.setAttribute("aria-hidden", "true");
+    panelImg = doc.createElement("img");
+    panelImg.alt = "";
+    panel.appendChild(panelImg);
+    doc.body.appendChild(panel);
+    return panel;
+  }
+  function place(node) {
+    const r = node.getBoundingClientRect();
+    const w = panel.offsetWidth || 240;
+    let left = r.left + r.width / 2 - w / 2;
+    left = Math.max(8, Math.min(left, (win.innerWidth || 1024) - w - 8));
+    panel.style.left = left + "px";
+    panel.style.top = Math.max(8, r.bottom + 10) + "px";
+  }
+  function showPreview(node) {
+    const src = node && node.getAttribute("data-preview");
+    if (!src) return false;
+    ensurePanel();
+    previewFor = node;
+    panel.classList.add("show");
+    place(node);
+    if (panelImg.getAttribute("src") !== src) {
+      panelImg.removeAttribute("src");
+      panelImg.src = src;
+    }
+    return true;
+  }
+  function hidePreview() {
+    if (!panel) return false;
+    panel.classList.remove("show");
+    previewFor = null;
+    return true;
+  }
+  function initPreview(root) {
+    const scope = root || doc;
+    const nodes = scope.querySelectorAll("[data-preview]");
+    let n = 0;
+    Array.prototype.forEach.call(nodes, node => {
+      if (node.__bpPrev) return;
+      node.__bpPrev = 1;
+      n++;
+      if (!node.hasAttribute("tabindex")) node.setAttribute("tabindex", "0");
+      node.addEventListener("mouseenter", () => showPreview(node));
+      node.addEventListener("mouseleave", hidePreview);
+      node.addEventListener("focus", () => showPreview(node));
+      node.addEventListener("blur", hidePreview);
+    });
+    if (n) {
+      doc.addEventListener("keydown", e => { if (e.key === "Escape") hidePreview(); });
+      win.addEventListener("scroll", hidePreview, { passive: true });
+      if (RM() && panel) panel.style.transition = "none";
+    }
+    return n;
+  }
+
+  function initAll() {
+    const r = {};
+    try { r.lazy = initLazy(); } catch (e) { r.lazy = 0; }
+    try { r.preview = initPreview(); } catch (e) { r.preview = 0; }
+    return r;
+  }
+
+  if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", function () { initAll(); });
+  else initAll();
+
+  window.__bpMedia = {
+    init: initAll,
+    initLazy: initLazy,
+    initPreview: initPreview,
+    loadMedia: loadMedia,
+    showPreview: showPreview,
+    hidePreview: hidePreview,
+    visible: () => !!(panel && panel.classList.contains("show")),
+    target: () => previewFor,
     reduced: RM,
   };
 })();

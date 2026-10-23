@@ -6,9 +6,9 @@
 > 项目核心业务架构：多‑Agent圆桌协作机制、证据驱动可解释评分引擎、版本化Prompt约束体系、三级降级容错方案、RAG检索引用机制（BM25 + 端侧向量混合检索，余弦与词面双路融合）、全套业务产品设计与自动化测试体系均为团队独立设计与实现。演示知识库全部为人工合成示例数据，无爬取真实网络数据。  
 > 本作品为原型演示系统，仅用于竞赛演示，不直接作为生产系统使用。
 
-**版本定位：Beta 1.0.9 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
+**版本定位：Beta 1.1.0 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
 
-**技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 37 页。**PDF 版由该文档 A4 打印导出，随赛事材料以附件形式提交**（仓库 Release 亦提供下载）。
+**技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 29 页。**PDF 版由该文档 A4 打印导出，随赛事材料以附件形式提交**（仓库 Release 亦提供下载）。
 
 **在线演示（免安装，浏览器直接打开）：<https://penguin-zhou.github.io/FutureMirror/>**（GitHub Pages）· **国内直连镜像：<https://futuremirror-demo.app.workbuddy.host/>** · 演示账号 `demo@futuremirror.app / Demo123456`
 
@@ -632,7 +632,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **1240 项前端断言 + 17 项后端单测**，全部通过。
+合计 **1314 项前端断言 + 18 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -650,7 +650,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 
 ## 十、团队信息与成员分工
 
-**面镜 FutureMirror 开发团队 · 福建农林大学桢队** · 技术文档 v1.8（对应产品 Beta 1.0.9）
+**面镜 FutureMirror 开发团队 · 福建农林大学桢队** · 技术文档 v1.8（对应产品 Beta 1.1.0）
 
 | 角色                  | 成员               | GitHub                                           |
 | ------------------- | ---------------- | ------------------------------------------------ |
@@ -695,11 +695,11 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 17 项 + 前端 1240 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 18 项 + 前端 1314 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
-| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，约 37 页，**随赛事材料以附件形式提交**；仓库 Release 同附（修复版 v1.0.0-beta.1）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0-beta.1/FutureMirror.Beta.pdf> |
+| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，约 29 页，**随赛事材料以附件形式提交**；仓库 Release 同附（修复版 v1.0.0-beta.1）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0-beta.1/FutureMirror.Beta.pdf> |
 | 在线演示（公网可访问）            | ✅  | <https://penguin-zhou.github.io/FutureMirror/>                                                                                                                                    |
 | 在线演示镜像（国内直连）           | ✅  | <https://futuremirror-demo.app.workbuddy.host/>                                                                                                                                   |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456`                                                                                                                                              |
@@ -760,6 +760,19 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 ---
 
 ---
+
+## Beta 1.1.0 · 完整性补全层（2026.10.23 当前版本）
+
+对高级网页能力清单做第二轮逐项复核，把「只具备样式或雏形」的 6 处补齐为可运行、可测试、可降级：
+
+- **骨架屏**（`frontend/js/core/skeleton.js`）：占位块幂等挂载 + 最小驻留防闪烁 + `during()` 包裹异步；真实接入报告页等待服务端评分期间
+- **媒体三层**（`frontend/js/core/media.js`）：`[data-src]` 懒加载（IntersectionObserver，无则立即加载）+ `data-src-sm` 渐进 blur-up + `[data-preview]` 悬停/键盘预览，Esc 收起
+- **导出 Excel**（`viz.js` `toExcelHtml()`）：UTF-8 BOM + `application/vnd.ms-excel`，与 CSV 并存
+- **WebSocket 实时看板**：后端 `/ws/live` 每 3 秒推送聚合指标，前端按 apiBase 推导 ws/wss，失败降级 `/api/live/stats` 轮询
+- **图表悬停详情**（`initChartTips()`）：`[data-tip]` 统一接管，鼠标 hover 与键盘 focus 双通道
+- **键盘可达性**：`initSkipLink()` 跳到主内容 + `trapFocus()` 弹窗焦点陷阱（`role=dialog` + `aria-modal`）
+
+测试基线：**1314** 项前端断言（18 套 jsdom）+ **18** 项后端 pytest + 16 项 vitest + tsc 0 错误；技术文档 PDF **29 页**。
 
 ## 附：版本更新日志（v1 → Beta 1.0.9，v23 规划中）
 

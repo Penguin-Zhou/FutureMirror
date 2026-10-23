@@ -6,13 +6,14 @@ import pathlib
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 
+import asyncio
 import jwt
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Header
+from fastapi import Depends, FastAPI, HTTPException, Header, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 load_dotenv()
@@ -253,6 +254,55 @@ def list_interviews(user: User = Depends(current_user), db: Session = Depends(ge
                     "created_at": r.created_at.isoformat(),
                     "total": rep.total if rep else None})
     return out
+
+
+# ---------------- 实时看板：聚合指标（REST + WebSocket 双通道） ----------------
+# 只暴露全局聚合量（会话数 / 轮次数 / 平均分 / LLM 就绪），不含任何个人数据。
+def _live_stats(db: Session) -> dict:
+    interviews = db.scalar(select(func.count(Interview.id))) or 0
+    finished = db.scalar(select(func.count(Interview.id)).where(Interview.status == "finished")) or 0
+    turns = db.scalar(select(func.count(Turn.id))) or 0
+    avg = db.scalar(select(func.avg(Report.total)))
+    return {
+        "ok": True,
+        "ts": datetime.utcnow().isoformat() + "Z",
+        "interviews": interviews,
+        "finished": finished,
+        "turns": turns,
+        "avg_score": round(float(avg or 0), 1),
+        "llm_ready": llm_ready(),
+    }
+
+
+@app.get("/api/live/stats")
+def live_stats(db: Session = Depends(get_db)):
+    """WebSocket 不可用时的降级通道（前端轮询）。"""
+    return _live_stats(db)
+
+
+@app.websocket("/ws/live")
+async def ws_live(ws: WebSocket):
+    """实时数据流：每 3 秒推送一次聚合指标；客户端断开即结束。
+
+    前端 startLive() 优先连这里，连不上（如 Pages 纯静态环境无后端 WS）
+    自动降级为 /api/live/stats 轮询，功能不缺失。
+    """
+    await ws.accept()
+    try:
+        while True:
+            db = SessionLocal()
+            try:
+                await ws.send_json(_live_stats(db))
+            finally:
+                db.close()
+            await asyncio.sleep(3)
+    except WebSocketDisconnect:
+        return
+    except Exception:                                  # 客户端异常断开/服务端中断
+        try:
+            await ws.close()
+        except Exception:
+            pass
 
 
 # ---------------- 静态演示页（与 API 同源部署） ----------------

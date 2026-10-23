@@ -1,6 +1,6 @@
 "use strict";
 /* ============================================================
- * X. 动效与交互层 v29（Beta 1.0.9 · 专家能力层）
+ * X. 动效与交互层 v29（Beta 1.1.0 · 完整性补全层）
  * 印刷风纪律：位移只用水平/scale，禁止 translateY 上浮入场；
  * 不用 backdrop-filter、不用 box-shadow 投影；reduced-motion 全部停用。
  * 全部能力在元素存在时才挂载，缺失容器不报错。
@@ -217,6 +217,62 @@
     return els.length;
   }
 
+  /* ⑪ 焦点陷阱：弹窗 / 命令面板打开时 Tab 不跑出容器（键盘可达性） */
+  const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),' +
+    'textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  function trapFocus(box) {
+    if (!box) return null;
+    if (box.__bpTrap) return box.__bpTrap;
+    const onKey = function (e) {
+      if (e.key !== "Tab") return;
+      const items = Array.prototype.filter.call(
+        box.querySelectorAll(FOCUSABLE),
+        x => (x.offsetWidth || x.offsetHeight || x.getClientRects().length)
+      );
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+      else if (items.indexOf(doc.activeElement) < 0) { e.preventDefault(); first.focus(); }
+    };
+    box.addEventListener("keydown", onKey);
+    if (!box.getAttribute("role")) box.setAttribute("role", "dialog");
+    box.setAttribute("aria-modal", "true");
+    const api = {
+      release: function () {
+        box.removeEventListener("keydown", onKey);
+        box.removeAttribute("aria-modal");
+        box.__bpTrap = null;
+        return true;
+      },
+    };
+    box.__bpTrap = api;
+    return api;
+  }
+  function initFocusTraps() {
+    const boxes = doc.querySelectorAll(".modal-box,.bp-command,[data-trap]");
+    let n = 0;
+    Array.prototype.forEach.call(boxes, b => { if (trapFocus(b)) n++; });
+    return n;
+  }
+
+  /* ⑫ 跳转到主内容：键盘首个 Tab 即可跳过导航（屏幕阅读器 / 键盘用户） */
+  function initSkipLink() {
+    if (doc.querySelector(".bp-skip")) return false;
+    let target = doc.getElementById("main");
+    if (!target) {
+      target = doc.querySelector("main");
+      if (target && !target.id) target.id = "main";
+    }
+    const a = doc.createElement("a");
+    a.className = "bp-skip";
+    a.href = target ? "#main" : "#app";
+    a.textContent = "跳到主内容";
+    doc.body.insertBefore(a, doc.body.firstChild);
+    if (target && !target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+    return true;
+  }
+
   /* 统一挂载：任一子项失败不影响其余 */
   function initAll() {
     const r = {};
@@ -230,6 +286,8 @@
     try { r.dialogs = initDialogs(); } catch (e) { r.dialogs = 0; }
     try { r.aside = initAside(); } catch (e) { r.aside = false; }
     try { r.parallax = initParallax(); } catch (e) { r.parallax = 0; }
+    try { r.focusTraps = initFocusTraps(); } catch (e) { r.focusTraps = 0; }
+    try { r.skipLink = initSkipLink(); } catch (e) { r.skipLink = false; }
     return r;
   }
 
@@ -249,6 +307,9 @@
     initDialogs: initDialogs,
     initAside: initAside,
     initParallax: initParallax,
+    trapFocus: trapFocus,
+    initFocusTraps: initFocusTraps,
+    initSkipLink: initSkipLink,
     toggleAside: toggleAside,
     withVT: withVT,
     reduced: RM,

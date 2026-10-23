@@ -106,7 +106,9 @@ const jsRules = [
   ["js/features/assistant.js",   "v20 AI 小助手 + v21 悬浮球", ["⑦ AI 小助手（retrieve + streamChat）", "v21 · AI 悬浮球"]],
   ["js/core/api.js",             "v22 后端适配层", ["v22 · 后端适配层"]],
   ["js/core/motion.js",          "v29 动效与交互层", ["X. 动效与交互层 v29"]],
-  ["js/features/viz.js",         "v29 数据可视化与看板组件", ["Y. 数据可视化与看板组件 v29"]],
+  ["js/features/viz.js",         "v30 数据可视化与看板组件", ["Y. 数据可视化与看板组件 v30"]],
+  ["js/core/skeleton.js",        "v30 骨架屏", ["Z1. 骨架屏 v30"]],
+  ["js/core/media.js",           "v30 媒体懒加载与预览", ["Z2. 媒体加载 v30"]],
 ];
 
 /* 收集全部 JS 边界（标题行 → 起点），按出现位置排序 */
@@ -162,6 +164,7 @@ const LOAD_ORDER = [
   "js/features/profile.js", "js/features/jobs.js", "js/features/quiz.js",
   "js/features/assistant.js", "js/core/api.js",
   "js/core/motion.js", "js/features/viz.js",
+  "js/core/skeleton.js", "js/core/media.js",
 ];
 if (LOAD_ORDER.length !== JS_SECTIONS.length ||
     new Set(LOAD_ORDER).size !== LOAD_ORDER.length ||
