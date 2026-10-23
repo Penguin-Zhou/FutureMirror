@@ -11,9 +11,10 @@ const PROFILE_DEFAULTS = {
   vip: false,
 };
 
-/* HTML 转义（资料字段均为用户输入，渲染前必须转义） */
+/* HTML 转义（资料字段均为用户输入，渲染前必须转义）
+ * 统一走 store.js 的 escHtml，避免两份转义实现各自漂移。 */
 function esc(s) {
-  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  return escHtml(s);
 }
 
 function getProfile() {
