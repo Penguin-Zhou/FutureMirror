@@ -206,8 +206,8 @@ async function renderReport(force) {
     </div>
     <div class="pane-title" style="margin-top:18px">评分证据（引用你的真实回答）</div>
     <div id="evidence">${evidence.map(e => `
-      <div class="evidence"><span class="badge badge-brand">${e.agent}</span><br>
-        <q>“${e.quote}”</q><p>📝 ${e.note}</p></div>`).join("")}</div>
+      <div class="evidence"><span class="badge badge-brand">${esc(e.agent)}</span><br>
+        <q>“${esc(e.quote)}”</q><p>📝 ${esc(e.note)}</p></div>`).join("")}</div>
     ${rewrites.length ? `<div class="pane-title" style="margin-top:18px">✍️ 句子级改写建议 <span class="tag-demo">规则引擎 · 无需 LLM</span></div>
     <div id="rewrites">${rewrites.map(r => `
       <div class="evidence"><span class="badge badge-amber rw-dim">${r.dimension}</span><q>“${esc(r.original)}”</q><p>✍️ ${esc(r.advice)}</p></div>`).join("")}</div>` : ""}

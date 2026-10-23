@@ -68,11 +68,11 @@ function analyze() {
       ${ringSVG(p.matchScore)}
       <div class="match-body">
         <div style="margin-bottom:10px"><b style="font-size:13.5px">✅ 已具备技能</b><br>
-          ${p.skills.length ? p.skills.map(s => `<span class="chip chip-green">${s}</span>`).join("") : '<span style="color:var(--faint);font-size:13px">未识别到</span>'}</div>
+          ${p.skills.length ? p.skills.map(s => `<span class="chip chip-green">${escHtml(s)}</span>`).join("") : '<span style="color:var(--faint);font-size:13px">未识别到</span>'}</div>
         <div style="margin-bottom:10px"><b style="font-size:13.5px">⚠️ 能力缺口</b><br>
-          ${p.gaps.length ? p.gaps.map(g => `<span class="chip chip-red">${g}</span>`).join("") : '<span style="color:var(--faint);font-size:13px">无明显缺口</span>'}</div>
+          ${p.gaps.length ? p.gaps.map(g => `<span class="chip chip-red">${escHtml(g)}</span>`).join("") : '<span style="color:var(--faint);font-size:13px">无明显缺口</span>'}</div>
         <div><b style="font-size:13.5px">💡 补强建议</b>
-          <ul style="padding-left:18px;font-size:13px;color:var(--muted);line-height:1.9">${p.suggestions.map(s => `<li>${s}</li>`).join("")}</ul></div>
+          <ul style="padding-left:18px;font-size:13px;color:var(--muted);line-height:1.9">${p.suggestions.map(s => `<li>${escHtml(s)}</li>`).join("")}</ul></div>
         <div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="switchTab('interview')">开始多 Agent 模拟面试 →</button></div>
       </div>
     </div>`;
