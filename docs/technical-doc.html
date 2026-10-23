@@ -2,7 +2,14 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>面镜 FutureMirror · 技术文档 v1.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · 技术文档 v1.10（对应产品 Beta 1.1.1）">
+<meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1C1913" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面镜 FutureMirror · 技术文档 v1.10">
+<meta property="og:description" content="多 Agent 驱动的 AI 模拟面试与能力成长平台 · 技术文档（对应产品 Beta 1.1.1）">
+<title>面镜 FutureMirror · 技术文档 v1.10（Beta 1.1.1）</title>
 <style>
   :root {
     --brand: #BE3A1E;
@@ -363,6 +370,15 @@
 
   .keep { page-break-inside: avoid; }
   .pb { page-break-before: always; }
+  /* 移动端适配：窄屏下收窄内边距，宽表与长代码块改为横向滚动而非撑破版面 */
+  @media (max-width: 720px) {
+    body { padding: 18px 14px 40px; font-size: 15px; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 17px; }
+    table { display: block; overflow-x: auto; }
+    pre, code { overflow-x: auto; }
+  }
 </style>
 </head>
 <body>
@@ -394,7 +410,7 @@
   </div>
 
   <dl class="cover-meta">
-    <dt>文档版本</dt>       <dd>v1.9（对应产品 Beta 1.1.0）</dd>
+    <dt>文档版本</dt>       <dd>v1.10（对应产品 Beta 1.1.1）</dd>
     <dt>应用方向</dt>       <dd>AI Agent 智能助手 / RAG 知识问答 / AI 教育与学习平台</dd>
     <dt>技术栈</dt>         <dd>Next.js 15 · React 19 · TypeScript · FastAPI · GLM-4-Flash · Transformers.js</dd>
     <dt>代码仓库</dt>       <dd><a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">github.com/Penguin-Zhou/FutureMirror</a></dd>
@@ -416,7 +432,7 @@
     <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级</span></a></li>
     <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span></a></li>
     <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span></a></li>
-    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1314 + 18 项测试 / 4 种部署</span></a></li>
+    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1317 + 21 项测试 / 4 种部署</span></a></li>
     <li><a href="#ch7"><span class="toc-t">核心算法详解与原创性论证</span><span class="toc-d">三大算法 / 校准实证 / 模板差异化</span></a></li>
     <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span></a></li>
     <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 交付清单</span></a></li>
@@ -487,7 +503,7 @@
       <tr><td>题库</td><td>24 题 / 5 分类</td><td>SQL / 网络 / 操作系统 / 算法 / STAR</td></tr>
       <tr><td>MCP 工具</td><td>3 个</td><td><code>search_job_db</code> / <code>fetch_interview_experience</code> / <code>schedule_mock</code></td></tr>
       <tr><td>前端自动化断言</td><td>1137 项</td><td>单文件版 + 模块版 jsdom 测试</td></tr>
-      <tr><td>后端单元测试</td><td>18 项</td><td>pytest 冒烟 + 评分引擎</td></tr>
+      <tr><td>后端单元测试</td><td>21 项</td><td>pytest 冒烟 + 评分引擎</td></tr>
       <tr><td>部署形态</td><td>4 种</td><td>单文件 / 模块版 / FastAPI 后端 / Next.js 完整版</td></tr>
     </tbody>
   </table>
@@ -1063,7 +1079,7 @@
       </tr>
       <tr>
         <td><strong>L2 回归防线</strong></td>
-        <td>1314 + 18 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
+        <td>1317 + 21 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
         <td>任何 Prompt / 规则 / 检索参数变更，先过测试再合入</td>
       </tr>
       <tr>
@@ -1184,7 +1200,7 @@
       <tr><th style="width:22%">层级</th><th style="width:20%">工具</th><th style="width:14%">数量</th><th>覆盖内容</th></tr>
     </thead>
     <tbody>
-      <tr><td>后端单元测试</td><td>pytest</td><td>18 项</td><td>健康检查、注册登录流程、评分引擎</td></tr>
+      <tr><td>后端单元测试</td><td>pytest</td><td>21 项</td><td>健康检查、注册登录流程、评分引擎</td></tr>
       <tr><td>静态验证</td><td>Node + 正则</td><td>—</td><td>JS 语法、DOM id 引用、onclick 处理器、标签配平</td></tr>
       <tr><td>无头逻辑测试</td><td>Node</td><td>217 项</td><td>store / 用户系统 / 简历优化 / 职业探索 / 主题 / 报告</td></tr>
       <tr><td>jsdom 集成测试</td><td>jsdom</td><td>11 文件 / 722 项</td><td>v15-v24 + beta1 向量检索，覆盖所有功能模块、体验层 UX Kit 与动态层粒子场</td></tr>
@@ -1562,7 +1578,7 @@ cd frontend && python -m http.server 5173
     <li><strong>BM25 + 端侧向量混合检索</strong>的 RAG 层，含缓存、降级、可解释得分；</li>
     <li><strong>可解释评分 + 证据链 + 动态学习路径</strong>的报告引擎；</li>
     <li><strong>三级降级</strong>的完整链路（后端 → 直连 → Mock），演示不中断；</li>
-    <li><strong>1314 + 18 项自动化测试</strong>，覆盖所有功能；</li>
+    <li><strong>1317 + 21 项自动化测试</strong>，覆盖所有功能；</li>
     <li><strong>开发者模式</strong>作为面向评委的技术透明度工具。</li>
   </ul>
 
@@ -1703,15 +1719,15 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
 
   <div class="doc-footer">
     <strong>面镜 FutureMirror 开发团队 · 福建农林大学桢队</strong><br>
-    技术文档 v1.9（Beta 1.1.0）
+    技术文档 v1.10（Beta 1.1.1）
   </div>
 </section>
 
 <!-- =============== 第 10 章 =============== -->
 <section class="chapter" id="ch10">
   <div class="chapter-num">CHAPTER 10</div>
-  <h1>版本更新日志（v1 → Beta 1.1.0）</h1>
-  <p>本日志为<strong>团队真实开发进程</strong>的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.1.0 当前版本），共 31 个已发布版本。每个版本均可独立运行、可回归。</p>
+  <h1>版本更新日志（v1 → Beta 1.1.1）</h1>
+  <p>本日志为<strong>团队真实开发进程</strong>的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.1.1 当前版本），共 32 个已发布版本。每个版本均可独立运行、可回归。</p>
   <div class="callout info"><strong>关于 Git 提交记录（重要说明）：</strong> 本仓库的 Git 提交历史自 <strong>Beta 版本</strong>（首次以 <code>v1.0.0-beta</code> 提交包上传）时建立，<strong>仅包含 BETA 1.0 及之后的更新</strong>；BETA 1.0 之前的 v1–v22 演进历程以本更新日志形式完整留存，未在 Git 提交记录中逐条提交。日志中所载为团队真实的版本演进，而非事后补造。</div>
   <div class="callout">阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.0.9，为当前正式发布版本（专家能力层：主题跟随系统 + 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化 + 高级组件）；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。</div>
   <h3>v23 · 规划中 · 完整版对齐 · 生产级 RAG · 多模态扩展（待排期）</h3>
@@ -1825,7 +1841,46 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <td>42MB</td>
     </tr></tbody>
   </table>
-            <h3>Beta 1.1.0 · 完整性补全层：把能力清单的缺口逐项封死（2026.10.23 当前版本）</h3>
+                  <h3>Beta 1.1.1 · 审计加固层：全站与仓库逐项复核后的收口（2026.10.23 当前版本）</h3>
+  <div class="callout">对「网站 + 代码仓库 + 全部交付文件」做了一次<strong>逐项复核</strong>，把发现的 12 类问题全部修掉并各自补齐回归断言。本轮不新增功能，只做<strong>正确性、安全性、一致性、工程化</strong>四个方向的收口：修掉技术文档标题版本与移动端视口、README 附录版本口径、根 <code>.env.example</code> 与实际变量不匹配、JWT 密钥硬编码常量、简历/面试/报告中的用户输入未转义、报告重渲染导致的实时看板定时器与 WebSocket 泄漏、Hero 光晕与头像调色板的蓝紫撞色残留等。</div>
+  <h4><strong>✨ 修复清单</strong></h4>
+  <ul>
+    <li><strong>文档一致性</strong>：技术文档 <code>&lt;title&gt;</code> 长期停留在 v1.2（正文已是 v1.9）→ 修正为 v1.10 并随版本联动；补 <code>&lt;meta name="viewport"&gt;</code> 与 720px 断点，技术文档在手机上不再溢出；补 description / theme-color / Open Graph 元信息</li>
+    <li><strong>README 附录</strong>：版本更新日志章节此前仍标注「当前版本 Beta 1.0.9 / 共 29 个版本」，与正文矛盾 → 统一为 Beta 1.1.1 / 32 个版本</li>
+    <li><strong>环境变量模板</strong>：根 <code>.env.example</code> 列的是早期 Next 原型的 GEMINI / OpenRouter / 智谱 / DeepSeek / Supabase 变量，后端一个都不读，照抄必然失败 → 重写为「后端变量（与 <code>backend/.env.example</code> 一致）+ 构建期 <code>FM_API_BASE</code> + 早期原型变量」三段，并注明 Pages 发布必须显式带 <code>FM_API_BASE</code></li>
+    <li><strong>安全</strong>：<code>SECRET_KEY</code> 未配置时不再回退硬编码常量（改为进程启动时随机生成，最坏结果只是重启后令牌失效，而非令牌可伪造）；演示账号口令支持环境变量覆盖；<code>/api/chat/stream</code> 增加单条 4000 字 / 整段 24000 字上限；<code>/ws/live</code> 增加 50 连接上限与计数回收</li>
+    <li><strong>XSS 收口</strong>：新增统一 <code>escHtml()</code>（<code>store.js</code>），接入简历改写建议（原文/改写/问题）、面试时间线（Agent 名/文本）、报告证据链（引用原话/批注/Agent 名）、岗位匹配结果（技能/缺口/建议）；打字机效果由 <code>innerHTML</code> 拼接改为 <code>textContent</code> + 光标节点；<code>profile.js</code> 的 <code>esc</code> 统一委托，消除两份转义实现</li>
+    <li><strong>内存泄漏</strong>：报告页每次重渲染都会新建实时看板的定时器与 WebSocket，旧的从不停止 → <code>mountReportPanel()</code> 加单实例守卫；<code>api.js</code> 健康检测与 <code>interview.js</code> 流式超时的 <code>setTimeout</code> 改为请求结束后清理；<code>sessionStorage</code> 读取补异常保护（隐私模式/沙箱 iframe 下会抛）</li>
+    <li><strong>视觉纪律</strong>：Hero 光晕此前是 indigo 径向渐变 + <code>filter: blur(30px)</code>、落地页是三色蓝紫渐变、雷达填充与头像调色板是 indigo/粉青撞色——均与「无蓝紫渐变、无滤镜、单一朱红」的印刷风纪律冲突，且旧断言只查了 <code>linear-gradient</code> + hex 写法抓不到 → 全部改为单色品牌晕染（<code>var(--brand)</code> + <code>opacity</code>）与墨阶调色板，并补 3 条按色值兜底的断言</li>
+    <li><strong>工程化</strong>：<code>package.json</code> 版本对齐产品版本；新增 <code>scripts/run-tests.js</code> 全量测试入口（一次跑完 18 套 1317 断言，任一失败即整体失败）与 <code>test:all</code> / <code>test:jsdom</code> 脚本</li>
+    <li><strong>页面元信息</strong>：演示页补内联 SVG favicon（零额外请求）、明暗两套 <code>theme-color</code>、Open Graph / Twitter Card</li>
+    <li><strong>弃用清理</strong>：后端 <code>datetime.utcnow()</code> 在 Python 3.12+ 已弃用，全部改为 <code>now(timezone.utc)</code>（naive UTC，语义不变）</li>
+  </ul>
+  <h4><strong>🔧 优化改进</strong></h4>
+  <ul>
+    <li><strong>无障碍复核</strong>：全量扫描 186 个 id（无重复）、35 个表单控件（全部有可访问名称）、135 个按钮（无「无文本且无 aria-label」）</li>
+    <li><strong>健壮性</strong>：<code>llmLabel()</code> 对另一个模块声明的全局 <code>llm</code> 改用 <code>typeof</code> 探活，避免未加载时抛 <code>ReferenceError</code></li>
+    <li><strong>round-trip</strong>：拆分 / 重建后字节一致，<code>build-manifest.json</code> 行号重算并入库</li>
+  </ul>
+  <h4><strong>📊 数据指标</strong></h4>
+  <table>
+    <thead><tr>
+      <th>前端断言</th>
+      <th>后端测试</th>
+      <th>单元测试</th>
+      <th>本轮修复</th>
+      <th>PDF 页数</th>
+    </tr></thead>
+    <tbody><tr>
+      <td>1317</td>
+      <td>21</td>
+      <td>16（vitest）</td>
+      <td>12 类 / 30+ 处</td>
+      <td>29 页</td>
+    </tbody></tr>
+  </table>
+
+<h3>Beta 1.1.0 · 完整性补全层：把能力清单的缺口逐项封死（2026.10.23）</h3>
   <div class="callout">对「高级网页能力清单」做第二轮逐项复核，把上一轮只有样式雏形、尚未真正接线的 6 处补齐为<strong>可运行、可测试、可降级</strong>：骨架屏（此前只有 CSS 定义，无实际渲染）、图片懒加载 / 渐进加载 / 悬停预览（此前站内无媒体通道）、表格导出 Excel（此前仅 CSV）、实时看板 WebSocket（此前仅本地轮询）、图表悬停详情（折线与柱状此前无 tooltip）、键盘可达性（此前无 skip link 与焦点陷阱）。新增 <code>skeleton.js</code> / <code>media.js</code> 两个模块，v30 测试套件 74 项断言锁定全部行为（含 reduced-motion 路径与 WebSocket mock 路径）。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>
