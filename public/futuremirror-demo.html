@@ -5783,6 +5783,13 @@ function closeNavDropdown() { /* noop：下拉 UI 已在 v10 下线 */ }
 const $ = id => document.getElementById(id);
 let currentUser = null;   // { id, email, name, passHash, createdAt }
 
+/* HTML 转义：凡是把用户输入（简历原文、面试回答、岗位名、笔记）拼进 innerHTML
+ * 的地方都必须先过这一层，否则一段带标签的文本就能改变 DOM 结构。 */
+const ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+function escHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ESC_MAP[c]);
+}
+
 /* 数据隔离 key：g_ 前缀表示全局共享；其余按当前用户加前缀（用户 id 自带 u_ 前缀） */
 function kk(k) {
   if (k.startsWith("g_")) return k;
@@ -6580,7 +6587,7 @@ function addTimeline(agent, text, kind) {
   const div = document.createElement("div");
   div.className = "tl-item" + (kind ? " " + kind : "");
   const icon = kind === "note" ? "📝 " : kind === "tool" ? "🔧 " : "";
-  div.innerHTML = `<span class="tl-agent">${agent}</span><br>${icon}${text}`;
+  div.innerHTML = `<span class="tl-agent">${escHtml(agent)}</span><br>${icon}${escHtml(text)}`;
   tl.appendChild(div);
   tl.scrollTop = tl.scrollHeight;
 }
@@ -6655,7 +6662,12 @@ function sendMsgMock(text, speaker, keyword, notes) {
     body.scrollTop = body.scrollHeight;
     let i = 0;
     const timer = setInterval(() => {
-      bubble.innerHTML = question.slice(0, ++i) + '<span class="caret"></span>';
+      /* 用 textContent 逐字推进再挂光标，避免把问题文本当 HTML 解析
+       * （innerHTML 拼接会让文本里的标签改变 DOM 结构） */
+      bubble.textContent = question.slice(0, ++i);
+      const caret = document.createElement("span");
+      caret.className = "caret";
+      bubble.appendChild(caret);
       body.scrollTop = body.scrollHeight;
       if (i >= question.length) {
         clearInterval(timer);
@@ -6693,7 +6705,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   body.scrollTop = body.scrollHeight;
 
   const ctrl = new AbortController();
-  setTimeout(() => ctrl.abort(), 60000);
+  const killTimer = setTimeout(() => ctrl.abort(), 60000);
   let full = "";
   let streamStarted = false;
   try {
@@ -6707,6 +6719,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
     v16MaybeAutoSpeak();
     $("fallback-banner").hidden = true;
   } catch (e) {
+    clearTimeout(killTimer);
     hideTyping();
     bubble.remove();
     const reason = e.name === "AbortError" ? "超时 60s" : e.message;
@@ -6718,6 +6731,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
     sendMsgMock(text, speaker, keyword, notes);
     return;
   }
+  clearTimeout(killTimer);
   addTimeline("观察员 Agent", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
   startAnswerTimer();
   session.turns.push({ agent: speaker.name, question: full, answer: text, notes, mode: session.mode });
@@ -9461,9 +9475,9 @@ function analyzeResume() {
         ${r.rewrites.length
           ? r.rewrites.slice(0, 5).map(w => `
               <div class="evidence">
-                <span class="badge badge-red">${w.issue}</span>
-                <p style="margin-top:6px"><b>原文：</b><q>${w.original}</q></p>
-                <p><b>改写：</b>${w.suggestion}</p>
+                <span class="badge badge-red">${escHtml(w.issue)}</span>
+                <p style="margin-top:6px"><b>原文：</b><q>${escHtml(w.original)}</q></p>
+                <p><b>改写：</b>${escHtml(w.suggestion)}</p>
               </div>`).join("")
           : '<div class="evidence"><span class="badge badge-green">结构较好</span><p>未检测到明显的量化缺失或动词问题，建议进一步用 LLM 深度打磨。</p></div>'}
       </div>
@@ -13188,7 +13202,9 @@ const fmApi = {
     let saved = "";
     try { saved = localStorage.getItem("fm_api_base") || ""; } catch (e) {}
     this.base = (window.FM_API_BASE || saved || FM_API_DEFAULT_BASE).replace(/\/+$/, "");
-    this.token = sessionStorage.getItem("fm_token") || "";
+    /* sessionStorage 在隐私模式 / 沙箱 iframe 下可能直接抛异常，
+     * 与上面的 localStorage 一样必须包起来，否则整个 init() 会中断。 */
+    try { this.token = sessionStorage.getItem("fm_token") || ""; } catch (e) { this.token = ""; }
   },
   backendReady() { return this.ready && !!this.health && this.health.ok; },
   backendModel() { return (this.health && this.health.model) || "后端模型"; },
@@ -13218,13 +13234,16 @@ const fmApi = {
     if (!force && this.health && now - this.healthAt < 30000) return this.health;
     if (typeof fetch !== "function") { this.ready = false; return null; }
     const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 8000);
+    /* 超时定时器必须在请求结束后清掉，否则每次健康检测都会留下一个 8 秒的空转定时器 */
+    const kill = setTimeout(() => ctrl.abort(), 8000);
     try {
       const res = await fetch(this.base + "/api/health", { signal: ctrl.signal });
       const j = await res.json();
       this.health = { ok: !!j.ok, llm_ready: !!j.llm_ready, model: j.model || null };
     } catch (e) {
       this.health = { ok: false, llm_ready: false, model: null };
+    } finally {
+      clearTimeout(kill);
     }
     this.healthAt = Date.now();
     this.ready = this.health.ok;
@@ -13335,8 +13354,10 @@ const fmApi = {
 
 function llmLabel() {
   if (fmApi.backendReady()) return `后端 ${fmApi.backendModel()} @ ${hostOf(fmApi.base)}`;
-  if (llm) return `${llm.model} @ ${hostOf(llm.baseUrl)}`;
-  return "Mock 模式";   // v22.1：llm 为空时不再抛 TypeError
+  /* llm 是另一个模块声明的全局变量：未加载时直接引用会抛 ReferenceError，
+   * 用 typeof 先探活，保证降级文案一定能输出。 */
+  if (typeof llm !== "undefined" && llm) return `${llm.model} @ ${hostOf(llm.baseUrl)}`;
+  return "Mock 模式";
 }
 
 function saveApiBase() {
@@ -14209,6 +14230,12 @@ function refreshBackendUi() {
     const anchor = doc.getElementById("report-content");
     const parent = anchor && anchor.parentNode;
     if (!parent || doc.getElementById("bp-viz-panel")) return false;
+    /* 单实例守卫：报告重渲染会先清空 report-content 再重建面板，
+     * 若不先停掉上一个 live，每次重渲染都会留下一条孤儿定时器 / WebSocket。 */
+    if (bpLive && typeof bpLive.stop === "function") {
+      try { bpLive.stop(); } catch (e) {}
+      bpLive = null;
+    }
     const d = readVizData();
 
     const sec = el("section", "card bp-z2");
