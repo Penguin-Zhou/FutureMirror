@@ -5,10 +5,10 @@ export const changelogHtml = `
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.1.0</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.1.1</div>
     <div class="meta">
-      <span>已发布 <b>30</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.1.0</b></span>
+      <span>已发布 <b>31</b> 个版本</span>
+      <span>当前版本 <b>Beta 1.1.1</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -16,19 +16,19 @@ export const changelogHtml = `
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.1.0，为当前正式发布版本（完整性补全层：骨架屏 + 媒体懒加载 / 渐进 / 悬停预览 + Excel 导出 + WebSocket 实时看板 + 图表悬停详情 + 键盘可达性）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.1.1，为当前正式发布版本（审计加固层：文档一致性 + 环境变量模板 + JWT 密钥 + 输入长度与连接上限 + XSS 收口 + 内存泄漏 + 视觉纪律 + 全量测试入口）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
   <div class="overview">
-    <div class="ov-card"><div class="ov-num">29</div><div class="ov-label">已发布版本</div></div>
+    <div class="ov-card"><div class="ov-num">30</div><div class="ov-label">已发布版本</div></div>
     <div class="ov-card"><div class="ov-num">10</div><div class="ov-label">功能页</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">协作 Agent</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">岗位数据库</div></div>
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1314</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1317</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -38,6 +38,7 @@ export const changelogHtml = `
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
     <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
+    <li><a href="#vbeta1-11"><span class="cl-toc-tag">Beta 1.1.1</span><span class="cl-toc-title-txt">审计加固层 · 文档一致性 + 安全加固 + XSS 收口 + 泄漏修复 + 视觉纪律</span></a></li>
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
     <li><a href="#vbeta1-9"><span class="cl-toc-tag">Beta 1.0.9</span><span class="cl-toc-title-txt">专家能力层 · 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化</span></a></li>
     <li><a href="#vbeta1-8"><span class="cl-toc-tag">Beta 1.0.8</span><span class="cl-toc-title-txt">深度交互层 · 命令面板 Pro + 报告可视化 + 实时批注</span></a></li>
@@ -194,11 +195,36 @@ export const changelogHtml = `
   <!-- ========================================================
        Beta 1.0.9 · 专家能力层（Blueprint Expert Layer）
        ======================================================== -->
-  <div class="version vbeta1-10 current" id="vbeta1-10">
+  <div class="version vbeta1-11 current" id="vbeta1-11">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.1.0</span>
-      <span class="v-title">完整性补全层 · 骨架屏 + 媒体三层 + Excel 导出 + WebSocket 实时看板 + 键盘可达</span>
+      <span class="v-tag v-tag-current">Beta 1.1.1</span>
+      <span class="v-title">审计加固层 · 文档一致性 + 安全加固 + XSS 收口 + 泄漏修复 + 视觉纪律 + 全量测试入口</span>
       <span class="v-date">2026.10.23 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        对「网站 + 代码仓库 + 全部交付文件」做了一次<strong>逐项复核</strong>，把发现的 12 类问题全部修掉并各自补齐回归断言。本轮不新增功能，只做<strong>正确性 / 安全性 / 一致性 / 工程化</strong>四个方向的收口。重点几项：<strong>① 文档一致性</strong>——技术文档 <code>&lt;title&gt;</code> 长期停留在 v1.2（正文已是 v1.9）已修正为 v1.10 并随版本联动，同时补上 <code>&lt;meta name="viewport"&gt;</code> 与 720px 断点（技术文档在手机上不再溢出）；README 附录版本日志此前仍标「当前版本 Beta 1.0.9 / 共 29 个版本」，与正文矛盾，已统一。<strong>② 环境变量模板</strong>——根 <code>.env.example</code> 列的是早期 Next 原型的 GEMINI / OpenRouter / 智谱 / DeepSeek / Supabase 变量，后端一个都不读，照抄必然失败，已重写为「后端变量 + 构建期 <code>FM_API_BASE</code> + 早期原型变量」三段。<strong>③ 安全</strong>——<code>SECRET_KEY</code> 未配置时不再回退硬编码常量（改为进程启动时随机生成，最坏结果只是重启后令牌失效，而非令牌可伪造）；<code>/api/chat/stream</code> 增加单条 4000 字 / 整段 24000 字上限；<code>/ws/live</code> 增加 50 连接上限与计数回收。<strong>④ XSS 收口</strong>——新增统一 <code>escHtml()</code>，接入简历改写建议、面试时间线、报告证据链（引用原话）、岗位匹配结果；打字机效果由 innerHTML 拼接改为 <code>textContent</code>。<strong>⑤ 内存泄漏</strong>——报告页每次重渲染都会遗留一条实时看板定时器与 WebSocket，已加单实例守卫。<strong>⑥ 视觉纪律</strong>——Hero 光晕的 indigo 径向渐变 + <code>blur(30px)</code>、落地页三色蓝紫渐变、雷达填充与头像调色板的撞色，均已改为单色品牌晕染与墨阶调色板，并补 3 条按色值兜底的断言（旧断言只查 <code>linear-gradient</code> + hex，抓不到 <code>radial-gradient</code> 的 rgba 写法）。<strong>⑦ 工程化</strong>——新增 <code>scripts/run-tests.js</code> 全量测试入口，一条命令跑完 18 套 1317 断言。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>一条命令验全部</b>：<code>npm run test:all</code> 一次跑完 18 套 1317 断言 + vitest + tsc</div>
+        <div class="vh-item"><b>令牌不再可伪造</b>：SECRET_KEY 漏配时随机生成，而不是回退硬编码常量</div>
+        <div class="vh-item"><b>引用原话也不怕</b>：简历原文、面试回答、报告证据链统一走 escHtml 转义</div>
+        <div class="vh-item"><b>蓝紫撞色清零</b>：Hero 光晕与头像调色板改走墨阶 + 单一朱红，并加了防复发断言</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">12</div><div class="m-label">修复类别</div></div>
+        <div class="metric"><div class="m-val">1317</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">21</div><div class="m-label">后端 pytest</div></div>
+        <div class="metric"><div class="m-val">29</div><div class="m-label">技术文档页数</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="version vbeta1-10" id="vbeta1-10">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.0</span>
+      <span class="v-title">完整性补全层 · 骨架屏 + 媒体三层 + Excel 导出 + WebSocket 实时看板 + 键盘可达</span>
+      <span class="v-date">2026.10.23</span>
     </div>
     <div class="version-body">
       <div class="v-summary">
