@@ -2,7 +2,14 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>面镜 FutureMirror · 技术文档 v1.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · 技术文档 v1.9（对应产品 Beta 1.1.0）">
+<meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1C1913" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面镜 FutureMirror · 技术文档 v1.9">
+<meta property="og:description" content="多 Agent 驱动的 AI 模拟面试与能力成长平台 · 技术文档（对应产品 Beta 1.1.0）">
+<title>面镜 FutureMirror · 技术文档 v1.9（Beta 1.1.0）</title>
 <style>
   :root {
     --brand: #BE3A1E;
@@ -363,6 +370,15 @@
 
   .keep { page-break-inside: avoid; }
   .pb { page-break-before: always; }
+  /* 移动端适配：窄屏下收窄内边距，宽表与长代码块改为横向滚动而非撑破版面 */
+  @media (max-width: 720px) {
+    body { padding: 18px 14px 40px; font-size: 15px; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 17px; }
+    table { display: block; overflow-x: auto; }
+    pre, code { overflow-x: auto; }
+  }
 </style>
 </head>
 <body>
