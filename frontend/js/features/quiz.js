@@ -805,9 +805,10 @@ function renderQuizStats() {
     <div class="qs-panel-card">
       <div class="qs-panel-title">📈 最近成绩趋势 <span>最近 ${trend.length} 轮小测</span></div>
       <div class="trend-row">
-        ${trend.map(x => {
+        ${trend.map((x, ti) => {
           const cls = x.score >= 80 ? "good" : "";
-          return `<div class="trend-bar"><div class="trend-bar-track"><div class="trend-bar-fill ${cls}" style="height:${Math.max(4, x.score)}%"></div></div><span class="trend-bar-label">${x.score}</span></div>`;
+          const tipTxt = `第 ${ti + 1} 轮 · ${x.score} 分 · ${x.score >= 80 ? "优秀" : x.score >= 60 ? "及格" : "待提高"}`;
+          return `<div class="trend-bar" tabindex="0" data-tip="${tipTxt}"><div class="trend-bar-track"><div class="trend-bar-fill ${cls}" style="height:${Math.max(4, x.score)}%"></div></div><span class="trend-bar-label">${x.score}</span></div>`;
         }).join("")}
       </div>
     </div>` : ""}

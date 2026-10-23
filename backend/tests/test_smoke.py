@@ -91,3 +91,15 @@ def test_report_body_scores_with_match_and_gaps():
 def test_scoring_never_crashes_on_empty():
     r = score_session([])
     assert r["total"] >= 30 and len(r["plan"]) >= 5
+
+
+def test_live_stats_rest_and_websocket():
+    """实时看板双通道：REST 聚合指标 + WebSocket 推送。"""
+    with TestClient(app) as c:
+        s = c.get("/api/live/stats").json()
+        assert s["ok"] is True and "interviews" in s and "turns" in s
+        assert isinstance(s["avg_score"], float)
+
+        with c.websocket_connect("/ws/live") as ws:
+            first = ws.receive_json()
+            assert first["ok"] is True and first["turns"] >= 0

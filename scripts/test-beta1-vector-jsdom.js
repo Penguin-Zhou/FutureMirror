@@ -200,16 +200,16 @@ const S = (cond, name) => ok(cond, name);
 
   /* ============ I. 版本与声明 ============ */
   console.log("\n-- I. beta1.0 版本与页脚声明 --");
-  S(/beta1\.0/.test(doc.querySelector(".sb-footer").textContent), "侧栏版本号 beta1.0");
+  S(/beta1\.1/.test(doc.querySelector(".sb-footer").textContent), "侧栏版本号 beta1.x");
   /* 静态 <title> 标注版本；运行期 applyRoute 会按子路由改写 document.title（属预期行为） */
-  S(/Beta 1\.0/.test((html.match(/<title>([^<]*)<\/title>/) || [])[1] || ""), "页面标题标注 Beta 1.0");
-  S(/Beta 1\.0/.test(doc.querySelector(".banner").textContent), "演示横幅标注 Beta 1.0");
+  S(/Beta 1\.1/.test((html.match(/<title>([^<]*)<\/title>/) || [])[1] || ""), "页面标题标注 Beta 1.x");
+  S(/Beta 1\.1/.test(doc.querySelector(".banner").textContent), "演示横幅标注 Beta 1.x");
   S(/AI辅助开发说明/.test(doc.querySelector("#view-landing footer").textContent), "落地页页脚含 AI 辅助开发说明");
   const footers = [...doc.querySelectorAll("footer")].map(f => f.textContent);
   S(footers.filter(t => /AI辅助开发说明/.test(t)).length >= 3, `三处页脚均已声明（实际 ${footers.filter(t => /AI辅助开发说明/.test(t)).length} 处）`);
   S(/多Agent调度/.test(footers.join("")) || /多Agent/.test(footers.join("")), "页脚声明区分 AI 辅助项与团队独立实现项");
-  S(html.includes('version: "beta1.0.9"'), "诊断导出报告版本号 beta1.0.9");
-  S(/版本 beta1\.0\.9 · 蓝图编辑风/.test(html), "开发者日志版本号 beta1.0.9");
+  S(html.includes('version: "beta1.1.0"'), "诊断导出报告版本号 beta1.1.0");
+  S(/版本 beta1\.1\.0 · 蓝图编辑风/.test(html), "开发者日志版本号 beta1.1.0");
   S(w.eval("typeof window.loadVecModel === 'function'"), "全局暴露 loadVecModel（按钮 onclick 可调）");
   S(/fm_kb_vec_v1/.test(html), "缓存 key 固定为 fm_kb_vec_v1（可被清理脚本识别）");
 

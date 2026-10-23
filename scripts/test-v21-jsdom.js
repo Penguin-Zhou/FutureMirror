@@ -86,7 +86,7 @@ function runTests() {
   ok(parseFloat(fab.style.top) === window.innerHeight - 20 - 52, "默认距底 20px");
   ok(fab.classList.contains("hint"), "首次进入显示可拖动提示光环");
   ok(!window.eval("store.get('fm_ai_fab')"), "无历史冻结位时不读取旧值");
-  ok(document.querySelector(".sb-footer").textContent.includes("beta1.0"), "侧栏版本号 beta1.0");
+  ok(document.querySelector(".sb-footer").textContent.includes("beta1.1"), "侧栏版本号 beta1.x");
 
   /* ============ B. 点击开合 ============ */
   console.log("\n-- B. 点击开合抽屉 --");

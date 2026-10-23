@@ -5,10 +5,10 @@ export const changelogHtml = `
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.0.9 · v23 规划中</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.1.0</div>
     <div class="meta">
-      <span>已发布 <b>29</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.0.9</b></span>
+      <span>已发布 <b>30</b> 个版本</span>
+      <span>当前版本 <b>Beta 1.1.0</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -16,19 +16,19 @@ export const changelogHtml = `
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.0.9，为当前正式发布版本（专家能力层：主题跟随系统 + 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化 + 高级组件）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.1.0，为当前正式发布版本（完整性补全层：骨架屏 + 媒体懒加载 / 渐进 / 悬停预览 + Excel 导出 + WebSocket 实时看板 + 图表悬停详情 + 键盘可达性）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
   <div class="overview">
-    <div class="ov-card"><div class="ov-num">28</div><div class="ov-label">已发布版本</div></div>
+    <div class="ov-card"><div class="ov-num">29</div><div class="ov-label">已发布版本</div></div>
     <div class="ov-card"><div class="ov-num">10</div><div class="ov-label">功能页</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">协作 Agent</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">岗位数据库</div></div>
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1137</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1314</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -37,6 +37,7 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
     <li><a href="#vbeta1-9"><span class="cl-toc-tag">Beta 1.0.9</span><span class="cl-toc-title-txt">专家能力层 · 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化</span></a></li>
     <li><a href="#vbeta1-8"><span class="cl-toc-tag">Beta 1.0.8</span><span class="cl-toc-title-txt">深度交互层 · 命令面板 Pro + 报告可视化 + 实时批注</span></a></li>
@@ -193,11 +194,36 @@ export const changelogHtml = `
   <!-- ========================================================
        Beta 1.0.9 · 专家能力层（Blueprint Expert Layer）
        ======================================================== -->
+  <div class="version vbeta1-10 current" id="vbeta1-10">
+    <div class="version-head">
+      <span class="v-tag v-tag-current">Beta 1.1.0</span>
+      <span class="v-title">完整性补全层 · 骨架屏 + 媒体三层 + Excel 导出 + WebSocket 实时看板 + 键盘可达</span>
+      <span class="v-date">2026.10.23 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        对「高级网页能力清单」做第二轮逐项复核，把上一轮只有样式雏形、尚未真正接线的 6 处补齐为<strong>可运行、可测试、可降级</strong>：骨架屏（此前只有 <code>.skeleton</code> 样式定义，页面从未真正渲染占位，本轮新增 <code>skeleton.js</code> 并在报告页等待服务端评分引擎期间真实挂载，带最小驻留防闪烁）；媒体三层（<code>media.js</code>：<code>[data-src]</code> 懒加载 + <code>data-src-sm</code> 渐进 blur-up + <code>[data-preview]</code> 悬停 / 键盘预览，报告看板图表快照即走此通道，纯 data-URI 零外链）；表格导出 Excel（BOM + <code>vnd.ms-excel</code>，与 CSV 并存）；实时看板 WebSocket（后端 <code>/ws/live</code> 每 3 秒推送聚合指标，前端按 apiBase 推导 ws / wss，失败降级 <code>/api/live/stats</code> 轮询）；图表悬停详情（<code>initChartTips()</code> 统一接管 <code>[data-tip]</code>，进步曲线与趋势柱均已带提示）；键盘可达性（跳到主内容 skip link + 弹窗焦点陷阱 <code>role=dialog</code> / <code>aria-modal</code>）。新增 test-v30-jsdom.js 测试套件 74 项断言锁定全部行为（含 reduced-motion 与 WebSocket mock 双路径）。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>等数据时不抖了</b>：骨架屏在服务端评分返回前占位，最小驻留避免秒回闪烁</div>
+        <div class="vh-item"><b>图片会懒加载了</b>：进视口才取资源，低清先落再淡入高清，悬停可放大预览</div>
+        <div class="vh-item"><b>看板真连后端了</b>：WebSocket 实时推送聚合指标，断了自动降级轮询，状态明示</div>
+        <div class="vh-item"><b>键盘能走完全程</b>：跳到主内容 + 弹窗焦点陷阱 + 图表详情支持聚焦查看</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">74</div><div class="m-label">v30 新增断言</div></div>
+        <div class="metric"><div class="m-val">1314</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">18</div><div class="m-label">jsdom 测试套件</div></div>
+        <div class="metric"><div class="m-val">6</div><div class="m-label">补齐方向</div></div>
+      </div>
+    </div>
+  </div>
+
   <div class="version vbeta1-9" id="vbeta1-9">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.0.9</span>
+      <span class="v-tag">Beta 1.0.9</span>
       <span class="v-title">专家能力层 · 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化</span>
-      <span class="v-date">2026.10.22 <span class="cur-mark">当前版本</span></span>
+      <span class="v-date">2026.10.22</span>
     </div>
     <div class="version-body">
       <div class="v-summary">

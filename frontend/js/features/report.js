@@ -100,7 +100,7 @@ function historySVG(history) {
   const x = i => pad + (W - pad * 2) * (history.length === 1 ? 0.5 : i / (history.length - 1));
   const y = v => H - 18 - (H - 36) * (v - min) / Math.max(1, max - min);
   const pts = history.map((h, i) => `${x(i)},${y(h.total)}`).join(" ");
-  const dots = history.map((h, i) => `<circle cx="${x(i)}" cy="${y(h.total)}" r="3" fill="var(--brand)"/><text x="${x(i)}" y="${y(h.total) - 8}" text-anchor="middle" font-size="9.5" fill="var(--faint)">${h.total}</text>`).join("");
+  const dots = history.map((h, i) => `<circle class="bp-chart-dot" cx="${x(i)}" cy="${y(h.total)}" r="4" fill="var(--brand)" data-tip="第 ${i + 1} 次 · 总分 ${h.total}" tabindex="0"/><text x="${x(i)}" y="${y(h.total) - 8}" text-anchor="middle" font-size="9.5" fill="var(--faint)">${h.total}</text>`).join("");
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:340px" role="img" aria-label="历史进步曲线">
     <line x1="${pad}" y1="${H - 18}" x2="${W - pad}" y2="${H - 18}" stroke="var(--line)"/>
     <polyline points="${pts}" fill="none" stroke="var(--brand)" stroke-width="2"/>
@@ -138,11 +138,18 @@ async function renderReport(force) {
                            matchResult ? matchResult.matchScore : "-",
                            typeof session.codeScore === "number" ? session.codeScore : "-"].join(":");
     if (force || syncSig() !== lastSyncSig) {
+      /* v30：等待服务端评分期间先铺骨架屏，避免报告区高度抖动 */
+      let skel = null;
+      if (typeof bpSkeleton === "function") {
+        box.innerHTML = "";
+        skel = bpSkeleton(box, { rows: 4, cols: 2, height: 14 });
+      }
       try {
         backendPayload = await fmApi.syncAndReport(session, matchResult);
         lastSyncSig = syncSig();   // 同步后 interviewId 已生成，签名此刻才稳定
         try { persistSession(); } catch (e) {}   // interviewId 落本地，刷新后仍归属同一会话
       } catch (e) {}
+      if (skel) skel.clear();
     }
   }
   let dims, total, evidence, plan, weakest, serverScored = false;
