@@ -432,7 +432,6 @@ retriever=hybrid(bm25×0.4+cos×0.6) · vec=MiniLM 384d · hits=3
 
 **注册（演示邮箱自动 VIP）**
 
-
 ```bash
 curl -X POST http://localhost:8000/api/auth/register \
   -H "Content-Type: application/json" \
@@ -541,7 +540,7 @@ RAG 检索不是关键词匹配，而是**词面 + 语义双路召回后归一�
 | 融合   | `score = 0.6 × cosine + 0.4 × bm25_normalized`                    | 两路各自 min-max 归一后加权；纯语义召回设余弦门槛（MiniLM 0.15 / hashing 0.32）防噪声                                                 |
 | 可解释  | 每条引用显示 `bm25 0.82 · cos 0.61 · 融合 0.74`                           | 评委可当场核对分数，不是黑箱「相似度」                                                                                          |
 
-答辩口径：**检索层是 BM25 + 端侧向量混合检索**，向量由 Transformers.js 在浏览器内计算（零 API 成本、离线可跑），两路归一分后加权融合；完整版升级为 **pgvector + RRF + Rerank**。
+答辩口径：**检索层是 BM25 + 端侧向量混合检索**，向量由 Transformers.js 在浏览器内计算（零 API 成本、离线可跑），两路归一分后加权融合；后续版本规划升级为 **pgvector + RRF + Rerank**。
 
 ### 后端接口一览
 
@@ -565,29 +564,45 @@ RAG 检索不是关键词匹配，而是**词面 + 语义双路召回后归一�
 
 ```
 futuremirror/
-├── backend/                    # FastAPI 演示后端
+├── backend/                        # FastAPI 演示后端（AI 能力接入层）
 │   ├── app/
-│   │   ├── db.py               # SQLite + ORM 模型 + scrypt 密码哈希
-│   │   ├── llm.py              # GLM SSE 流式代理（Key 只在这一层）
-│   │   ├── scoring.py          # 可解释评分引擎（前端 scoreSession 的 Python 版）
-│   │   └── main.py             # FastAPI 装配 + 路由（鉴权/会话/报告/健康检查）
-│   ├── tests/                  # pytest 冒烟 + 评分引擎单测（6 项）
-│   ├── requirements.txt
-│   └── .env.example            # 复制为 .env 填 Key；.env 永不进仓库
-├── frontend/                   # 模块版前端（由单文件版拆分，行为等价）
-│   ├── index.html              # 骨架 + 3 张 link + 27 个 script（按依赖序）
-│   ├── css/                    # tokens（基础令牌）/ theme（v17 重构）/ pages（v18+ 功能层）
+│   │   ├── llm.py                  # GLM SSE 流式代理（Key 只在这一层）
+│   │   ├── enrich.py               # LLM 评语增强（只补质性评语，不产出分数）
+│   │   ├── scoring.py              # 可解释评分引擎（前端 scoreSession 的 Python 版）
+│   │   ├── db.py                   # SQLAlchemy 模型与会话
+│   │   └── main.py                 # FastAPI 装配 + 路由（JWT 鉴权/会话/报告/健康检查）
+│   ├── tests/                      # pytest：冒烟 + 鉴权 + 评分引擎 + 评语增强（27 项）
+│   ├── requirements.txt            # 后端依赖清单（版本固定）
+│   └── .env.example                # 复制为 .env 填 Key；.env 永不进仓库
+├── frontend/                       # 模块版前端（由单文件版拆分，行为逐字节等价）
+│   ├── index.html                  # 骨架 + 3 张 link + 38 个 script（按依赖序）
+│   ├── css/                        # tokens / theme / app 三层
 │   ├── js/
-│   │   ├── core/               # store / auth / theme / router / api / boot / reveal …
-│   │   ├── data/               # config / kb（含 BM25 + 端侧向量检索层与向量缓存）
-│   │   ├── features/           # match / interview / report / quiz / jobs / assistant …
-│   │   └── dev/                # runtime（MCP 三件套）/ devmode
-│   └── build-manifest.json     # 拆分清单（build-demo.js 依据）
-├── public/futuremirror-demo.html   # 单文件演示版（build-demo.js 产物）
-├── public/models/                  # 端侧模型权重（fetch-model.js 下载，随站点自托管，已 gitignore）
-├── scripts/                    # split-frontend / build-demo / fetch-model / deploy-pages / stage-mirror / validate / test-* 工具与测试
-├── docs/technical-doc.html         # 技术文档（9 章正式版，可直接在线阅读；PDF 附件由此打印导出）
-├── docs/archive/                   # 技术文档早期 Markdown 草稿（仅供演进追溯，不对外）
+│   │   ├── core/                   # store / auth / theme / router / api / boot / reveal …
+│   │   ├── data/                   # config / kb（含 BM25 + 端侧向量检索层与缓存）
+│   │   ├── features/               # match / interview / report / quiz / jobs / assistant …
+│   │   └── dev/                    # runtime（MCP 三件套）/ devmode
+│   ├── eslint-globals.json         # 共享全局符号表（生成后入库，保证 lint 可复现）
+│   └── build-manifest.json         # 拆分清单（build-demo.js 依据）
+├── public/
+│   ├── futuremirror-demo.html      # 单文件演示版（build-demo.js 产物，648KB 自包含）
+│   ├── changelog.html              # 更新日志页（build-changelog.js 产物）
+│   └── models/                     # 端侧模型权重（fetch-model.js 下载，已 gitignore）
+├── changelog/                      # 更新日志源（content.js + changelog.css）
+├── scripts/                        # 构建与发布：split-frontend / build-demo / build-changelog /
+│                                   #   build-print-doc / build-backend-static / gen-eslint-globals /
+│                                   #   run-tests / validate-demo / deploy-pages / push-main-api …
+├── docs/
+│   ├── technical-doc.html          # 技术文档（10 章正式版，可在线阅读）
+│   ├── FutureMirror.Beta.pdf       # 打印版技术文档（含封面，30 页）
+│   ├── FutureMirror答辩.pptx        # 竞赛答辩演示稿
+│   └── archive/                    # 技术文档早期草稿（仅供演进追溯）
+├── types/models.d.ts               # 前端数据模型类型声明（配合 JSDoc，无编译步骤）
+├── eslint.config.js                # ESLint 10 扁平配置（npm run lint → 0 error）
+├── .prettierrc / .prettierignore / .editorconfig
+├── jsconfig.json                   # 编辑器类型提示（jsconfig + JSDoc，不引入 TS 编译链）
+├── .env.example                    # 环境变量模板（根目录速查版）
+├── package.json                    # 开发依赖与脚本入口（jsdom / eslint / prettier）
 └── README.md
 ```
 
@@ -597,14 +612,17 @@ futuremirror/
 
 ```bash
 # 后端
-cd backend && pytest -q                 # 冒烟 + 评分引擎（6 项）
+cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM 评语增强（27 项）
 
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
+
+# 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 1427 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
 node scripts/test-v16-jsdom.js          # 个人中心 / 头像 / 偏好 / 数据管理（45 项）
-node scripts/test-v17-jsdom.js          # 蓝图编辑风视觉体系（58 项）
+node scripts/test-v17-jsdom.js          # 蓝图编辑风视觉体系（61 项）
 node scripts/test-v18-jsdom.js          # 求职闭环 / 答题计时 / 连环追问（67 项）
 node scripts/test-v19-jsdom.js          # 题库小测 + VIP（97 项）
 node scripts/test-v20-jsdom.js          # 题库增强 + AI 助手（107 项）
@@ -612,9 +630,12 @@ node scripts/test-v21-jsdom.js          # 悬浮球拖拽冻结 + 移动端美�
 node scripts/test-v22-jsdom.js          # 后端适配层 + 契约修复回归（73 项）
 node scripts/test-v23-jsdom.js            # 体验层 UX Kit：揭载渐入/动效宪法/打字指示/空状态/进度线（44 项）
 node scripts/test-v24-jsdom.js            # 动态层：粒子场/涟漪/视差/微交互/降级链（43 项）
-node scripts/test-v25-jsdom.jss            # 交互深化层：命令面板/滚动语言/实录播台（64 项）
-node scripts/test-v26-jsdom.jss            # 全站交互层：切页编舞/准线全站化/坐标读数（59 项）
-node scripts/test-v27-jsdom.jss            # 深度交互层：命令面板Pro/报告可视化/表单批注（44 项）
+node scripts/test-v25-jsdom.js            # 交互深化层：命令面板/滚动语言/实录播台（67 项）
+node scripts/test-v26-jsdom.js            # 全站交互层：切页编舞/准线全站化/坐标读数（59 项）
+node scripts/test-v27-jsdom.js            # 深度交互层：命令面板Pro/报告可视化/表单批注（44 项）
+node scripts/test-v29-jsdom.js            # 专家能力层：主题三态/印刷质感/滚动驱动/数据可视化（103 项）
+node scripts/test-v30-jsdom.js            # 完整性补全层：骨架屏/媒体三层/Excel/实时看板/图表详情（74 项）
+node scripts/test-v31-jsdom.js            # 体验修复层：文档诚信守卫/学习计划/看板同源/图标系统（110 项）
 node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向量/缓存/融合/UI/权重源（99 项）
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
@@ -670,7 +691,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 - 撰写演示视频脚本，配合完成内容准备；
 - 负责全部技术文档排版美化、图文规整，优化文档视觉观感。
 
-> 与技术文档的一致说明：本 README 与 [`docs/technical-doc.html`](docs/technical-doc.html) 为同一套交付材料，技术文档含 9 章完整内容（附录 9.5 交付材料清单与本文档互相指向）。
+> 与技术文档的一致说明：本 README 与 [`docs/technical-doc.html`](docs/technical-doc.html) 为同一套交付材料，技术文档含 10 章完整内容（附录 9.5 交付材料清单与本文档互相指向）。
 
 ---
 
@@ -692,7 +713,6 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456`                                                                                                                                              |
 | 开源许可证                  | ✅  | MIT，见仓库根目录 `LICENSE`                                                                                                                                                              |
 
-
 ### 部署速查
 
 ```bash
@@ -701,10 +721,11 @@ node scripts/fetch-model.js             # 首次：拉端侧模型权重到 publ
 node scripts/deploy-pages.js --build    # 重建单文件版 → 强推 gh-pages 分支
                                         # 产物：index.html / 404.html / .nojekyll / docs/technical-doc.html / models/
 
-# 方案 0b：国内直连镜像（同一份产物，托管 .mirror-site/ 静态目录）
-node scripts/stage-mirror.js            # 生成 .mirror-site/index.html + 404.html + docs/ + models/（纯产物，已 gitignore）
-# 随后对该目录执行一次「发布为应用」（静态站点），链接即 https://futuremirror-demo.app.workbuddy.host/
-
+# 方案 0b：国内直连镜像（同一份产物 + 同源后端，托管 backend/ 目录，Python 服务）
+node scripts/build-backend-static.js   # 把演示页 / 文档 / 日志 / 端侧模型装配进 backend/static/（已 gitignore）
+# 随后对 backend/ 目录执行一次「发布为应用」（Python），启动命令：
+#   python3 -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-3000}
+# 该形态同源提供 /api/* 接口，演示页无需跨域即连到真实后端
 
 # 方案 B：Cloudflare Pages（仅静态演示页，零成本）
 npx wrangler pages deploy public --project-name=futuremirror-demo
@@ -745,7 +766,21 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 ---
 
-## Beta 1.1.1 · 审计加固层（2026.10.23 当前版本）
+## Beta 1.1.2 · 体验修复与学习计划层（2026.10.24 当前版本）
+
+收集一轮真实使用反馈，修掉 **3 个影响主流程的缺陷**，新增「学习计划」板块，并把全站模板化 emoji 换成自制图标：
+
+- **模拟面试无法重新面试**：重面入口此前只藏在 ⌘K 面板与报告页 → 面试页 chat-head 新增「🔄 重新面试」按钮（带撤销 toast 的重置快照），补 `requireLogin()` 守卫
+- **题库页滚动粘滞**：滚动吸附 `.bp-snap-y` 此前常驻挂在 `documentElement` 上，应用内滚动全被分段吸附阻滞 → 收窄为仅落地页视图生效（`setSnap(on)` 随 `showView` 挂载 / 拆除）；题库子页签切换平滑回顶
+- **能力分布看板数据冻结**：看板只在开机装配一次，面试后仍显示「基线数据」→ 新增 `refreshReportPanel()`（停旧 live → 摘旧面板 → 按最新会话重挂），`renderReport()` 渲染末尾调用，空态路径撤下面板
+- **新增「学习计划」板块**：7 天路径 + 每日时间分配规划；一键「同步评估报告」按最弱维度动态生成（无报告回落通用基线）；三档时间预算（45 / 60 / 90 分钟）切换自动重算；逐任务打卡 + 进度条 + 印章完成态；支持复制 Markdown / 打印
+- **偏好设置新增「十字鼠标追踪」开关**：默认开启，关闭 / 开启即时生效
+- **全站图标替换**：36 枚自制蓝图风线性 SVG（24×24、`currentColor`、方头直角、单一朱红 accent）替换 63 处模板化 emoji；favicon 升级为取景器标识；保留 emoji 作无 JS 兜底
+- **全栈收口与工程规范**：移除未部署的 Next.js 平行实验层，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（分数仍由确定性引擎给出，LLM 只补逐维度质性评语与教练总评，异常自动回落）；补齐 ESLint 10 + Prettier 3 + `jsconfig`/JSDoc 类型层，并新增 `npm run verify` 单命令门禁（globals 校验 → lint → format → test）
+
+测试基线：**1427** 项前端断言（19 套 jsdom，v31 套件 110 项）+ **27** 项后端 pytest；ESLint 10 `0 error` / Prettier 3 全绿；技术文档 PDF **30 页**。
+
+## Beta 1.1.1 · 审计加固层（2026.10.23）
 
 对「网站 + 代码仓库 + 全部交付文件」做了一次逐项复核，把发现的 **12 类问题**全部修掉并各自补齐回归断言。本轮不新增功能，只做**正确性 / 安全性 / 一致性 / 工程化**四个方向的收口：
 
@@ -759,18 +794,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 测试基线：**1317** 项前端断言（18 套 jsdom）+ **21** 项后端 pytest + 16 项 vitest + tsc 0 错误；技术文档 PDF **29 页**。
 
-## Beta 1.1.2 · 体验修复与学习计划层（2026.10.24 当前版本）
-
-收集一轮真实使用反馈，修掉 **3 个影响主流程的缺陷**，新增「学习计划」板块，并把全站模板化 emoji 换成自制图标：
-
-- **模拟面试无法重新面试**：重面入口此前只藏在 ⌘K 面板与报告页 → 面试页 chat-head 新增「🔄 重新面试」按钮（带撤销 toast 的重置快照），补 `requireLogin()` 守卫
-- **题库页滚动粘滞**：滚动吸附 `.bp-snap-y` 此前常驻挂在 `documentElement` 上，应用内滚动全被分段吸附阻滞 → 收窄为仅落地页视图生效（`setSnap(on)` 随 `showView` 挂载 / 拆除）；题库子页签切换平滑回顶
-- **能力分布看板数据冻结**：看板只在开机装配一次，面试后仍显示「基线数据」→ 新增 `refreshReportPanel()`（停旧 live → 摘旧面板 → 按最新会话重挂），`renderReport()` 渲染末尾调用，空态路径撤下面板
-- **新增「学习计划」板块**：7 天路径 + 每日时间分配规划；一键「同步评估报告」按最弱维度动态生成（无报告回落通用基线）；三档时间预算（45 / 60 / 90 分钟）切换自动重算；逐任务打卡 + 进度条 + 印章完成态；支持复制 Markdown / 打印
-- **偏好设置新增「十字鼠标追踪」开关**：默认开启，关闭 / 开启即时生效
-- **全站图标替换**：36 枚自制蓝图风线性 SVG（24×24、`currentColor`、方头直角、单一朱红 accent）替换 63 处模板化 emoji；favicon 升级为取景器标识；保留 emoji 作无 JS 兜底
-
-测试基线：**1427** 项前端断言（19 套 jsdom，v31 套件 110 项）+ **27** 项后端 pytest；技术文档 PDF **29 页**。
 ## Beta 1.1.0 · 完整性补全层（2026.10.23）
 
 对高级网页能力清单做第二轮逐项复核，把「只具备样式或雏形」的 6 处补齐为可运行、可测试、可降级：
@@ -788,11 +811,11 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 本日志为**团队真实开发进程**的版本记录，覆盖 2026.08（v1 初始原型）→ 2026.10（Beta 1.1.2 当前版本），共 35 个已发布版本。每个版本均可独立运行、可回归。
 
-**关于 Git 提交记录（重要说明）：** 本仓库的 Git 提交历史自 **Beta 版本**（首次以 `v1.0.0-beta` 提交包上传）时建立，**仅包含 BETA 1.0 及之后的更新**；BETA 1.0 之前的 v1–v22 演进历程以本更新日志形式完整留存，未在 Git 提交记录中逐条提交。日志中所载为团队真实的版本演进，而非事后补造。
+**关于 Git 提交记录（重要说明）：** 本仓库的 Git 提交历史自 **Beta 版本**（首次以 `v1.0.0-beta` 提交包上传）时建立，**仅包含 BETA 1.0 及之后的更新**；BETA 1.0 之前的 v1–v22 演进历程以本更新日志形式完整留存，未在 Git 提交记录中逐条提交。日志中所载为团队真实的版本演进，而非事后补造。提交统一以团队身份 `FutureMirror Team` 署名，成员与分工见「十、团队信息与成员分工」。
 
 > 阅读指引：本日志按版本倒序排列。带「当前版本」标记的是 Beta 1.1.2，为当前正式发布版本（体验修复层：重新面试入口 + 滚动吸附收窄 + 看板实时刷新 + 学习计划板块 + 全站图标替换）；带「规划中」标记的版本为下一步迭代计划，尚未进入代码库。所有数据指标均来自对应版本代码库的实际统计；仅记录团队自研功能演进，不含任何第三方内容。
 
-### v23 · 规划中 · 完整版对齐 · 生产级 RAG · 多模态扩展（待排期）
+### v23 · 规划中 · 生产能力对齐 · 生产级 RAG · 多模态扩展（待排期）
 
 > 下一阶段目标：把演示层的关键能力向生产级对齐，同时补齐多模态与部署工程化的空白。以下为规划项，尚未进入代码库。
 
@@ -917,7 +940,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 | 前端断言 | 后端测试 | 单元测试 | v29 新增 | jsdom 套件 |
 |---|---|---|---|---|
 | 1240 | 17 | 16（vitest） | 103 | 17 套 |
-
 
 ### Beta 1.0.8 · 深度交互层：让每个动作都有回音（2026.10.22）
 
@@ -1220,7 +1242,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **语音输入实时反馈**：纯本地规则计算语速与填充词密度，零网络请求
 - **句子级改写建议**：规则引擎自动识别无量化动词句，按维度给出改写模板，无需 LLM
 
-
 **🔧 优化改进**
 
 - **玻璃拟态可读性修正**：亮色下更明确的玻璃边界 + 更深层级阴影；暗色辅助文字 `--faint` 提升到 `#8A90B8`，满足 WCAG AA
@@ -1229,7 +1250,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **报告页新增复盘入口卡**：从报告可直接跳转到面试复盘
 
 **📊 数据指标**
-
 
 | 5 | 6 | 90s | 35% |
 |---|---|---|---|
@@ -1257,7 +1277,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 数据指标**
 
-
 | 2 | 3 | 16px | 0 |
 |---|---|---|---|
 | 主题（亮/暗） | 品牌色变体 | 玻璃模糊半径 | 功能变更 |
@@ -1284,7 +1303,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 数据指标**
 
-
 | 3 | 7 | 8 | 4 |
 |---|---|---|---|
 | 头像形态 | 完成度检查项 | 技能标签上限 | 偏好开关 |
@@ -1308,7 +1326,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **MCP 提示行美化**：从纯文本提示升级为虚线框提示卡
 
 **📊 数据指标**
-
 
 | 6 | 4 | 100% | 0 |
 |---|---|---|---|
@@ -1335,7 +1352,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 数据指标**
 
-
 | 9 | 6 | 5 | 100 |
 |---|---|---|---|
 | 环境检测项 | 性能指标 | 开发者工具 | 日志上限 |
@@ -1361,7 +1377,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 数据指标**
 
-
 | 5 | 5 | 3 | 3 |
 |---|---|---|---|
 | 材料清单 | 自检断言 | MCP 工具 | 进入方式 |
@@ -1383,7 +1398,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **简历匹配页**：新增"本地脱敏预览"按钮 + "✓ 浏览器内完成 · 0 网络请求"徽章
 
 **📊 数据指标**
-
 
 | 3 | 3 | 5 | 2s |
 |---|---|---|---|
@@ -1412,7 +1426,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **手动 JD 被覆盖无提示**：切换岗位前增加 `confirm` 确认，避免误删
 
 **📊 数据指标**
-
 
 | 24 | 5 | 5 | 4 |
 |---|---|---|---|
@@ -1451,7 +1464,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **重复定义 `switchTab`**：删除重复定义
 
 **📊 数据指标**
-
 
 | 24 | 40 | 18 | 7 |
 |---|---|---|---|
@@ -1495,7 +1507,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - `meta description` 随路由更新
 
 **📊 数据指标**
-
 
 | 7 | 2 | 100% |
 |---|---|---|
@@ -1564,7 +1575,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - 卡片 hover 微动效
 
 **📊 数据指标**
-
 
 | 3 | 100% | 1 |
 |---|---|---|
@@ -1640,7 +1650,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **项目材料入口**：代码仓库 / 视频 / 文档 / 在线演示 / 测试账号
 
 **📊 数据指标**
-
 
 | 4 | 8 | 5 |
 |---|---|---|
