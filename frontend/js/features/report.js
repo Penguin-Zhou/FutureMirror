@@ -268,7 +268,8 @@ async function renderReport(force) {
   }
 
   /* v31：能力分布看板随本次报告数据刷新（此前只在开机装配一次，
-   * 面试后仍显示「基线数据 · 完成面试后转为真实分布」，用户看不到自己的分布） */
-  try { if (window.__bpViz && window.__bpViz.refreshReportPanel) window.__bpViz.refreshReportPanel(); } catch (e) {}
+   * 面试后仍显示「基线数据 · 完成面试后转为真实分布」，用户看不到自己的分布）。
+   * v31.3：注入真实 dims，使看板雷达/热力/散点与主雷达同源（修复「看板数据与上面不一致」） */
+  try { if (window.__bpViz && window.__bpViz.refreshReportPanel) window.__bpViz.refreshReportPanel({ dims: dims, turns: session.turns.length }); } catch (e) {}
 }
 
