@@ -3,11 +3,9 @@
 /.pnp
 .pnp.*
 
-# next.js
+# 构建产物
 /.next/
 /out/
-
-# production
 /build
 
 # misc
@@ -36,7 +34,7 @@ venv/
 # backend/static/ 由 scripts/build-backend-static.js 生成（同源托管产物），永不进仓库
 backend/static/
 
-# typescript
+# 类型层（jsconfig + JSDoc，无编译步骤；仅防编辑器残留）
 *.tsbuildinfo
 next-env.d.ts
 
