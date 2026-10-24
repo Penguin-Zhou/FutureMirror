@@ -103,6 +103,7 @@ const jsRules = [
   ["js/features/profile.js",     "v16 个人中心", ["v16 · 个人中心"]],
   ["js/features/jobs.js",        "v18 求职闭环", ["v18 · 产品闭环深化"]],
   ["js/features/quiz.js",        "v19 题库 + v20 题库增强", ["v19 · 题库与小测模块", "v20 · 题库增强"]],
+  ["js/features/plan.js",        "v31 学习计划", ["v31 · 学习计划"]],
   ["js/features/assistant.js",   "v20 AI 小助手 + v21 悬浮球", ["⑦ AI 小助手（retrieve + streamChat）", "v21 · AI 悬浮球"]],
   ["js/core/api.js",             "v22 后端适配层", ["v22 · 后端适配层"]],
   ["js/core/motion.js",          "v29 动效与交互层", ["X. 动效与交互层 v29"]],
@@ -162,7 +163,7 @@ const LOAD_ORDER = [
   "js/features/resume.js", "js/features/career.js", "js/dev/runtime.js",
   "js/bootstrap.js", "js/dev/devmode.js", "js/features/today.js",
   "js/features/profile.js", "js/features/jobs.js", "js/features/quiz.js",
-  "js/features/assistant.js", "js/core/api.js",
+  "js/features/plan.js", "js/features/assistant.js", "js/core/api.js",
   "js/core/motion.js", "js/features/viz.js",
   "js/core/skeleton.js", "js/core/media.js",
 ];

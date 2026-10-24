@@ -173,7 +173,7 @@ async function runTests() {
   /* ---------- A8. 命令面板 ---------- */
   console.log("\n--- A8. 命令面板 ---");
   const cmd = () => dA.getElementById("bp-cmd");
-  ok(wA.__bpCmd && wA.__bpCmd.items === 18, "命令清单 18 项（导航 4 + 页面 10 + 动作 4，v29 新增跟随系统）");
+  ok(wA.__bpCmd && wA.__bpCmd.items === 19, "命令清单 19 项（导航 4 + 页面 11 + 动作 4，v31 新增学习计划）");
   ok(cmd() === null, "面板懒建：未呼出前不注入 DOM");
   dA.dispatchEvent(new wA.KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true, cancelable: true }));
   ok(cmd().hidden === false && wA.__bpCmd.open === true, "Ctrl/⌘+K 呼出面板");

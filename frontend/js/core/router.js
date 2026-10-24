@@ -124,7 +124,7 @@ function trackLight(e) {
 /* ============================================================
  * 0.6 应用内子路由（hash 路由）
  * ============================================================ */
-const APP_PAGES = ["dashboard", "match", "interview", "rag", "resume", "career", "report", "profile", "jobs", "quiz"];
+const APP_PAGES = ["dashboard", "match", "interview", "rag", "resume", "career", "report", "profile", "jobs", "quiz", "plan"];
 const APP_PAGE_TITLES = {
   dashboard: "工作台",
   match: "简历匹配",
@@ -136,6 +136,7 @@ const APP_PAGE_TITLES = {
   profile: "个人中心",
   jobs: "求职管理",
   quiz: "题库小测",
+  plan: "学习计划",
 };
 
 function currentPage() {
@@ -177,6 +178,7 @@ function applyRoute() {
   if (page === "profile") { try { renderProfile(); } catch (e) {} }
   if (page === "jobs") { try { renderJobsPage(); } catch (e) {} }
   if (page === "quiz") { try { renderQuizPage(); } catch (e) {} }
+  if (page === "plan") { try { renderPlanPage(); } catch (e) {} }
 
   // 6) 顶栏状态胶囊同步（游客 / Mock / 真实）
   try { syncStatusPill(); } catch (e) {}
