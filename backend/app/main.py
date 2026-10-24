@@ -24,6 +24,7 @@ from .db import (Interview, Report, Turn, User, SessionLocal, get_db,  # noqa: E
                  hash_password, init_db, verify_password)
 from .llm import LLM_MODEL, llm_ready, sse_response                    # noqa: E402
 from .scoring import score_session                                     # noqa: E402
+from .enrich import enrich_report                                       # noqa: E402
 
 def _resolve_secret_key() -> str:
     """JWT 签名密钥。
@@ -272,6 +273,31 @@ def gen_report(interview_id: str, body: ReportIn,
                              "answer": t.answer, "notes": t.notes,
                              "mode": iv.mode} for t in turns],
                            body.match_score, body.code_score, body.match_gaps)
+
+    # v31.5：确定性评分之上，若服务端已配置 LLM，则叠加逐维质性点评与总评。
+    # 分数始终由确定性引擎给出（可解释、不幻觉），LLM 只补文字层面的改进建议；
+    # 任何异常或不可信结果都回退到规则评语，绝不影响主链路。
+    enriched = None
+    if llm_ready():
+        try:
+            enriched = enrich_report(
+                result["dims"],
+                [{"agent": t.agent, "question": t.question, "answer": t.answer}
+                 for t in turns],
+                {"match_score": body.match_score, "match_gaps": body.match_gaps}
+                if body.match_score is not None else None,
+            )
+        except Exception:  # noqa: BLE001
+            enriched = None
+    if enriched:
+        for d, c in zip(result["dims"], enriched["comments"]):
+            d["comment"] = c
+        if enriched.get("narrative"):
+            result["narrative"] = enriched["narrative"]
+        result["scoring"] = {"engine": "deterministic+llm", "llm_enriched": True}
+    else:
+        result["scoring"] = {"engine": "deterministic", "llm_enriched": False}
+
     old = db.scalar(select(Report).where(Report.interview_id == interview_id))
     if old:
         db.delete(old)

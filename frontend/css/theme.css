@@ -587,6 +587,7 @@
   .guest-banner { background: var(--brand-bg); border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--line)); color: var(--brand-deep); border-radius: 0; }
   .notice { border-radius: 0; background: var(--amber-bg); color: var(--amber); border: 1px solid color-mix(in srgb, var(--amber) 35%, var(--line)); }
   .notice-info { border-radius: 0; background: var(--brand-bg); color: var(--brand-deep); border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--line)); }
+  .notice-llm { border-radius: 0; background: var(--brand-bg); color: var(--brand-deep); border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--line)); border-left: 3px solid var(--brand); padding: 10px 12px; font-size: 13px; line-height: 1.7; margin-top: 14px; }
   .inline-error { border-radius: 0; }
   .fallback-banner { border-radius: 0; border: 1px solid var(--red); }
   .eval-hint-line { border-radius: 0; }

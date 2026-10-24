@@ -141,7 +141,7 @@ function runSelfCheckPanel() {
     },
     {
       name: "Mock 派发一致性（v18）",
-      desc: "技术关键词 + 缺少量化 → 派发技术面试官（与完整工程 Agent 编排层决策同构）",
+      desc: "技术关键词 + 缺少量化 → 派发技术面试官（与后端 Agent 派发逻辑一致）",
       fn: () => planReason(SPEAKERS[1], "Redis 缓存一致性", "缺少量化数据支撑", "general").includes("技术面试官"),
     },
     {

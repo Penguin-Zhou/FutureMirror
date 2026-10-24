@@ -91,7 +91,7 @@ const summaryRows = rows.map((r, i) => `
 
 const summaryTable = `
   <h3>版本摘要（${rows.length} 个版本：${rows.length - 1} 个已发布 + 1 个规划中）</h3>
-  <p>完整逐版本明细（新增功能 / 优化改进 / 数据指标）见在线更新日志页 <code>changelog.html</code> 与仓库 <code>app/changelog/content.ts</code>；本表仅为打印版摘要。</p>
+  <p>完整逐版本明细（新增功能 / 优化改进 / 数据指标）见在线更新日志页 <code>changelog.html</code> 与仓库 <code>changelog/content.js</code>；本表仅为打印版摘要。</p>
   <table>
     <thead><tr><th style="width:12%">版本</th><th style="width:11%">日期</th><th style="width:30%">主题</th><th>代表性内容</th></tr></thead>
     <tbody>${summaryRows}

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * build-changelog.js —— 由 app/changelog/{content.ts, changelog.css} 组装
- * 静态更新日志页 public/changelog.html（与 Next.js 页同源同样式）。
+ * build-changelog.js —— 由 changelog/{content.js, changelog.css} 组装
+ * 静态更新日志页 public/changelog.html（与演示页同源同样式）。
  *
  * 用法：node scripts/build-changelog.js
  */
@@ -9,8 +9,8 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.join(__dirname, "..");
-const SRC_TS = path.join(ROOT, "app", "changelog", "content.ts");
-const SRC_CSS = path.join(ROOT, "app", "changelog", "changelog.css");
+const SRC_TS = path.join(ROOT, "changelog", "content.js");
+const SRC_CSS = path.join(ROOT, "changelog", "changelog.css");
 const OUT = path.join(ROOT, "public", "changelog.html");
 
 const ts = fs.readFileSync(SRC_TS, "utf8");

@@ -157,6 +157,7 @@ async function renderReport(force) {
     }
   }
   let dims, total, evidence, plan, weakest, serverScored = false;
+  let narrative = "", scoring = { engine: "deterministic", llm_enriched: false };
   if (backendPayload && backendPayload.dims) {
     dims = backendPayload.dims;
     total = backendPayload.total;
@@ -164,6 +165,8 @@ async function renderReport(force) {
     plan = backendPayload.plan || [];
     weakest = [...dims].sort((a, b) => a.score - b.score)[0];
     serverScored = true;
+    narrative = backendPayload.narrative || "";
+    scoring = backendPayload.scoring || scoring;
   } else {
     dims = scoreSession();
     total = Math.round(dims.reduce((s, d) => s + d.score, 0) / dims.length);
@@ -171,16 +174,22 @@ async function renderReport(force) {
     const built = buildPlan(dims);
     plan = built.plan;
     weakest = built.weakest;
+    scoring = { engine: "heuristic", llm_enriched: false };
   }
   const rewrites = buildSentenceRewrites(session.turns);
   const suggestions = [...dims].sort((a, b) => a.score - b.score).slice(0, 3)
     .map(d => `「${d.dimension}」${d.score} 分：${d.comment}`);
 
 
+  const engineBadge = serverScored
+    ? (scoring.llm_enriched
+        ? ` <span class="tag-engine">确定性引擎 ＋ LLM 增强</span>`
+        : ` <span class="tag-engine">确定性引擎（未配置 LLM）</span>`)
+    : ` <span class="tag-engine">启发式演示</span>`;
   box.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px">
       <div>
-        <div class="pane-title">📊 评估报告（可解释评分） <span class="tag-demo">${serverScored ? "服务端评分引擎 · 已落库" : "启发式引擎演示"}</span></div>
+        <div class="pane-title">📊 评估报告（可解释评分） <span class="tag-demo">${serverScored ? "服务端评分引擎 · 已落库" : "启发式引擎演示"}</span>${engineBadge}</div>
         <p class="hint" style="margin-top:0">基于本次 ${session.turns.length} 轮真实对话动态生成——每条证据均引用你的回答原话</p>
       </div>
       <div style="text-align:right;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;justify-content:flex-end">
@@ -197,7 +206,9 @@ async function renderReport(force) {
       </div>
     </div>
     ${renderReportCover()}
-    <div class="notice-info">ⓘ ${serverScored ? "本报告由<b>服务端评分引擎</b>生成（评分规则与前端演示版一致，问答记录已写入 SQLite，可跨设备恢复）" : "本报告由<b>无 API Key 时的兜底规则引擎</b>生成，用于演示「可解释评分」的结构与证据链（每条证据引用真实回答、学习路径按最弱维度动态生成）"}。完整版使用 LLM 评分（Zod 约束输出）+ 校准样本集量化一致性，详见技术文档。</div>
+    <div class="notice-info">ⓘ ${serverScored
+      ? `本报告由<b>服务端确定性评分引擎</b>生成（每条证据引用真实回答，问答记录已写入 SQLite 可跨设备恢复）。${scoring.llm_enriched ? "<b>已接入 LLM</b>：在确定性分数之外额外生成逐维质性点评（分数始终由确定性引擎给出，可解释、不幻觉）。" : "当前服务端未配置 LLM，点评由规则引擎生成；配置后可在确定性分数之外叠加 LLM 质性点评。"}`
+      : "本报告由<b>无 API Key 时的兜底规则引擎</b>生成，用于演示「可解释评分」的结构与证据链（每条证据引用真实回答、学习路径按最弱维度动态生成）。"}</div>
     <div class="report-grid" style="margin-top:16px">
       <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims)}</div></div>
       <div><div class="pane-title">维度得分</div><div id="dims">${dims.map((d, i) => `
@@ -208,6 +219,7 @@ async function renderReport(force) {
           <div class="dim-tip" role="tooltip">${d.dimension} · ${d.score}<br>${d.comment}</div>
         </div>`).join("")}</div></div>
     </div>
+    ${narrative ? `<div class="notice-llm">🧭 教练总评：${esc(narrative)}</div>` : ""}
     <div class="pane-title" style="margin-top:18px">评分证据（引用你的真实回答）</div>
     <div id="evidence">${evidence.map(e => `
       <div class="evidence"><span class="badge badge-brand">${esc(e.agent)}</span><br>

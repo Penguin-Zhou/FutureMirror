@@ -6,7 +6,7 @@
 > 项目核心业务架构：多‑Agent圆桌协作机制、证据驱动可解释评分引擎、版本化Prompt约束体系、三级降级容错方案、RAG检索引用机制（BM25 + 端侧向量混合检索，余弦与词面双路融合）、全套业务产品设计与自动化测试体系均为团队独立设计与实现。演示知识库全部为人工合成示例数据，无爬取真实网络数据。  
 > 本作品为原型演示系统，仅用于竞赛演示，不直接作为生产系统使用。
 
-**版本定位：Beta 1.1.2 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 后端 / Next.js 完整版）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
+**版本定位：Beta 1.1.2 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 同源后端）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
 
 **技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 29 页。**PDF 版由该文档 A4 打印导出，随赛事材料以附件形式提交**（仓库 Release 亦提供下载）。
 
@@ -82,18 +82,17 @@
 
 | 依赖      | 版本                  | 用途                                  |
 | ------- | ------------------- | ----------------------------------- |
-| Node.js | ≥ 18（开发验证用 22.22.2） | 跑测试脚本、Next.js 完整版                   |
+| Node.js | ≥ 18（开发验证用 22.22.2） | 跑测试脚本                   |
 | Python  | ≥ 3.10（开发验证用 3.13）  | FastAPI 后端、静态文件服务                   |
 | 浏览器     | Chrome / Edge 最新版   | 演示（需支持 SSE、Web Worker、localStorage） |
 | 可选      | `sqlite3` 命令行       | 答辩时验证数据真落库                          |
 
-**三种安装形态，按需选择**（可只做 A，也可 A+B 全做）：
+**两种安装形态，按需选择**（可只做 A，也可 A+B 全做）：
 
 | 形态                    | 需要装什么                 | 适合场景                    |
 | --------------------- | --------------------- | ----------------------- |
 | A. 单文件演示版             | **零安装**，浏览器直接打开       | 赛场断网、评委临时查看、快速演示        |
 | B. 模块版前端 + FastAPI 后端 | Node（仅测试用）+ Python 依赖 | 正式答辩（要展示真实落库与 Key 不进前端） |
-| C. Next.js 完整版        | `npm install`         | 查看生产形态实现                |
 
 ### 3.2 安装 A：单文件演示版（零依赖）
 
@@ -180,16 +179,7 @@ npm run validate:demo
 npm run test:demo
 ```
 
-### 3.4 安装 C：Next.js 完整版
-
-```bash
-npm install
-cp .env.example .env.local         # 可选：填模型 Key；不填自动 Mock
-npm run dev                        # http://localhost:3000
-```
-
-
-### 3.5 常见安装问题
+### 3.4 常见安装问题
 
 | 现象                          | 原因                                            | 处理                                                                                          |
 | --------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------- |
@@ -524,17 +514,15 @@ FastAPI 后端（backend/）── JWT 鉴权 ── SQLite 持久化（面试�
    │  httpx 流式转发（Key 只在服务端环境变量）
 智谱 GLM-4-Flash（OpenAI 兼容）
 
-Next.js 完整版（app/）── Route Handlers ── 多模型路由 / RAG / Zod 契约 / Mock 兜底
 ```
 
-**四种交付形态**
+**三种交付形态**
 
 | 形态              | 位置                              | 定位                                                                                |
 | --------------- | ------------------------------- | --------------------------------------------------------------------------------- |
 | **FastAPI 后端**  | `backend/`                      | 演示版的后端适配层：JWT 鉴权、SQLite 持久化、GLM SSE 流式代理（API Key 只存服务端环境变量）、可解释评分引擎               |
 | **模块版前端**       | `frontend/`                     | 由单文件演示版机械拆分而成（27 个 JS 模块 + 3 层 CSS），行为与单文件版逐字节等价                                  |
 | **单文件演示版**      | `public/futuremirror-demo.html` | 零依赖、可离线运行的演示页（约 499KB，所有 CSS/JS 内联，默认零外部请求；仅主动点「加载端侧模型」时才从**同源 `models/`** 取一次权重） |
-| **Next.js 完整版** | `app/` `lib/` `components/`     | 生产形态的全栈应用（Route Handlers + 多模型路由 + RAG + Zod 契约）                                  |
 
 - **演示版与后端的关系**：演示版检测 `http://localhost:8000` 后端；在线则对话 / 登录 / 报告生成全部走后端（Key 零接触），离线则自动回退「浏览器直连 Key → 本地 Mock」，功能不减。
 - **单文件版与模块版的关系**：`scripts/split-frontend.js` 从单文件版按「版本横幅」机械拆分出 `frontend/`；`scripts/build-demo.js` 反向合并回单文件（除一行 hashchange 监听注册随 handler 归位外**逐字节一致**）。`scripts/test-frontend-modules.js` 用 jsdom 真实加载模块版验证独立启动（28 项）。
@@ -545,7 +533,7 @@ RAG 检索不是关键词匹配，而是**词面 + 语义双路召回后归一�
 
 | 环节   | 实现                                                                | 关键参数 / 说明                                                                                                    |
 | ---- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| 分词   | 英文/数字整词 + 中文 bigram（`tokenList`）                                  | 与完整版 `lib/ai/rag.ts` 同策略，中文无空格也能召回                                                                           |
+| 分词   | 英文/数字整词 + 中文 bigram（`tokenList`）                                  | 中文无空格也能召回                                                                           |
 | 词面召回 | BM25（`bm25Score`）                                                 | `k1=1.5`、`b=0.75`，IDF 恒正（`log(1+…)` 防负权），标题字段重复计入 = 权重 ×2                                                    |
 | 语义召回 | **Transformers.js · all-MiniLM-L6-v2**（`Xenova/all-MiniLM-L6-v2`） | 384 维，`pooling=mean` + L2 归一，浏览器内推理；**权重自托管在站点 `models/`，同源读取**（不依赖 huggingface，规避其国内不可达与 CORS 缺失），浏览器缓存二次秒开 |
 | 向量库  | `localStorage["fm_kb_vec_v1"]`（40 条预计算向量 + 元信息）                   | 二次访问「缓存命中」零推理；条目数与知识库不符时**拒绝加载**，避免脏索引                                                                       |
@@ -600,7 +588,6 @@ futuremirror/
 ├── scripts/                    # split-frontend / build-demo / fetch-model / deploy-pages / stage-mirror / validate / test-* 工具与测试
 ├── docs/technical-doc.html         # 技术文档（9 章正式版，可直接在线阅读；PDF 附件由此打印导出）
 ├── docs/archive/                   # 技术文档早期 Markdown 草稿（仅供演进追溯，不对外）
-├── app/ lib/ components/ …     # Next.js 完整版
 └── README.md
 ```
 
@@ -632,7 +619,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **1384 项前端断言 + 21 项后端单测**，全部通过。
+合计 **1427 项前端断言 + 27 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -695,7 +682,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 21 项 + 前端 1384 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 27 项 + 前端 1427 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -718,8 +705,6 @@ node scripts/deploy-pages.js --build    # 重建单文件版 → 强推 gh-pages
 node scripts/stage-mirror.js            # 生成 .mirror-site/index.html + 404.html + docs/ + models/（纯产物，已 gitignore）
 # 随后对该目录执行一次「发布为应用」（静态站点），链接即 https://futuremirror-demo.app.workbuddy.host/
 
-# 方案 A：Vercel（完整版 Next.js）
-npm i -g vercel && vercel --prod        # 环境变量在 Vercel 后台配置；不配 Key 自动 Mock
 
 # 方案 B：Cloudflare Pages（仅静态演示页，零成本）
 npx wrangler pages deploy public --project-name=futuremirror-demo
@@ -750,12 +735,11 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 | 组件                                      | 许可证        | 用途                  |
 | --------------------------------------- | ---------- | ------------------- |
-| Next.js / React / Tailwind CSS          | MIT        | 完整版前端框架与样式          |
 | `@xenova/transformers`（Transformers.js） | Apache-2.0 | 浏览器内向量推理运行时         |
 | `Xenova/all-MiniLM-L6-v2`               | Apache-2.0 | 端侧句向量模型（仅集成调用，未再训练） |
 | FastAPI / SQLAlchemy / PyJWT / httpx    | MIT / BSD  | 后端服务、ORM、鉴权与流式转发    |
 
-> 演示知识库（`frontend/js/data/kb.js`、`lib/data/kb.json`）与题库均为**人工合成示例数据**，随项目一同提供仅用于功能演示，不代表任何真实企业面试内容。
+> 演示知识库（`frontend/js/data/kb.js`）与题库均为**人工合成示例数据**，随项目一同提供仅用于功能演示，不代表任何真实企业面试内容。
 
 ---
 
@@ -786,7 +770,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **偏好设置新增「十字鼠标追踪」开关**：默认开启，关闭 / 开启即时生效
 - **全站图标替换**：36 枚自制蓝图风线性 SVG（24×24、`currentColor`、方头直角、单一朱红 accent）替换 63 处模板化 emoji；favicon 升级为取景器标识；保留 emoji 作无 JS 兜底
 
-测试基线：**1384** 项前端断言（19 套 jsdom，新增 v31 套件 67 项）+ **21** 项后端 pytest + 16 项 vitest + tsc 0 错误；技术文档 PDF **29 页**。
+测试基线：**1427** 项前端断言（19 套 jsdom，v31 套件 110 项）+ **27** 项后端 pytest；技术文档 PDF **29 页**。
 ## Beta 1.1.0 · 完整性补全层（2026.10.23）
 
 对高级网页能力清单做第二轮逐项复核，把「只具备样式或雏形」的 6 处补齐为可运行、可测试、可降级：
@@ -823,10 +807,9 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **真实 MCP Server**：从"本地模拟 Server"升级为跨进程真实 MCP，支持跨 Agent 工具发现
 - **多轮规划**：引入有限状态机式的 Agent 编排，支持复杂面试场景的长链路决策
 
-**📊 评分升级**
+**📊 评分增强**
 
-- **LLM 评分 + Zod 约束**：在规则引擎之上叠加 LLM 语义评分，通过 Zod 约束输出 schema，保证评分维度与证据字段完整
-- **校准样本集**：构建人工标注的评分一致性样本集，用 Kappa 系数量化 LLM 评分与人工评分的一致程度
+- **确定性引擎 + LLM 质性增强（已在 Beta 1.1.2 落地）**：分数由确定性规则引擎给出（可复现、可解释），LLM 仅负责逐维度质性评语与教练总评的生成与兜底；后续引入人工专家评审样本量化分维度偏差
 
 **🎤 多模态扩展**
 
@@ -895,7 +878,8 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 - **修复**：面试 chat-head 新增「🔄 重新面试」按钮（撤销可回滚）｜`.bp-snap-y` 不再常驻 `documentElement`（题库等应用内页滚动恢复）｜`refreshReportPanel()` 让看板按最新会话重画（不再冻结在基线数据）
 - **新增**：学习计划板块（`plan.js`，`data-page="plan"`）｜`prefs.crosshair` 偏好开关｜图标系统 `icons.js`（36 枚）+ 取景器 favicon
-- **指标**：前端断言 1317 → **1384**｜jsdom 套件 18 → **19 套**｜功能页 10 → **11**｜自制 SVG 图标 **36 枚**｜技术文档 v1.10 → **v1.11**｜PDF **29 页**
+- **全栈收口与文档诚实化**：移除未部署的 Next.js 平行实验（统一到已验证的单栈）、接入 LLM 混合评分增强（确定性分数 + LLM 质性评语）、技术文档去除未落地的 Kappa / Zod / 三阶段校准表述
+- **指标**：前端断言 1317 → **1427**｜jsdom 套件 18 → **19 套**｜功能页 10 → **11**｜自制 SVG 图标 **36 枚**｜技术文档 v1.10 → **v1.11**｜PDF **29 页**
 
 ### Beta 1.1.1 · 审计加固层：全站与仓库逐项复核后的收口（2026.10.23）
 
@@ -1083,7 +1067,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **✨ 新增功能**
 
-- **第 7 章「核心算法详解与原创性论证」**：三大算法逐一展开——多 Agent 圆桌协作的派发调度、RAG 混合检索 + 五特征重排（`final = 0.55 × hybridNorm + 0.45 × featScore`，特征权重 title 0.34 / phrase 0.24 / tag 0.22 / type 0.12 / len 0.08）、评分引擎的三阶段校准（55 → 56 → 64 → 77 → 82）；每个设计选择绑定具体工程问题并给出可当场验证的证据
+- **第 7 章「核心算法详解与原创性论证」**：三大算法逐一展开——多 Agent 圆桌协作的派发调度、RAG 混合检索 + 五特征重排（`final = 0.55 × hybridNorm + 0.45 × featScore`，特征权重 title 0.34 / phrase 0.24 / tag 0.22 / type 0.12 / len 0.08）、评分引擎的双引擎对拍与确定性校准（标准样本 C1–C5 总分 55 → 82 单调可分，Python/JS 舍入规则统一）；每个设计选择绑定具体工程问题并给出可当场验证的证据
 - **评分校准体系成文**：校准总分演进表、舍入缺陷修复（90.5 → 91 的统一舍入规则）、双引擎对拍与 11 条校准断言常驻回归
 - **真实模型上线**：`backend/.env` 配置 GLM-4-Flash Key，`/api/health` 返回 `llm_ready: true`；线上 SSE 流式、JWT 登录、面试会话持久化、服务端评分报告全链路实测可用
 - **答辩 PPT**（`FutureMirror答辩.pptx`，16 页）：三大核心算法论证 + 真实完成度 + 现场验证入口，与技术文档第 7 章配套
@@ -1664,6 +1648,6 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 ## 数据合规说明
 
-- `lib/data/kb.json` 与演示版内置题库均为 **合成示例数据**，仅用于演示，禁止对外宣称真实爬取；
+- `frontend/js/data/kb.js` 与演示版内置题库均为 **合成示例数据**，仅用于演示，禁止对外宣称真实爬取；
 - 隐私设计：原始简历不上云，发送模型前本地脱敏；`maskPII()` 已通过单元测试覆盖；
 - `.env` 永不进仓库（`.gitignore` 已包含），密钥只存在于部署环境变量。
