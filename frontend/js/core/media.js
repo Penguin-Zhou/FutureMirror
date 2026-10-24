@@ -90,10 +90,20 @@
   function place(node) {
     const r = node.getBoundingClientRect();
     const w = panel.offsetWidth || 240;
+    /* 高度以面板实际渲染为准；图片尚未解码时（首次悬停）按 260 估算
+     * （260px 宽面板 + 方形快照图的实际高度），避免按 180 低估导致
+     * 图片加载后面板长高、溢出视口底部 */
+    const h = panel.offsetHeight || 260;
     let left = r.left + r.width / 2 - w / 2;
     left = Math.max(8, Math.min(left, (win.innerWidth || 1024) - w - 8));
     panel.style.left = left + "px";
-    panel.style.top = Math.max(8, r.bottom + 10) + "px";
+    /* v31.2：垂直翻转——下方空间不足时翻到缩略图上方。
+     * 原实现固定放在 r.bottom + 10，缩略图靠近视口底部时面板溢出视口
+     * 或被右下角悬浮件（返回顶部 1100 / AI 球 90 / Toast 100）盖住 */
+    const vh = win.innerHeight || 768;
+    let top = r.bottom + 10 + h > vh - 8 ? r.top - h - 10 : r.bottom + 10;
+    top = Math.max(8, Math.min(top, vh - h - 8));
+    panel.style.top = top + "px";
   }
   function showPreview(node) {
     const src = node && node.getAttribute("data-preview");
@@ -103,6 +113,8 @@
     panel.classList.add("show");
     place(node);
     if (panelImg.getAttribute("src") !== src) {
+      /* 首次取图：图片解码后面板高度才稳定，加载完成后再校准一次位置 */
+      panelImg.onload = function () { if (previewFor) place(previewFor); };
       panelImg.removeAttribute("src");
       panelImg.src = src;
     }
@@ -153,6 +165,7 @@
     loadMedia: loadMedia,
     showPreview: showPreview,
     hidePreview: hidePreview,
+    place: place,
     visible: () => !!(panel && panel.classList.contains("show")),
     target: () => previewFor,
     reduced: RM,

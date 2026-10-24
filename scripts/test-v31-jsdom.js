@@ -238,6 +238,34 @@ async function runTests() {
   ok(![...shotImgs].some(im => /%2523/.test(im.getAttribute("src") || "")), "快照 src 无双重编码痕迹");
 
   /* ================================================================
+     ⑥c 悬停放大预览层防遮挡（v31.2：被右下悬浮件盖住 / 溢出视口）
+     ================================================================ */
+  console.log("\n—— ⑥c 预览层防遮挡 ——");
+  const prevCss = html.match(/\.bp-preview \{[\s\S]*?\}/);
+  const pz = prevCss ? (prevCss[0].match(/z-index:\s*(\d+)/) || [])[1] : "";
+  ok(+pz >= 1100, "预览浮层盖过返回顶部(1100)/Toast(100)/AI 悬浮球(90)（实际 z-index " + pz + "）");
+  ok(+pz > 0 && +pz < 1300, "预览浮层仍低于命令面板(1300)");
+  const placeSrc = w.eval("window.__bpMedia.place.toString()");
+  ok(/innerHeight/.test(placeSrc) && /r\.top - h - 10/.test(placeSrc), "place() 含垂直翻转分支（下方不足翻到上方）");
+  ok(/offsetHeight \|\| 260/.test(placeSrc), "place() 未解码时按 260 估算高度（防图片加载后溢出）");
+  const showSrc = w.eval("window.__bpMedia.showPreview.toString()");
+  ok(/onload/.test(showSrc) && /place\(previewFor\)/.test(showSrc), "showPreview 图片加载后重新校准位置");
+  /* 运行时行为：构造探针节点打桩 rect，验证三种场景的落点 */
+  const probe = d.createElement("div");
+  probe.setAttribute("data-preview", "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E");
+  d.body.appendChild(probe);
+  w.__probeNode = probe;
+  const placeAt = rect => { probe.getBoundingClientRect = () => rect; w.eval("window.__bpMedia.showPreview(window.__probeNode)"); return d.querySelector(".bp-preview"); };
+  let p = placeAt({ top: 300, bottom: 404, left: 100, width: 140, height: 104 });
+  ok(!!p && p.classList.contains("show") && p.style.top === "414px", "缩略图居中部 → 面板落在下方（top " + (p && p.style.top) + "）");
+  p = placeAt({ top: 560, bottom: 664, left: 100, width: 140, height: 104 });
+  ok(!!p && p.style.top === "290px", "缩略图靠近底部 → 翻转到上方（top " + (p && p.style.top) + "）");
+  p = placeAt({ top: 700, bottom: 804, left: 100, width: 140, height: 104 });
+  ok(!!p && p.style.top === "430px", "缩略图极靠底部 → 翻转后仍 clamp 在视口内（top " + (p && p.style.top) + "）");
+  w.eval("window.__bpMedia.hidePreview()");
+  ok(!d.querySelector(".bp-preview").classList.contains("show"), "hidePreview 可收起");
+
+  /* ================================================================
      ⑦ 版本串口径
      ================================================================ */
   console.log("\n—— ⑦ 版本口径 ——");

@@ -1321,8 +1321,11 @@
   @media (prefers-reduced-motion: reduce) { .bp-media { transition: none; filter: none; opacity: 1; } }
 
   /* ㉒ 悬停 / 聚焦预览浮层：纸底 + 墨色发丝线（零投影） */
+  /* v31.2：z-index 80 → 1250——原值低于返回顶部(1100)/Toast(100)/AI 悬浮球(90)，
+   * 缩略图靠近视口右下角时放大面板被这些悬浮件盖住；1250 高于全部内容层与
+   * 悬浮件，仍低于命令面板(1300) */
   .bp-preview {
-    position: fixed; z-index: 80; width: 260px; max-width: 76vw;
+    position: fixed; z-index: 1250; width: 260px; max-width: 76vw;
     background: var(--card); border: 1px solid var(--ink);
     padding: 7px; opacity: 0; pointer-events: none; transition: opacity .18s ease;
   }
