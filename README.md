@@ -520,7 +520,7 @@ FastAPI 后端（backend/）── JWT 鉴权 ── SQLite 持久化（面试�
 | 形态              | 位置                              | 定位                                                                                |
 | --------------- | ------------------------------- | --------------------------------------------------------------------------------- |
 | **FastAPI 后端**  | `backend/`                      | 演示版的后端适配层：JWT 鉴权、SQLite 持久化、GLM SSE 流式代理（API Key 只存服务端环境变量）、可解释评分引擎               |
-| **模块版前端**       | `frontend/`                     | 由单文件演示版机械拆分而成（27 个 JS 模块 + 3 层 CSS），行为与单文件版逐字节等价                                  |
+| **模块版前端**       | `frontend/`                     | 由单文件演示版机械拆分而成（38 个 JS 模块 + 3 层 CSS），行为与单文件版逐字节等价                                  |
 | **单文件演示版**      | `public/futuremirror-demo.html` | 零依赖、可离线运行的演示页（约 499KB，所有 CSS/JS 内联，默认零外部请求；仅主动点「加载端侧模型」时才从**同源 `models/`** 取一次权重） |
 
 - **演示版与后端的关系**：演示版检测 `http://localhost:8000` 后端；在线则对话 / 登录 / 报告生成全部走后端（Key 零接触），离线则自动回退「浏览器直连 Key → 本地 Mock」，功能不减。
@@ -571,7 +571,7 @@ futuremirror/
 │   │   ├── scoring.py              # 可解释评分引擎（前端 scoreSession 的 Python 版）
 │   │   ├── db.py                   # SQLAlchemy 模型与会话
 │   │   └── main.py                 # FastAPI 装配 + 路由（JWT 鉴权/会话/报告/健康检查）
-│   ├── tests/                      # pytest：冒烟 + 鉴权 + 评分引擎 + 评语增强（27 项）
+│   ├── tests/                      # pytest：冒烟 + 鉴权 + 评分引擎 + 评语增强（29 项）
 │   ├── requirements.txt            # 后端依赖清单（版本固定）
 │   └── .env.example                # 复制为 .env 填 Key；.env 永不进仓库
 ├── frontend/                       # 模块版前端（由单文件版拆分，行为逐字节等价）
@@ -612,7 +612,7 @@ futuremirror/
 
 ```bash
 # 后端
-cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM 评语增强（27 项）
+cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM 评语增强（29 项）
 
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
@@ -640,7 +640,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **1427 项前端断言 + 27 项后端单测**，全部通过。
+合计 **1427 项前端断言 + 29 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -703,7 +703,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 27 项 + 前端 1427 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 29 项 + 前端 1427 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -778,7 +778,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **全站图标替换**：36 枚自制蓝图风线性 SVG（24×24、`currentColor`、方头直角、单一朱红 accent）替换 63 处模板化 emoji；favicon 升级为取景器标识；保留 emoji 作无 JS 兜底
 - **全栈收口与工程规范**：移除未部署的 Next.js 平行实验层，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（分数仍由确定性引擎给出，LLM 只补逐维度质性评语与教练总评，异常自动回落）；补齐 ESLint 10 + Prettier 3 + `jsconfig`/JSDoc 类型层，并新增 `npm run verify` 单命令门禁（globals 校验 → lint → format → test）
 
-测试基线：**1427** 项前端断言（19 套 jsdom，v31 套件 110 项）+ **27** 项后端 pytest；ESLint 10 `0 error` / Prettier 3 全绿；技术文档 PDF **30 页**。
+测试基线：**1427** 项前端断言（19 套 jsdom，v31 套件 110 项）+ **29** 项后端 pytest；ESLint 10 `0 error` / Prettier 3 全绿；技术文档 PDF **30 页**。
 
 ## Beta 1.1.1 · 审计加固层（2026.10.23）
 
@@ -1109,7 +1109,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 ### v22 · 后端适配与工程化（2026.10）
 
-> FastAPI 后端落地——SQLite 数据模型 + scrypt 密码哈希 + JWT 鉴权、GLM SSE 流式代理（**Key 只存服务端环境变量**）、评分引擎 Python 同构移植、面试会话与报告落库；演示版改造为"后端优先 + 三级降级"（`fmApi` 适配层：健康检查 30s 缓存 / SSE 分片解析 / 登录注册走后端 / 报告服务端生成 + 本地兜底）；单文件版按版本横幅机械拆分为 `frontend/` 27 模块 + 3 CSS 层，`build-demo.js` 可逐字节重建。
+> FastAPI 后端落地——SQLite 数据模型 + scrypt 密码哈希 + JWT 鉴权、GLM SSE 流式代理（**Key 只存服务端环境变量**）、评分引擎 Python 同构移植、面试会话与报告落库；演示版改造为"后端优先 + 三级降级"（`fmApi` 适配层：健康检查 30s 缓存 / SSE 分片解析 / 登录注册走后端 / 报告服务端生成 + 本地兜底）；单文件版按版本横幅机械拆分为 `frontend/` 29 模块 + 3 CSS 层，`build-demo.js` 可逐字节重建。
 
 **✨ 新增功能**
 
