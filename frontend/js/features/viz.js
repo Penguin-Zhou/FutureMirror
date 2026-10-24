@@ -482,13 +482,13 @@
       const a = -Math.PI / 2 + i * (Math.PI * 2 / dims.length);
       return "<text x='" + (c + Math.cos(a) * (r + 16)).toFixed(1) + "' y='" +
         (c + Math.sin(a) * (r + 16)).toFixed(1) + "' font-size='" + (s / 26).toFixed(0) +
-        "' fill='%23555' text-anchor='middle'>" + t + "</text>";
+        "' fill='#555' text-anchor='middle'>" + t + "</text>";
     }).join("") : "";
     return svgUri(
       "<svg xmlns='http://www.w3.org/2000/svg' width='" + s + "' height='" + s + "' viewBox='0 0 " + s + " " + s + "'>" +
-      "<rect width='100%' height='100%' fill='%23F4F1E8'/>" +
-      "<polygon points='" + grid + "' fill='none' stroke='%23B9B29A'/>" +
-      "<polygon points='" + poly + "' fill='%23BE3A1E' fill-opacity='0.25' stroke='%23BE3A1E' stroke-width='2'/>" +
+      "<rect width='100%' height='100%' fill='#F4F1E8'/>" +
+      "<polygon points='" + grid + "' fill='none' stroke='#B9B29A'/>" +
+      "<polygon points='" + poly + "' fill='#BE3A1E' fill-opacity='0.25' stroke='#BE3A1E' stroke-width='2'/>" +
       labels + "</svg>"
     );
   }
@@ -502,11 +502,11 @@
       const op = (0.08 + k * 0.5).toFixed(2);
       out += "<rect x='" + ((i % cols) * w).toFixed(1) + "' y='" + (Math.floor(i / cols) * h).toFixed(1) +
         "' width='" + (w - 2).toFixed(1) + "' height='" + (h - 2).toFixed(1) +
-        "' fill='%231C1913' fill-opacity='" + op + "'/>";
+        "' fill='#1C1913' fill-opacity='" + op + "'/>";
     }
     return svgUri(
       "<svg xmlns='http://www.w3.org/2000/svg' width='" + s + "' height='" + s + "' viewBox='0 0 " + s + " " + s + "'>" +
-      "<rect width='100%' height='100%' fill='%23F4F1E8'/>" + out + "</svg>"
+      "<rect width='100%' height='100%' fill='#F4F1E8'/>" + out + "</svg>"
     );
   }
   function mountReportPanel() {
