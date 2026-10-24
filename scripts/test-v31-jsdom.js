@@ -1,0 +1,224 @@
+/* v31 jsdom 测试：体验修复层 + 学习计划 + 图标系统（Beta 1.1.2）
+ * 覆盖：① 面试页「重新面试」入口与登录守卫
+ *       ② 滚动吸附作用域收窄到 landing 视图 + 题库子页签切换回顶
+ *       ③ 能力分布看板随报告刷新（refreshReportPanel / removeReportPanel）
+ *       ④ 偏好设置「十字鼠标追踪」开关（prefs.crosshair，默认开）
+ *       ⑤ 学习计划板块（7 天路径 + 每日时间分配 + 报告同步 + 打卡进度）
+ *       ⑥ 全站蓝图风 SVG 图标系统（data-ic 换装 + 主题钮 + favicon）
+ *       ⑦ 版本串口径（BETA 1.1.2 / beta1.1.2）
+ * 用法：node scripts/test-v31-jsdom.js
+ */
+const fs = require("fs");
+const path = require("path");
+const { JSDOM, VirtualConsole } = require("jsdom");
+
+const html = fs.readFileSync(path.join(__dirname, "..", "public", "futuremirror-demo.html"), "utf8");
+
+let pass = 0, fail = 0;
+function ok(cond, label) {
+  if (cond) { pass++; console.log("  ✅ " + label); }
+  else { fail++; console.log("  ❌ " + label); }
+}
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+function makeDom() {
+  const errors = [];
+  const vc = new VirtualConsole();
+  vc.on("jsdomError", e => {
+    const msg = (e && e.message) || String(e);
+    if (!/^Not implemented:/.test(msg)) errors.push(msg);
+  });
+  vc.on("error", (...a) => errors.push(a.join(" ")));
+  const dom = new JSDOM(html, {
+    url: "https://example.com/",
+    runScripts: "dangerously",
+    pretendToBeVisual: true,
+    virtualConsole: vc,
+  });
+  const settle = () => new Promise(res => {
+    if (dom.window.document.readyState === "complete") return res();
+    dom.window.document.addEventListener("DOMContentLoaded", res, { once: true });
+    setTimeout(res, 900);
+  });
+  return { dom, errors, settle };
+}
+
+setTimeout(runTests, 400);
+
+async function runTests() {
+  console.log("\n=== v31 jsdom 测试（体验修复层 + 学习计划 + 图标系统 · Beta 1.1.2）===");
+  const { dom, errors, settle } = makeDom();
+  const w = dom.window;
+  const d = w.document;
+  await settle();
+  await wait(300);
+
+  /* ================================================================
+     ① 面试页「重新面试」入口
+     ================================================================ */
+  console.log("\n—— ① 面试页重新面试入口 ——");
+  ok(/onclick="restartInterview\(\)"/.test(html), "HTML 含 restartInterview() 调用按钮");
+  const interviewBtn = d.querySelector('.app-page[data-page="interview"] button[onclick="restartInterview()"]');
+  ok(!!interviewBtn, "面试页容器内存在「重新面试」按钮");
+  const restartSrc = w.eval("restartInterview.toString()");
+  ok(/requireLogin\(\)/.test(restartSrc), "restartInterview 含 requireLogin() 守卫");
+  ok(/requireLogin\(\)/.test(w.eval("finishInterview.toString()")), "finishInterview 同样含登录守卫（一致性）");
+  ok(/重新面试/.test(interviewBtn ? interviewBtn.textContent : ""), "按钮文案为「重新面试」");
+
+  /* ================================================================
+     ② 滚动吸附作用域（仅 landing 视图）+ 题库子页签回顶
+     ================================================================ */
+  console.log("\n—— ② 滚动吸附作用域与题库回顶 ——");
+  ok(!!(w.__bpMotion && typeof w.__bpMotion.setSnap === "function"), "__bpMotion.setSnap 已暴露");
+  ok(d.documentElement.classList.contains("bp-snap-y"), "初始视图（landing）下吸附就位");
+  w.eval("showView('landing')");
+  ok(d.documentElement.classList.contains("bp-snap-y"), "进入 landing 视图后挂上 bp-snap-y");
+  w.eval("showView('app')");
+  ok(!d.documentElement.classList.contains("bp-snap-y"), "离开 landing 后拆除 bp-snap-y（应用内不再被吸附阻滞）");
+  w.eval("showView('landing')");
+  ok(d.documentElement.classList.contains("bp-snap-y"), "再次进入 landing 可重新挂载");
+  w.eval("showView('app')");
+  w.eval("window.__bpMotion.setSnap(false)");
+  ok(!d.documentElement.classList.contains("bp-snap-y"), "setSnap(false) 直接拆除吸附");
+  const initSnapSrc = w.eval("window.__bpMotion && window.__bpMotion.initSnap ? window.__bpMotion.initSnap.toString() : ''");
+  ok(!!initSnapSrc && /view-landing/.test(initSnapSrc), "initSnap 按当前视图决定吸附（不再无条件常驻 documentElement）");
+  /* 题库子页签切换回顶 */
+  const scrolled = [];
+  w.scrollTo = o => scrolled.push(o);
+  w.eval("switchQuizTab('fav')");
+  ok(scrolled.length === 1 && scrolled[0] && scrolled[0].behavior === "smooth", "switchQuizTab 触发平滑回顶（behavior=smooth）");
+  ok(typeof scrolled[0].top === "number" && scrolled[0].top >= 0, "回顶目标为非负坐标");
+
+  /* ================================================================
+     ③ 能力分布看板随报告刷新
+     ================================================================ */
+  console.log("\n—— ③ 能力分布看板刷新 ——");
+  const viz = w.__bpViz || {};
+  ok(typeof viz.refreshReportPanel === "function", "__bpViz.refreshReportPanel 已暴露");
+  ok(typeof viz.removeReportPanel === "function", "__bpViz.removeReportPanel 已暴露");
+  ok(/refreshReportPanel/.test(w.eval("renderReport.toString()")), "renderReport 成功渲染末尾调用 refreshReportPanel");
+  ok(/removeReportPanel/.test(w.eval("renderReport.toString()")), "renderReport 空态路径调用 removeReportPanel");
+  w.eval("window.__bpViz.refreshReportPanel()");
+  const panel1 = d.getElementById("bp-viz-panel");
+  ok(!!panel1, "refreshReportPanel 能挂载能力分布看板");
+  w.eval("window.__bpViz.refreshReportPanel()");
+  ok(d.querySelectorAll("#bp-viz-panel").length === 1, "重复刷新仍只有一个面板实例（幂等）");
+  w.eval("window.__bpViz.removeReportPanel()");
+  ok(!d.getElementById("bp-viz-panel"), "removeReportPanel 能撤下看板（空态不留陈旧面板）");
+
+  /* ================================================================
+     ④ 偏好设置「十字鼠标追踪」开关
+     ================================================================ */
+  console.log("\n—— ④ 十字鼠标追踪偏好开关 ——");
+  ok(w.eval("JSON.stringify(PROFILE_DEFAULTS.prefs)").indexOf('"crosshair":true') > -1, "PROFILE_DEFAULTS.prefs.crosshair 默认 true");
+  ok(!!d.getElementById("sw-cross"), "偏好设置区存在 sw-cross 开关");
+  const swCross = d.getElementById("sw-cross");
+  ok(!!swCross && /togglePref\('crosshair'\)/.test(swCross.getAttribute("onclick") || ""), "sw-cross 绑定 togglePref('crosshair')");
+  const crossOn = d.querySelectorAll(".bp-cross-x, .bp-cross-y").length;
+  ok(crossOn === 2, "默认开启时准线两条已注入（实际 " + crossOn + "）");
+  w.eval("togglePref('crosshair')");
+  ok(d.querySelectorAll(".bp-cross-x, .bp-cross-y").length === 0, "关闭偏好后准线撤除");
+  ok(swCross.getAttribute("aria-checked") === "false", "关闭后开关 aria-checked=false");
+  ok(w.eval("getProfile().prefs.crosshair") === false, "关闭态已持久化到 profile");
+  w.eval("togglePref('crosshair')");
+  ok(d.querySelectorAll(".bp-cross-x, .bp-cross-y").length === 2, "重新开启后准线恢复注入");
+  ok(swCross.getAttribute("aria-checked") === "true", "重开后开关 aria-checked=true");
+  ok(w.eval("getProfile().prefs.crosshair") === true, "开启态已持久化到 profile");
+
+  /* ================================================================
+     ⑤ 学习计划板块
+     ================================================================ */
+  console.log("\n—— ⑤ 学习计划板块 ——");
+  ok(w.eval("APP_PAGES").indexOf("plan") > -1, "APP_PAGES 含 plan");
+  ok(w.eval("APP_PAGE_TITLES").plan === "学习计划", "路由标题登记为「学习计划」");
+  ok(/data-page="plan"/.test(html), "HTML 含 plan 页面容器");
+  ok(!!d.getElementById("lp-grid") && !!d.getElementById("lp-toolbar") && !!d.getElementById("lp-alloc"), "plan 页四个渲染容器就位");
+  w.eval("renderPlanPage()");
+  ok(d.querySelectorAll("#lp-grid .lp-day").length === 7, "renderPlanPage 渲染 7 张日卡");
+  ok(d.querySelectorAll("#lp-grid .lp-check").length >= 7, "每日卡含任务复选框（可打卡）");
+  ok(/合计 \d+′/.test(d.querySelector("#lp-grid .lp-day .lp-day-total").textContent), "日卡含当日时间合计");
+  ok(d.querySelectorAll("#lp-alloc .lp-table tbody tr").length === 8, "时间分配总表 7 行 + 合计行");
+  let p0 = w.eval("lpGet()");
+  ok(p0.days.length === 7 && p0.source === "baseline", "无面试记录时计划为通用基线版");
+  ok(p0.days.every(dd => dd.alloc.learn + dd.alloc.practice + dd.alloc.review === 60), "标准预算每日合计 60 分钟");
+  w.eval("setPlanBudget('light')");
+  ok(w.eval("lpGet()").days.every(dd => dd.alloc.learn + dd.alloc.practice + dd.alloc.review === 45), "紧凑预算每日合计 45 分钟");
+  w.eval("setPlanBudget('deep')");
+  ok(w.eval("lpGet()").days.every(dd => dd.alloc.learn + dd.alloc.practice + dd.alloc.review === 90), "强化预算每日合计 90 分钟");
+  w.eval("setPlanBudget('std')");
+  /* 先登录（store 按账号隔离，打卡须在同一账号下进行），再造面试会话 */
+  w.eval(`
+    currentUser = { id: 'u-plan', email: 'plan@t.com', name: '计划测试' };
+    session.turns = [];
+  `);
+  w.eval("togglePlanTask(0,0)");
+  let p1 = w.eval("lpGet()");
+  ok(p1.days[0].tasks[0].done === true, "togglePlanTask 可打卡（Day1 首任务 done）");
+  let pr = w.eval("lpProgress(lpGet())");
+  ok(pr.done === 1 && pr.total === p1.days.reduce((s, x) => s + x.tasks.length, 0), "进度统计 已打卡/总数 正确（" + pr.done + "/" + pr.total + "）");
+  ok(/已同步自最新评估报告/.test(d.getElementById("lp-src").textContent) === false, "基线版来源注记为「通用基线计划」");
+  /* 无面试时同步 → 保持基线 */
+  w.eval("syncPlanFromReport()");
+  ok(w.eval("lpGet()").source === "baseline", "无面试记录时同步保持基线计划");
+  /* 造面试会话 → 同步为报告版并按日保留进度 */
+  w.eval(`
+    session.turns = [
+      { q: 'q1', answer: '通过 Redis 缓存把 QPS 从 800 提升到 4200，延迟下降 60%', agent: '技术 Agent', mode: 'normal' },
+      { q: 'q2', answer: '背景是电商大促，目标是保障下单链路，我负责网关限流，最终通过压测', agent: '技术 Agent', mode: 'pressure' },
+      { q: 'q3', answer: '然后那个就是，我们用 STAR 拆解：背景目标行动结果都覆盖了', agent: '观察员', mode: 'normal' },
+      { q: 'q4', answer: '数据库索引优化，从 2.3s 降到 180ms，覆盖 12 个慢查询', agent: '技术 Agent', mode: 'normal' },
+      { q: 'q5', answer: '不是我的问题，但时间确实紧张，最终完成了上线', agent: '压力 Agent', mode: 'pressure' },
+    ];
+  `);
+  const fromReport = w.eval("lpTasksFromReport()");
+  ok(!!fromReport && fromReport.groups.length === 7, "有会话时 lpTasksFromReport 聚合出 7 天任务");
+  w.eval("syncPlanFromReport()");
+  const p2 = w.eval("lpGet()");
+  ok(p2.source === "report", "同步后计划来源为 report（按最弱维度动态生成）");
+  ok(p2.days[0].tasks[0].done === true, "同步按日保留 Day1 首任务完成态");
+  ok(/已同步自最新评估报告/.test(d.getElementById("lp-src").textContent), "来源注记切换为「已同步自最新评估报告」");
+  const md = w.eval("lpMarkdown(lpGet())");
+  ok(/^# 7 天学习计划/.test(md) && /## Day 1 ·/.test(md) && /时间分配：学习 \d+′/.test(md), "lpMarkdown 导出含标题 / Day 1 / 时间分配");
+
+  /* ================================================================
+     ⑥ 全站蓝图风 SVG 图标系统
+     ================================================================ */
+  console.log("\n—— ⑥ 图标系统 ——");
+  const bpIcons = w.__bpIcons || {};
+  ok(!!bpIcons.icon && Object.keys(bpIcons.set || {}).length >= 30, "图标库 >= 30 枚（实际 " + Object.keys(bpIcons.set || {}).length + "）");
+  const icDash = bpIcons.icon ? bpIcons.icon("dashboard") : "";
+  ok(/viewBox="0 0 24 24"/.test(icDash) && /currentColor/.test(icDash), "icon() 输出 24×24 currentColor 线性 SVG");
+  ok(/var\(--brand\)/.test(bpIcons.icon("report") || ""), "report 图标含朱红 accent");
+  ok(/var\(--brand\)/.test(bpIcons.icon("plan") || ""), "plan 图标含朱红 accent");
+  const sbSvgs = d.querySelectorAll('.sb-item .sb-icon[data-ic] svg.bp-ic').length;
+  ok(sbSvgs === 11, "侧栏 11 枚图标换装（实际 " + sbSvgs + "）");
+  const tbSvgs = d.querySelectorAll('.tabbar-item .tb-icon[data-ic] svg.bp-ic').length;
+  ok(tbSvgs === 10, "底 Tab 10 枚图标换装（实际 " + tbSvgs + "）");
+  const qeSvgs = d.querySelectorAll(".qe-icon[data-ic] svg.bp-ic").length;
+  ok(qeSvgs === 7, "快速入口 7 枚图标换装（实际 " + qeSvgs + "）");
+  const leftIcons = Array.prototype.filter.call(d.querySelectorAll("[data-ic]"), el => !el.querySelector("svg.bp-ic"));
+  ok(leftIcons.length === 0, "全部 data-ic 均已换装（残留 " + leftIcons.length + "）");
+  w.eval("applyTheme('dark')");
+  const darkBtn = d.getElementById("theme-btn");
+  ok(darkBtn && /M12 2\.8v2\.4/.test(darkBtn.innerHTML), "暗色下主题钮切为 sun 图形");
+  w.eval("applyTheme('light')");
+  ok(darkBtn && /M20\.2 14\.6/.test(darkBtn.innerHTML), "亮色下主题钮回到 moon 图形");
+  ok(/%23BE3A1E/.test(d.querySelector('link[rel="icon"]').getAttribute("href")), "favicon 升级为含朱红瞳点的取景器");
+
+  /* ================================================================
+     ⑦ 版本串口径
+     ================================================================ */
+  console.log("\n—— ⑦ 版本口径 ——");
+  ok(/BETA 1\.1\.2/.test(html), "页面版本串为 BETA 1.1.2");
+  ok(/beta1\.1\.2/.test(html), "开发者模式版本串为 beta1.1.2");
+  ok(!/beta1\.1\.1/.test(html), "无 beta1.1.1 残留");
+
+  /* ================================================================
+     汇总
+     ================================================================ */
+  const realErrors = errors.filter(e => !/Not implemented/.test(e));
+  ok(realErrors.length === 0, "运行期无未捕获脚本错误（" + (realErrors[0] || "无") + "）");
+  console.log("\n===== v31 结果：" + pass + " 通过，" + fail + " 失败 =====");
+  dom.window.close();
+  process.exit(fail ? 1 : 0);
+}

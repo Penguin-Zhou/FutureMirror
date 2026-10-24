@@ -5,10 +5,10 @@ export const changelogHtml = `
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.1.1</div>
+    <div class="sub">版本更新日志 · v1 → Beta 1.1.2</div>
     <div class="meta">
-      <span>已发布 <b>31</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.1.1</b></span>
+      <span>已发布 <b>35</b> 个版本</span>
+      <span>当前版本 <b>Beta 1.1.2</b></span>
       <span>规划中 <b>1</b> 个版本</span>
       <span>覆盖 <b>2026.08 → 2026.10</b></span>
     </div>
@@ -16,19 +16,19 @@ export const changelogHtml = `
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.1.1，为当前正式发布版本（审计加固层：文档一致性 + 环境变量模板 + JWT 密钥 + 输入长度与连接上限 + XSS 收口 + 内存泄漏 + 视觉纪律 + 全量测试入口）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.1.2，为当前正式发布版本（体验修复层：3 个主流程缺陷修复 + 学习计划板块 + 十字准线开关 + 36 枚自制图标）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
   <div class="overview">
-    <div class="ov-card"><div class="ov-num">30</div><div class="ov-label">已发布版本</div></div>
-    <div class="ov-card"><div class="ov-num">10</div><div class="ov-label">功能页</div></div>
+    <div class="ov-card"><div class="ov-num">35</div><div class="ov-label">已发布版本</div></div>
+    <div class="ov-card"><div class="ov-num">11</div><div class="ov-label">功能页</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">协作 Agent</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">岗位数据库</div></div>
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1317</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1384</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -38,6 +38,7 @@ export const changelogHtml = `
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
     <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
+    <li><a href="#vbeta1-12"><span class="cl-toc-tag">Beta 1.1.2</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
     <li><a href="#vbeta1-11"><span class="cl-toc-tag">Beta 1.1.1</span><span class="cl-toc-title-txt">审计加固层 · 文档一致性 + 安全加固 + XSS 收口 + 泄漏修复 + 视觉纪律</span></a></li>
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">完整版对齐 · 生产级 RAG · 多模态扩展</span></a></li>
     <li><a href="#vbeta1-9"><span class="cl-toc-tag">Beta 1.0.9</span><span class="cl-toc-title-txt">专家能力层 · 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化</span></a></li>
@@ -195,11 +196,35 @@ export const changelogHtml = `
   <!-- ========================================================
        Beta 1.0.9 · 专家能力层（Blueprint Expert Layer）
        ======================================================== -->
-  <div class="version vbeta1-11 current" id="vbeta1-11">
+  <div class="version vbeta1-12 current" id="vbeta1-12">    <div class="version-head">
+      <span class="v-tag v-tag-current">Beta 1.1.2</span>
+      <span class="v-title">体验修复层 · 重新面试入口 + 滚动吸附收窄 + 看板实时刷新 + 学习计划板块 + 全站图标</span>
+      <span class="v-date">2026.10.24 <span class="cur-mark">当前版本</span></span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        收集一轮真实使用反馈，修掉 <strong>3 个影响主流程的缺陷</strong>，并把「7 天学习路径」从报告页里的一小块摘要升级为<strong>独立板块</strong>：<strong>① 模拟面试无法重新面试</strong>——重面入口此前只藏在 ⌘K 面板与报告页，面试页 chat-head 新增「🔄 重新面试」按钮（沿用带撤销 toast 的重置快照机制，并补登录守卫）；<strong>② 题库页滚动粘滞</strong>——滚动吸附 <code>.bp-snap-y</code> 此前无条件常驻挂在 <code>documentElement</code> 上，应用内所有页面的滚动都被分段吸附阻滞，现收窄为仅落地页视图生效（进入挂载、离开拆除），题库子页签切换后平滑回顶；<strong>③ 能力分布看板数据冻结</strong>——看板此前只在开机装配一次，面试后仍显示「基线数据」，新增 <code>refreshReportPanel()</code>（停旧 live → 摘旧面板 → 按最新会话重挂）并由 <code>renderReport()</code> 在渲染末尾调用，空态路径同步撤下面板。<strong>④ 新增「学习计划」板块</strong>——7 天路径 + 每日时间分配规划：计划内容一键「同步评估报告」按最弱维度动态生成（scoreSession + buildPlan），无报告时回落通用基线；每日时间按「学习 : 练习 : 复盘」权重切分，三档预算（45 / 60 / 90 分钟）切换后自动重算；逐任务打卡 + 进度条 + 印章完成态，支持复制 Markdown 与打印。<strong>⑤ 偏好设置新增「十字鼠标追踪」开关</strong>——准线默认开启，关闭即时撤除、开启即时恢复（<code>prefs.crosshair</code>）。<strong>⑥ 全站图标替换</strong>——36 枚自制蓝图风线性 SVG 图标（24×24、stroke=currentColor 继承文字色、方头直角、每枚仅一枚朱红 accent）替换 63 处模板化 emoji，覆盖侧栏 / 底 Tab / 页头 / 快速入口 / 统计卡 / 落地页 / 主题钮 / 用户菜单 / AI 悬浮球，favicon 升级为取景器标识；保留 emoji 作无 JS 兜底。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>面试能重来了</b>：chat-head 直接重新面试，重置可撤销</div>
+        <div class="vh-item"><b>页面能滚动了</b>：滚动吸附只留在落地页，应用内滚动不再被卡住</div>
+        <div class="vh-item"><b>看板看得到自己了</b>：每次进报告都按最新会话重画，不再是基线快照</div>
+        <div class="vh-item"><b>7 天计划成板块了</b>：按最弱维度动态生成 + 每日时间分配 + 打卡进度</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">3</div><div class="m-label">修复缺陷</div></div>
+        <div class="metric"><div class="m-val">36</div><div class="m-label">自制 SVG 图标</div></div>
+        <div class="metric"><div class="m-val">67</div><div class="m-label">v31 新增断言</div></div>
+        <div class="metric"><div class="m-val">1384</div><div class="m-label">前端断言总数</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="version vbeta1-11" id="vbeta1-11">
     <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.1.1</span>
+      <span class="v-tag">Beta 1.1.1</span>
       <span class="v-title">审计加固层 · 文档一致性 + 安全加固 + XSS 收口 + 泄漏修复 + 视觉纪律 + 全量测试入口</span>
-      <span class="v-date">2026.10.23 <span class="cur-mark">当前版本</span></span>
+      <span class="v-date">2026.10.23</span>
     </div>
     <div class="version-body">
       <div class="v-summary">
