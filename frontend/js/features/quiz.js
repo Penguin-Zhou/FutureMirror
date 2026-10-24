@@ -403,6 +403,12 @@ function switchQuizTab(tab) {
   });
   /* v20：收藏夹 / 错题本内容可被其他页签的操作改变，切换到时刷新，避免展示陈旧数据 */
   if (tab === "fav" || tab === "wrong") renderQuizPage();
+  /* v31：子页签切换回顶——停留在上一页签的滚动位置会让新页签「滑不动」（已反馈） */
+  try {
+    const page = document.querySelector(".app-page.active");
+    const top = page ? page.getBoundingClientRect().top + (window.scrollY || 0) : 0;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  } catch (e) {}
 }
 function showQuizCat(catId) {
   const cat = QUIZ_CATS.find(c => c.id === catId);
