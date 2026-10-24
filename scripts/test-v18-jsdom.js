@@ -10,7 +10,7 @@ const html = fs.readFileSync(path.join(__dirname, "..", "public", "futuremirror-
 
 const errors = [];
 const vc = new VirtualConsole();
-vc.on("jsdomError", e => {
+vc.on("jsdomError", (e) => {
   const msg = (e && e.message) || String(e);
   if (!/^Not implemented:/.test(msg)) errors.push("jsdomError: " + msg);
 });
@@ -25,10 +25,16 @@ const dom = new JSDOM(html, {
 const { window } = dom;
 const { document } = window;
 
-let pass = 0, fail = 0;
+let pass = 0,
+  fail = 0;
 function ok(cond, label) {
-  if (cond) { pass++; console.log("  ✅ " + label); }
-  else { fail++; console.log("  ❌ " + label); }
+  if (cond) {
+    pass++;
+    console.log("  ✅ " + label);
+  } else {
+    fail++;
+    console.log("  ❌ " + label);
+  }
 }
 
 setTimeout(runTests, 300);
@@ -105,7 +111,7 @@ function runTests() {
         "待定",
         "应该补充量化数据与监控细节",
       ];
-      answers.forEach(a => {
+      answers.forEach((a) => {
         document.getElementById("review-input").value = a;
         window.eval("submitReviewAnswer()");
       });
@@ -138,9 +144,18 @@ function runTests() {
       /* ============ E. 语音输入实时反馈 ============ */
       console.log("\n-- E. 语音输入实时反馈（本地规则） --");
       window.eval('analyzeVoiceInput("然后那个就是我们的核心方案，我们负责优化了接口性能", 5000)');
-      ok(/语速 \d+(\.\d)? 字\/秒 · 填充词 \d+ 次/.test(document.getElementById("timeline").textContent), "时间线显示语速与填充词统计");
-      window.eval('analyzeVoiceInput("然后那个就是我们的核心方案我们负责优化了接口性能并且完成了全链路压测与容量评估", 4000)');
-      ok(document.getElementById("timeline").textContent.includes("语速偏快") || document.getElementById("timeline").textContent.includes("填充词偏多"), "异常语速/填充词给出提示");
+      ok(
+        /语速 \d+(\.\d)? 字\/秒 · 填充词 \d+ 次/.test(document.getElementById("timeline").textContent),
+        "时间线显示语速与填充词统计"
+      );
+      window.eval(
+        'analyzeVoiceInput("然后那个就是我们的核心方案我们负责优化了接口性能并且完成了全链路压测与容量评估", 4000)'
+      );
+      ok(
+        document.getElementById("timeline").textContent.includes("语速偏快") ||
+          document.getElementById("timeline").textContent.includes("填充词偏多"),
+        "异常语速/填充词给出提示"
+      );
 
       /* ============ F. 句子级改写证据 ============ */
       console.log("\n-- F. 句子级改写证据 --");
@@ -150,7 +165,10 @@ function runTests() {
         { agent: "压力面试官", question: "q3", answer: "我设计并实现了消息队列模块，支撑业务高峰。", notes: "n", mode: "pressure" },
         { agent: "HR 面试官", question: "q4", answer: "希望寻找更大平台。", notes: "n", mode: "general" }
       ]; renderReport();`);
-      ok(window.eval("buildSentenceRewrites(session.turns).length") === 3, "检出 3 句无量化动词句（第 4 句无触发词跳过）");
+      ok(
+        window.eval("buildSentenceRewrites(session.turns).length") === 3,
+        "检出 3 句无量化动词句（第 4 句无触发词跳过）"
+      );
       ok(!!document.getElementById("rewrites"), "报告渲染句子级改写区块");
       ok(document.getElementById("rewrites").textContent.includes("主导"), "「负责」句给出主导+量化改写模板");
       ok(document.getElementById("rewrites").textContent.includes("STAR"), "「设计」句给出 STAR 改写模板");
@@ -167,7 +185,9 @@ function runTests() {
       ok(window.eval("deepDive.left") === 0, "两轮后深挖状态自动重置");
 
       /* 题库耗尽后按人设选池 */
-      window.eval('session.turns = QUESTION_BANK.general.map(q => ({ agent: "压力面试官", question: q, answer: "测试回答", notes: "n", mode: "general" }));');
+      window.eval(
+        'session.turns = QUESTION_BANK.general.map(q => ({ agent: "压力面试官", question: q, answer: "测试回答", notes: "n", mode: "general" }));'
+      );
       const hrq = window.eval('pickQuestion("general", 6, "团队协作", { id: "hr", name: "HR 面试官" })');
       ok(/价值主张|成长|方向|不认可/.test(hrq), "HR 面试官使用动机/稳定性专属题库");
       const pq = window.eval('pickQuestion("general", 6, "方案", { id: "pressure", name: "压力面试官" })');
@@ -187,8 +207,11 @@ function runTests() {
       /* ============ I. Bento Grid 与可访问性修正 ============ */
       console.log("\n-- I. Bento Grid / 玻璃拟态 / 对比度 --");
       ok(document.querySelectorAll(".quick-entries-hero .qe-featured").length === 2, "2 张核心入口 featured 化");
-      const cssText = [...document.styleSheets[0].cssRules].map(r => r.cssText).join("\n");
-      ok(cssText.includes(".quick-entries-hero") && /repeat\(4,\s*1fr\)/.test(cssText), "快速入口升级为 4 列 Bento 网格");
+      const cssText = [...document.styleSheets[0].cssRules].map((r) => r.cssText).join("\n");
+      ok(
+        cssText.includes(".quick-entries-hero") && /repeat\(4,\s*1fr\)/.test(cssText),
+        "快速入口升级为 4 列 Bento 网格"
+      );
       ok(cssText.includes("grid-column: span 2"), "核心入口跨列（span 2）");
       ok(cssText.includes("repeat(9, 1fr)"), "底部 Tab 栏 9 格布局（v19 新增题库入口）");
       ok(/rgba\(255,\s*255,\s*255,\s*0\.85\)/.test(cssText), "亮色玻璃边框对比度增强");

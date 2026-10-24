@@ -19,6 +19,13 @@ function kk(k) {
 }
 
 const store = {
+  /**
+   * 读取当前用户名下的数据；会话存储优先于本地存储。
+   * @template T
+   * @param {string} k 键名（`g_` 前缀为全局共享，不加用户前缀）
+   * @param {T} [d] 读取失败或不存在时的默认值
+   * @returns {T}
+   */
   get(k, d) {
     try {
       const key = kk(k);
@@ -27,6 +34,13 @@ const store = {
       return v ? JSON.parse(v) : d;
     } catch { return d; }
   },
+  /**
+   * 写入当前用户名下的数据。
+   * @param {string} k 键名
+   * @param {*} v 需可 JSON 序列化的值
+   * @param {boolean} [persist] true 写 localStorage（长期），否则写 sessionStorage
+   * @returns {void}
+   */
   set(k, v, persist = false) {
     const key = kk(k);
     (persist ? localStorage : sessionStorage).setItem(key, JSON.stringify(v));

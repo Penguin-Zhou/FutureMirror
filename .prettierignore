@@ -1,0 +1,44 @@
+# Prettier 作用域说明
+#
+# 本项目有两个「对格式敏感」的地方，因此 Prettier 的托管范围限定在
+# 构建脚本与配置层，前端源码交给 ESLint 约束风格：
+#
+#   1. frontend/build-manifest.json 记录每个模块在单文件里的**行号区间**，
+#      重排前端源码会让行号整体漂移，必须重跑 split-frontend 的 round-trip。
+#   2. 部分 jsdom 断言直接匹配 CSS/HTML 的**原始排版**
+#      （例如 @media print 块内的两空格缩进、.bp-z1 的书写形式），
+#      格式化 CSS/HTML 会改变断言文本。
+#
+# 运行 npm run format:check 时的校验范围 = 除去下列目录的全部文本文件。
+
+node_modules/
+dist/
+
+# 文档：技术文档是手写长 HTML，其表格结构不满足 Prettier 的 HTML 解析器
+# （<tr> 隐式闭合），纳入格式化会直接报语法错误。
+docs/
+*.html
+docs/archive/
+
+# README 与 prompts 属「内容资产」而非代码：README 篇幅长且含演示凭据段落，
+# 整体重排会产生 400+ 行无关 diff；prompts 是直接注入模型的提示词原文，
+# 换行与缩进本身有语义，不能被格式化。
+README.md
+prompts/
+
+# 前端源码与产物：由 ESLint 管风格，避免破坏行号基准与格式敏感断言
+frontend/
+public/
+backend/
+
+# changelog 源内含大段 HTML 字符串，属内容资产
+changelog/
+
+# 二进制与生成物
+*.pdf
+*.pptx
+*.png
+*.jpg
+*.webp
+*.db
+package-lock.json

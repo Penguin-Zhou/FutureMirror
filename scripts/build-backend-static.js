@@ -27,9 +27,11 @@ fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(path.join(OUT, "docs"), { recursive: true });
 
 /* ---------- 1) 构建同源版演示页（apiBase=same-origin） ---------- */
-const build = execFileSync(process.execPath,
+const build = execFileSync(
+  process.execPath,
   [path.join(ROOT, "scripts", "build-demo.js"), "--out", "backend/static/futuremirror-demo.html"],
-  { cwd: ROOT, encoding: "utf8", env: { ...process.env, FM_API_BASE: "same-origin" } });
+  { cwd: ROOT, encoding: "utf8", env: { ...process.env, FM_API_BASE: "same-origin" } }
+);
 process.stdout.write(build);
 /* StaticFiles(html=True) 只认 index.html：复制一份作为站点根入口 */
 fs.copyFileSync(path.join(OUT, "futuremirror-demo.html"), path.join(OUT, "index.html"));
@@ -57,7 +59,12 @@ if (fs.existsSync(MODELS)) {
 }
 
 /* ---------- 5) 汇总 ---------- */
-const dirSize = d => fs.readdirSync(d, { withFileTypes: true })
-  .reduce((s, e) => s + (e.isDirectory() ? dirSize(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
+const dirSize = (d) =>
+  fs
+    .readdirSync(d, { withFileTypes: true })
+    .reduce(
+      (s, e) => s + (e.isDirectory() ? dirSize(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size),
+      0
+    );
 console.log(`✅ 后端静态目录已就绪 → backend/static/（${(dirSize(OUT) / 1024 / 1024).toFixed(1)}MB）`);
 console.log("   演示页 / · 文档 /docs/technical-doc.html · 日志 /changelog.html · 模型 /models/");

@@ -36,13 +36,10 @@ if (ch9Start < 0 || ch10Start < 0 || ch9Start >= ch10Start) {
 html = html.slice(0, ch9Start) + html.slice(ch10Start);
 
 /* ---------- 2) TOC：删附录条目，ch10 标注「摘要」 ---------- */
-html = html.replace(
-  /\s*<li><a href="#ch9">.*?<\/a><\/li>/s,
-  ""
-);
+html = html.replace(/\s*<li><a href="#ch9">.*?<\/a><\/li>/s, "");
 html = html.replace(
   /(<li><a href="#ch10"><span class="toc-t">版本更新日志<\/span><span class="toc-d">)([^<]*)(<\/span><\/a><\/li>)/,
-  '$1$2（打印版为摘要表，逐版本明细见更新日志页）$3'
+  "$1$2（打印版为摘要表，逐版本明细见更新日志页）$3"
 );
 
 /* ---------- 3) ch10：版本日志压成摘要表 ---------- */
@@ -58,14 +55,21 @@ if (versions.length < 20) {
 }
 
 /* 3b. 组装摘要行：版本 | 日期 | 主题 | 一句话关键内容 */
-const strip = s => s.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-const rows = versions.map(raw => {
+const strip = (s) =>
+  s
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+const rows = versions.map((raw) => {
   const text = strip(raw);
   const dm = text.match(/（([\d.]+)(?:\s+当前版本)?(?:\s+待排期)?）\s*$/);
   const date = dm ? dm[1] : "";
   const isPlan = /规划中/.test(text);
   const head = text.replace(/（[\d.]+(?:\s+当前版本)?(?:\s+待排期)?）\s*$/, "").trim();
-  const parts = head.split("·").map(s => s.trim()).filter(Boolean);
+  const parts = head
+    .split("·")
+    .map((s) => s.trim())
+    .filter(Boolean);
   const ver = parts.shift() || head;
   const title = parts.join(" · ");
   /* 关键内容：取该版本第一个 <h4> 分类下的第一条 <li> 摘要（截断） */
@@ -81,13 +85,17 @@ while ((b = blockRe.exec(ch10Body)) !== null) {
   detail.push(li ? strip(li[0]).slice(0, 68) : "—");
 }
 
-const summaryRows = rows.map((r, i) => `
+const summaryRows = rows
+  .map(
+    (r, i) => `
       <tr>
         <td>${r.ver}${r.isPlan ? "（规划中）" : ""}</td>
         <td>${r.date || "待排期"}</td>
         <td>${r.title}</td>
         <td>${detail[i] || "—"}</td>
-      </tr>`).join("");
+      </tr>`
+  )
+  .join("");
 
 const summaryTable = `
   <h3>版本摘要（${rows.length} 个版本：${rows.length - 1} 个已发布 + 1 个规划中）</h3>
@@ -129,22 +137,25 @@ else html = html.replace("<head>", "<head>\n" + PRINT_TUNE);
 
 /* ---------- 4) 写出打印版并用 Edge 无头打印 ---------- */
 fs.writeFileSync(TMP, html);
-console.log(`📄 打印版已生成（${(html.length / 1024).toFixed(1)}KB，原 ${(before / 1024).toFixed(1)}KB），${rows.length} 行摘要表`);
+console.log(
+  `📄 打印版已生成（${(html.length / 1024).toFixed(1)}KB，原 ${(before / 1024).toFixed(1)}KB），${rows.length} 行摘要表`
+);
 
 const EDGE_CANDIDATES = [
   "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
   "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
 ];
-const edge = EDGE_CANDIDATES.find(p => fs.existsSync(p));
+const edge = EDGE_CANDIDATES.find((p) => fs.existsSync(p));
 if (!edge) {
   console.error("❌ 未找到 Edge 可执行文件，无法无头打印");
   process.exit(1);
 }
 const fileUrl = "file:///" + TMP.replace(/\\/g, "/").replace(/^\/?([A-Za-z]):/, "$1:");
-execFileSync(edge, [
-  "--headless=new", "--no-pdf-header-footer", "--print-to-pdf-no-header",
-  `--print-to-pdf=${PDF}`, fileUrl,
-], { stdio: "pipe" });
+execFileSync(
+  edge,
+  ["--headless=new", "--no-pdf-header-footer", "--print-to-pdf-no-header", `--print-to-pdf=${PDF}`, fileUrl],
+  { stdio: "pipe" }
+);
 const kb = (fs.statSync(PDF).size / 1024).toFixed(0) + "KB";
 console.log(`✅ PDF 已生成 → docs/FutureMirror.Beta.pdf（${kb}）`);
 fs.rmSync(TMP, { force: true });

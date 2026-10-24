@@ -9,7 +9,7 @@ const html = fs.readFileSync(path.join(__dirname, "..", "public", "futuremirror-
 
 const errors = [];
 const vc = new VirtualConsole();
-vc.on("jsdomError", e => {
+vc.on("jsdomError", (e) => {
   const msg = (e && e.message) || String(e);
   if (!/^Not implemented:/.test(msg)) errors.push("jsdomError: " + msg);
 });
@@ -24,10 +24,16 @@ const dom = new JSDOM(html, {
 const { window } = dom;
 const { document } = window;
 
-let pass = 0, fail = 0;
+let pass = 0,
+  fail = 0;
 function ok(cond, label) {
-  if (cond) { pass++; console.log("  ✅ " + label); }
-  else { fail++; console.log("  ❌ " + label); }
+  if (cond) {
+    pass++;
+    console.log("  ✅ " + label);
+  } else {
+    fail++;
+    console.log("  ❌ " + label);
+  }
 }
 
 setTimeout(runTests, 300);
@@ -69,7 +75,9 @@ function runTests() {
     ok(document.getElementById("nav-avatar").textContent.trim() === "演", "切回首字母头像");
 
     /* 上传形态头像（直接播种 dataURL，FileReader 链路由 uploadAvatar 覆盖） */
-    window.eval(`saveProfile({ avatar: { type: "image", value: "data:image/jpeg;base64,TESTDATA" } }); refreshAllAvatars();`);
+    window.eval(
+      `saveProfile({ avatar: { type: "image", value: "data:image/jpeg;base64,TESTDATA" } }); refreshAllAvatars();`
+    );
     const img = document.querySelector("#nav-avatar img.avatar-img");
     ok(!!img && img.getAttribute("src") === "data:image/jpeg;base64,TESTDATA", "图片头像渲染 <img>");
 
@@ -85,12 +93,17 @@ function runTests() {
     ok(window.eval("getProfile().target") === firstCareer.id, "保存目标岗位");
     const tagsText = document.getElementById("profile-tags").textContent;
     ok(tagsText.includes("杭州") && tagsText.includes(firstCareer.name), "概览标签含城市与目标岗位");
-    ok(document.getElementById("profile-completion-text").textContent === "80%", `填写后完成度 80%（实际 ${document.getElementById("profile-completion-text").textContent}）`);
+    ok(
+      document.getElementById("profile-completion-text").textContent === "80%",
+      `填写后完成度 80%（实际 ${document.getElementById("profile-completion-text").textContent}）`
+    );
 
     /* 技能标签（3 个 → 100%） */
     const chips = document.querySelectorAll("#pf-skills .chip-btn");
     ok(chips.length === 18, `技能标签 18 个（实际 ${chips.length}）`);
-    chips[0].click(); chips[1].click(); chips[2].click();
+    chips[0].click();
+    chips[1].click();
+    chips[2].click();
     ok(window.eval("getProfile().skills.length") === 3, "选择 3 个技能");
     ok(document.getElementById("profile-completion-text").textContent === "100%", "完成度 100%");
 
@@ -103,7 +116,17 @@ function runTests() {
 
     document.getElementById("sw-auto").click();
     ok(window.eval("getProfile().prefs.autoSpeak") === true, "开启自动朗读偏好");
-    ok((() => { try { window.eval("v16MaybeAutoSpeak()"); return true; } catch (e) { return false; } })(), "自动朗读钩子不抛错");
+    ok(
+      (() => {
+        try {
+          window.eval("v16MaybeAutoSpeak()");
+          return true;
+        } catch (e) {
+          return false;
+        }
+      })(),
+      "自动朗读钩子不抛错"
+    );
 
     document.getElementById("sw-dark").click();
     ok(document.documentElement.dataset.theme === "dark", "暗色开关切到 dark");

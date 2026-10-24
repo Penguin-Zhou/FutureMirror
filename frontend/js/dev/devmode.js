@@ -159,7 +159,7 @@ function runSelfCheckPanel() {
   list.innerHTML = "";
   let passed = 0;
   cases.forEach((c, i) => {
-    let ok = false, errMsg = "";
+    let ok, errMsg = "";
     try { ok = !!c.fn(); } catch (e) { ok = false; errMsg = e.message; }
     if (ok) passed++;
     const item = document.createElement("div");
@@ -539,6 +539,8 @@ function refreshAll() {
 
 /* ---------- 进入开发者模式时初始化新增面板 ---------- */
 const _originalEnterEvaluator = typeof enterEvaluator === "function" ? enterEvaluator : null;
+/* 装饰器模式：保留原实现并在其后追加面板初始化，故必须重赋值而非改写原函数 */
+// eslint-disable-next-line no-func-assign
 enterEvaluator = function (target) {
   if (_originalEnterEvaluator) _originalEnterEvaluator(target);
   try { renderEnvPanel(); } catch (e) {}
@@ -583,6 +585,8 @@ simulateMcpCall = function (name) {
 };
 // 工程自检
 const _origSelfCheck = typeof runSelfCheckPanel === "function" ? runSelfCheckPanel : null;
+/* 同上：包装原自检面板，追加汇总日志 */
+// eslint-disable-next-line no-func-assign, no-useless-assignment
 runSelfCheckPanel = function () {
   const __r = _origSelfCheck ? _origSelfCheck() : undefined;
   try {

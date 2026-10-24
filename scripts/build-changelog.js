@@ -18,7 +18,10 @@ const css = fs.readFileSync(SRC_CSS, "utf8");
 
 // 提取模板字符串内容（第一个反引号对之间）
 const m = ts.match(/export const changelogHtml = `([\s\S]*?)`;/);
-if (!m) { console.error("❌ 未找到 changelogHtml 模板字符串"); process.exit(1); }
+if (!m) {
+  console.error("❌ 未找到 changelogHtml 模板字符串");
+  process.exit(1);
+}
 const body = m[1];
 
 const html = `<!DOCTYPE html>

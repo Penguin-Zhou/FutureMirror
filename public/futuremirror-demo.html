@@ -6057,6 +6057,13 @@ function kk(k) {
 }
 
 const store = {
+  /**
+   * 读取当前用户名下的数据；会话存储优先于本地存储。
+   * @template T
+   * @param {string} k 键名（`g_` 前缀为全局共享，不加用户前缀）
+   * @param {T} [d] 读取失败或不存在时的默认值
+   * @returns {T}
+   */
   get(k, d) {
     try {
       const key = kk(k);
@@ -6065,6 +6072,13 @@ const store = {
       return v ? JSON.parse(v) : d;
     } catch { return d; }
   },
+  /**
+   * 写入当前用户名下的数据。
+   * @param {string} k 键名
+   * @param {*} v 需可 JSON 序列化的值
+   * @param {boolean} [persist] true 写 localStorage（长期），否则写 sessionStorage
+   * @returns {void}
+   */
   set(k, v, persist = false) {
     const key = kk(k);
     (persist ? localStorage : sessionStorage).setItem(key, JSON.stringify(v));
@@ -6755,10 +6769,10 @@ async function streamChat(messages, onDelta, signal) {
       body: JSON.stringify({ model: llm.model.trim(), stream: true, messages }),
     });
   } catch (e) {
-    if (e.name === "AbortError") throw new Error("请求超时（60s），免费模型响应可能较慢，请重试");
+    if (e.name === "AbortError") throw new Error("请求超时（60s），免费模型响应可能较慢，请重试", { cause: e });
     throw new Error(e.message === "Failed to fetch"
       ? "网络请求失败（浏览器直连被拦截或网络不通）：请确认 Base URL 的服务商支持 CORS 跨域直连（推荐智谱 GLM / OpenRouter）"
-      : e.message);
+      : e.message, { cause: e });
   }
   if (!res.ok) {
     let detail = "";
@@ -10864,7 +10878,7 @@ function runSelfCheckPanel() {
   list.innerHTML = "";
   let passed = 0;
   cases.forEach((c, i) => {
-    let ok = false, errMsg = "";
+    let ok, errMsg = "";
     try { ok = !!c.fn(); } catch (e) { ok = false; errMsg = e.message; }
     if (ok) passed++;
     const item = document.createElement("div");
@@ -11244,6 +11258,8 @@ function refreshAll() {
 
 /* ---------- 进入开发者模式时初始化新增面板 ---------- */
 const _originalEnterEvaluator = typeof enterEvaluator === "function" ? enterEvaluator : null;
+/* 装饰器模式：保留原实现并在其后追加面板初始化，故必须重赋值而非改写原函数 */
+// eslint-disable-next-line no-func-assign
 enterEvaluator = function (target) {
   if (_originalEnterEvaluator) _originalEnterEvaluator(target);
   try { renderEnvPanel(); } catch (e) {}
@@ -11288,6 +11304,8 @@ simulateMcpCall = function (name) {
 };
 // 工程自检
 const _origSelfCheck = typeof runSelfCheckPanel === "function" ? runSelfCheckPanel : null;
+/* 同上：包装原自检面板，追加汇总日志 */
+// eslint-disable-next-line no-func-assign, no-useless-assignment
 runSelfCheckPanel = function () {
   const __r = _origSelfCheck ? _origSelfCheck() : undefined;
   try {
@@ -11366,7 +11384,7 @@ function esc(s) {
 }
 
 function getProfile() {
-  let p = null;
+  let p;
   try { p = store.get("fm_profile", null); } catch (e) { p = null; }
   p = p || {};
   return Object.assign({}, PROFILE_DEFAULTS, p, {
@@ -12712,23 +12730,6 @@ function startQuiz(cat, mode) {
   beginQuiz(pool, mode, cat);
 }
 /* v20：统一出题入口（模式决定题量 / 是否乱序 / 是否计时） */
-function beginQuiz(pool, mode, cat) {
-  if (quizState.running) return;
-  if (!pool || !pool.length) { toast("没有可练习的题目"); return; }
-  const cfg = QUIZ_MODES[mode] || QUIZ_MODES.exam;
-  let list = pool.slice();
-  if (cfg.shuffle) list = quizShuffle(list);
-  if (mode === "exam") list = list.slice(0, Math.min(QUIZ_LEN, list.length));
-  if (mode === "daily") list = list.slice(0, Math.min(QUIZ_DAILY_LEN, list.length));
-  quizState = {
-    running: true, list, idx: 0, answered: false,
-    correct: 0, cat: cat || "mix", left: QUIZ_PER_Q,
-    timer: null, wrongList: [], result: null, mode,
-  };
-  switchQuizTab("exam");
-  renderQuizPage();
-  if (cfg.timed) startQuizTimer();
-}
 function quizShuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -12824,7 +12825,7 @@ function quizToday() {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 function getQuizData() {
-  let d = null;
+  let d;
   try { d = store.get("fm_quiz", null); } catch (e) { d = null; }
   d = d || {};
   const today = quizToday();
@@ -13212,7 +13213,7 @@ function quizDateOffset(n) {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 function getDaily() {
-  let d = null;
+  let d;
   try { d = store.get("fm_daily", null); } catch (e) { d = null; }
   d = d || {};
   const today = quizToday();
@@ -14737,7 +14738,7 @@ function refreshBackendUi() {
     const storeKey = key || "bp_board_order";
     const cards = Array.prototype.slice.call(board.children);
     board.classList.add("bp-board");
-    let saved = [];
+    let saved;
     try { saved = JSON.parse(win.localStorage.getItem(storeKey) || "[]"); } catch (e) { saved = []; }
     if (saved.length === cards.length) {
       saved.forEach(id => {
@@ -14773,7 +14774,7 @@ function refreshBackendUi() {
 
   /* ---------- ⑤ 实时数据流看板（本地状态 + 服务端 WebSocket，失败降级轮询） ---------- */
   function apiBase() {
-    let b = "";
+    let b;
     try { b = (typeof CONFIG !== "undefined" && CONFIG && CONFIG.apiBase) ? String(CONFIG.apiBase) : ""; } catch (e) { b = ""; }
     return b;
   }

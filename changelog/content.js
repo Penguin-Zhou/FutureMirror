@@ -210,13 +210,14 @@ export const changelogHtml = `
         <div class="vh-item"><b>页面能滚动了</b>：滚动吸附只留在落地页，应用内滚动不再被卡住</div>
         <div class="vh-item"><b>看板看得到自己了</b>：每次进报告都按最新会话重画，不再是基线快照</div>
         <div class="vh-item"><b>7 天计划成板块了</b>：按最弱维度动态生成 + 每日时间分配 + 打卡进度</div>
-        <div class="vh-item"><b>全栈收口了</b>：移除未部署的 Next.js 平行实验、接入 LLM 混合评分增强、文档去除非实证表述</div>
+        <div class="vh-item"><b>全栈收口了</b>：移除未部署的 Next.js 平行实验、接入 LLM 混合评分增强、补齐 ESLint + Prettier + JSDoc 规范、文档去除非实证表述</div>
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">3</div><div class="m-label">修复缺陷</div></div>
         <div class="metric"><div class="m-val">36</div><div class="m-label">自制 SVG 图标</div></div>
         <div class="metric"><div class="m-val">110</div><div class="m-label">v31 新增断言</div></div>
         <div class="metric"><div class="m-val">1427</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
       </div>
     </div>
   </div>

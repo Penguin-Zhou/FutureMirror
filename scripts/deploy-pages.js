@@ -32,7 +32,9 @@ const DRY = argv.includes("--dry-run");
 function sh(cmd, args, opts = {}) {
   return execFileSync(cmd, args, { stdio: ["ignore", "pipe", "pipe"], encoding: "utf8", ...opts }).trim();
 }
-function log(step, msg) { console.log(`[${step}] ${msg}`); }
+function log(step, msg) {
+  console.log(`[${step}] ${msg}`);
+}
 
 /* ---------- 0) 可选：重建单文件版 ---------- */
 if (BUILD) {
@@ -85,8 +87,10 @@ let modelMB = 0;
 const MODEL_SRC = path.join(ROOT, "public", "models");
 if (fs.existsSync(MODEL_SRC)) {
   fs.cpSync(MODEL_SRC, path.join(tmp, "models"), { recursive: true });
-  const walk = d => fs.readdirSync(d, { withFileTypes: true })
-    .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
+  const walk = (d) =>
+    fs
+      .readdirSync(d, { withFileTypes: true })
+      .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
   modelMB = walk(MODEL_SRC) / 1024 / 1024;
 } else {
   log("warn", "未找到 public/models，端侧模型将退回外网镜像源；先执行 node scripts/fetch-model.js");
@@ -97,16 +101,19 @@ const stamp = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
 fs.writeFileSync(
   path.join(tmp, "README.md"),
   `# FutureMirror 在线演示（发布产物分支）\n\n` +
-  `- 内容：\`public/futuremirror-demo.html\`（单文件演示版，${sizeKB}KB，CSS/JS 全内联）\n` +
-  (HAS_DOC ? `- 文档：\`docs/technical-doc.html\`（技术文档 HTML 在线版，${docKB.toFixed(1)}KB）\n` : "") +
-  (HAS_CL ? `- 更新日志：\`changelog.html\`（版本更新日志静态页，${clKB.toFixed(1)}KB，可点击跳转）\n` : "") +
-  (modelMB ? `- 端侧模型：\`models/\`（all-MiniLM-L6-v2，${modelMB.toFixed(1)}MB，同源可读）\n` : "") +
-  `- 版本：${version}\n` +
-  `- 生成时间：${stamp}\n` +
-  `- 生成方式：\`node scripts/deploy-pages.js --build\`\n\n` +
-  `本分支只存放构建产物，源码与提交历史见主分支 \`main\`。\n`
+    `- 内容：\`public/futuremirror-demo.html\`（单文件演示版，${sizeKB}KB，CSS/JS 全内联）\n` +
+    (HAS_DOC ? `- 文档：\`docs/technical-doc.html\`（技术文档 HTML 在线版，${docKB.toFixed(1)}KB）\n` : "") +
+    (HAS_CL ? `- 更新日志：\`changelog.html\`（版本更新日志静态页，${clKB.toFixed(1)}KB，可点击跳转）\n` : "") +
+    (modelMB ? `- 端侧模型：\`models/\`（all-MiniLM-L6-v2，${modelMB.toFixed(1)}MB，同源可读）\n` : "") +
+    `- 版本：${version}\n` +
+    `- 生成时间：${stamp}\n` +
+    `- 生成方式：\`node scripts/deploy-pages.js --build\`\n\n` +
+    `本分支只存放构建产物，源码与提交历史见主分支 \`main\`。\n`
 );
-log("stage", `${tmp}（${sizeKB}KB${HAS_DOC ? ` + 文档 ${docKB.toFixed(1)}KB` : ""}${HAS_CL ? ` + 更新日志 ${clKB.toFixed(1)}KB` : ""}${modelMB ? ` + 模型 ${modelMB.toFixed(1)}MB` : ""}）`);
+log(
+  "stage",
+  `${tmp}（${sizeKB}KB${HAS_DOC ? ` + 文档 ${docKB.toFixed(1)}KB` : ""}${HAS_CL ? ` + 更新日志 ${clKB.toFixed(1)}KB` : ""}${modelMB ? ` + 模型 ${modelMB.toFixed(1)}MB` : ""}）`
+);
 
 if (DRY) {
   log("dry-run", "已装配，未推送；目录保留以便检查");
@@ -118,8 +125,16 @@ const git = (...a) => sh("git", ["-C", tmp, ...a], { env: { ...process.env, GIT_
 git("init", "-q");
 git("checkout", "-q", "-b", BRANCH);
 git("add", "-A");
-git("-c", "user.name=Penguin-Zhou", "-c", "user.email=25435@users.noreply.github.com",
-    "commit", "-q", "-m", `deploy: 在线演示 ${version}（${stamp}）`);
+git(
+  "-c",
+  "user.name=Penguin-Zhou",
+  "-c",
+  "user.email=25435@users.noreply.github.com",
+  "commit",
+  "-q",
+  "-m",
+  `deploy: 在线演示 ${version}（${stamp}）`
+);
 git("remote", "add", "origin", remoteUrl);
 
 let pushed = false;

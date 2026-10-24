@@ -12,7 +12,7 @@ const html = fs.readFileSync(path.join(__dirname, "..", "public", "futuremirror-
 
 const errors = [];
 const vc = new VirtualConsole();
-vc.on("jsdomError", e => {
+vc.on("jsdomError", (e) => {
   const msg = (e && e.message) || String(e);
   if (!/^Not implemented:/.test(msg)) errors.push("jsdomError: " + msg);
 });
@@ -27,10 +27,16 @@ const dom = new JSDOM(html, {
 const { window } = dom;
 const { document } = window;
 
-let pass = 0, fail = 0;
+let pass = 0,
+  fail = 0;
 function ok(cond, label) {
-  if (cond) { pass++; console.log("  ✅ " + label); }
-  else { fail++; console.log("  ❌ " + label); }
+  if (cond) {
+    pass++;
+    console.log("  ✅ " + label);
+  } else {
+    fail++;
+    console.log("  ❌ " + label);
+  }
 }
 
 /* 工具：读取当前题目在题库中的完整数据 */
@@ -69,7 +75,10 @@ function runTests() {
   ok(document.querySelectorAll('.sb-item[data-nav="quiz"]').length === 1, "侧栏含题库小测入口");
   ok(document.querySelectorAll('.tabbar-item[data-nav="quiz"]').length === 1, "底栏含题库入口");
   ok(!!document.querySelector('.app-page[data-page="quiz"] .page-header'), "题库页有 page-header");
-  ok(document.querySelectorAll('.app-page[data-page="quiz"] .quiz-tab').length === 5, "题库页含 5 个子页签（v20 新增错题本/收藏夹）");
+  ok(
+    document.querySelectorAll('.app-page[data-page="quiz"] .quiz-tab').length === 5,
+    "题库页含 5 个子页签（v20 新增错题本/收藏夹）"
+  );
   ok(document.querySelectorAll('.app-page[data-page="quiz"] .quiz-pane').length === 5, "题库页含 5 个面板容器");
   ok(!!document.getElementById("vip-pill"), "顶栏含 VIP 徽章元素");
   ok(document.getElementById("vip-pill").hidden === true, "未登录/非 VIP 时徽章隐藏");
@@ -78,10 +87,23 @@ function runTests() {
   console.log("\n-- B. 题库数据 --");
   ok(window.eval("QUIZ_CATS.length") === 5, "题库分 5 个分类");
   ok(window.eval("QUIZ_BANK.length") === 24, "题库共 24 题");
-  ok(window.eval("QUIZ_CATS.filter(c => c.vip).map(c => c.id).join(',')") === "os,algo,star", "VIP 分类为 os/algo/star");
-  ok(window.eval("QUIZ_BANK.every(q => q.opts.length === 4 && q.ans >= 0 && q.ans < 4 && q.explain && q.q)"), "每题 4 个选项 + 合法答案 + 解析");
-  ok(window.eval("QUIZ_BANK.filter(q => q.cat === 'sql').length") === 6 && window.eval("QUIZ_BANK.filter(q => q.cat === 'network').length") === 6, "SQL / 网络各 6 题（免费）");
-  ok(window.eval("QUIZ_LEN") === 5 && window.eval("QUIZ_PER_Q") === 60 && window.eval("QUIZ_DAILY_FREE") === 1, "小测参数：5 题 / 60 秒 / 每日 1 次免费");
+  ok(
+    window.eval("QUIZ_CATS.filter(c => c.vip).map(c => c.id).join(',')") === "os,algo,star",
+    "VIP 分类为 os/algo/star"
+  );
+  ok(
+    window.eval("QUIZ_BANK.every(q => q.opts.length === 4 && q.ans >= 0 && q.ans < 4 && q.explain && q.q)"),
+    "每题 4 个选项 + 合法答案 + 解析"
+  );
+  ok(
+    window.eval("QUIZ_BANK.filter(q => q.cat === 'sql').length") === 6 &&
+      window.eval("QUIZ_BANK.filter(q => q.cat === 'network').length") === 6,
+    "SQL / 网络各 6 题（免费）"
+  );
+  ok(
+    window.eval("QUIZ_LEN") === 5 && window.eval("QUIZ_PER_Q") === 60 && window.eval("QUIZ_DAILY_FREE") === 1,
+    "小测参数：5 题 / 60 秒 / 每日 1 次免费"
+  );
 
   /* ============ C. 知识点学习 ============ */
   window.location.hash = "#/quiz";
@@ -105,12 +127,19 @@ function runTests() {
     ok(document.querySelector("#toast").textContent.includes("VIP"), "拦截时给出 VIP 提示");
 
     window.eval("backToQuizCats()");
-    ok(window.eval("quizLearnCat") === null && document.querySelectorAll("#quiz-pane-learn .quiz-cat").length === 5, "返回全部分类");
+    ok(
+      window.eval("quizLearnCat") === null && document.querySelectorAll("#quiz-pane-learn .quiz-cat").length === 5,
+      "返回全部分类"
+    );
 
     /* ============ D. 小测引擎：计时器 ============ */
     console.log("\n-- D. 小测引擎：计时器 --");
     window.eval("switchQuizTab('exam')");
-    ok(document.getElementById("quiz-pane-exam").hidden === false && document.getElementById("quiz-pane-learn").hidden === true, "子页签切换到小测");
+    ok(
+      document.getElementById("quiz-pane-exam").hidden === false &&
+        document.getElementById("quiz-pane-learn").hidden === true,
+      "子页签切换到小测"
+    );
     ok(document.querySelector("#quiz-pane-exam .quiz-intro"), "小测首页（规则 + 入口）已渲染");
     ok(document.querySelector("#quiz-pane-exam .quiz-daily-note").textContent.includes("1"), "非 VIP 显示每日免费次数");
 
@@ -138,7 +167,10 @@ function runTests() {
       /* 进入下一题，验证正常答对分支 */
       clickNext();
       clickCorrectOption();
-      ok(document.querySelector("#quiz-feedback-slot .quiz-feedback").classList.contains("correct"), "答对给出正确反馈");
+      ok(
+        document.querySelector("#quiz-feedback-slot .quiz-feedback").classList.contains("correct"),
+        "答对给出正确反馈"
+      );
       ok(document.querySelector("#quiz-feedback-slot").textContent.includes("解析"), "反馈附解析");
       ok(window.eval("quizState.correct") === 1, "答对计数 +1");
 
@@ -153,20 +185,29 @@ function runTests() {
       ok(window.eval("quizState.running") === true, "开始综合模考");
       ok(window.eval("quizState.list.every(q => quizAllowed(q))"), "非 VIP 综合模考只抽免费分类");
 
-      window.eval("answerQuiz(-1)");   /* Q1 超时 */
+      window.eval("answerQuiz(-1)"); /* Q1 超时 */
       clickNext();
-      clickCorrectOption(); clickNext();   /* Q2 答对 */
-      clickCorrectOption(); clickNext();   /* Q3 答对 */
-      clickCorrectOption(); clickNext();   /* Q4 答对 */
-      clickCorrectOption();                /* Q5 答对 */
+      clickCorrectOption();
+      clickNext(); /* Q2 答对 */
+      clickCorrectOption();
+      clickNext(); /* Q3 答对 */
+      clickCorrectOption();
+      clickNext(); /* Q4 答对 */
+      clickCorrectOption(); /* Q5 答对 */
       ok(window.eval("quizState.correct") === 4, "4 题计入答对（第 1 题超时未计）");
-      clickNext();                    /* 最后一题 → 查看成绩 */
+      clickNext(); /* 最后一题 → 查看成绩 */
 
       ok(window.eval("quizState.running") === false, "最后一题后结束小测");
       ok(!!document.querySelector("#quiz-pane-exam .quiz-result"), "渲染成绩卡");
-      ok(document.querySelector("#quiz-pane-exam .quiz-result-score .score-num").textContent === "80", "得分 = 80（4/5）");
+      ok(
+        document.querySelector("#quiz-pane-exam .quiz-result-score .score-num").textContent === "80",
+        "得分 = 80（4/5）"
+      );
       ok(document.querySelector("#quiz-pane-exam .quiz-result-score").classList.contains("good"), "80 分归入优秀档");
-      ok(document.querySelector("#quiz-pane-exam .quiz-result-stats").textContent.includes("4/5"), "成绩卡显示答对 4/5");
+      ok(
+        document.querySelector("#quiz-pane-exam .quiz-result-stats").textContent.includes("4/5"),
+        "成绩卡显示答对 4/5"
+      );
 
       const qd = window.eval("getQuizData()");
       ok(qd.history.length === 1 && qd.todayCount === 1, "成绩归档到 fm_quiz（历史 1 条 / 今日 1 次）");
@@ -193,12 +234,18 @@ function runTests() {
       window.eval("switchQuizTab('learn')");
       ok(document.querySelectorAll("#quiz-pane-learn .quiz-cat-lock").length === 0, "VIP 后所有分类解锁");
       window.eval("showQuizCat('os')");
-      ok(window.eval("quizLearnCat") === "os" && document.querySelectorAll("#quiz-pane-learn .learn-item").length === 4, "VIP 可学习操作系统分类（4 题）");
+      ok(
+        window.eval("quizLearnCat") === "os" && document.querySelectorAll("#quiz-pane-learn .learn-item").length === 4,
+        "VIP 可学习操作系统分类（4 题）"
+      );
 
       window.eval("switchQuizTab('exam')");
       ok(!document.querySelector("#quiz-pane-exam .quiz-daily-note"), "VIP 不再显示每日次数提示");
       window.eval("startQuiz('algo')");
-      ok(window.eval("quizState.running") === true && window.eval("quizState.list.length") === 4, "VIP 可小测算法分类（4 题）");
+      ok(
+        window.eval("quizState.running") === true && window.eval("quizState.list.length") === 4,
+        "VIP 可小测算法分类（4 题）"
+      );
       window.eval("startQuiz('mix')");
       ok(window.eval("quizState.running") === true, "VIP 不受每日次数限制（可再次开始）");
       window.eval("quitQuiz()");
@@ -248,13 +295,22 @@ function runTests() {
 
           /* ============ J. CSSOM ============ */
           console.log("\n-- J. CSSOM 断言 --");
-          const cssText = [...document.styleSheets].map(s => {
-            try { return [...s.cssRules].map(r => r.cssText).join("\n"); } catch (e) { return ""; }
-          }).join("\n");
+          const cssText = [...document.styleSheets]
+            .map((s) => {
+              try {
+                return [...s.cssRules].map((r) => r.cssText).join("\n");
+              } catch (e) {
+                return "";
+              }
+            })
+            .join("\n");
           ok(cssText.includes(".quiz-tab.active"), "子页签激活态样式就位");
           ok(/\.quiz-pane\[hidden\]\s*\{\s*display:\s*none/.test(cssText), "隐藏面板不占位");
           ok(/\.vip-pill\[hidden\]\s*\{\s*display:\s*none/.test(cssText), "VIP 徽章可隐藏");
-          ok(/\.quiz-opt\.correct\s*\{[^}]*\}/.test(cssText) && /\.quiz-opt\.wrong\s*\{[^}]*\}/.test(cssText), "选项正确/错误态样式");
+          ok(
+            /\.quiz-opt\.correct\s*\{[^}]*\}/.test(cssText) && /\.quiz-opt\.wrong\s*\{[^}]*\}/.test(cssText),
+            "选项正确/错误态样式"
+          );
           ok(/repeat\(9,\s*1fr\)/.test(cssText), "底部 Tab 栏 9 格布局");
           ok(cssText.includes(".vip-card"), "个人中心 VIP 卡样式");
           ok(cssText.includes(".quiz-result-score"), "成绩环样式");

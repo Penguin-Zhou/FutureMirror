@@ -631,23 +631,6 @@ function startQuiz(cat, mode) {
   beginQuiz(pool, mode, cat);
 }
 /* v20：统一出题入口（模式决定题量 / 是否乱序 / 是否计时） */
-function beginQuiz(pool, mode, cat) {
-  if (quizState.running) return;
-  if (!pool || !pool.length) { toast("没有可练习的题目"); return; }
-  const cfg = QUIZ_MODES[mode] || QUIZ_MODES.exam;
-  let list = pool.slice();
-  if (cfg.shuffle) list = quizShuffle(list);
-  if (mode === "exam") list = list.slice(0, Math.min(QUIZ_LEN, list.length));
-  if (mode === "daily") list = list.slice(0, Math.min(QUIZ_DAILY_LEN, list.length));
-  quizState = {
-    running: true, list, idx: 0, answered: false,
-    correct: 0, cat: cat || "mix", left: QUIZ_PER_Q,
-    timer: null, wrongList: [], result: null, mode,
-  };
-  switchQuizTab("exam");
-  renderQuizPage();
-  if (cfg.timed) startQuizTimer();
-}
 function quizShuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -743,7 +726,7 @@ function quizToday() {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 function getQuizData() {
-  let d = null;
+  let d;
   try { d = store.get("fm_quiz", null); } catch (e) { d = null; }
   d = d || {};
   const today = quizToday();
@@ -1131,7 +1114,7 @@ function quizDateOffset(n) {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 function getDaily() {
-  let d = null;
+  let d;
   try { d = store.get("fm_daily", null); } catch (e) { d = null; }
   d = d || {};
   const today = quizToday();

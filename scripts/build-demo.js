@@ -27,7 +27,9 @@ const FE = path.join(ROOT, "frontend");
 const outArgIndex = process.argv.indexOf("--out");
 const OUT_ARG = outArgIndex > -1 ? process.argv[outArgIndex + 1] : "";
 const DEMO = OUT_ARG
-  ? (path.isAbsolute(OUT_ARG) ? OUT_ARG : path.join(ROOT, OUT_ARG))
+  ? path.isAbsolute(OUT_ARG)
+    ? OUT_ARG
+    : path.join(ROOT, OUT_ARG)
   : path.join(ROOT, "public", "futuremirror-demo.html");
 
 const manifest = JSON.parse(fs.readFileSync(path.join(FE, "build-manifest.json"), "utf8"));
@@ -40,39 +42,55 @@ let html = fs.readFileSync(path.join(FE, "index.html"), "utf8");
  * FM_API_BASE=same-origin 时注入 same-origin（与 API 同源部署，
  * config.js 会转换为当前站点 origin，彻底免除跨域）。
  * 不设置时保持 apiBase: ""（纯前端 Mock 模式），既有测试不受影响。 */
-const INJECT_API_BASE = String(process.env.FM_API_BASE || "").trim().replace(/\/+$/, "");
+const INJECT_API_BASE = String(process.env.FM_API_BASE || "")
+  .trim()
+  .replace(/\/+$/, "");
 
 /* ---------- 1) CSS：link 序列 → <style> ---------- */
 const linkRe = new RegExp(
-  manifest.css.map(c => `  <link rel="stylesheet" href="${c.file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}">`).join("\n")
+  manifest.css
+    .map((c) => `  <link rel="stylesheet" href="${c.file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}">`)
+    .join("\n")
 );
-if (!linkRe.test(html)) { console.error("❌ 未找到 CSS link 序列"); process.exit(1); }
-const cssBody = manifest.css.map(c =>
-  fs.readFileSync(path.join(FE, c.file), "utf8")).join("");
+if (!linkRe.test(html)) {
+  console.error("❌ 未找到 CSS link 序列");
+  process.exit(1);
+}
+const cssBody = manifest.css.map((c) => fs.readFileSync(path.join(FE, c.file), "utf8")).join("");
 html = html.replace(linkRe, () => `<style>\n${cssBody}</style>`);
 
 /* ---------- 2) JS：script src 序列 → <script> ---------- */
 const srcRe = new RegExp(
-  manifest.jsLoadOrder.map(f => `  <script src="${f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"></script>`).join("\n")
+  manifest.jsLoadOrder.map((f) => `  <script src="${f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"></script>`).join("\n")
 );
-if (!srcRe.test(html)) { console.error("❌ 未找到 JS script 序列"); process.exit(1); }
+if (!srcRe.test(html)) {
+  console.error("❌ 未找到 JS script 序列");
+  process.exit(1);
+}
 let firstUseStrict = true;
-const jsBody = manifest.jsOriginalOrder.map(f => {
-  let txt = fs.readFileSync(path.join(FE, f.file), "utf8");
-  if (INJECT_API_BASE && /apiBase:\s*""/.test(txt)) {
-    txt = txt.replace(/apiBase:\s*""/, `apiBase: ${JSON.stringify(INJECT_API_BASE)}`);
-    console.log(`🔌 已注入后端地址 → ${f.file}: apiBase = ${INJECT_API_BASE}`);
-  }
-  if (txt.startsWith('"use strict";\n')) {
-    if (firstUseStrict) { firstUseStrict = false; }
-    else { txt = txt.slice('"use strict";\n'.length); }
-  }
-  return txt;
-}).join("");
+const jsBody = manifest.jsOriginalOrder
+  .map((f) => {
+    let txt = fs.readFileSync(path.join(FE, f.file), "utf8");
+    if (INJECT_API_BASE && /apiBase:\s*""/.test(txt)) {
+      txt = txt.replace(/apiBase:\s*""/, `apiBase: ${JSON.stringify(INJECT_API_BASE)}`);
+      console.log(`🔌 已注入后端地址 → ${f.file}: apiBase = ${INJECT_API_BASE}`);
+    }
+    if (txt.startsWith('"use strict";\n')) {
+      if (firstUseStrict) {
+        firstUseStrict = false;
+      } else {
+        txt = txt.slice('"use strict";\n'.length);
+      }
+    }
+    return txt;
+  })
+  .join("");
 html = html.replace(srcRe, () => `<script>\n${jsBody}</script>`);
 
 fs.mkdirSync(path.dirname(DEMO), { recursive: true });
 fs.writeFileSync(DEMO, html);
 const relOut = path.relative(ROOT, DEMO).replace(/\\/g, "/");
 const kb = (html.length / 1024).toFixed(1) + "KB";
-console.log(`✅ 已反合并 → ${relOut}（${kb}，${manifest.jsOriginalOrder.length} 模块 + ${manifest.css.length} CSS 层）`);
+console.log(
+  `✅ 已反合并 → ${relOut}（${kb}，${manifest.jsOriginalOrder.length} 模块 + ${manifest.css.length} CSS 层）`
+);

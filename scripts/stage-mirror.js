@@ -53,8 +53,10 @@ let modelMB = 0;
 const MODEL_SRC = path.join(ROOT, "public", "models");
 if (fs.existsSync(MODEL_SRC)) {
   fs.cpSync(MODEL_SRC, path.join(OUT_DIR, "models"), { recursive: true });
-  const walk = d => fs.readdirSync(d, { withFileTypes: true })
-    .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
+  const walk = (d) =>
+    fs
+      .readdirSync(d, { withFileTypes: true })
+      .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
   modelMB = walk(MODEL_SRC) / 1024 / 1024;
 } else {
   console.warn("⚠️ 未找到 public/models，端侧模型将退回外网镜像源；先执行 node scripts/fetch-model.js");

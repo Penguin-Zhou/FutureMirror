@@ -14,17 +14,23 @@ const { JSDOM, VirtualConsole } = require("jsdom");
 
 const html = fs.readFileSync(path.join(__dirname, "..", "public", "futuremirror-demo.html"), "utf8");
 
-let pass = 0, fail = 0;
+let pass = 0,
+  fail = 0;
 function ok(cond, label) {
-  if (cond) { pass++; console.log("  ✅ " + label); }
-  else { fail++; console.log("  ❌ " + label); }
+  if (cond) {
+    pass++;
+    console.log("  ✅ " + label);
+  } else {
+    fail++;
+    console.log("  ❌ " + label);
+  }
 }
-const wait = ms => new Promise(r => setTimeout(r, ms));
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function makeDom() {
   const errors = [];
   const vc = new VirtualConsole();
-  vc.on("jsdomError", e => {
+  vc.on("jsdomError", (e) => {
     const msg = (e && e.message) || String(e);
     if (!/^Not implemented:/.test(msg)) errors.push(msg);
   });
@@ -35,11 +41,12 @@ function makeDom() {
     pretendToBeVisual: true,
     virtualConsole: vc,
   });
-  const settle = () => new Promise(res => {
-    if (dom.window.document.readyState === "complete") return res();
-    dom.window.document.addEventListener("DOMContentLoaded", res, { once: true });
-    setTimeout(res, 900);
-  });
+  const settle = () =>
+    new Promise((res) => {
+      if (dom.window.document.readyState === "complete") return res();
+      dom.window.document.addEventListener("DOMContentLoaded", res, { once: true });
+      setTimeout(res, 900);
+    });
   return { dom, errors, settle };
 }
 
@@ -90,13 +97,21 @@ async function runTests() {
   w.eval("showView('app')");
   w.eval("window.__bpMotion.setSnap(false)");
   ok(!d.documentElement.classList.contains("bp-snap-y"), "setSnap(false) 直接拆除吸附");
-  const initSnapSrc = w.eval("window.__bpMotion && window.__bpMotion.initSnap ? window.__bpMotion.initSnap.toString() : ''");
-  ok(!!initSnapSrc && /view-landing/.test(initSnapSrc), "initSnap 按当前视图决定吸附（不再无条件常驻 documentElement）");
+  const initSnapSrc = w.eval(
+    "window.__bpMotion && window.__bpMotion.initSnap ? window.__bpMotion.initSnap.toString() : ''"
+  );
+  ok(
+    !!initSnapSrc && /view-landing/.test(initSnapSrc),
+    "initSnap 按当前视图决定吸附（不再无条件常驻 documentElement）"
+  );
   /* 题库子页签切换回顶 */
   const scrolled = [];
-  w.scrollTo = o => scrolled.push(o);
+  w.scrollTo = (o) => scrolled.push(o);
   w.eval("switchQuizTab('fav')");
-  ok(scrolled.length === 1 && scrolled[0] && scrolled[0].behavior === "smooth", "switchQuizTab 触发平滑回顶（behavior=smooth）");
+  ok(
+    scrolled.length === 1 && scrolled[0] && scrolled[0].behavior === "smooth",
+    "switchQuizTab 触发平滑回顶（behavior=smooth）"
+  );
   ok(typeof scrolled[0].top === "number" && scrolled[0].top >= 0, "回顶目标为非负坐标");
 
   /* ================================================================
@@ -120,10 +135,16 @@ async function runTests() {
      ④ 偏好设置「十字鼠标追踪」开关
      ================================================================ */
   console.log("\n—— ④ 十字鼠标追踪偏好开关 ——");
-  ok(w.eval("JSON.stringify(PROFILE_DEFAULTS.prefs)").indexOf('"crosshair":true') > -1, "PROFILE_DEFAULTS.prefs.crosshair 默认 true");
+  ok(
+    w.eval("JSON.stringify(PROFILE_DEFAULTS.prefs)").indexOf('"crosshair":true') > -1,
+    "PROFILE_DEFAULTS.prefs.crosshair 默认 true"
+  );
   ok(!!d.getElementById("sw-cross"), "偏好设置区存在 sw-cross 开关");
   const swCross = d.getElementById("sw-cross");
-  ok(!!swCross && /togglePref\('crosshair'\)/.test(swCross.getAttribute("onclick") || ""), "sw-cross 绑定 togglePref('crosshair')");
+  ok(
+    !!swCross && /togglePref\('crosshair'\)/.test(swCross.getAttribute("onclick") || ""),
+    "sw-cross 绑定 togglePref('crosshair')"
+  );
   const crossOn = d.querySelectorAll(".bp-cross-x, .bp-cross-y").length;
   ok(crossOn === 2, "默认开启时准线两条已注入（实际 " + crossOn + "）");
   w.eval("togglePref('crosshair')");
@@ -142,7 +163,10 @@ async function runTests() {
   ok(w.eval("APP_PAGES").indexOf("plan") > -1, "APP_PAGES 含 plan");
   ok(w.eval("APP_PAGE_TITLES").plan === "学习计划", "路由标题登记为「学习计划」");
   ok(/data-page="plan"/.test(html), "HTML 含 plan 页面容器");
-  ok(!!d.getElementById("lp-grid") && !!d.getElementById("lp-toolbar") && !!d.getElementById("lp-alloc"), "plan 页四个渲染容器就位");
+  ok(
+    !!d.getElementById("lp-grid") && !!d.getElementById("lp-toolbar") && !!d.getElementById("lp-alloc"),
+    "plan 页四个渲染容器就位"
+  );
   w.eval("renderPlanPage()");
   ok(d.querySelectorAll("#lp-grid .lp-day").length === 7, "renderPlanPage 渲染 7 张日卡");
   ok(d.querySelectorAll("#lp-grid .lp-check").length >= 7, "每日卡含任务复选框（可打卡）");
@@ -150,11 +174,20 @@ async function runTests() {
   ok(d.querySelectorAll("#lp-alloc .lp-table tbody tr").length === 8, "时间分配总表 7 行 + 合计行");
   let p0 = w.eval("lpGet()");
   ok(p0.days.length === 7 && p0.source === "baseline", "无面试记录时计划为通用基线版");
-  ok(p0.days.every(dd => dd.alloc.learn + dd.alloc.practice + dd.alloc.review === 60), "标准预算每日合计 60 分钟");
+  ok(
+    p0.days.every((dd) => dd.alloc.learn + dd.alloc.practice + dd.alloc.review === 60),
+    "标准预算每日合计 60 分钟"
+  );
   w.eval("setPlanBudget('light')");
-  ok(w.eval("lpGet()").days.every(dd => dd.alloc.learn + dd.alloc.practice + dd.alloc.review === 45), "紧凑预算每日合计 45 分钟");
+  ok(
+    w.eval("lpGet()").days.every((dd) => dd.alloc.learn + dd.alloc.practice + dd.alloc.review === 45),
+    "紧凑预算每日合计 45 分钟"
+  );
   w.eval("setPlanBudget('deep')");
-  ok(w.eval("lpGet()").days.every(dd => dd.alloc.learn + dd.alloc.practice + dd.alloc.review === 90), "强化预算每日合计 90 分钟");
+  ok(
+    w.eval("lpGet()").days.every((dd) => dd.alloc.learn + dd.alloc.practice + dd.alloc.review === 90),
+    "强化预算每日合计 90 分钟"
+  );
   w.eval("setPlanBudget('std')");
   /* 先登录（store 按账号隔离，打卡须在同一账号下进行），再造面试会话 */
   w.eval(`
@@ -165,7 +198,10 @@ async function runTests() {
   let p1 = w.eval("lpGet()");
   ok(p1.days[0].tasks[0].done === true, "togglePlanTask 可打卡（Day1 首任务 done）");
   let pr = w.eval("lpProgress(lpGet())");
-  ok(pr.done === 1 && pr.total === p1.days.reduce((s, x) => s + x.tasks.length, 0), "进度统计 已打卡/总数 正确（" + pr.done + "/" + pr.total + "）");
+  ok(
+    pr.done === 1 && pr.total === p1.days.reduce((s, x) => s + x.tasks.length, 0),
+    "进度统计 已打卡/总数 正确（" + pr.done + "/" + pr.total + "）"
+  );
   ok(/已同步自最新评估报告/.test(d.getElementById("lp-src").textContent) === false, "基线版来源注记为「通用基线计划」");
   /* 无面试时同步 → 保持基线 */
   w.eval("syncPlanFromReport()");
@@ -188,25 +224,34 @@ async function runTests() {
   ok(p2.days[0].tasks[0].done === true, "同步按日保留 Day1 首任务完成态");
   ok(/已同步自最新评估报告/.test(d.getElementById("lp-src").textContent), "来源注记切换为「已同步自最新评估报告」");
   const md = w.eval("lpMarkdown(lpGet())");
-  ok(/^# 7 天学习计划/.test(md) && /## Day 1 ·/.test(md) && /时间分配：学习 \d+′/.test(md), "lpMarkdown 导出含标题 / Day 1 / 时间分配");
+  ok(
+    /^# 7 天学习计划/.test(md) && /## Day 1 ·/.test(md) && /时间分配：学习 \d+′/.test(md),
+    "lpMarkdown 导出含标题 / Day 1 / 时间分配"
+  );
 
   /* ================================================================
      ⑥ 全站蓝图风 SVG 图标系统
      ================================================================ */
   console.log("\n—— ⑥ 图标系统 ——");
   const bpIcons = w.__bpIcons || {};
-  ok(!!bpIcons.icon && Object.keys(bpIcons.set || {}).length >= 30, "图标库 >= 30 枚（实际 " + Object.keys(bpIcons.set || {}).length + "）");
+  ok(
+    !!bpIcons.icon && Object.keys(bpIcons.set || {}).length >= 30,
+    "图标库 >= 30 枚（实际 " + Object.keys(bpIcons.set || {}).length + "）"
+  );
   const icDash = bpIcons.icon ? bpIcons.icon("dashboard") : "";
   ok(/viewBox="0 0 24 24"/.test(icDash) && /currentColor/.test(icDash), "icon() 输出 24×24 currentColor 线性 SVG");
   ok(/var\(--brand\)/.test(bpIcons.icon("report") || ""), "report 图标含朱红 accent");
   ok(/var\(--brand\)/.test(bpIcons.icon("plan") || ""), "plan 图标含朱红 accent");
-  const sbSvgs = d.querySelectorAll('.sb-item .sb-icon[data-ic] svg.bp-ic').length;
+  const sbSvgs = d.querySelectorAll(".sb-item .sb-icon[data-ic] svg.bp-ic").length;
   ok(sbSvgs === 11, "侧栏 11 枚图标换装（实际 " + sbSvgs + "）");
-  const tbSvgs = d.querySelectorAll('.tabbar-item .tb-icon[data-ic] svg.bp-ic').length;
+  const tbSvgs = d.querySelectorAll(".tabbar-item .tb-icon[data-ic] svg.bp-ic").length;
   ok(tbSvgs === 10, "底 Tab 10 枚图标换装（实际 " + tbSvgs + "）");
   const qeSvgs = d.querySelectorAll(".qe-icon[data-ic] svg.bp-ic").length;
   ok(qeSvgs === 7, "快速入口 7 枚图标换装（实际 " + qeSvgs + "）");
-  const leftIcons = Array.prototype.filter.call(d.querySelectorAll("[data-ic]"), el => !el.querySelector("svg.bp-ic"));
+  const leftIcons = Array.prototype.filter.call(
+    d.querySelectorAll("[data-ic]"),
+    (el) => !el.querySelector("svg.bp-ic")
+  );
   ok(leftIcons.length === 0, "全部 data-ic 均已换装（残留 " + leftIcons.length + "）");
   w.eval("applyTheme('dark')");
   const darkBtn = d.getElementById("theme-btn");
@@ -230,22 +275,32 @@ async function runTests() {
   ok(!/%2523/.test(heatUri), "heatSnap data-URI 无 %2523（双重编码特征）");
   ok(/%23F4F1E8/.test(heatUri), "heatSnap data-URI 背景色正确编码为 %23F4F1E8");
   /* 模拟浏览器侧一次解码：SVG 源码中的颜色必须全部合法 */
-  const decodeOnce = uri => decodeURIComponent(uri.replace("data:image/svg+xml;charset=utf-8,", ""));
-  const radarSvg = decodeOnce(radarUri), heatSvg = decodeOnce(heatUri);
-  const legal = svg => {
-    const cols = [...svg.matchAll(/(?:fill|stroke)='([^']*)'/g)].map(m => m[1]);
-    return cols.length > 0 && cols.every(c => c === "none" || /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c));
+  const decodeOnce = (uri) => decodeURIComponent(uri.replace("data:image/svg+xml;charset=utf-8,", ""));
+  const radarSvg = decodeOnce(radarUri),
+    heatSvg = decodeOnce(heatUri);
+  const legal = (svg) => {
+    const cols = [...svg.matchAll(/(?:fill|stroke)='([^']*)'/g)].map((m) => m[1]);
+    return cols.length > 0 && cols.every((c) => c === "none" || /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c));
   };
-  ok(legal(radarSvg), "radar 快照解码后颜色全部合法（" + (radarSvg.match(/fill='[^']*'/g) || []).slice(0, 2).join(" ") + " …）");
+  ok(
+    legal(radarSvg),
+    "radar 快照解码后颜色全部合法（" + (radarSvg.match(/fill='[^']*'/g) || []).slice(0, 2).join(" ") + " …）"
+  );
   ok(legal(heatSvg), "heat 快照解码后颜色全部合法");
-  ok(/#F4F1E8/.test(radarSvg) && /#BE3A1E/.test(radarSvg) && /#B9B29A/.test(radarSvg), "radar 快照含暖纸底/朱红数据/卡其网格");
+  ok(
+    /#F4F1E8/.test(radarSvg) && /#BE3A1E/.test(radarSvg) && /#B9B29A/.test(radarSvg),
+    "radar 快照含暖纸底/朱红数据/卡其网格"
+  );
   ok(/#F4F1E8/.test(heatSvg) && /#1C1913/.test(heatSvg), "heat 快照含暖纸底/墨阶格子");
   /* 挂载后面板内两张快照 img：jsdom 无 IntersectionObserver，媒体层直接取资源并移除 data-src */
   w.eval("window.__bpViz.refreshReportPanel()");
   const shotImgs = d.querySelectorAll("#bp-viz-panel .bp-shot img");
   ok(shotImgs.length === 2, "看板内两张快照 img 就位（实际 " + shotImgs.length + "）");
-  ok([...shotImgs].every(im => /^data:image\/svg\+xml/.test(im.getAttribute("src") || "")), "两张快照 src 均为 data-URI SVG（懒加载已取资源）");
-  ok(![...shotImgs].some(im => /%2523/.test(im.getAttribute("src") || "")), "快照 src 无双重编码痕迹");
+  ok(
+    [...shotImgs].every((im) => /^data:image\/svg\+xml/.test(im.getAttribute("src") || "")),
+    "两张快照 src 均为 data-URI SVG（懒加载已取资源）"
+  );
+  ok(![...shotImgs].some((im) => /%2523/.test(im.getAttribute("src") || "")), "快照 src 无双重编码痕迹");
   /* v31.4 可读性层：基线态也渲染 5 维明细，但不标最弱（占位数据非真实短板） */
   const sbRows = d.querySelectorAll("#bp-viz-panel .bp-score-row");
   ok(sbRows.length === 5, "基线态评分明细渲染 5 行（实际 " + sbRows.length + "）");
@@ -273,12 +328,20 @@ async function runTests() {
   ok(rBefore !== rAfter, "radarSnap 随注入维度变化（不再是固定硬编码）");
   ok(hBefore !== hAfter, "heatSnap 随注入维度变化（热力与主雷达同源）");
   const rAfterSvg = decodeOnce(rAfter);
-  ok(/内容深度/.test(rAfterSvg) && /结构逻辑/.test(rAfterSvg) && /语言表达/.test(rAfterSvg) && /岗位匹配/.test(rAfterSvg) && /抗压表现/.test(rAfterSvg),
-    "radarSnap 五个维度名与主雷达 radarSVG(dims) 完全一致");
+  ok(
+    /内容深度/.test(rAfterSvg) &&
+      /结构逻辑/.test(rAfterSvg) &&
+      /语言表达/.test(rAfterSvg) &&
+      /岗位匹配/.test(rAfterSvg) &&
+      /抗压表现/.test(rAfterSvg),
+    "radarSnap 五个维度名与主雷达 radarSVG(dims) 完全一致"
+  );
   const heatCells = panel.querySelectorAll(".bp-heat-cell");
   ok(heatCells.length === 24, "看板热力图 24 格就位（实际 " + heatCells.length + "）");
   let hotCells = 0;
-  heatCells.forEach(c => { if (c.style.opacity === "1") hotCells++; });
+  heatCells.forEach((c) => {
+    if (c.style.opacity === "1") hotCells++;
+  });
   ok(hotCells >= 1, "高分维度在热力图中被标红（朱红热区 " + hotCells + " 格）");
   const scatterDots = panel.querySelectorAll(".bp-scatter-dot");
   ok(scatterDots.length === 5, "看板散点 5 个维度分布点就位（实际 " + scatterDots.length + "）");
@@ -291,7 +354,10 @@ async function runTests() {
   const fillStyle = weakRows[0].querySelector(".bp-score-fill").getAttribute("style") || "";
   ok(/width:\s*42%/.test(fillStyle), "最弱维度进度条宽度按分数映射（42%）");
   const wcReal = panel.querySelector(".bp-weakcue");
-  ok(!!wcReal && /结构逻辑/.test(wcReal.textContent) && /去练习计划/.test(wcReal.textContent), "短板提示卡含最弱维度名与练习计划入口");
+  ok(
+    !!wcReal && /结构逻辑/.test(wcReal.textContent) && /去练习计划/.test(wcReal.textContent),
+    "短板提示卡含最弱维度名与练习计划入口"
+  );
   ok(legal(decodeOnce(hAfter)), "注入后 heat 快照解码颜色仍全部合法");
   w.eval("window.__bpViz.removeReportPanel()");
 
@@ -313,9 +379,16 @@ async function runTests() {
   probe.setAttribute("data-preview", "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E");
   d.body.appendChild(probe);
   w.__probeNode = probe;
-  const placeAt = rect => { probe.getBoundingClientRect = () => rect; w.eval("window.__bpMedia.showPreview(window.__probeNode)"); return d.querySelector(".bp-preview"); };
+  const placeAt = (rect) => {
+    probe.getBoundingClientRect = () => rect;
+    w.eval("window.__bpMedia.showPreview(window.__probeNode)");
+    return d.querySelector(".bp-preview");
+  };
   let p = placeAt({ top: 300, bottom: 404, left: 100, width: 140, height: 104 });
-  ok(!!p && p.classList.contains("show") && p.style.top === "414px", "缩略图居中部 → 面板落在下方（top " + (p && p.style.top) + "）");
+  ok(
+    !!p && p.classList.contains("show") && p.style.top === "414px",
+    "缩略图居中部 → 面板落在下方（top " + (p && p.style.top) + "）"
+  );
   p = placeAt({ top: 560, bottom: 664, left: 100, width: 140, height: 104 });
   ok(!!p && p.style.top === "290px", "缩略图靠近底部 → 翻转到上方（top " + (p && p.style.top) + "）");
   p = placeAt({ top: 700, bottom: 804, left: 100, width: 140, height: 104 });
@@ -334,7 +407,7 @@ async function runTests() {
   /* ================================================================
      汇总
      ================================================================ */
-  const realErrors = errors.filter(e => !/Not implemented/.test(e));
+  const realErrors = errors.filter((e) => !/Not implemented/.test(e));
   ok(realErrors.length === 0, "运行期无未捕获脚本错误（" + (realErrors[0] || "无") + "）");
   console.log("\n===== v31 结果：" + pass + " 通过，" + fail + " 失败 =====");
   dom.window.close();

@@ -10,7 +10,7 @@ const html = fs.readFileSync(path.join(__dirname, "..", "public", "futuremirror-
 
 const errors = [];
 const vc = new VirtualConsole();
-vc.on("jsdomError", e => {
+vc.on("jsdomError", (e) => {
   const msg = (e && e.message) || String(e);
   if (!/^Not implemented:/.test(msg)) errors.push("jsdomError: " + msg);
 });
@@ -25,10 +25,16 @@ const dom = new JSDOM(html, {
 const { window } = dom;
 const { document } = window;
 
-let pass = 0, fail = 0;
+let pass = 0,
+  fail = 0;
 function ok(cond, label) {
-  if (cond) { pass++; console.log("  ✅ " + label); }
-  else { fail++; console.log("  ❌ " + label); }
+  if (cond) {
+    pass++;
+    console.log("  ✅ " + label);
+  } else {
+    fail++;
+    console.log("  ❌ " + label);
+  }
 }
 
 setTimeout(runTests, 300);
@@ -46,12 +52,19 @@ function runTests() {
   console.log("\n-- A. 结构：五页签 / AI 助手 / 模式条 --");
   ok(document.querySelectorAll('.app-page[data-page="quiz"] .quiz-tab').length === 5, "题库页 5 个子页签");
   ok(document.querySelectorAll('.app-page[data-page="quiz"] .quiz-pane').length === 5, "题库页 5 个面板");
-  ok(document.querySelectorAll('.quiz-tab[data-quiz="wrong"]').length === 1 && document.querySelectorAll('.quiz-tab[data-quiz="fav"]').length === 1, "错题本 / 收藏夹页签就位");
+  ok(
+    document.querySelectorAll('.quiz-tab[data-quiz="wrong"]').length === 1 &&
+      document.querySelectorAll('.quiz-tab[data-quiz="fav"]').length === 1,
+    "错题本 / 收藏夹页签就位"
+  );
   ok(!!document.getElementById("ai-fab"), "AI 小助手悬浮按钮存在");
   ok(!!document.getElementById("ai-assistant-panel"), "AI 助手抽屉存在");
   ok(document.getElementById("ai-assistant-panel").classList.contains("open") === false, "抽屉默认收起");
   ok(document.querySelector(".sb-footer").textContent.includes("beta1.1"), "侧栏版本号 beta1.x");
-  ok(window.eval("QUIZ_MODES.exam.timed") === true && window.eval("QUIZ_MODES.practice.timed") === false, "模式配置：exam 计时 / practice 不限时");
+  ok(
+    window.eval("QUIZ_MODES.exam.timed") === true && window.eval("QUIZ_MODES.practice.timed") === false,
+    "模式配置：exam 计时 / practice 不限时"
+  );
 
   /* ============ B. 题目搜索 ============ */
   window.location.hash = "#/quiz";
@@ -65,14 +78,23 @@ function runTests() {
     window.eval("runQuizSearch('索引')");
     const resBox = document.getElementById("quiz-search-results");
     ok(resBox.hidden === false, "搜索后结果区展开");
-    ok(document.querySelectorAll("#quiz-search-results .learn-item").length >= 2, "「索引」命中至少 2 题（sql-2 / sql-3）");
+    ok(
+      document.querySelectorAll("#quiz-search-results .learn-item").length >= 2,
+      "「索引」命中至少 2 题（sql-2 / sql-3）"
+    );
     ok(resBox.textContent.includes("道与"), "结果头部显示命中数量");
     ok(document.getElementById("quiz-cat-zone").hidden === true, "搜索时收起分类网格");
 
     /* VIP 内容对非 VIP 过滤 */
     window.eval("runQuizSearch('死锁')");
-    ok(document.querySelectorAll("#quiz-search-results .learn-item").length === 0, "非 VIP 搜索不到 VIP 分类内容（死锁）");
-    ok(document.getElementById("quiz-search-results").textContent.includes("VIP 分类需开通后才可搜索"), "过滤时给出 VIP 提示");
+    ok(
+      document.querySelectorAll("#quiz-search-results .learn-item").length === 0,
+      "非 VIP 搜索不到 VIP 分类内容（死锁）"
+    );
+    ok(
+      document.getElementById("quiz-search-results").textContent.includes("VIP 分类需开通后才可搜索"),
+      "过滤时给出 VIP 提示"
+    );
 
     /* 按分类名搜索 */
     window.eval("runQuizSearch('网络')");
@@ -80,13 +102,21 @@ function runTests() {
 
     /* 清除搜索 */
     window.eval("clearQuizSearch()");
-    ok(document.getElementById("quiz-search-results").hidden === true && document.getElementById("quiz-cat-zone").hidden === false, "清除搜索后恢复分类网格");
+    ok(
+      document.getElementById("quiz-search-results").hidden === true &&
+        document.getElementById("quiz-cat-zone").hidden === false,
+      "清除搜索后恢复分类网格"
+    );
 
     /* 搜索练习模式 */
     window.eval("runQuizSearch('TCP')");
     window.eval("startSearchPractice()");
     ok(window.eval("quizState.running") === true && window.eval("quizState.mode") === "search", "可从搜索结果开始练习");
-    ok(window.eval("quizState.list.length") >= 1 && window.eval("quizState.list.every(q => q.q.includes('TCP') || q.opts.some(o => o.includes('TCP')))"), "搜索练习题目来自命中集");
+    ok(
+      window.eval("quizState.list.length") >= 1 &&
+        window.eval("quizState.list.every(q => q.q.includes('TCP') || q.opts.some(o => o.includes('TCP')))"),
+      "搜索练习题目来自命中集"
+    );
     ok(!document.getElementById("quiz-timer"), "搜索练习不限时（无计时器）");
     ok(!!document.querySelector("#quiz-pane-exam .quiz-mode-chip"), "不限时模式显示「不限时」标记");
     window.eval("quitQuiz()");
@@ -113,7 +143,7 @@ function runTests() {
     window.eval("switchQuizTab('fav')");
     ok(document.querySelectorAll("#quiz-pane-fav .learn-item").length === 2, "收藏夹渲染 2 题");
     ok(document.getElementById("quiz-pane-fav").textContent.includes("TCP"), "收藏夹显示题目内容");
-    ok(document.querySelectorAll('#quiz-pane-fav [data-fav-btn].on').length === 2, "收藏夹中星标均为已收藏态");
+    ok(document.querySelectorAll("#quiz-pane-fav [data-fav-btn].on").length === 2, "收藏夹中星标均为已收藏态");
     window.eval("toggleFavBtn('net-1', document.querySelector('#quiz-pane-fav [data-fav-btn=\"net-1\"]'))");
     ok(document.querySelectorAll("#quiz-pane-fav .learn-item").length === 1, "收藏夹内取消后即时移除");
 
@@ -130,8 +160,14 @@ function runTests() {
     const wrongIdx = (q0.ans + 1) % 4;
     document.getElementById("quiz-opt-" + wrongIdx).click();
     ok(window.eval("getWrongBook().length") === 1, "答错自动收入错题本");
-    ok(window.eval("getWrongBook()[0].id") === q0.id && window.eval("getWrongBook()[0].times") === 1, "错题记录含 id 与错误次数");
-    ok(document.querySelector("#quiz-feedback-slot").textContent.includes("已自动收入错题本"), "反馈区提示已收入错题本");
+    ok(
+      window.eval("getWrongBook()[0].id") === q0.id && window.eval("getWrongBook()[0].times") === 1,
+      "错题记录含 id 与错误次数"
+    );
+    ok(
+      document.querySelector("#quiz-feedback-slot").textContent.includes("已自动收入错题本"),
+      "反馈区提示已收入错题本"
+    );
     ok(!!document.querySelector("#quiz-feedback-slot [data-fav-btn]"), "反馈区带收藏按钮");
     /* 统计同步 */
     const st1 = window.eval("getQuizData().stats");
@@ -175,11 +211,18 @@ function runTests() {
 
     /* 顺序练习：全量、原顺序、不限时 */
     window.eval("switchQuizMode('practice')");
-    ok(document.getElementById("quiz-mode-practice").hidden === false && document.getElementById("quiz-mode-exam").hidden === true, "切换到顺序练习模式卡");
+    ok(
+      document.getElementById("quiz-mode-practice").hidden === false &&
+        document.getElementById("quiz-mode-exam").hidden === true,
+      "切换到顺序练习模式卡"
+    );
     window.eval("startPractice()");
     ok(window.eval("quizState.mode") === "practice", "顺序练习模式");
     ok(window.eval("quizState.list.length") === 24, "VIP 顺序练习覆盖全部 24 题");
-    ok(window.eval("quizState.list[0].id") === "sql-1" && window.eval("quizState.list[23].id") === "star-4", "按题库原始顺序出题");
+    ok(
+      window.eval("quizState.list[0].id") === "sql-1" && window.eval("quizState.list[23].id") === "star-4",
+      "按题库原始顺序出题"
+    );
     ok(!document.getElementById("quiz-timer"), "顺序练习无计时器");
     window.eval("quitQuiz()");
 
@@ -187,7 +230,10 @@ function runTests() {
     window.eval("switchQuizMode('chapter')");
     window.eval("startChapter('network')");
     ok(window.eval("quizState.mode") === "chapter" && window.eval("quizState.cat") === "network", "章节练习模式");
-    ok(window.eval("quizState.list.length") === 6 && window.eval("quizState.list[0].id") === "net-1", "章节练习覆盖该分类全部 6 题且保序");
+    ok(
+      window.eval("quizState.list.length") === 6 && window.eval("quizState.list[0].id") === "net-1",
+      "章节练习覆盖该分类全部 6 题且保序"
+    );
     window.eval("quitQuiz()");
 
     /* 每日一练：3 题 + 打卡 + 连签 + 当日阻止 */
@@ -203,7 +249,10 @@ function runTests() {
     const daily1 = window.eval("getDaily()");
     ok(daily1.done === true && daily1.streak === 1 && daily1.best === 1, "打卡成功：连签 1 天");
     window.eval("quitQuiz()");
-    ok(document.querySelector("#quiz-pane-exam .daily-card").classList.contains("done"), "返回首页后每日卡切换为已打卡态");
+    ok(
+      document.querySelector("#quiz-pane-exam .daily-card").classList.contains("done"),
+      "返回首页后每日卡切换为已打卡态"
+    );
     ok(document.querySelector("#quiz-pane-exam .daily-card button").disabled === true, "已打卡后按钮禁用");
     window.eval("startDailyPractice()");
     ok(window.eval("quizState.running") === false, "当日重复开始被阻止");
@@ -242,7 +291,10 @@ function runTests() {
       setTimeout(() => {
         const last = document.querySelectorAll("#ai-assistant-messages .ai-msg");
         const lastMsg = last[last.length - 1];
-        ok(lastMsg.textContent.includes("Mock 模式") && lastMsg.textContent.includes("知识库中相关的内容"), "Mock 模式返回检索摘要");
+        ok(
+          lastMsg.textContent.includes("Mock 模式") && lastMsg.textContent.includes("知识库中相关的内容"),
+          "Mock 模式返回检索摘要"
+        );
         ok(lastMsg.textContent.includes("B+ 树"), "摘要内容来自知识库命中");
 
         /* 未知问题 + 无命中（检索器按 2-gram 模糊匹配，用无中文串确保零命中） */
@@ -258,18 +310,35 @@ function runTests() {
 
           /* ============ H. CSSOM：移动端顶部导航 ============ */
           console.log("\n-- H. CSSOM：移动端顶部导航 + AI 面板 --");
-          const mediaText = [...document.styleSheets].map(s => {
-            try {
-              return [...s.cssRules].filter(r => r.type === 4).map(r => "@media " + r.conditionText + " {" + r.cssText + "}").join("\n");
-            } catch (e) { return ""; }
-          }).join("\n").replace(/;\s*/g, ";");
-          ok(/@media \(max-width: 900px\) \{\s*\.app-tabbar \{[^}]*position:\s*fixed[^}]*top:\s*58px/.test(mediaText), "移动端 Tab 栏 fixed 定位于顶栏下方（top:58px）");
+          const mediaText = [...document.styleSheets]
+            .map((s) => {
+              try {
+                return [...s.cssRules]
+                  .filter((r) => r.type === 4)
+                  .map((r) => "@media " + r.conditionText + " {" + r.cssText + "}")
+                  .join("\n");
+              } catch (e) {
+                return "";
+              }
+            })
+            .join("\n")
+            .replace(/;\s*/g, ";");
+          ok(
+            /@media \(max-width: 900px\) \{\s*\.app-tabbar \{[^}]*position:\s*fixed[^}]*top:\s*58px/.test(mediaText),
+            "移动端 Tab 栏 fixed 定位于顶栏下方（top:58px）"
+          );
           ok(/\.tabbar-item \{[^}]*flex-direction:\s*row/.test(mediaText), "移动端 Tab 条目横向排列");
           ok(/\.app-main \{[^}]*padding:\s*108px/.test(mediaText), "主内容区为顶部双栏留位（108px）");
           ok(/\.ai-fab \{[^}]*top:\s*112px/.test(mediaText), "AI 悬浮按钮避开顶部导航（top:112px）");
-          const cssText = [...document.styleSheets].map(s => {
-            try { return [...s.cssRules].map(r => r.cssText).join("\n"); } catch (e) { return ""; }
-          }).join("\n");
+          const cssText = [...document.styleSheets]
+            .map((s) => {
+              try {
+                return [...s.cssRules].map((r) => r.cssText).join("\n");
+              } catch (e) {
+                return "";
+              }
+            })
+            .join("\n");
           ok(cssText.includes(".ai-panel.open"), "AI 抽屉展开样式");
           ok(/\.quiz-mode-pane\[hidden\]\s*\{\s*display:\s*none/.test(cssText), "模式面板可隐藏");
           ok(cssText.includes(".daily-card"), "每日一练卡样式");
