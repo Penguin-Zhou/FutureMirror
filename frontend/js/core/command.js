@@ -39,6 +39,7 @@
     { group: "页面", label: "职业探索", hint: "CAREER", kw: "career 职业 探索 岗位", run: () => page("career") },
     { group: "页面", label: "评估报告", hint: "REPORT", kw: "report 报告 评分 雷达", run: () => page("report") },
     { group: "页面", label: "题库小测", hint: "QUIZ", kw: "quiz 题库 小测 刷题", run: () => page("quiz") },
+    { group: "页面", label: "学习计划", hint: "PLAN", kw: "plan 学习 计划 七天 路径 时间分配", run: () => page("plan") },
     { group: "页面", label: "求职管理", hint: "JOBS", kw: "jobs 求职 投递 管理", run: () => page("jobs") },
     { group: "页面", label: "个人中心", hint: "PROFILE", kw: "profile 个人 中心 头像", run: () => page("profile") },
     { group: "动作", label: "切换亮 / 暗主题", hint: "THEME", kw: "theme 主题 暗色 亮色", run: () => { if (typeof toggleTheme === "function") toggleTheme(); } },
@@ -53,7 +54,7 @@
   const PAGE_OF = {
     "工作台": "dashboard", "简历匹配": "match", "模拟面试": "interview", "面经问答": "rag",
     "简历优化": "resume", "职业探索": "career", "评估报告": "report", "题库小测": "quiz",
-    "求职管理": "jobs", "个人中心": "profile",
+    "学习计划": "plan", "求职管理": "jobs", "个人中心": "profile",
   };
   ACTIONS.forEach(a => { if (PAGE_OF[a.label]) a.page = PAGE_OF[a.label]; });
 

@@ -77,7 +77,7 @@ function runTests() {
 
   /* 6. 快速入口：6 张卡片 + 箭头 */
   const qe = document.querySelectorAll(".quick-entries-hero .quick-entry");
-  ok(qe.length === 6, `快速入口 6 张卡片（实际 ${qe.length}）`);
+  ok(qe.length === 7, `快速入口 7 张卡片（实际 ${qe.length}）`);
   ok([...qe].every(e => e.querySelector(".qe-arrow")), "每张快速入口含滑入箭头");
   ok([...qe].every(e => e.getAttribute("onclick") && e.getAttribute("onclick").includes("switchTab")), "每张快速入口可点击跳转");
 

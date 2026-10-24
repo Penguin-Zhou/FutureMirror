@@ -167,7 +167,7 @@ function runTests() {
     ok(/#toast \{[^}]*bottom:\s*calc\(20px \+ env\(safe-area-inset-bottom\)\)/.test(m900), "Toast 贴底含安全区");
     ok(/\.quiz-opt \{[^}]*font-size:\s*14px[^}]*border-radius:\s*0/.test(m900), "答题选项移动端放大（直角）");
     ok(/\.app-tabbar \{[^}]*top:\s*58px/.test(m900), "顶部导航仍定位于顶栏下方（回归）");
-    ok(document.querySelectorAll(".app-tabbar .tabbar-item").length === 9, "底部导航 9 项（回归）");
+    ok(document.querySelectorAll(".app-tabbar .tabbar-item").length === 10, "底部导航 10 项（回归）");
     ok(/\.feature-block \{[^}]*border-radius:\s*0/.test(cssMedia("(max-width: 640px)")), "首页特性卡小屏直角（规格表语言）");
 
     /* ============ I. 游客态 ============ */

@@ -696,3 +696,134 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 @media print {
   .vec-bar { display: none; }
 }
+
+/* ============================================================
+ * v31 · 学习计划（7 天路径 + 每日时间分配规划）
+ * 蓝图编辑风：直角 / 发丝线 / 单一朱红 accent；hover 仅描边变化；
+ * 完成态用 bp-stamp 印章语言，不用渐变不用投影。
+ * ============================================================ */
+
+/* 1) 工具栏：预算分段开关 + 来源注记 + 动作组 */
+.lp-toolbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.lp-seg {
+  display: inline-flex; border: 1px solid var(--ink); background: var(--card);
+}
+.lp-seg-btn {
+  appearance: none; border: none; border-right: 1px solid var(--line);
+  background: transparent; color: var(--muted);
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em;
+  padding: 7px 14px; cursor: pointer; transition: color .15s, background .15s;
+}
+.lp-seg-btn:last-child { border-right: none; }
+.lp-seg-btn:hover { color: var(--ink); }
+.lp-seg-btn.active { background: var(--plate); color: var(--on-plate); }
+.lp-src {
+  font-family: var(--mono); font-size: 11px; color: var(--faint);
+  letter-spacing: .04em; flex: 1; min-width: 200px;
+}
+.lp-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+
+/* 2) 总览卡：眉标 + 进度条 + 元信息 */
+.lp-ov { padding: 16px 18px; margin-bottom: 16px; }
+.lp-ov-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.lp-ov-bar {
+  height: 8px; margin: 14px 0 8px;
+  border: 1px solid var(--line-2); background: var(--bg-deep);
+}
+.lp-ov-fill {
+  height: 100%; background: var(--brand);
+  transition: width .45s cubic-bezier(.22, 1, .36, 1);
+}
+.lp-ov-meta {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+}
+.lp-ov-num { color: var(--ink); font-weight: 700; }
+.lp-ov-note { margin: 12px 0 0; font-size: 12px; color: var(--faint); line-height: 1.7; }
+
+/* 3) 七日卡片网格 */
+.lp-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-bottom: 16px;
+}
+.lp-day { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.lp-day-head {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding-bottom: 8px; border-bottom: 1px solid var(--line);
+}
+.lp-day-no {
+  font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .12em;
+  color: var(--on-plate); background: var(--plate); padding: 3px 9px;
+}
+.lp-day-date { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.lp-day-dim {
+  font-size: 11px; color: var(--brand); letter-spacing: .06em;
+  border: 1px solid color-mix(in srgb, var(--brand) 40%, var(--line));
+  padding: 1px 8px; background: var(--brand-bg);
+}
+.lp-day-ok { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--brand); letter-spacing: .14em; }
+.lp-day.done .lp-day-no { background: var(--brand); }
+.lp-day-title {
+  font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--ink);
+  line-height: 1.4;
+}
+.lp-tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.lp-task {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 5px 0; font-size: 13px; line-height: 1.6; color: var(--muted);
+}
+.lp-check {
+  flex: none; width: 15px; height: 15px; margin-top: 3px;
+  border: 1.5px solid var(--line-2); background: var(--card);
+  cursor: pointer; position: relative; padding: 0;
+  transition: border-color .15s, background .15s;
+}
+.lp-check:hover { border-color: var(--ink); }
+.lp-check[aria-checked="true"] { border-color: var(--brand); background: var(--brand); }
+.lp-check[aria-checked="true"]::after {
+  content: ""; position: absolute; left: 3.5px; top: 0.5px;
+  width: 4px; height: 8px; border: solid var(--on-plate);
+  border-width: 0 2px 2px 0; transform: rotate(42deg);
+}
+.lp-task.done .lp-task-t { color: var(--faint); text-decoration: line-through; text-decoration-thickness: 1px; }
+.lp-day-alloc {
+  display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline;
+  margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--line-2);
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+}
+.lp-day-total { margin-left: auto; color: var(--ink); }
+
+/* 4) 时间分配总表 */
+.lp-alloc-card { padding: 16px 18px; }
+.lp-table-wrap { overflow-x: auto; margin-top: 12px; }
+.lp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.lp-table th {
+  text-align: left; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+  color: var(--faint); font-weight: 700; padding: 7px 10px;
+  border-bottom: 1px solid var(--ink); white-space: nowrap;
+}
+.lp-table td {
+  padding: 7px 10px; border-bottom: 1px solid var(--line);
+  color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.lp-table .lp-td-date { font-family: var(--mono); font-size: 11px; }
+.lp-table .lp-td-title { color: var(--ink); white-space: normal; }
+.lp-td-dim { display: block; font-size: 10.5px; color: var(--brand); }
+.lp-table tr.done td { color: var(--faint); }
+.lp-table tr.lp-tr-total td {
+  border-bottom: none; border-top: 2px solid var(--ink);
+  color: var(--ink); font-weight: 700; background: var(--bg-deep);
+}
+
+/* 5) 响应式 + 打印 */
+@media (max-width: 860px) {
+  .lp-grid { grid-template-columns: 1fr; }
+}
+@media print {
+  .lp-toolbar, .lp-actions { display: none !important; }
+  .lp-day { break-inside: avoid; }
+  .lp-ov-fill { transition: none; }
+}

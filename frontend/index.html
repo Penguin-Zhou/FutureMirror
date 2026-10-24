@@ -493,6 +493,9 @@ try {
       <a class="sb-item" href="#/report" data-nav="report">
         <span class="sb-icon">📊</span> 评估报告
       </a>
+      <a class="sb-item" href="#/plan" data-nav="plan">
+        <span class="sb-icon">🗓</span> 学习计划
+      </a>
       <a class="sb-item" href="#/quiz" data-nav="quiz">
         <span class="sb-icon">📝</span> 题库小测
       </a>
@@ -586,6 +589,12 @@ try {
         <div class="qe-icon">📊</div>
         <div class="qe-title">评估报告</div>
         <div class="qe-desc">五维雷达 + 可解释评分 + 7 天学习路径</div>
+        <div class="qe-arrow">开始 →</div>
+      </button>
+      <button class="quick-entry card" onclick="switchTab('plan')">
+        <div class="qe-icon">🗓</div>
+        <div class="qe-title">学习计划</div>
+        <div class="qe-desc">7 天路径落成每日任务 + 时间分配 + 完成打卡</div>
         <div class="qe-arrow">开始 →</div>
       </button>
     </div>
@@ -1200,6 +1209,28 @@ try {
   </div>
 
   <!-- ========================================================
+       页面：学习计划（plan）· 7 天路径 + 每日时间分配（v31）
+       ======================================================== -->
+  <div class="app-page" data-page="plan">
+    <div class="page-header">
+      <h2><span class="ph-icon">🗓</span> 学习计划</h2>
+      <p>把评估报告生成的 7 天学习路径落成可执行计划：每日专项任务、时间分配（学习 / 练习 / 复盘）与完成打卡，进度按账号本地保存。完成一次模拟面试后点「同步评估报告」，计划即按你的最弱维度重新生成。</p>
+    </div>
+
+    <!-- 工具栏：时间预算 + 来源 + 动作 -->
+    <div class="lp-toolbar" id="lp-toolbar"></div>
+
+    <!-- 总览：进度 + 预算 + 来源 -->
+    <div id="lp-overview"></div>
+
+    <!-- 七日计划卡 -->
+    <div class="lp-grid" id="lp-grid"></div>
+
+    <!-- 本周时间分配总表 -->
+    <div id="lp-alloc"></div>
+  </div>
+
+  <!-- ========================================================
        页面：求职管理（jobs）· 投递看板 + 面试复盘（v18）
        ======================================================== -->
   <div class="app-page" data-page="jobs">
@@ -1309,6 +1340,9 @@ try {
   </a>
   <a class="tabbar-item" href="#/quiz" data-nav="quiz">
     <span class="tb-icon">📝</span><span>题库</span>
+  </a>
+  <a class="tabbar-item" href="#/plan" data-nav="plan">
+    <span class="tb-icon">🗓</span><span>计划</span>
   </a>
 </nav>
 
@@ -1695,6 +1729,7 @@ try {
   <script src="js/features/profile.js"></script>
   <script src="js/features/jobs.js"></script>
   <script src="js/features/quiz.js"></script>
+  <script src="js/features/plan.js"></script>
   <script src="js/features/assistant.js"></script>
   <script src="js/core/api.js"></script>
   <script src="js/core/motion.js"></script>
