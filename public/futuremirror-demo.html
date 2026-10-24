@@ -3874,6 +3874,137 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 @media print {
   .vec-bar { display: none; }
 }
+
+/* ============================================================
+ * v31 · 学习计划（7 天路径 + 每日时间分配规划）
+ * 蓝图编辑风：直角 / 发丝线 / 单一朱红 accent；hover 仅描边变化；
+ * 完成态用 bp-stamp 印章语言，不用渐变不用投影。
+ * ============================================================ */
+
+/* 1) 工具栏：预算分段开关 + 来源注记 + 动作组 */
+.lp-toolbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.lp-seg {
+  display: inline-flex; border: 1px solid var(--ink); background: var(--card);
+}
+.lp-seg-btn {
+  appearance: none; border: none; border-right: 1px solid var(--line);
+  background: transparent; color: var(--muted);
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em;
+  padding: 7px 14px; cursor: pointer; transition: color .15s, background .15s;
+}
+.lp-seg-btn:last-child { border-right: none; }
+.lp-seg-btn:hover { color: var(--ink); }
+.lp-seg-btn.active { background: var(--plate); color: var(--on-plate); }
+.lp-src {
+  font-family: var(--mono); font-size: 11px; color: var(--faint);
+  letter-spacing: .04em; flex: 1; min-width: 200px;
+}
+.lp-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+
+/* 2) 总览卡：眉标 + 进度条 + 元信息 */
+.lp-ov { padding: 16px 18px; margin-bottom: 16px; }
+.lp-ov-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.lp-ov-bar {
+  height: 8px; margin: 14px 0 8px;
+  border: 1px solid var(--line-2); background: var(--bg-deep);
+}
+.lp-ov-fill {
+  height: 100%; background: var(--brand);
+  transition: width .45s cubic-bezier(.22, 1, .36, 1);
+}
+.lp-ov-meta {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+}
+.lp-ov-num { color: var(--ink); font-weight: 700; }
+.lp-ov-note { margin: 12px 0 0; font-size: 12px; color: var(--faint); line-height: 1.7; }
+
+/* 3) 七日卡片网格 */
+.lp-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-bottom: 16px;
+}
+.lp-day { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.lp-day-head {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding-bottom: 8px; border-bottom: 1px solid var(--line);
+}
+.lp-day-no {
+  font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .12em;
+  color: var(--on-plate); background: var(--plate); padding: 3px 9px;
+}
+.lp-day-date { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.lp-day-dim {
+  font-size: 11px; color: var(--brand); letter-spacing: .06em;
+  border: 1px solid color-mix(in srgb, var(--brand) 40%, var(--line));
+  padding: 1px 8px; background: var(--brand-bg);
+}
+.lp-day-ok { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--brand); letter-spacing: .14em; }
+.lp-day.done .lp-day-no { background: var(--brand); }
+.lp-day-title {
+  font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--ink);
+  line-height: 1.4;
+}
+.lp-tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.lp-task {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 5px 0; font-size: 13px; line-height: 1.6; color: var(--muted);
+}
+.lp-check {
+  flex: none; width: 15px; height: 15px; margin-top: 3px;
+  border: 1.5px solid var(--line-2); background: var(--card);
+  cursor: pointer; position: relative; padding: 0;
+  transition: border-color .15s, background .15s;
+}
+.lp-check:hover { border-color: var(--ink); }
+.lp-check[aria-checked="true"] { border-color: var(--brand); background: var(--brand); }
+.lp-check[aria-checked="true"]::after {
+  content: ""; position: absolute; left: 3.5px; top: 0.5px;
+  width: 4px; height: 8px; border: solid var(--on-plate);
+  border-width: 0 2px 2px 0; transform: rotate(42deg);
+}
+.lp-task.done .lp-task-t { color: var(--faint); text-decoration: line-through; text-decoration-thickness: 1px; }
+.lp-day-alloc {
+  display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline;
+  margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--line-2);
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+}
+.lp-day-total { margin-left: auto; color: var(--ink); }
+
+/* 4) 时间分配总表 */
+.lp-alloc-card { padding: 16px 18px; }
+.lp-table-wrap { overflow-x: auto; margin-top: 12px; }
+.lp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.lp-table th {
+  text-align: left; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+  color: var(--faint); font-weight: 700; padding: 7px 10px;
+  border-bottom: 1px solid var(--ink); white-space: nowrap;
+}
+.lp-table td {
+  padding: 7px 10px; border-bottom: 1px solid var(--line);
+  color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.lp-table .lp-td-date { font-family: var(--mono); font-size: 11px; }
+.lp-table .lp-td-title { color: var(--ink); white-space: normal; }
+.lp-td-dim { display: block; font-size: 10.5px; color: var(--brand); }
+.lp-table tr.done td { color: var(--faint); }
+.lp-table tr.lp-tr-total td {
+  border-bottom: none; border-top: 2px solid var(--ink);
+  color: var(--ink); font-weight: 700; background: var(--bg-deep);
+}
+
+/* 5) 响应式 + 打印 */
+@media (max-width: 860px) {
+  .lp-grid { grid-template-columns: 1fr; }
+}
+@media print {
+  .lp-toolbar, .lp-actions { display: none !important; }
+  .lp-day { break-inside: avoid; }
+  .lp-ov-fill { transition: none; }
+}
 </style>
 </head>
 <body>
@@ -4340,6 +4471,9 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       <a class="sb-item" href="#/report" data-nav="report">
         <span class="sb-icon">📊</span> 评估报告
       </a>
+      <a class="sb-item" href="#/plan" data-nav="plan">
+        <span class="sb-icon">🗓</span> 学习计划
+      </a>
       <a class="sb-item" href="#/quiz" data-nav="quiz">
         <span class="sb-icon">📝</span> 题库小测
       </a>
@@ -4433,6 +4567,12 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <div class="qe-icon">📊</div>
         <div class="qe-title">评估报告</div>
         <div class="qe-desc">五维雷达 + 可解释评分 + 7 天学习路径</div>
+        <div class="qe-arrow">开始 →</div>
+      </button>
+      <button class="quick-entry card" onclick="switchTab('plan')">
+        <div class="qe-icon">🗓</div>
+        <div class="qe-title">学习计划</div>
+        <div class="qe-desc">7 天路径落成每日任务 + 时间分配 + 完成打卡</div>
         <div class="qe-arrow">开始 →</div>
       </button>
     </div>
@@ -4696,6 +4836,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
               <span style="margin-left:auto;display:flex;gap:6px">
                 <button class="btn btn-ghost btn-sm" id="tts-btn" onclick="speakLast()" aria-label="朗读或停止朗读面试官最新问题" title="朗读 / 停止朗读（浏览器 TTS）">🔊 朗读</button>
                 <button class="btn btn-ghost btn-sm" onclick="showShortcuts()" aria-label="查看快捷键" title="快捷键说明">⌨️</button>
+                <button class="btn btn-ghost btn-sm" onclick="restartInterview()" title="清空本轮对话，重新开始面试（可在提示条中撤销）">🔄 重新面试</button>
                 <button class="btn btn-ghost btn-sm" onclick="finishInterview()">结束面试 →</button>
               </span>
             </div>
@@ -4995,6 +5136,10 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <button class="switch" id="sw-auto" role="switch" aria-checked="false" aria-label="自动朗读" onclick="togglePref('autoSpeak')"></button>
       </div>
       <div class="switch-row">
+        <div class="switch-text"><b>十字鼠标追踪</b><p>全站十字准线（聚焦输入框时自动隐身）；关闭后恢复系统默认光标</p></div>
+        <button class="switch" id="sw-cross" role="switch" aria-checked="true" aria-label="十字鼠标追踪" onclick="togglePref('crosshair')"></button>
+      </div>
+      <div class="switch-row">
         <div class="switch-text"><b>每周学习提醒</b><p>演示项：完整版将按 7 天学习路径推送邮件提醒</p></div>
         <button class="switch" id="sw-weekly" role="switch" aria-checked="false" aria-label="每周学习提醒" onclick="togglePref('weekly')"></button>
       </div>
@@ -5039,6 +5184,28 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     <div class="quiz-pane" id="quiz-pane-stats" hidden></div>
     <div class="quiz-pane" id="quiz-pane-wrong" hidden></div>
     <div class="quiz-pane" id="quiz-pane-fav" hidden></div>
+  </div>
+
+  <!-- ========================================================
+       页面：学习计划（plan）· 7 天路径 + 每日时间分配（v31）
+       ======================================================== -->
+  <div class="app-page" data-page="plan">
+    <div class="page-header">
+      <h2><span class="ph-icon">🗓</span> 学习计划</h2>
+      <p>把评估报告生成的 7 天学习路径落成可执行计划：每日专项任务、时间分配（学习 / 练习 / 复盘）与完成打卡，进度按账号本地保存。完成一次模拟面试后点「同步评估报告」，计划即按你的最弱维度重新生成。</p>
+    </div>
+
+    <!-- 工具栏：时间预算 + 来源 + 动作 -->
+    <div class="lp-toolbar" id="lp-toolbar"></div>
+
+    <!-- 总览：进度 + 预算 + 来源 -->
+    <div id="lp-overview"></div>
+
+    <!-- 七日计划卡 -->
+    <div class="lp-grid" id="lp-grid"></div>
+
+    <!-- 本周时间分配总表 -->
+    <div id="lp-alloc"></div>
   </div>
 
   <!-- ========================================================
@@ -5151,6 +5318,9 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   </a>
   <a class="tabbar-item" href="#/quiz" data-nav="quiz">
     <span class="tb-icon">📝</span><span>题库</span>
+  </a>
+  <a class="tabbar-item" href="#/plan" data-nav="plan">
+    <span class="tb-icon">🗓</span><span>计划</span>
   </a>
 </nav>
 
@@ -5571,6 +5741,8 @@ function showView(name) {
   }
   // v26：离开落地页时清除导航点亮（准线已全站化，输入聚焦自动隐身）
   try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
+  // v31：滚动吸附只作用于落地页视图——进入挂载、离开拆除（曾全局常驻导致应用内滚动粘滞）
+  try { if (window.__bpMotion && window.__bpMotion.setSnap) window.__bpMotion.setSnap(name === "landing"); } catch (e) {}
 }
 
 /* 落地页 CTA：已登录进应用，未登录进登录页 */
@@ -5656,7 +5828,7 @@ function trackLight(e) {
 /* ============================================================
  * 0.6 应用内子路由（hash 路由）
  * ============================================================ */
-const APP_PAGES = ["dashboard", "match", "interview", "rag", "resume", "career", "report", "profile", "jobs", "quiz"];
+const APP_PAGES = ["dashboard", "match", "interview", "rag", "resume", "career", "report", "profile", "jobs", "quiz", "plan"];
 const APP_PAGE_TITLES = {
   dashboard: "工作台",
   match: "简历匹配",
@@ -5668,6 +5840,7 @@ const APP_PAGE_TITLES = {
   profile: "个人中心",
   jobs: "求职管理",
   quiz: "题库小测",
+  plan: "学习计划",
 };
 
 function currentPage() {
@@ -5709,6 +5882,7 @@ function applyRoute() {
   if (page === "profile") { try { renderProfile(); } catch (e) {} }
   if (page === "jobs") { try { renderJobsPage(); } catch (e) {} }
   if (page === "quiz") { try { renderQuizPage(); } catch (e) {} }
+  if (page === "plan") { try { renderPlanPage(); } catch (e) {} }
 
   // 6) 顶栏状态胶囊同步（游客 / Mock / 真实）
   try { syncStatusPill(); } catch (e) {}
@@ -5779,6 +5953,8 @@ function closeNavDropdown() { /* noop：下拉 UI 已在 v10 下线 */ }
  *   ⑰ 落地页动态层(v26) … 文案轮播 / 实录播台
  *   ⑱ 命令面板(v26) …… Ctrl/⌘+K 直达功能页与动作
  *   ⑲ 全站交互层(v27) … 切页编舞 / 密码强度 / LIVE 脉冲 / 数字滚动 / 全站准线
+ *   ⑳ 学习计划(v31) …… renderPlanPage / lpGet / syncPlanFromReport / setPlanBudget
+ *                     / togglePlanTask / lpMarkdown / 7 天路径 + 每日时间分配
  * ============================================================ */
 
 /* ============================================================
@@ -6755,6 +6931,7 @@ function finishInterview() {
 }
 
 function restartInterview() {
+  if (!requireLogin()) return;
   // v29 撤销支持：重置前留存会话快照（turns 内含 v28 批注 notes）
   const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null };
   session.turns = [];
@@ -7681,6 +7858,8 @@ async function renderReport(force) {
         <button class="btn btn-outline btn-sm" onclick="switchTab('interview')">去模拟面试</button>
       </div>
     </div>`;
+    /* v31：空态撤下能力分布看板，避免残留基线数据 */
+    try { if (window.__bpViz && window.__bpViz.removeReportPanel) window.__bpViz.removeReportPanel(); } catch (e) {}
     return;
   }
   if (!session.turns.length) {
@@ -7689,6 +7868,8 @@ async function renderReport(force) {
       <p>尚未完成模拟面试——报告需要基于你的<b>真实回答</b>生成（每条评分证据都会引用你的原话）。</p>
       <div style="margin-top:14px"><button class="btn btn-primary btn-sm" onclick="switchTab('interview')">去完成一次模拟面试 →</button></div>
     </div>`;
+    /* v31：空态撤下能力分布看板，避免残留基线数据 */
+    try { if (window.__bpViz && window.__bpViz.removeReportPanel) window.__bpViz.removeReportPanel(); } catch (e) {}
     return;
   }
   // v22：后端在线时由服务端评分引擎生成（规则与前端一致，问答记录落库）；失败回退本地引擎
@@ -7783,6 +7964,7 @@ async function renderReport(force) {
         <div class="plan-banner">因你在【${weakest.dimension}】得分最低（${weakest.score} 分），Day 1-3 已为你安排专项训练</div>
         <div id="plan">${plan.map(p => `
           <div class="plan-day"><b>${p.day}</b><span>${p.task}</span></div>`).join("")}</div>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="switchTab('plan')" title="把本路径导入学习计划板块：每日任务 + 时间分配 + 完成打卡">进入学习计划板块（每日任务 + 时间分配 + 打卡）→</button>
       </div>
     </div>
     <div class="history card" style="padding:14px 16px">
@@ -7823,6 +8005,10 @@ async function renderReport(force) {
         `<div style="font-size:13px;color:${color};margin-top:2px" id="report-diff">${arrow} 较上次 ${diff > 0 ? "+" : ""}${diff} 分</div>`);
     }
   }
+
+  /* v31：能力分布看板随本次报告数据刷新（此前只在开机装配一次，
+   * 面试后仍显示「基线数据 · 完成面试后转为真实分布」，用户看不到自己的分布） */
+  try { if (window.__bpViz && window.__bpViz.refreshReportPanel) window.__bpViz.refreshReportPanel(); } catch (e) {}
 }
 
 /* ============================================================
@@ -8681,6 +8867,7 @@ function revealScan() {
     { group: "页面", label: "职业探索", hint: "CAREER", kw: "career 职业 探索 岗位", run: () => page("career") },
     { group: "页面", label: "评估报告", hint: "REPORT", kw: "report 报告 评分 雷达", run: () => page("report") },
     { group: "页面", label: "题库小测", hint: "QUIZ", kw: "quiz 题库 小测 刷题", run: () => page("quiz") },
+    { group: "页面", label: "学习计划", hint: "PLAN", kw: "plan 学习 计划 七天 路径 时间分配", run: () => page("plan") },
     { group: "页面", label: "求职管理", hint: "JOBS", kw: "jobs 求职 投递 管理", run: () => page("jobs") },
     { group: "页面", label: "个人中心", hint: "PROFILE", kw: "profile 个人 中心 头像", run: () => page("profile") },
     { group: "动作", label: "切换亮 / 暗主题", hint: "THEME", kw: "theme 主题 暗色 亮色", run: () => { if (typeof toggleTheme === "function") toggleTheme(); } },
@@ -8695,7 +8882,7 @@ function revealScan() {
   const PAGE_OF = {
     "工作台": "dashboard", "简历匹配": "match", "模拟面试": "interview", "面经问答": "rag",
     "简历优化": "resume", "职业探索": "career", "评估报告": "report", "题库小测": "quiz",
-    "求职管理": "jobs", "个人中心": "profile",
+    "学习计划": "plan", "求职管理": "jobs", "个人中心": "profile",
   };
   ACTIONS.forEach(a => { if (PAGE_OF[a.label]) a.page = PAGE_OF[a.label]; });
 
@@ -8909,6 +9096,7 @@ function revealScan() {
     choreograph: null, countUpScan: null, reportIn: null,
     cross: false, coord: false, draw: false, speaking: false,
     reportViz: false, formFx: false, annotate: false,
+    setCrosshair: null,
   });
 
   /* ---------- ① 视图/页面切换编舞 ---------- */
@@ -9087,51 +9275,77 @@ function revealScan() {
   }
   FX.reportIn = reportIn;
 
-  /* ---------- ⑤ 十字准线（全站 · 输入聚焦隐身） ---------- */
+  /* ---------- ⑤ 十字准线（全站 · 输入聚焦隐身 · 偏好可关） ---------- */
+  let crossX = null, crossY = null, crossMX = -9999, crossMY = -9999,
+      crossTick = false, crossShown = false, crossBound = false;
+  /* 偏好读取：profile.js 晚于本模块加载，只能运行时取（boot/DOMContentLoaded 时已就绪） */
+  function crosshairWanted() {
+    try {
+      if (typeof getProfile === "function") {
+        const p = getProfile();
+        if (p && p.prefs && p.prefs.crosshair === false) return false;
+      }
+    } catch (e) {}
+    return true;
+  }
+  function crossApply() {
+    crossTick = false;
+    if (!crossX || !crossY) return;
+    const a = document.activeElement;
+    const typing = !!(a && typeof a.matches === "function" &&
+      a.matches("input, textarea, select, [contenteditable='true']"));
+    const show = !typing && crossMX > -900;
+    if (show !== crossShown) {
+      crossShown = show;
+      crossX.style.visibility = show ? "visible" : "hidden";
+      crossY.style.visibility = show ? "visible" : "hidden";
+    }
+    if (!show) return;
+    crossX.style.top = crossMY + "px";
+    crossY.style.left = crossMX + "px";
+  }
+  function crossKick() { if (!crossTick) { crossTick = true; requestAnimationFrame(crossApply); } }
+  function crossBind() {
+    if (crossBound) return;
+    crossBound = true;
+    window.addEventListener("mousemove", e => {
+      crossMX = e.clientX; crossMY = e.clientY;
+      crossKick();
+    }, { passive: true });
+    window.addEventListener("mouseout", () => {
+      crossMX = -9999; crossMY = -9999;
+      crossKick();
+    }, { passive: true });
+    document.addEventListener("focusin", crossKick, { passive: true });
+    document.addEventListener("focusout", crossKick, { passive: true });
+  }
   function initCrosshair() {
     if (reduced()) return;
     try { if (window.matchMedia && window.matchMedia("(hover: none)").matches) return; } catch (e) {}
-    if (document.querySelector(".bp-cross-x")) { FX.cross = true; return; }
-    const cx = document.createElement("div");
-    cx.className = "bp-cross bp-cross-x";
-    cx.setAttribute("aria-hidden", "true");
-    const cy = document.createElement("div");
-    cy.className = "bp-cross bp-cross-y";
-    cy.setAttribute("aria-hidden", "true");
-    (document.body || document.documentElement).append(cx);
-    (document.body || document.documentElement).append(cy);
-    let mx = -9999, my = -9999, ticking = false, shown = false;
-    const isTyping = () => {
-      const a = document.activeElement;
-      if (!a || typeof a.matches !== "function") return false;
-      return a.matches("input, textarea, select, [contenteditable='true']");
-    };
-    const apply = () => {
-      ticking = false;
-      const show = !isTyping() && mx > -900;
-      if (show !== shown) {
-        shown = show;
-        cx.style.visibility = show ? "visible" : "hidden";
-        cy.style.visibility = show ? "visible" : "hidden";
-      }
-      if (!show) return;
-      cx.style.top = my + "px";
-      cy.style.left = mx + "px";
-    };
-    const kick = () => { if (!ticking) { ticking = true; requestAnimationFrame(apply); } };
-    window.addEventListener("mousemove", e => {
-      mx = e.clientX; my = e.clientY;
-      kick();
-    }, { passive: true });
-    window.addEventListener("mouseout", () => {
-      mx = -9999; my = -9999;
-      kick();
-    }, { passive: true });
-    document.addEventListener("focusin", kick, { passive: true });
-    document.addEventListener("focusout", kick, { passive: true });
-    apply();
+    if (!crosshairWanted()) { FX.cross = false; return; }
+    crossBind();
+    if (crossX) { FX.cross = true; return; }
+    crossX = document.createElement("div");
+    crossX.className = "bp-cross bp-cross-x";
+    crossX.setAttribute("aria-hidden", "true");
+    crossY = document.createElement("div");
+    crossY.className = "bp-cross bp-cross-y";
+    crossY.setAttribute("aria-hidden", "true");
+    (document.body || document.documentElement).append(crossX);
+    (document.body || document.documentElement).append(crossY);
+    crossShown = false;
     FX.cross = true;
   }
+  /* v31：偏好开关——关闭撤除准线元素（监听器保留，零泄漏），开启重新挂上 */
+  function setCrosshair(on) {
+    if (on) { initCrosshair(); return true; }
+    if (crossX) { crossX.remove(); crossX = null; }
+    if (crossY) { crossY.remove(); crossY = null; }
+    crossShown = false;
+    FX.cross = false;
+    return false;
+  }
+  FX.setCrosshair = setCrosshair;
 
   /* ---------- ⑥ 坐标读数（BLK 特性卡 / PG 功能页卡 / SEC 开发者节） ---------- */
   function initCoordReadout() {
@@ -11046,7 +11260,7 @@ const PROFILE_SKILLS = ["JavaScript", "TypeScript", "Python", "Java", "Go", "Rea
 const PROFILE_DEFAULTS = {
   avatar: { type: "auto", value: "" },
   city: "", degree: "", years: "", status: "在职看机会", target: "", bio: "", skills: [],
-  prefs: { voice: true, autoSpeak: false, weekly: false },
+  prefs: { voice: true, autoSpeak: false, weekly: false, crosshair: true },
   vip: false,
 };
 
@@ -11300,6 +11514,7 @@ function renderPrefSwitches() {
   set("sw-voice", p.prefs.voice);
   set("sw-auto", p.prefs.autoSpeak);
   set("sw-weekly", p.prefs.weekly);
+  set("sw-cross", p.prefs.crosshair);
 }
 
 function togglePref(key) {
@@ -11308,8 +11523,12 @@ function togglePref(key) {
   prefs[key] = !prefs[key];
   saveProfile({ prefs });
   renderPrefSwitches();
-  const label = { voice: "语音输入", autoSpeak: "自动朗读", weekly: "每周学习提醒" }[key] || "偏好";
+  const label = { voice: "语音输入", autoSpeak: "自动朗读", weekly: "每周学习提醒", crosshair: "十字鼠标追踪" }[key] || "偏好";
   toast(`已${prefs[key] ? "开启" : "关闭"}「${label}」`);
+  /* v31：十字准线偏好即时生效（关闭撤除准线，开启重新挂上） */
+  if (key === "crosshair") {
+    try { if (window.__bpApp && window.__bpApp.setCrosshair) window.__bpApp.setCrosshair(prefs.crosshair); } catch (e) {}
+  }
 }
 
 function togglePrefDark() {
@@ -12159,6 +12378,12 @@ function switchQuizTab(tab) {
   });
   /* v20：收藏夹 / 错题本内容可被其他页签的操作改变，切换到时刷新，避免展示陈旧数据 */
   if (tab === "fav" || tab === "wrong") renderQuizPage();
+  /* v31：子页签切换回顶——停留在上一页签的滚动位置会让新页签「滑不动」（已反馈） */
+  try {
+    const page = document.querySelector(".app-page.active");
+    const top = page ? page.getBoundingClientRect().top + (window.scrollY || 0) : 0;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  } catch (e) {}
 }
 function showQuizCat(catId) {
   const cat = QUIZ_CATS.find(c => c.id === catId);
@@ -12918,6 +13143,319 @@ function recordAnswer(q, ok) {
   try { store.set("fm_quiz", d, true); } catch (e) {}
 }
 
+/* ============================================================
+ * v31 · 学习计划（7 天路径 + 每日时间分配规划）
+ * 入口：renderPlanPage()（applyRoute → page === "plan" 时调用）
+ * 数据：fm_plan 按账号隔离存储；计划内容优先同步自最新评估报告
+ *       （scoreSession + buildPlan 动态生成），无报告时回落通用基线计划；
+ *       完成进度本地保存，可一键重置。
+ * 纪律：蓝图编辑风——直角 / 发丝线 / 单一朱红 accent；零投影零渐变；
+ *       动效仅 hover 描边变化，reduced-motion 全静态。
+ * ============================================================ */
+const LP_KEY = "fm_plan";
+/* 每日时间预算：切换后按天 mix 权重重新切分分钟数 */
+const LP_BUDGETS = [
+  { id: "light", label: "紧凑 45′", min: 45, note: "适合仍有课业的在校周期" },
+  { id: "std", label: "标准 60′", min: 60, note: "推荐：多数求职备战的可持续节奏" },
+  { id: "deep", label: "强化 90′", min: 90, note: "面试前一周 / 周末冲刺" },
+];
+/* 7 天骨架：kind 仅用于阅读分组，mix 决定当日时间分配权重 */
+const LP_SKELETON = [
+  { kind: "focus", title: "最弱维度专项 ①", mix: { learn: .30, practice: .50, review: .20 } },
+  { kind: "focus", title: "最弱维度专项 ②", mix: { learn: .25, practice: .50, review: .25 } },
+  { kind: "focus", title: "次弱维度专项 ①", mix: { learn: .30, practice: .50, review: .20 } },
+  { kind: "focus", title: "次弱维度专项 ②", mix: { learn: .25, practice: .50, review: .25 } },
+  { kind: "focus", title: "第三短板补强", mix: { learn: .35, practice: .45, review: .20 } },
+  { kind: "mock", title: "全流程综合模拟", mix: { learn: .15, practice: .60, review: .25 } },
+  { kind: "review", title: "复盘输出与简历更新", mix: { learn: .10, practice: .30, review: .60 } },
+];
+/* 通用基线任务（无评估报告时使用，与报告五维一一对应，第 6/7 天为综合与复盘） */
+const LP_BASELINE_TASKS = [
+  ["量化表达三要素：数字 / 对比 / 结果", "为最强项目补充 3 个可深挖技术点与量化结果", "把项目关键数字写成可口述的卡片"],
+  ["STAR 结构精讲：背景-目标-行动-结果", "用 STAR 重写两个核心项目的 300 字介绍", "每天口述 1 遍项目介绍并录音回听"],
+  ["录音练习，消除口头禅（然后 / 那个 / 就是）", "把长回答拆成「总-分-总」三段式", "对照录音标注 3 处待改进表达"],
+  ["针对匹配报告中的缺口技能制定补强计划", "把缺口技能写成一个小课程项目", "更新简历技能栏与项目描述"],
+  ["预演 5 个尖锐问题（方案缺陷 / 换人重做 / deadline 提前）", "完成 2 次压力面模拟", "练习被打断后的恢复话术"],
+  ["全流程综合模拟一次（可换模式）", "对比历史报告，记录进步曲线", "标记本次新出现的薄弱点"],
+  ["把本次报告的证据清单过一遍，标记已改进项", "更新简历与作品集", "规划下一周重点维度"],
+];
+const LP_BASELINE_DIMS = ["内容深度", "结构逻辑", "语言表达", "岗位匹配", "抗压表现", "综合模拟", "复盘输出"];
+
+/* ---------- 基础工具 ---------- */
+function lpEsc(s) { return typeof esc === "function" ? esc(String(s)) : String(s); }
+function lpBudget(id) { return LP_BUDGETS.find(b => b.id === id) || LP_BUDGETS[1]; }
+/* 按权重切分当日分钟，余数并入最大段，保证合计恒等于预算 */
+function lpAlloc(mix, minutes) {
+  let learn = Math.round(minutes * mix.learn);
+  let practice = Math.round(minutes * mix.practice);
+  let review = minutes - learn - practice;
+  if (review < 0) { practice += review; review = 0; }
+  return { learn, practice, review };
+}
+function lpDayDate(i) {
+  const d = new Date();
+  d.setDate(d.getDate() + i + 1);
+  return (d.getMonth() + 1) + "月" + d.getDate() + "日 · 周" + "日一二三四五六".charAt(d.getDay());
+}
+function lpHasTurns() {
+  return typeof session !== "undefined" && session && Array.isArray(session.turns) && session.turns.length > 0;
+}
+
+/* ---------- 计划生成：来源为评估报告（buildPlan）或通用基线 ---------- */
+function lpTasksFromReport() {
+  if (!lpHasTurns()) return null;
+  if (typeof scoreSession !== "function" || typeof buildPlan !== "function") return null;
+  let built;
+  try { built = buildPlan(scoreSession()); } catch (e) { return null; }
+  if (!built || !Array.isArray(built.plan) || !built.plan.length) return null;
+  /* 按维度聚合任务（buildPlan 已按最弱优先排序：3 + 2 + 1） */
+  const byDim = {};
+  built.plan.forEach(p => { (byDim[p.tag] = byDim[p.tag] || []).push(p.task); });
+  const order = [];
+  built.plan.forEach(p => { if (order.indexOf(p.tag) < 0) order.push(p.tag); });
+  const d0 = byDim[order[0]] || [], d1 = byDim[order[1]] || [], d2 = byDim[order[2]] || [];
+  /* 第三短板只有 1 条任务时，从该维度题库补一条未用过的 */
+  const d2extra = (() => {
+    if (d2.length !== 1 || typeof DIM_DEFS === "undefined") return null;
+    const def = DIM_DEFS.find(x => x.dimension === order[2]);
+    if (!def || !Array.isArray(def.pool)) return null;
+    return def.pool.find(t => d2.indexOf(t) < 0) || null;
+  })();
+  const base = typeof BASE_PLAN !== "undefined" ? BASE_PLAN : LP_BASELINE_TASKS[6];
+  const groups = [
+    d0.slice(0, 2),
+    d0.slice(2),
+    d1.slice(0, 1),
+    d1.slice(1),
+    d2extra ? d2.concat([d2extra]) : d2,
+    [base[0] || LP_BASELINE_TASKS[5][0], "换一种面试模式再模拟一次，横向对比稳定性"],
+    [base[1] || LP_BASELINE_TASKS[6][0], "更新简历与作品集", "规划下一周重点维度"],
+  ];
+  const dims = [order[0], order[0], order[1], order[1], order[2], "综合模拟", "复盘输出"];
+  return { groups, dims, weakest: built.weakest, total: built.total || null };
+}
+function lpCreate(source) {
+  const fromReport = source === "report" ? lpTasksFromReport() : null;
+  const groups = fromReport ? fromReport.groups : LP_BASELINE_TASKS;
+  const dims = fromReport ? fromReport.dims : LP_BASELINE_DIMS;
+  const budget = lpBudget("std");
+  const days = LP_SKELETON.map((sk, i) => {
+    const raw = (groups[i] && groups[i].length) ? groups[i] : LP_BASELINE_TASKS[i];
+    const tasks = raw.slice(0, 3).map(t => ({ t, done: false }));
+    return { kind: sk.kind, title: sk.title, dim: dims[i] || "综合", mix: sk.mix, tasks, alloc: lpAlloc(sk.mix, budget.min) };
+  });
+  return { v: 1, source: fromReport ? "report" : "baseline", createdAt: new Date().toISOString(), budget: "std", days };
+}
+
+/* ---------- 读写 ---------- */
+function lpGet() {
+  let p = null;
+  try { p = store.get(LP_KEY, null); } catch (e) { p = null; }
+  if (!p || !Array.isArray(p.days) || p.days.length !== 7) return lpCreate("baseline");
+  p.days.forEach(d => {
+    if (!d.mix) d.mix = LP_SKELETON[0].mix;
+    if (!d.alloc) d.alloc = lpAlloc(d.mix, lpBudget(p.budget).min);
+    if (!Array.isArray(d.tasks)) d.tasks = [];
+    d.tasks.forEach(t => { if (typeof t.done !== "boolean") t.done = false; });
+  });
+  return p;
+}
+function lpSave(p) { try { store.set(LP_KEY, p, true); } catch (e) {} }
+function lpProgress(p) {
+  let done = 0, total = 0;
+  p.days.forEach(d => d.tasks.forEach(t => { total++; if (t.done) done++; }));
+  return { done, total, pct: total ? Math.round(done / total * 100) : 0 };
+}
+function lpWeekMinutes(p) {
+  return p.days.reduce((s, d) => s + (d.alloc.learn + d.alloc.practice + d.alloc.review), 0);
+}
+function lpDayDone(d) { return d.tasks.length > 0 && d.tasks.every(t => t.done); }
+
+/* ---------- 渲染 ---------- */
+function lpRenderToolbar(p) {
+  const src = p.source === "report"
+    ? "已同步自最新评估报告 · 按最弱维度动态生成"
+    : "通用基线计划 · 完成一次模拟面试后可同步为个人版";
+  return `
+    <div class="lp-seg" role="group" aria-label="每日时间预算">
+      ${LP_BUDGETS.map(b => `<button type="button" class="lp-seg-btn${b.id === p.budget ? " active" : ""}"
+        aria-pressed="${b.id === p.budget}" title="${lpEsc(b.note)}"
+        onclick="setPlanBudget('${b.id}')">${lpEsc(b.label)}</button>`).join("")}
+    </div>
+    <span class="lp-src" id="lp-src">${lpEsc(src)}</span>
+    <span class="lp-actions">
+      <button class="btn btn-outline btn-sm" onclick="syncPlanFromReport()" title="用最新评估报告重新生成 7 天计划（保留已完成进度）">同步评估报告</button>
+      <button class="btn btn-outline btn-sm" onclick="copyPlanMarkdown()">复制 Markdown</button>
+      <button class="btn btn-outline btn-sm" onclick="printPlanPage()">打印</button>
+      <button class="btn btn-ghost btn-sm" onclick="resetPlanProgress()">重置进度</button>
+    </span>`;
+}
+function lpRenderOverview(p) {
+  const pr = lpProgress(p);
+  const b = lpBudget(p.budget);
+  const created = (p.createdAt || "").slice(0, 10);
+  return `
+    <div class="lp-ov card bp-z1 bp-crop">
+      <div class="lp-ov-head">
+        <div class="eyebrow"><span class="eyebrow-no">PLAN</span> 7 天学习路径 · 每日时间分配规划</div>
+        ${pr.pct === 100 ? '<span class="bp-stamp">已完成</span>' : ""}
+      </div>
+      <div class="lp-ov-bar"><div class="lp-ov-fill" style="width:${pr.pct}%"></div></div>
+      <div class="lp-ov-meta">
+        <span class="lp-ov-num">${pr.done}/${pr.total} 项任务 · ${pr.pct}%</span>
+        <span>预算 ${lpEsc(b.label)}/天 · 周合计 ${lpWeekMinutes(p)} 分钟</span>
+        <span>创建于 ${lpEsc(created || "今天")}</span>
+      </div>
+      <p class="lp-ov-note">时间分配权重：专项日「学习 3 : 练习 5 : 复盘 2」、模拟日「练习 6」、复盘日「复盘 6」；切换预算后各日分钟数自动重算，任务内容不变。</p>
+    </div>`;
+}
+function lpRenderDay(d, i, p) {
+  const total = d.alloc.learn + d.alloc.practice + d.alloc.review;
+  const done = lpDayDone(d);
+  return `
+    <div class="lp-day card bp-z1${done ? " done" : ""}">
+      <div class="lp-day-head">
+        <span class="lp-day-no">DAY ${i + 1}</span>
+        <span class="lp-day-date">${lpDayDate(i)}</span>
+        <span class="lp-day-dim">${lpEsc(d.dim || "综合")}</span>
+        ${done ? '<span class="lp-day-ok">已完成</span>' : ""}
+      </div>
+      <div class="lp-day-title">${lpEsc(d.title)}</div>
+      <ul class="lp-tasks">
+        ${d.tasks.map((t, j) => `
+          <li class="lp-task${t.done ? " done" : ""}">
+            <button type="button" class="lp-check" role="checkbox" aria-checked="${t.done ? "true" : "false"}"
+              aria-label="${lpEsc(t.t)}" onclick="togglePlanTask(${i},${j})"></button>
+            <span class="lp-task-t">${lpEsc(t.t)}</span>
+          </li>`).join("")}
+      </ul>
+      <div class="lp-day-alloc">
+        <span>学习 ${d.alloc.learn}′</span><span>练习 ${d.alloc.practice}′</span><span>复盘 ${d.alloc.review}′</span>
+        <b class="lp-day-total">合计 ${total}′</b>
+      </div>
+    </div>`;
+}
+function lpRenderAlloc(p) {
+  const rows = p.days.map((d, i) => {
+    const total = d.alloc.learn + d.alloc.practice + d.alloc.review;
+    return `<tr${lpDayDone(d) ? ' class="done"' : ""}>
+      <td class="lp-td-date">${lpDayDate(i)}</td>
+      <td class="lp-td-title">${lpEsc(d.title)}<span class="lp-td-dim">${lpEsc(d.dim || "")}</span></td>
+      <td>${d.alloc.learn}′</td><td>${d.alloc.practice}′</td><td>${d.alloc.review}′</td>
+      <td><b>${total}′</b></td>
+    </tr>`;
+  }).join("");
+  const sum = p.days.reduce((a, d) => ({
+    learn: a.learn + d.alloc.learn, practice: a.practice + d.alloc.practice, review: a.review + d.alloc.review,
+  }), { learn: 0, practice: 0, review: 0 });
+  return `
+    <div class="card bp-z1 lp-alloc-card">
+      <div class="card-section-title">本周时间分配总表</div>
+      <p class="card-section-sub">学习 = 输入（知识点 / 面经 / 范例）；练习 = 刻意输出（口述 / 改写 / 模拟）；复盘 = 录音回听 / 对照证据清单。</p>
+      <div class="lp-table-wrap">
+        <table class="lp-table">
+          <thead><tr><th>日期</th><th>当日主题</th><th>学习</th><th>练习</th><th>复盘</th><th>合计</th></tr></thead>
+          <tbody>${rows}
+            <tr class="lp-tr-total"><td>合计</td><td>7 天全周期</td>
+              <td>${sum.learn}′</td><td>${sum.practice}′</td><td>${sum.review}′</td>
+              <td><b>${sum.learn + sum.practice + sum.review}′</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+function renderPlanPage() {
+  const tb = $("lp-toolbar"), ov = $("lp-overview"), grid = $("lp-grid"), al = $("lp-alloc");
+  if (!tb || !ov || !grid) return;
+  const p = lpGet();
+  tb.innerHTML = lpRenderToolbar(p);
+  ov.innerHTML = lpRenderOverview(p);
+  grid.innerHTML = p.days.map((d, i) => lpRenderDay(d, i, p)).join("");
+  if (al) al.innerHTML = lpRenderAlloc(p);
+  try { if (window.__bpApp && window.__bpApp.choreograph) window.__bpApp.choreograph("app", "plan"); } catch (e) {}
+}
+
+/* ---------- 交互 ---------- */
+function setPlanBudget(id) {
+  const p = lpGet();
+  p.budget = lpBudget(id).id;
+  p.days.forEach(d => { d.alloc = lpAlloc(d.mix, lpBudget(p.budget).min); });
+  lpSave(p);
+  renderPlanPage();
+  toast(`时间预算已切换为「${lpBudget(p.budget).label}」/天`);
+}
+function togglePlanTask(di, ti) {
+  const p = lpGet();
+  const d = p.days[di];
+  if (!d || !d.tasks[ti]) return;
+  d.tasks[ti].done = !d.tasks[ti].done;
+  lpSave(p);
+  renderPlanPage();
+  const pr = lpProgress(p);
+  if (pr.pct === 100) toast("7 天计划全部完成——去评估报告看看进步曲线");
+}
+function syncPlanFromReport() {
+  const prev = lpGet();
+  const next = lpCreate("report");
+  if (next.source !== "report") { toast("尚未完成模拟面试——计划保持通用基线版，完成一次面试后可同步为个人版"); return; }
+  next.budget = prev.budget;   // 保留用户选择的预算
+  next.days.forEach((d, i) => {
+    d.alloc = lpAlloc(d.mix, lpBudget(next.budget).min);
+    const old = prev.days[i];
+    if (old) d.tasks.forEach((t, j) => { if (old.tasks[j]) t.done = old.tasks[j].done; });
+  });
+  lpSave(next);
+  renderPlanPage();
+  toast("已按最新评估报告重新生成 7 天计划（已完成进度按日保留）");
+}
+function resetPlanProgress() {
+  if (typeof confirm !== "function") return;
+  if (!confirm("确定重置全部完成进度？计划内容与时间预算保持不变。")) return;
+  const p = lpGet();
+  p.days.forEach(d => d.tasks.forEach(t => { t.done = false; }));
+  lpSave(p);
+  renderPlanPage();
+  toast("完成进度已重置");
+}
+function lpMarkdown(p) {
+  const b = lpBudget(p.budget);
+  const lines = [
+    "# 7 天学习计划（面镜 FutureMirror）",
+    "",
+    `- 计划来源：${p.source === "report" ? "最新评估报告（按最弱维度动态生成）" : "通用基线计划"}`,
+    `- 时间预算：${b.label}/天 · 周合计 ${lpWeekMinutes(p)} 分钟`,
+    "",
+  ];
+  p.days.forEach((d, i) => {
+    const total = d.alloc.learn + d.alloc.practice + d.alloc.review;
+    lines.push(`## Day ${i + 1} · ${d.title}（${d.dim || "综合"}）`);
+    lines.push(`时间分配：学习 ${d.alloc.learn}′ · 练习 ${d.alloc.practice}′ · 复盘 ${d.alloc.review}′（合计 ${total}′）`);
+    d.tasks.forEach(t => lines.push(`- [${t.done ? "x" : " "}] ${t.t}`));
+    lines.push("");
+  });
+  return lines.join("\n");
+}
+function copyPlanMarkdown() {
+  const md = lpMarkdown(lpGet());
+  const done = () => toast("计划已复制为 Markdown，可粘贴到备忘录 / issue");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(md).then(done).catch(() => lpDownload(md));
+  } else lpDownload(md);
+}
+function lpDownload(text) {
+  try {
+    const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "futuremirror-7天学习计划.md";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast("剪贴板不可用，已改为下载 Markdown 文件");
+  } catch (e) { toast("导出失败：" + e.message); }
+}
+function printPlanPage() { try { window.print(); } catch (e) {} }
 /* ---------- ⑦ AI 小助手（retrieve + streamChat） ---------- */
 let aiAssistantOpen = false;
 const AI_PRESETS = [
@@ -13486,12 +14024,21 @@ function refreshBackendUi() {
     return true;
   }
 
-  /* ④ 滚动吸附（proximity 柔和，落地页分段对齐） */
+  /* ④ 滚动吸附（proximity 柔和，仅落地页视图生效） */
   function initSnap() {
     const secs = doc.querySelectorAll(".landing-section");
     Array.prototype.forEach.call(secs, s => s.classList.add("bp-snap-item"));
-    if (secs.length) doc.documentElement.classList.add("bp-snap-y");
+    // 吸附只作用于落地页视图：初始即按当前视图决定，进入挂载、离开拆除，
+    // 避免 bp-snap-y 挂到 documentElement 后全站滚动都被吸附阻滞（v31 修复）
+    const landing = doc.getElementById("view-landing");
+    if (landing && landing.classList.contains("active")) doc.documentElement.classList.add("bp-snap-y");
+    else doc.documentElement.classList.remove("bp-snap-y");
     return secs.length;
+  }
+  /* 视图切换时开合滚动吸附（showView 调用） */
+  function setSnap(on) {
+    doc.documentElement.classList.toggle("bp-snap-y", !!on);
+    return !!on;
   }
 
   /* ⑤ 横向画廊：窄屏时把统计卡组转为 scroll-snap 横向廊 */
@@ -13707,6 +14254,7 @@ function refreshBackendUi() {
     initMagnets: initMagnets,
     initNavShrink: initNavShrink,
     initSnap: initSnap,
+    setSnap: setSnap,
     initGalleries: initGalleries,
     initViewTransition: initViewTransition,
     initTactile: initTactile,
@@ -14328,6 +14876,25 @@ function refreshBackendUi() {
     return true;
   }
 
+  /* v31：报告重渲染后刷新看板——先停旧 live 定时器 / WS，摘除旧面板，
+   * 再按最新会话数据重挂。此前面板只在开机装配一次（守卫 return false），
+   * 面试后仍显示「基线数据」，用户看不到自己的真实分布（已反馈）。 */
+  function refreshReportPanel() {
+    removeReportPanel();
+    return mountReportPanel();
+  }
+  /* v31：报告为空态（未登录 / 无面试记录）时撤下看板，避免残留基线数据 */
+  function removeReportPanel() {
+    const old = doc.getElementById("bp-viz-panel");
+    if (!old) return false;
+    if (bpLive && typeof bpLive.stop === "function") {
+      try { bpLive.stop(); } catch (e) {}
+      bpLive = null;
+    }
+    if (old.parentNode) old.parentNode.removeChild(old);
+    return true;
+  }
+
   /* ---------- ⑨ 统一装配：表格 + 看板 + 图表提示 ---------- */
   function initAll() {
     const r = {};
@@ -14355,6 +14922,8 @@ function refreshBackendUi() {
     renderTimeline: renderTimeline,
     readVizData: readVizData,
     mountReportPanel: mountReportPanel,
+    refreshReportPanel: refreshReportPanel,
+    removeReportPanel: removeReportPanel,
     live: () => bpLive,
     toCsv: toCsv,
     toExcelHtml: toExcelHtml,
