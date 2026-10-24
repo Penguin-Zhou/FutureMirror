@@ -119,6 +119,8 @@ async function renderReport(force) {
         <button class="btn btn-outline btn-sm" onclick="switchTab('interview')">去模拟面试</button>
       </div>
     </div>`;
+    /* v31：空态撤下能力分布看板，避免残留基线数据 */
+    try { if (window.__bpViz && window.__bpViz.removeReportPanel) window.__bpViz.removeReportPanel(); } catch (e) {}
     return;
   }
   if (!session.turns.length) {
@@ -127,6 +129,8 @@ async function renderReport(force) {
       <p>尚未完成模拟面试——报告需要基于你的<b>真实回答</b>生成（每条评分证据都会引用你的原话）。</p>
       <div style="margin-top:14px"><button class="btn btn-primary btn-sm" onclick="switchTab('interview')">去完成一次模拟面试 →</button></div>
     </div>`;
+    /* v31：空态撤下能力分布看板，避免残留基线数据 */
+    try { if (window.__bpViz && window.__bpViz.removeReportPanel) window.__bpViz.removeReportPanel(); } catch (e) {}
     return;
   }
   // v22：后端在线时由服务端评分引擎生成（规则与前端一致，问答记录落库）；失败回退本地引擎
@@ -261,5 +265,9 @@ async function renderReport(force) {
         `<div style="font-size:13px;color:${color};margin-top:2px" id="report-diff">${arrow} 较上次 ${diff > 0 ? "+" : ""}${diff} 分</div>`);
     }
   }
+
+  /* v31：能力分布看板随本次报告数据刷新（此前只在开机装配一次，
+   * 面试后仍显示「基线数据 · 完成面试后转为真实分布」，用户看不到自己的分布） */
+  try { if (window.__bpViz && window.__bpViz.refreshReportPanel) window.__bpViz.refreshReportPanel(); } catch (e) {}
 }
 
