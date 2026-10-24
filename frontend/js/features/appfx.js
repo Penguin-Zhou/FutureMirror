@@ -22,6 +22,7 @@
     choreograph: null, countUpScan: null, reportIn: null,
     cross: false, coord: false, draw: false, speaking: false,
     reportViz: false, formFx: false, annotate: false,
+    setCrosshair: null,
   });
 
   /* ---------- ① 视图/页面切换编舞 ---------- */
@@ -200,51 +201,77 @@
   }
   FX.reportIn = reportIn;
 
-  /* ---------- ⑤ 十字准线（全站 · 输入聚焦隐身） ---------- */
+  /* ---------- ⑤ 十字准线（全站 · 输入聚焦隐身 · 偏好可关） ---------- */
+  let crossX = null, crossY = null, crossMX = -9999, crossMY = -9999,
+      crossTick = false, crossShown = false, crossBound = false;
+  /* 偏好读取：profile.js 晚于本模块加载，只能运行时取（boot/DOMContentLoaded 时已就绪） */
+  function crosshairWanted() {
+    try {
+      if (typeof getProfile === "function") {
+        const p = getProfile();
+        if (p && p.prefs && p.prefs.crosshair === false) return false;
+      }
+    } catch (e) {}
+    return true;
+  }
+  function crossApply() {
+    crossTick = false;
+    if (!crossX || !crossY) return;
+    const a = document.activeElement;
+    const typing = !!(a && typeof a.matches === "function" &&
+      a.matches("input, textarea, select, [contenteditable='true']"));
+    const show = !typing && crossMX > -900;
+    if (show !== crossShown) {
+      crossShown = show;
+      crossX.style.visibility = show ? "visible" : "hidden";
+      crossY.style.visibility = show ? "visible" : "hidden";
+    }
+    if (!show) return;
+    crossX.style.top = crossMY + "px";
+    crossY.style.left = crossMX + "px";
+  }
+  function crossKick() { if (!crossTick) { crossTick = true; requestAnimationFrame(crossApply); } }
+  function crossBind() {
+    if (crossBound) return;
+    crossBound = true;
+    window.addEventListener("mousemove", e => {
+      crossMX = e.clientX; crossMY = e.clientY;
+      crossKick();
+    }, { passive: true });
+    window.addEventListener("mouseout", () => {
+      crossMX = -9999; crossMY = -9999;
+      crossKick();
+    }, { passive: true });
+    document.addEventListener("focusin", crossKick, { passive: true });
+    document.addEventListener("focusout", crossKick, { passive: true });
+  }
   function initCrosshair() {
     if (reduced()) return;
     try { if (window.matchMedia && window.matchMedia("(hover: none)").matches) return; } catch (e) {}
-    if (document.querySelector(".bp-cross-x")) { FX.cross = true; return; }
-    const cx = document.createElement("div");
-    cx.className = "bp-cross bp-cross-x";
-    cx.setAttribute("aria-hidden", "true");
-    const cy = document.createElement("div");
-    cy.className = "bp-cross bp-cross-y";
-    cy.setAttribute("aria-hidden", "true");
-    (document.body || document.documentElement).append(cx);
-    (document.body || document.documentElement).append(cy);
-    let mx = -9999, my = -9999, ticking = false, shown = false;
-    const isTyping = () => {
-      const a = document.activeElement;
-      if (!a || typeof a.matches !== "function") return false;
-      return a.matches("input, textarea, select, [contenteditable='true']");
-    };
-    const apply = () => {
-      ticking = false;
-      const show = !isTyping() && mx > -900;
-      if (show !== shown) {
-        shown = show;
-        cx.style.visibility = show ? "visible" : "hidden";
-        cy.style.visibility = show ? "visible" : "hidden";
-      }
-      if (!show) return;
-      cx.style.top = my + "px";
-      cy.style.left = mx + "px";
-    };
-    const kick = () => { if (!ticking) { ticking = true; requestAnimationFrame(apply); } };
-    window.addEventListener("mousemove", e => {
-      mx = e.clientX; my = e.clientY;
-      kick();
-    }, { passive: true });
-    window.addEventListener("mouseout", () => {
-      mx = -9999; my = -9999;
-      kick();
-    }, { passive: true });
-    document.addEventListener("focusin", kick, { passive: true });
-    document.addEventListener("focusout", kick, { passive: true });
-    apply();
+    if (!crosshairWanted()) { FX.cross = false; return; }
+    crossBind();
+    if (crossX) { FX.cross = true; return; }
+    crossX = document.createElement("div");
+    crossX.className = "bp-cross bp-cross-x";
+    crossX.setAttribute("aria-hidden", "true");
+    crossY = document.createElement("div");
+    crossY.className = "bp-cross bp-cross-y";
+    crossY.setAttribute("aria-hidden", "true");
+    (document.body || document.documentElement).append(crossX);
+    (document.body || document.documentElement).append(crossY);
+    crossShown = false;
     FX.cross = true;
   }
+  /* v31：偏好开关——关闭撤除准线元素（监听器保留，零泄漏），开启重新挂上 */
+  function setCrosshair(on) {
+    if (on) { initCrosshair(); return true; }
+    if (crossX) { crossX.remove(); crossX = null; }
+    if (crossY) { crossY.remove(); crossY = null; }
+    crossShown = false;
+    FX.cross = false;
+    return false;
+  }
+  FX.setCrosshair = setCrosshair;
 
   /* ---------- ⑥ 坐标读数（BLK 特性卡 / PG 功能页卡 / SEC 开发者节） ---------- */
   function initCoordReadout() {
