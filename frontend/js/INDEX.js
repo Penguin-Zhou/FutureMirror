@@ -24,5 +24,6 @@
  *   ⑲ 全站交互层(v27) … 切页编舞 / 密码强度 / LIVE 脉冲 / 数字滚动 / 全站准线
  *   ⑳ 学习计划(v31) …… renderPlanPage / lpGet / syncPlanFromReport / setPlanBudget
  *                     / togglePlanTask / lpMarkdown / 7 天路径 + 每日时间分配
+ *   ㉑ 全站图标系统(v31) … __bpIcons / bpIcon / bpIconSwap / data-ic 线性 SVG 图标集
  * ============================================================ */
 

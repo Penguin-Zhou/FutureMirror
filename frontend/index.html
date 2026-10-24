@@ -11,8 +11,8 @@
 <meta property="og:title" content="面镜 FutureMirror · 多 Agent 模拟面试平台">
 <meta property="og:description" content="五个 Agent 协作完成一场可解释的模拟面试：规划、技术深挖、代码沙盒验证、证据记录、可解释评分与成长路径。">
 <meta name="twitter:card" content="summary">
-<!-- 站点图标：内联 SVG（墨底取景器），零额外请求、不引入二进制资源 -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect width='26' height='26' fill='%231C1913'/%3E%3Cellipse cx='13' cy='13' rx='8.5' ry='5' fill='none' stroke='%23F4F1E8' stroke-width='1.6'/%3E%3Ccircle cx='13' cy='13' r='2.4' fill='%23F4F1E8'/%3E%3C/svg%3E">
+<!-- 站点图标：内联 SVG（蓝图取景器 · 墨板 + 纸色括线 + 朱红瞳点），零额外请求 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect width='26' height='26' fill='%231C1913'/%3E%3Cpath d='M4 8V4h4M18 4h4v4M22 18v4h-4M8 22H4v-4' fill='none' stroke='%23F4F1E8' stroke-width='1.6'/%3E%3Ccircle cx='13' cy='13' r='5.4' fill='none' stroke='%23F4F1E8' stroke-width='1.2'/%3E%3Ccircle cx='13' cy='13' r='2.1' fill='%23BE3A1E'/%3E%3C/svg%3E">
 <script>
 /* 主题预置：先于 body 渲染，避免首屏闪白/闪主题（g_theme/g_accent 为全局共享 key，不随用户隔离） */
 try {
@@ -55,8 +55,8 @@ try {
       </div>
       <div class="landing-nav-meta">
         <span class="bp-ver">BETA 1.1.1</span>
-        <button class="btn btn-ghost btn-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式">🌙</button>
-        <button class="btn btn-ghost btn-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）">🟣</button>
+        <button class="btn btn-ghost btn-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式"><span data-ic="moon">🌙</span></button>
+        <button class="btn btn-ghost btn-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）"><span data-ic="palette">🟣</span></button>
         <button class="btn btn-outline btn-sm" onclick="showView('app')">免费体验</button>
         <button class="btn btn-primary btn-sm" onclick="showView('auth')">登录 / 注册</button>
       </div>
@@ -328,10 +328,10 @@ try {
         <h2>让每一次面试，<br>都成为可量化的成长。</h2>
         <p class="lead">多 Agent 驱动的 AI 模拟面试平台，从简历匹配到可解释评分报告，帮你在真实面试前把每个漏洞都补上。</p>
         <ul class="auth-features">
-          <li><span class="dot">🤖</span><span><b>Agent 圆桌</b>：HR / 技术 / 压力面 / 观察员 / 教练协同追问</span></li>
-          <li><span class="dot">📊</span><span><b>可解释评分</b>：每个分数都附对话证据与改进建议</span></li>
-          <li><span class="dot">📖</span><span><b>RAG 面经库</b>：答案强制附引用来源，降低幻觉</span></li>
-          <li><span class="dot">🎙️</span><span><b>多模态交互</b>：语音输入 / TTS 朗读 / 简历上传</span></li>
+          <li><span class="dot" data-ic="agents">🤖</span><span><b>Agent 圆桌</b>：HR / 技术 / 压力面 / 观察员 / 教练协同追问</span></li>
+          <li><span class="dot" data-ic="report">📊</span><span><b>可解释评分</b>：每个分数都附对话证据与改进建议</span></li>
+          <li><span class="dot" data-ic="rag">📖</span><span><b>RAG 面经库</b>：答案强制附引用来源，降低幻觉</span></li>
+          <li><span class="dot" data-ic="interview">🎙️</span><span><b>多模态交互</b>：语音输入 / TTS 朗读 / 简历上传</span></li>
         </ul>
       </div>
       <div class="auth-foot">
@@ -412,8 +412,8 @@ try {
       </span>
       <!-- v19：VIP 会员徽章（登录且享有权益时显示） -->
       <span class="vip-pill" id="vip-pill" hidden title="VIP 会员权益">VIP</span>
-      <button class="btn btn-ghost btn-icon" id="theme-btn" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式">🌙</button>
-      <button class="btn btn-ghost btn-icon" id="accent-btn" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）">🟣</button>
+      <button class="btn btn-ghost btn-icon" id="theme-btn" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式"><span data-ic="moon">🌙</span></button>
+      <button class="btn btn-ghost btn-icon" id="accent-btn" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）"><span data-ic="palette">🟣</span></button>
 
       <!-- 用户菜单 -->
       <div class="user-menu" id="user-menu-box" hidden>
@@ -430,10 +430,10 @@ try {
               <div class="dropdown-email" id="dd-email"></div>
             </div>
           </div>
-          <button onclick="closeUserMenu();switchTab('profile')" role="menuitem">👤 个人中心</button>
-          <button onclick="openMaterial('account')" role="menuitem">🔑 演示账号信息</button>
-          <button onclick="switchAccount()" role="menuitem">👥 切换账号</button>
-          <button class="danger" onclick="logout()" role="menuitem">🚪 退出登录</button>
+          <button onclick="closeUserMenu();switchTab('profile')" role="menuitem"><span data-ic="user">👤</span> 个人中心</button>
+          <button onclick="openMaterial('account')" role="menuitem"><span data-ic="key">🔑</span> 演示账号信息</button>
+          <button onclick="switchAccount()" role="menuitem"><span data-ic="users">👥</span> 切换账号</button>
+          <button class="danger" onclick="logout()" role="menuitem"><span data-ic="exit">🚪</span> 退出登录</button>
         </div>
       </div>
 
@@ -468,44 +468,44 @@ try {
     <!-- ============ 左侧栏（桌面，≤900px 自动隐藏） ============ -->
     <aside class="app-sidebar" aria-label="应用导航">
       <a class="sb-item active" href="#/dashboard" data-nav="dashboard">
-        <span class="sb-icon">🏠</span> 工作台
+        <span class="sb-icon" data-ic="dashboard">🏠</span> 工作台
       </a>
 
       <div class="sb-group-label">输入与准备</div>
       <a class="sb-item" href="#/match" data-nav="match">
-        <span class="sb-icon">📄</span> 简历匹配
+        <span class="sb-icon" data-ic="match">📄</span> 简历匹配
       </a>
       <a class="sb-item" href="#/resume" data-nav="resume">
-        <span class="sb-icon">✍️</span> 简历优化
+        <span class="sb-icon" data-ic="resume">✍️</span> 简历优化
       </a>
       <a class="sb-item" href="#/career" data-nav="career">
-        <span class="sb-icon">🧭</span> 职业探索
+        <span class="sb-icon" data-ic="career">🧭</span> 职业探索
       </a>
 
       <div class="sb-group-label">训练与评估</div>
       <a class="sb-item" href="#/interview" data-nav="interview">
-        <span class="sb-icon">🎙️</span> 模拟面试
+        <span class="sb-icon" data-ic="interview">🎙️</span> 模拟面试
         <span class="sb-badge" id="sb-interview-badge">0/5</span>
       </a>
       <a class="sb-item" href="#/rag" data-nav="rag">
-        <span class="sb-icon">📖</span> 面经问答
+        <span class="sb-icon" data-ic="rag">📖</span> 面经问答
       </a>
       <a class="sb-item" href="#/report" data-nav="report">
-        <span class="sb-icon">📊</span> 评估报告
+        <span class="sb-icon" data-ic="report">📊</span> 评估报告
       </a>
       <a class="sb-item" href="#/plan" data-nav="plan">
-        <span class="sb-icon">🗓</span> 学习计划
+        <span class="sb-icon" data-ic="plan">🗓</span> 学习计划
       </a>
       <a class="sb-item" href="#/quiz" data-nav="quiz">
-        <span class="sb-icon">📝</span> 题库小测
+        <span class="sb-icon" data-ic="quiz">📝</span> 题库小测
       </a>
 
       <div class="sb-group-label">我的</div>
       <a class="sb-item" href="#/profile" data-nav="profile">
-        <span class="sb-icon">👤</span> 个人中心
+        <span class="sb-icon" data-ic="profile">👤</span> 个人中心
       </a>
       <a class="sb-item" href="#/jobs" data-nav="jobs">
-        <span class="sb-icon">📋</span> 求职管理
+        <span class="sb-icon" data-ic="jobs">📋</span> 求职管理
       </a>
 
       <div class="sb-footer">
@@ -556,43 +556,43 @@ try {
     <!-- 快速入口（美化 · 互动） -->
     <div class="quick-entries quick-entries-hero">
       <button class="quick-entry card qe-featured" onclick="switchTab('match')">
-        <div class="qe-icon">📄</div>
+        <div class="qe-icon" data-ic="match">📄</div>
         <div class="qe-title">简历匹配</div>
         <div class="qe-desc">上传简历 + 选岗位，一键生成匹配度分析</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('resume')">
-        <div class="qe-icon">✍️</div>
+        <div class="qe-icon" data-ic="resume">✍️</div>
         <div class="qe-title">简历优化</div>
         <div class="qe-desc">6 维诊断 + 逐条改写建议，支持 LLM 深度改写</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('career')">
-        <div class="qe-icon">🧭</div>
+        <div class="qe-icon" data-ic="career">🧭</div>
         <div class="qe-title">职业探索</div>
         <div class="qe-desc">按专业 + 技能 + 兴趣，匹配 24 个热门岗位</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card qe-featured" onclick="switchTab('interview')">
-        <div class="qe-icon">🎙️</div>
+        <div class="qe-icon" data-ic="interview">🎙️</div>
         <div class="qe-title">模拟面试</div>
         <div class="qe-desc">HR / 技术 / 压力面实时追问，含代码沙盒</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('rag')">
-        <div class="qe-icon">📖</div>
+        <div class="qe-icon" data-ic="rag">📖</div>
         <div class="qe-title">面经问答</div>
         <div class="qe-desc">RAG 检索 40+ 条合成面经，答案强制引用</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('report')">
-        <div class="qe-icon">📊</div>
+        <div class="qe-icon" data-ic="report">📊</div>
         <div class="qe-title">评估报告</div>
         <div class="qe-desc">五维雷达 + 可解释评分 + 7 天学习路径</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('plan')">
-        <div class="qe-icon">🗓</div>
+        <div class="qe-icon" data-ic="plan">🗓</div>
         <div class="qe-title">学习计划</div>
         <div class="qe-desc">7 天路径落成每日任务 + 时间分配 + 完成打卡</div>
         <div class="qe-arrow">开始 →</div>
@@ -603,25 +603,25 @@ try {
     <div class="stats-row stats-row-clickable">
       <div class="card stat-card" onclick="switchTab('interview')" title="点击进入模拟面试">
         <div class="stat-arrow">→</div>
-        <div class="stat-icon">🤖</div>
+        <div class="stat-icon" data-ic="agents">🤖</div>
         <div class="stat-num" data-count="5">0</div>
         <div class="stat-label">协作 Agent</div>
       </div>
       <div class="card stat-card" onclick="switchTab('report')" title="点击查看评估报告">
         <div class="stat-arrow">→</div>
-        <div class="stat-icon">📊</div>
+        <div class="stat-icon" data-ic="report">📊</div>
         <div class="stat-num" data-count="5">0</div>
         <div class="stat-label">评估维度</div>
       </div>
       <div class="card stat-card" onclick="switchTab('career')" title="点击查看推荐岗位">
         <div class="stat-arrow">→</div>
-        <div class="stat-icon">🧭</div>
+        <div class="stat-icon" data-ic="career">🧭</div>
         <div class="stat-num" data-count="24" id="stat-careers-d">0</div>
         <div class="stat-label">推荐岗位</div>
       </div>
       <div class="card stat-card" onclick="switchTab('resume')" title="点击进入简历优化">
         <div class="stat-arrow">→</div>
-        <div class="stat-icon">✍️</div>
+        <div class="stat-icon" data-ic="resume">✍️</div>
         <div class="stat-num" data-count="6">0</div>
         <div class="stat-label">简历诊断维度</div>
       </div>
@@ -686,12 +686,12 @@ try {
   <section class="section">
     <h2 class="section-title">为什么是「AI Native」而不是「套壳题库」</h2>
     <div class="features">
-      <div class="card feature"><h3><span class="ic">🤖</span>多 Agent 协作</h3><p>面试官按轮次与模式轮转，基于回答动态追问；观察员实时记录证据，教练生成学习路径——追问策略由 LLM 决策，而非固定题库。演示版将规划、工具调用、证据记录的结构完整呈现。</p></div>
-      <div class="card feature"><h3><span class="ic">📖</span>RAG 混合检索</h3><p>BM25 词面召回 + 端侧向量（MiniLM 384 维，Transformers.js 浏览器内计算）语义召回，两路归一分后加权融合，答案必须标注来源与两路得分，资料不足时明说「暂无相关资料」。完整版为 pgvector + RRF + Rerank。</p></div>
-      <div class="card feature"><h3><span class="ic">📊</span>可解释评分</h3><p>五个维度分数全部引用对话原话作为证据——演示版中每条证据均来自你的真实回答；完整版另建校准样本集量化评分一致性。</p></div>
-      <div class="card feature"><h3><span class="ic">🎙️</span>多模态交互</h3><p>演示版已集成浏览器原生能力：语音输入（Web Speech API）、TTS 朗读（speechSynthesis）、简历文件上传。完整版叠加 Whisper ASR、语速/停顿分析与白板代码理解。</p></div>
-      <div class="card feature"><h3><span class="ic">🔒</span>隐私优先</h3><p>本地 PII 脱敏（身份证/手机号/邮箱）+ Prompt 注入检测，原始简历不上云；演示版 API Key 仅存 sessionStorage，关闭即清除；脱敏顺序经过单元测试验证。</p></div>
-      <div class="card feature"><h3><span class="ic">⚡</span>三级兜底</h3><p>无 API Key 自动 Mock；模型超时/限流自动降级本地流式输出；API 失败时启发式算法兜底——演示现场不翻车。</p></div>
+      <div class="card feature"><h3><span class="ic" data-ic="agents">🤖</span>多 Agent 协作</h3><p>面试官按轮次与模式轮转，基于回答动态追问；观察员实时记录证据，教练生成学习路径——追问策略由 LLM 决策，而非固定题库。演示版将规划、工具调用、证据记录的结构完整呈现。</p></div>
+      <div class="card feature"><h3><span class="ic" data-ic="rag">📖</span>RAG 混合检索</h3><p>BM25 词面召回 + 端侧向量（MiniLM 384 维，Transformers.js 浏览器内计算）语义召回，两路归一分后加权融合，答案必须标注来源与两路得分，资料不足时明说「暂无相关资料」。完整版为 pgvector + RRF + Rerank。</p></div>
+      <div class="card feature"><h3><span class="ic" data-ic="report">📊</span>可解释评分</h3><p>五个维度分数全部引用对话原话作为证据——演示版中每条证据均来自你的真实回答；完整版另建校准样本集量化评分一致性。</p></div>
+      <div class="card feature"><h3><span class="ic" data-ic="interview">🎙️</span>多模态交互</h3><p>演示版已集成浏览器原生能力：语音输入（Web Speech API）、TTS 朗读（speechSynthesis）、简历文件上传。完整版叠加 Whisper ASR、语速/停顿分析与白板代码理解。</p></div>
+      <div class="card feature"><h3><span class="ic" data-ic="lock">🔒</span>隐私优先</h3><p>本地 PII 脱敏（身份证/手机号/邮箱）+ Prompt 注入检测，原始简历不上云；演示版 API Key 仅存 sessionStorage，关闭即清除；脱敏顺序经过单元测试验证。</p></div>
+      <div class="card feature"><h3><span class="ic" data-ic="bolt">⚡</span>三级兜底</h3><p>无 API Key 自动 Mock；模型超时/限流自动降级本地流式输出；API 失败时启发式算法兜底——演示现场不翻车。</p></div>
     </div>
   </section>
 
@@ -736,7 +736,7 @@ try {
        ======================================================== -->
   <div class="app-page" data-page="match">
     <div class="page-header">
-      <h2><span class="ph-icon">📄</span> 简历岗位匹配</h2>
+      <h2><span class="ph-icon" data-ic="match">📄</span> 简历岗位匹配</h2>
       <p>上传简历 + 粘贴目标岗位 JD，AI 提取技能关键词，输出匹配度、能力缺口与补强建议。</p>
     </div>
     <div class="page-card">
@@ -780,7 +780,7 @@ try {
        ======================================================== -->
   <div class="app-page" data-page="interview">
     <div class="page-header">
-      <h2><span class="ph-icon">🎙️</span> 多 Agent 模拟面试</h2>
+      <h2><span class="ph-icon" data-ic="interview">🎙️</span> 多 Agent 模拟面试</h2>
       <p>HR / 技术 / 压力面三位面试官轮转追问，观察员实时记录证据，教练生成学习路径。</p>
     </div>
     <div class="page-card">
@@ -901,7 +901,7 @@ try {
        ======================================================== -->
   <div class="app-page" data-page="rag">
     <div class="page-header">
-      <h2><span class="ph-icon">📖</span> RAG 面经问答</h2>
+      <h2><span class="ph-icon" data-ic="rag">📖</span> RAG 面经问答</h2>
       <p>岗位 JD、企业面经、STAR 题库混合检索，答案强制附引用来源，从机制上降低幻觉。</p>
     </div>
     <div class="page-card">
@@ -932,7 +932,7 @@ try {
        ======================================================== -->
   <div class="app-page" data-page="resume">
     <div class="page-header">
-      <h2><span class="ph-icon">✍️</span> 简历优化工作台</h2>
+      <h2><span class="ph-icon" data-ic="resume">✍️</span> 简历优化工作台</h2>
       <p>6 维诊断（量化成果 / STAR / 动词力度 / 岗位匹配…）+ 逐条改写建议，可直接用 LLM 深度改写。</p>
     </div>
     <div class="page-card">
@@ -971,7 +971,7 @@ try {
        ======================================================== -->
   <div class="app-page" data-page="career">
     <div class="page-header">
-      <h2><span class="ph-icon">🧭</span> 职业探索</h2>
+      <h2><span class="ph-icon" data-ic="career">🧭</span> 职业探索</h2>
       <p>选择专业 + 技能 + 兴趣，AI 匹配 <b class="js-career-count">24</b> 个岗位，给出技能对比与分步学习路径。</p>
     </div>
     <div class="page-card">
@@ -1029,7 +1029,7 @@ try {
        ======================================================== -->
   <div class="app-page" data-page="report">
     <div class="page-header">
-      <h2><span class="ph-icon">📊</span> 评估报告</h2>
+      <h2><span class="ph-icon" data-ic="report">📊</span> 评估报告</h2>
       <p>五维雷达 + 每条证据引用对话原话 + 最弱维度动态生成 7 天学习路径 + 历史进步曲线。</p>
     </div>
     <div class="page-card">
@@ -1044,7 +1044,7 @@ try {
        ======================================================== -->
   <div class="app-page" data-page="profile">
     <div class="page-header">
-      <h2><span class="ph-icon">👤</span> 个人中心</h2>
+      <h2><span class="ph-icon" data-ic="profile">👤</span> 个人中心</h2>
       <p>自定义头像与求职信息——资料越完整，匹配度分析与职业探索推荐越准确。</p>
     </div>
 
@@ -1189,7 +1189,7 @@ try {
        ======================================================== -->
   <div class="app-page" data-page="quiz">
     <div class="page-header">
-      <h2><span class="ph-icon">📝</span> 题库小测</h2>
+      <h2><span class="ph-icon" data-ic="quiz">📝</span> 题库小测</h2>
       <p>知识点学习 + 限时模考 / 顺序练习 / 章节练习三种模式，错题自动收录错题本，每日一练打卡连签，学习数据全程可视化。VIP 解锁专属分类、错题本与无限次小测。</p>
     </div>
 
@@ -1213,7 +1213,7 @@ try {
        ======================================================== -->
   <div class="app-page" data-page="plan">
     <div class="page-header">
-      <h2><span class="ph-icon">🗓</span> 学习计划</h2>
+      <h2><span class="ph-icon" data-ic="plan">🗓</span> 学习计划</h2>
       <p>把评估报告生成的 7 天学习路径落成可执行计划：每日专项任务、时间分配（学习 / 练习 / 复盘）与完成打卡，进度按账号本地保存。完成一次模拟面试后点「同步评估报告」，计划即按你的最弱维度重新生成。</p>
     </div>
 
@@ -1235,7 +1235,7 @@ try {
        ======================================================== -->
   <div class="app-page" data-page="jobs">
     <div class="page-header">
-      <h2><span class="ph-icon">📋</span> 求职管理</h2>
+      <h2><span class="ph-icon" data-ic="jobs">📋</span> 求职管理</h2>
       <p>投递看板记录每个机会的去向，面试复盘把真实面试转化为可回查的结论——与模拟面试的表现数据形成对流，闭合「练习 → 实战 → 再训练」闭环。</p>
     </div>
 
@@ -1315,39 +1315,39 @@ try {
 <!-- ============ 底部 Tab 栏（移动端，≤900px 显示） ============ -->
 <nav class="app-tabbar" aria-label="移动端导航">
   <a class="tabbar-item active" href="#/dashboard" data-nav="dashboard">
-    <span class="tb-icon">🏠</span><span>工作台</span>
+    <span class="tb-icon" data-ic="dashboard">🏠</span><span>工作台</span>
   </a>
   <a class="tabbar-item" href="#/interview" data-nav="interview">
-    <span class="tb-icon">🎙️</span><span>面试</span>
+    <span class="tb-icon" data-ic="interview">🎙️</span><span>面试</span>
   </a>
   <a class="tabbar-item" href="#/match" data-nav="match">
-    <span class="tb-icon">📄</span><span>匹配</span>
+    <span class="tb-icon" data-ic="match">📄</span><span>匹配</span>
   </a>
   <a class="tabbar-item" href="#/resume" data-nav="resume">
-    <span class="tb-icon">✍️</span><span>简历</span>
+    <span class="tb-icon" data-ic="resume">✍️</span><span>简历</span>
   </a>
   <a class="tabbar-item" href="#/career" data-nav="career">
-    <span class="tb-icon">🧭</span><span>职业</span>
+    <span class="tb-icon" data-ic="career">🧭</span><span>职业</span>
   </a>
   <a class="tabbar-item" href="#/rag" data-nav="rag">
-    <span class="tb-icon">📖</span><span>面经</span>
+    <span class="tb-icon" data-ic="rag">📖</span><span>面经</span>
   </a>
   <a class="tabbar-item" href="#/profile" data-nav="profile">
-    <span class="tb-icon">👤</span><span>我的</span>
+    <span class="tb-icon" data-ic="profile">👤</span><span>我的</span>
   </a>
   <a class="tabbar-item" href="#/jobs" data-nav="jobs">
-    <span class="tb-icon">📋</span><span>求职</span>
+    <span class="tb-icon" data-ic="jobs">📋</span><span>求职</span>
   </a>
   <a class="tabbar-item" href="#/quiz" data-nav="quiz">
-    <span class="tb-icon">📝</span><span>题库</span>
+    <span class="tb-icon" data-ic="quiz">📝</span><span>题库</span>
   </a>
   <a class="tabbar-item" href="#/plan" data-nav="plan">
-    <span class="tb-icon">🗓</span><span>计划</span>
+    <span class="tb-icon" data-ic="plan">🗓</span><span>计划</span>
   </a>
 </nav>
 
   <!-- v20：AI 小助手（全局悬浮入口 + 抽屉式对话面板） -->
-  <button class="ai-fab" id="ai-fab" aria-label="AI 小助手" title="AI 小助手 · 拖动可贴边冻结">🤖</button>
+  <button class="ai-fab" id="ai-fab" aria-label="AI 小助手" title="AI 小助手 · 拖动可贴边冻结"><span data-ic="spark">🤖</span></button>
   <div class="ai-panel" id="ai-assistant-panel" role="dialog" aria-label="AI 小助手对话面板" aria-hidden="true">
     <div class="ai-panel-head">
       <b>🤖 AI 小助手</b>
@@ -1374,11 +1374,11 @@ try {
   <nav class="evaluator-nav">
     <div class="wrap">
       <div style="display:flex;align-items:center;gap:12px">
-        <span class="evaluator-badge">🎛 开发者模式</span>
+        <span class="evaluator-badge"><span data-ic="gauge">🎛</span> 开发者模式</span>
         <span style="font-size:13px;color:var(--muted)">面镜 FutureMirror · 演示版技术证据</span>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" title="切换主题">🌙</button>
+        <button class="btn btn-ghost btn-icon" onclick="toggleTheme()" title="切换主题"><span data-ic="moon">🌙</span></button>
         <button class="btn btn-ghost btn-sm" onclick="refreshAll()" title="重新采集环境与性能指标">🔄 刷新指标</button>
         <button class="btn btn-outline btn-sm" onclick="showView('app')">进入应用</button>
         <button class="btn btn-outline btn-sm" onclick="exitEvaluator()">退出开发者模式</button>
@@ -1730,6 +1730,7 @@ try {
   <script src="js/features/jobs.js"></script>
   <script src="js/features/quiz.js"></script>
   <script src="js/features/plan.js"></script>
+  <script src="js/features/icons.js"></script>
   <script src="js/features/assistant.js"></script>
   <script src="js/core/api.js"></script>
   <script src="js/core/motion.js"></script>

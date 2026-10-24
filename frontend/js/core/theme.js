@@ -10,10 +10,12 @@ function applyTheme(t) {
 }
 function syncThemeBtn() {
   const d = document.documentElement.dataset.theme === "dark";
-  const icon = d ? "\u2600\uFE0F" : "\uD83C\uDF19";
-  const b = $("theme-btn"); if (b) b.textContent = icon;
-  const l = $("theme-btn-l"); if (l) l.textContent = icon;   // 落地页导航同步
-  const a = $("theme-btn-a"); if (a) a.textContent = icon;   // 登录页同步
+  /* v31：主题钮用图标系统（线性 SVG 跟随 currentColor）；__bpIcons 未就绪时
+     先放 data-ic 兜底 span，待图标模块 DOMContentLoaded 换装（reveal 初始化早于 icons 加载） */
+  const name = d ? "sun" : "moon";
+  const svg = (window.__bpIcons && window.__bpIcons.icon) ? window.__bpIcons.icon(name) : "";
+  const html = svg || ('<span data-ic="' + name + '">' + (d ? "\u2600\uFE0F" : "\uD83C\uDF19") + "</span>");
+  ["theme-btn", "theme-btn-l", "theme-btn-a"].forEach(id => { const b = $(id); if (b) b.innerHTML = html; });
 }
 function toggleTheme() {
   setThemeMode(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
