@@ -238,6 +238,39 @@ async function runTests() {
   ok(![...shotImgs].some(im => /%2523/.test(im.getAttribute("src") || "")), "快照 src 无双重编码痕迹");
 
   /* ================================================================
+     ⑥b2 看板与主雷达同源（v31.3：注入真实维度后快照一致）
+     ================================================================ */
+  console.log("\n—— ⑥b2 看板与主雷达同源 ——");
+  const rBefore = w.eval("window.__bpViz.radarSnap(360, true)");
+  const hBefore = w.eval("window.__bpViz.heatSnap(360)");
+  const realDims = [
+    { dimension: "内容深度", score: 88, comment: "量化充分" },
+    { dimension: "结构逻辑", score: 42, comment: "结构松散" },
+    { dimension: "语言表达", score: 73, comment: "流畅" },
+    { dimension: "岗位匹配", score: 60, comment: "部分匹配" },
+    { dimension: "抗压表现", score: 55, comment: "偶有防御" },
+  ];
+  w.eval("window.__bpViz.refreshReportPanel(" + JSON.stringify({ dims: realDims, turns: 5 }) + ")");
+  const panel = d.getElementById("bp-viz-panel");
+  ok(!!panel, "注入真实维度后仍能挂载看板");
+  const rAfter = w.eval("window.__bpViz.radarSnap(360, true)");
+  const hAfter = w.eval("window.__bpViz.heatSnap(360)");
+  ok(rBefore !== rAfter, "radarSnap 随注入维度变化（不再是固定硬编码）");
+  ok(hBefore !== hAfter, "heatSnap 随注入维度变化（热力与主雷达同源）");
+  const rAfterSvg = decodeOnce(rAfter);
+  ok(/内容深度/.test(rAfterSvg) && /结构逻辑/.test(rAfterSvg) && /语言表达/.test(rAfterSvg) && /岗位匹配/.test(rAfterSvg) && /抗压表现/.test(rAfterSvg),
+    "radarSnap 五个维度名与主雷达 radarSVG(dims) 完全一致");
+  const heatCells = panel.querySelectorAll(".bp-heat-cell");
+  ok(heatCells.length === 24, "看板热力图 24 格就位（实际 " + heatCells.length + "）");
+  let hotCells = 0;
+  heatCells.forEach(c => { if (c.style.opacity === "1") hotCells++; });
+  ok(hotCells >= 1, "高分维度在热力图中被标红（朱红热区 " + hotCells + " 格）");
+  const scatterDots = panel.querySelectorAll(".bp-scatter-dot");
+  ok(scatterDots.length === 5, "看板散点 5 个维度分布点就位（实际 " + scatterDots.length + "）");
+  ok(legal(decodeOnce(hAfter)), "注入后 heat 快照解码颜色仍全部合法");
+  w.eval("window.__bpViz.removeReportPanel()");
+
+  /* ================================================================
      ⑥c 悬停放大预览层防遮挡（v31.2：被右下悬浮件盖住 / 溢出视口）
      ================================================================ */
   console.log("\n—— ⑥c 预览层防遮挡 ——");

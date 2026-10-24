@@ -20,6 +20,59 @@
     return e;
   }
   function clamp01(n) { return Math.max(0, Math.min(1, n)); }
+  function clampInt(lo, hi, n) { n = Math.round(n); return Math.max(lo, Math.min(hi, n)); }
+
+  /* ---------- ⑧a 报告真实维度桥接（让看板与上方主雷达同源） ----------
+   * 原 radarSnap 内部硬编码维度名与 0-1 分值，与主雷达 radarSVG(dims) 完全脱节，
+   * 用户反馈「看板数据和上面不一样」。现由 report.js 在渲染报告时注入真实 dims，
+   * 看板内的雷达 / 热力 / 散点快照统一读取同一份数据。 */
+  let currentReportCtx = null;   // { dims:[{dimension,score,...}], turns:n }
+  function setReportCtx(ctx) {
+    currentReportCtx = (ctx && ctx.dims && ctx.dims.length) ? ctx : null;
+  }
+  /* 基线雷达（无真实报告时的占位，命名与主雷达一致，避免硬编码错位） */
+  const DEFAULT_RADAR = [
+    { dimension: "内容深度", score: 72 }, { dimension: "结构逻辑", score: 64 },
+    { dimension: "语言表达", score: 58 }, { dimension: "岗位匹配", score: 81 },
+    { dimension: "抗压表现", score: 66 },
+  ];
+  /* 由真实 5 维分派生 24 格热力分布（维度 × 阶段），使热力与主雷达同源 */
+  function dimsToHeat(dims) {
+    const out = [];
+    for (let i = 0; i < 24; i++) {
+      const di = i % dims.length;                 // 0..4 映射到 5 个维度
+      const stage = Math.floor(i / dims.length);  // 0..4 模拟阶段推进
+      const base = dims[di].score || 0;
+      const prog = 1 + (stage - 2) * 0.05;        // 中段略高，体现成长曲线
+      out.push(clampInt(0, 100, base * prog));
+    }
+    return out;                                   // 长度 24，匹配 rows4×cols6
+  }
+  /* 由真实 5 维分派生散点：x=熟练度(分数映射)，y=维度分布 */
+  function dimsToPoints(dims) {
+    return dims.map((d, i) => ({
+      x: clamp01(0.2 + (d.score || 0) / 100 * 0.7),
+      y: clamp01(0.78 - i * 0.13),
+      label: d.dimension || ("维度 " + (i + 1)),
+    }));
+  }
+  /* 当前看板数据源：优先真实报告维度，否则退回基线 / 会话派生 */
+  function buildVizData(ctx) {
+    const dims = ctx.dims;
+    return {
+      baseline: false,
+      dims: dims,
+      values: dimsToHeat(dims),
+      points: dimsToPoints(dims),
+      turns: ctx.turns || dims.length,
+    };
+  }
+  function currentViz() {
+    if (currentReportCtx && currentReportCtx.dims && currentReportCtx.dims.length) {
+      return buildVizData(currentReportCtx);
+    }
+    return readVizData();
+  }
 
   /* ---------- ① 热力图（墨阶浓淡 + 朱红峰值） ---------- */
   function renderHeat(host, o) {
@@ -466,20 +519,24 @@
   }
   function radarSnap(size, detail) {
     const s = size || 360, c = s / 2, r = s * 0.34;
-    const dims = ["内容", "结构", "表达", "匹配", "抗压"];
-    const vals = [0.72, 0.64, 0.58, 0.81, 0.66];
+    /* v31.3：维度取自真实报告（currentViz），与主雷达同源；无报告时回落基线雷达 */
+    const src = currentViz();
+    const dims = (src.dims && src.dims.length) ? src.dims : DEFAULT_RADAR;
+    const vals = dims.map(d => clamp01((d.score != null ? d.score : 0) / 100));
+    const names = dims.map(d => d.dimension || d.label || "");
+    const N = dims.length;
     const pt = i => {
-      const a = -Math.PI / 2 + i * (Math.PI * 2 / dims.length);
+      const a = -Math.PI / 2 + i * (Math.PI * 2 / N);
       const k = r * (0.35 + vals[i] * 0.65);
       return (c + Math.cos(a) * k).toFixed(1) + "," + (c + Math.sin(a) * k).toFixed(1);
     };
-    const poly = dims.map((_, i) => pt(i)).join(" ");
-    const grid = dims.map((_, i) => {
-      const a = -Math.PI / 2 + i * (Math.PI * 2 / dims.length);
+    const poly = names.map((_, i) => pt(i)).join(" ");
+    const grid = names.map((_, i) => {
+      const a = -Math.PI / 2 + i * (Math.PI * 2 / N);
       return (c + Math.cos(a) * r).toFixed(1) + "," + (c + Math.sin(a) * r).toFixed(1);
     }).join(" ");
-    const labels = detail ? dims.map((t, i) => {
-      const a = -Math.PI / 2 + i * (Math.PI * 2 / dims.length);
+    const labels = detail ? names.map((t, i) => {
+      const a = -Math.PI / 2 + i * (Math.PI * 2 / N);
       return "<text x='" + (c + Math.cos(a) * (r + 16)).toFixed(1) + "' y='" +
         (c + Math.sin(a) * (r + 16)).toFixed(1) + "' font-size='" + (s / 26).toFixed(0) +
         "' fill='#555' text-anchor='middle'>" + t + "</text>";
@@ -496,7 +553,7 @@
     const s = size || 360, n = 24, cols = 6, rows = n / cols;
     const w = s / cols, h = s / rows;
     let out = "";
-    const vals = readVizData().values;
+    const vals = currentViz().values;   // v31.3：与主雷达同源（真实维度派生）
     for (let i = 0; i < n; i++) {
       const k = (vals[i] || 0) / 100;
       const op = (0.08 + k * 0.5).toFixed(2);
@@ -519,7 +576,7 @@
       try { bpLive.stop(); } catch (e) {}
       bpLive = null;
     }
-    const d = readVizData();
+    const d = currentViz();   // v31.3：优先真实报告维度，与上方主雷达同源
 
     const sec = el("section", "card bp-z2");
     sec.id = "bp-viz-panel";
@@ -607,8 +664,10 @@
 
   /* v31：报告重渲染后刷新看板——先停旧 live 定时器 / WS，摘除旧面板，
    * 再按最新会话数据重挂。此前面板只在开机装配一次（守卫 return false），
-   * 面试后仍显示「基线数据」，用户看不到自己的真实分布（已反馈）。 */
-  function refreshReportPanel() {
+   * 面试后仍显示「基线数据」，用户看不到自己的真实分布（已反馈）。
+   * v31.3：reportCtx={ dims, turns } 注入真实维度，使看板与上方主雷达同源。 */
+  function refreshReportPanel(reportCtx) {
+    setReportCtx(reportCtx);
     removeReportPanel();
     return mountReportPanel();
   }
