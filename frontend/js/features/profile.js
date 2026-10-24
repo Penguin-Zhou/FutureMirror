@@ -7,7 +7,7 @@ const PROFILE_SKILLS = ["JavaScript", "TypeScript", "Python", "Java", "Go", "Rea
 const PROFILE_DEFAULTS = {
   avatar: { type: "auto", value: "" },
   city: "", degree: "", years: "", status: "在职看机会", target: "", bio: "", skills: [],
-  prefs: { voice: true, autoSpeak: false, weekly: false },
+  prefs: { voice: true, autoSpeak: false, weekly: false, crosshair: true },
   vip: false,
 };
 
@@ -261,6 +261,7 @@ function renderPrefSwitches() {
   set("sw-voice", p.prefs.voice);
   set("sw-auto", p.prefs.autoSpeak);
   set("sw-weekly", p.prefs.weekly);
+  set("sw-cross", p.prefs.crosshair);
 }
 
 function togglePref(key) {
@@ -269,8 +270,12 @@ function togglePref(key) {
   prefs[key] = !prefs[key];
   saveProfile({ prefs });
   renderPrefSwitches();
-  const label = { voice: "语音输入", autoSpeak: "自动朗读", weekly: "每周学习提醒" }[key] || "偏好";
+  const label = { voice: "语音输入", autoSpeak: "自动朗读", weekly: "每周学习提醒", crosshair: "十字鼠标追踪" }[key] || "偏好";
   toast(`已${prefs[key] ? "开启" : "关闭"}「${label}」`);
+  /* v31：十字准线偏好即时生效（关闭撤除准线，开启重新挂上） */
+  if (key === "crosshair") {
+    try { if (window.__bpApp && window.__bpApp.setCrosshair) window.__bpApp.setCrosshair(prefs.crosshair); } catch (e) {}
+  }
 }
 
 function togglePrefDark() {
