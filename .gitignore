@@ -50,3 +50,10 @@ next-env.d.ts
 
 # 端侧模型权重（约 23MB，由 scripts/fetch-model.js 下载，进发布产物但不进主仓库历史）
 /public/models/
+
+# 赛事交付辅助材料（演示视频脚本 / 自查表 / 核对表）只存本地工作区，永不入库
+/deliverables/
+*-演示视频脚本.md
+*-赛事交付核对表.md
+*-自查.md
+*-审核表.md
