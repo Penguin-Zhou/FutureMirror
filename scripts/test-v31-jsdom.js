@@ -236,6 +236,11 @@ async function runTests() {
   ok(shotImgs.length === 2, "看板内两张快照 img 就位（实际 " + shotImgs.length + "）");
   ok([...shotImgs].every(im => /^data:image\/svg\+xml/.test(im.getAttribute("src") || "")), "两张快照 src 均为 data-URI SVG（懒加载已取资源）");
   ok(![...shotImgs].some(im => /%2523/.test(im.getAttribute("src") || "")), "快照 src 无双重编码痕迹");
+  /* v31.4 可读性层：基线态也渲染 5 维明细，但不标最弱（占位数据非真实短板） */
+  const sbRows = d.querySelectorAll("#bp-viz-panel .bp-score-row");
+  ok(sbRows.length === 5, "基线态评分明细渲染 5 行（实际 " + sbRows.length + "）");
+  ok(d.querySelectorAll("#bp-viz-panel .bp-score-row.is-weak").length === 0, "基线态不标最弱（占位非真实短板）");
+  ok(!!d.querySelector("#bp-viz-panel .bp-weakcue"), "基线态短板提示卡就位");
 
   /* ================================================================
      ⑥b2 看板与主雷达同源（v31.3：注入真实维度后快照一致）
@@ -267,6 +272,16 @@ async function runTests() {
   ok(hotCells >= 1, "高分维度在热力图中被标红（朱红热区 " + hotCells + " 格）");
   const scatterDots = panel.querySelectorAll(".bp-scatter-dot");
   ok(scatterDots.length === 5, "看板散点 5 个维度分布点就位（实际 " + scatterDots.length + "）");
+  /* v31.4 可读性层：注入真实维度后精确标出最弱维，短板卡联动练习计划 */
+  const sbReal = panel.querySelectorAll(".bp-score-row");
+  ok(sbReal.length === 5, "注入真实维度后评分明细仍为 5 行");
+  const weakRows = panel.querySelectorAll(".bp-score-row.is-weak");
+  ok(weakRows.length === 1, "真实态精确标出 1 个最弱维度（实际 " + weakRows.length + "）");
+  ok(/结构逻辑/.test(weakRows[0].textContent), "最弱维度判定正确（结构逻辑 42 最低）");
+  const fillStyle = weakRows[0].querySelector(".bp-score-fill").getAttribute("style") || "";
+  ok(/width:\s*42%/.test(fillStyle), "最弱维度进度条宽度按分数映射（42%）");
+  const wcReal = panel.querySelector(".bp-weakcue");
+  ok(!!wcReal && /结构逻辑/.test(wcReal.textContent) && /去练习计划/.test(wcReal.textContent), "短板提示卡含最弱维度名与练习计划入口");
   ok(legal(decodeOnce(hAfter)), "注入后 heat 快照解码颜色仍全部合法");
   w.eval("window.__bpViz.removeReportPanel()");
 

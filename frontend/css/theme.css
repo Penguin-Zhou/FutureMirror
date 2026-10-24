@@ -1356,6 +1356,66 @@
   .bp-shot img { display: block; width: 140px; height: 104px; object-fit: cover; border: 1px solid var(--line); }
   .bp-shot figcaption { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 4px; letter-spacing: .06em; }
 
+  /* ㉗ v31.4 · 可读性优化：5 维评分明细（与上方主雷达同源）+ 短板提示卡 */
+  /* 文档顶规：2px 墨色顶规（ID 选择器锁定，避免被 .bp-z2 的 border 简写覆盖） */
+  #bp-viz-panel { border-top: 2px solid var(--ink); }
+  #bp-viz-panel:hover { border-top-color: var(--brand); }
+  .bp-scoreboard { border-top: 1px solid var(--line); padding-top: 12px; }
+  .bp-sb-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 8px;
+  }
+  .bp-score-row {
+    padding: 7px 0; border-bottom: 1px dashed var(--line); border-left: 2px solid transparent;
+    padding-left: 8px; transition: border-color .15s ease;
+  }
+  .bp-score-row:last-child { border-bottom: none; }
+  .bp-score-row:hover { border-left-color: var(--line-2); }
+  .bp-score-row.is-weak { border-left-color: var(--brand); }
+  .bp-score-row.is-weak:hover { border-left-color: var(--brand); }
+  .bp-score-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .bp-score-name { font-family: var(--serif); font-size: 14.5px; color: var(--ink); line-height: 1.3; }
+  .bp-score-row.is-weak .bp-score-name { color: var(--brand); }
+  .bp-score-tag {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; color: #fff;
+    background: var(--brand); padding: 1px 5px; flex: none;
+  }
+  .bp-score-val {
+    margin-left: auto; font-family: var(--mono); font-size: 18px; font-weight: 600;
+    color: var(--muted); line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .bp-score-row.is-weak .bp-score-val { color: var(--brand); }
+  .bp-score-track {
+    margin-top: 6px; height: 6px; background: var(--bg-deep); border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .bp-score-fill { display: block; height: 100%; background: var(--ink); }
+  .bp-score-comment {
+    margin-top: 5px; font-family: var(--mono); font-size: 10.5px; line-height: 1.45;
+    color: var(--faint); letter-spacing: .02em;
+  }
+  .bp-weakcue {
+    border: 1px solid var(--line-2); border-top: 2px solid var(--brand);
+    background: var(--brand-bg); padding: 12px 14px;
+  }
+  .bp-wc-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--brand); margin-bottom: 7px;
+  }
+  .bp-wc-body { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .bp-wc-dim { font-family: var(--serif); font-size: 15px; color: var(--ink); }
+  .bp-wc-score {
+    font-family: var(--mono); font-size: 16px; font-weight: 600; color: var(--brand);
+    font-variant-numeric: tabular-nums;
+  }
+  .bp-wc-text { flex: 1 1 100%; margin: 6px 0 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+  .bp-wc-btn {
+    margin-top: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+    border: 1px solid var(--brand); background: transparent; color: var(--brand);
+    cursor: pointer; padding: 5px 11px; transition: background .15s ease, color .15s ease;
+  }
+  .bp-wc-btn:hover { background: var(--brand); color: #fff; }
+
   /* ㉖ 键盘可达：跳到主内容（默认移出屏幕，聚焦时显现） */
   .bp-skip {
     position: fixed; left: -9999px; top: 10px; z-index: 120;

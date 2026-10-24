@@ -566,6 +566,62 @@
       "<rect width='100%' height='100%' fill='#F4F1E8'/>" + out + "</svg>"
     );
   }
+  /* v31.4 · 可读性优化：5 维评分明细（与上方主雷达同源）+ 短板提示卡。
+   * 此前看板只剩雷达/热力/散点快照，用户无法把「上面的雷达」和「看板」逐项核对，
+   * 也看不到最弱维度与提升方向。现新增文字可读性层，并弱化合成散点的视觉权重。 */
+  function weakestDim(dims) {
+    if (!dims || !dims.length) return null;
+    let w = dims[0];
+    for (let i = 1; i < dims.length; i++) if ((dims[i].score || 0) < (w.score || 0)) w = dims[i];
+    return w;
+  }
+  function renderScoreboard(host, dims, isReal) {
+    if (!host) return null;
+    host.className = "bp-scoreboard";
+    host.innerHTML = "";
+    host.appendChild(el("div", "bp-sb-eyebrow", "能力明细 · 与上方雷达同源"));
+    const weak = isReal ? weakestDim(dims) : null;
+    dims.forEach(dm => {
+      const isW = isReal && weak && dm === weak;
+      const row = el("div", "bp-score-row" + (isW ? " is-weak" : ""));
+      const head = el("div", "bp-score-head");
+      head.appendChild(el("span", "bp-score-name", dm.dimension || "维度"));
+      if (isW) head.appendChild(el("span", "bp-score-tag", "最弱"));
+      head.appendChild(el("span", "bp-score-val", String(dm.score != null ? dm.score : "—")));
+      row.appendChild(head);
+      const track = el("div", "bp-score-track");
+      const fill = el("span", "bp-score-fill");
+      fill.style.width = Math.max(0, Math.min(100, dm.score || 0)) + "%";
+      if (isW) fill.style.background = "var(--brand)";
+      track.appendChild(fill);
+      row.appendChild(track);
+      if (dm.comment) row.appendChild(el("div", "bp-score-comment", dm.comment));
+      host.appendChild(row);
+    });
+    return { rows: dims.length, weak: weak ? weak.dimension : null };
+  }
+  function renderWeakCue(host, dims, isReal) {
+    if (!host) return null;
+    host.className = "bp-weakcue";
+    host.innerHTML = "";
+    host.appendChild(el("div", "bp-wc-eyebrow", "短板提示"));
+    const body = el("div", "bp-wc-body");
+    if (isReal && dims && dims.length) {
+      const w = weakestDim(dims);
+      body.appendChild(el("span", "bp-wc-dim", w.dimension || "最弱维度"));
+      body.appendChild(el("span", "bp-wc-score", String(w.score != null ? w.score : "—")));
+      body.appendChild(el("p", "bp-wc-text", w.comment || "建议针对该维度定向练习，并同步到学习计划。"));
+      host.appendChild(body);
+      const btn = el("button", "bp-wc-btn", "→ 去练习计划定向补强");
+      btn.type = "button";
+      btn.setAttribute("onclick", "showView('plan')");
+      host.appendChild(btn);
+    } else {
+      body.appendChild(el("p", "bp-wc-text", "完成一次模拟面试后，此处显示你的真实短板与定向提升方向。"));
+      host.appendChild(body);
+    }
+    return true;
+  }
   function mountReportPanel() {
     const anchor = doc.getElementById("report-content");
     const parent = anchor && anchor.parentNode;
@@ -578,7 +634,7 @@
     }
     const d = currentViz();   // v31.3：优先真实报告维度，与上方主雷达同源
 
-    const sec = el("section", "card bp-z2");
+    const sec = el("section", "card page-card bp-z2");
     sec.id = "bp-viz-panel";
     sec.style.padding = "18px";
     sec.style.marginTop = "14px";
@@ -591,6 +647,19 @@
     note.style.cssText = "font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.06em";
     head.appendChild(h); head.appendChild(note);
     sec.appendChild(head);
+
+    /* v31.4：可读性层——5 维评分明细（与上方主雷达同源）+ 短板提示卡。
+     * 置于标题之下、其余图表之上，让「上面的雷达」与「看板」逐项可核对。 */
+    const dims = (d.dims && d.dims.length) ? d.dims : DEFAULT_RADAR;
+    const isReal = !!(d.dims && d.dims.length);
+    const sb = el("div");
+    sb.style.marginTop = "12px";
+    sec.appendChild(sb);
+    renderScoreboard(sb, dims, isReal);
+    const wc = el("div");
+    wc.style.marginTop = "12px";
+    sec.appendChild(wc);
+    renderWeakCue(wc, dims, isReal);
 
     const st = el("div");
     sec.appendChild(st);
