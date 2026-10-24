@@ -87,7 +87,7 @@ try {
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>1384</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>1427</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>29</b> 页技术文档</span>
           </div>
         </div>
@@ -97,8 +97,8 @@ try {
             <dl class="spec-row"><dt>Runtime</dt><dd>在线 · 真实后端</dd></dl>
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
-            <dl class="spec-row"><dt>Scoring</dt><dd>服务端五维引擎</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>1384 + 21</dd></dl>
+            <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 1427 ／ pytest 27</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -144,7 +144,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">1384 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1427 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -154,7 +154,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">1384 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1427 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -665,7 +665,7 @@ try {
 
   <!-- ===== MCP 工具清单 ===== -->
   <section class="section">
-    <h2 class="section-title">MCP 工具生态 <span class="tag-demo">完整版能力</span></h2>
+    <h2 class="section-title">MCP 工具生态 <span class="tag-demo">演示版内置</span></h2>
     <p class="section-sub">通过 MCP Server 暴露以下工具，LLM 在面试与问答中自主决定调用哪一个</p>
     <div class="mcp-grid">
       <div class="card mcp-item"><h4><code>search_job_db</code></h4><p>岗位数据库检索：按关键词/城市/学历筛选 JD，返回岗位能力模型，用于匹配度分析。</p></div>
@@ -687,9 +687,9 @@ try {
     <h2 class="section-title">为什么是「AI Native」而不是「套壳题库」</h2>
     <div class="features">
       <div class="card feature"><h3><span class="ic" data-ic="agents">🤖</span>多 Agent 协作</h3><p>面试官按轮次与模式轮转，基于回答动态追问；观察员实时记录证据，教练生成学习路径——追问策略由 LLM 决策，而非固定题库。演示版将规划、工具调用、证据记录的结构完整呈现。</p></div>
-      <div class="card feature"><h3><span class="ic" data-ic="rag">📖</span>RAG 混合检索</h3><p>BM25 词面召回 + 端侧向量（MiniLM 384 维，Transformers.js 浏览器内计算）语义召回，两路归一分后加权融合，答案必须标注来源与两路得分，资料不足时明说「暂无相关资料」。完整版为 pgvector + RRF + Rerank。</p></div>
-      <div class="card feature"><h3><span class="ic" data-ic="report">📊</span>可解释评分</h3><p>五个维度分数全部引用对话原话作为证据——演示版中每条证据均来自你的真实回答；完整版另建校准样本集量化评分一致性。</p></div>
-      <div class="card feature"><h3><span class="ic" data-ic="interview">🎙️</span>多模态交互</h3><p>演示版已集成浏览器原生能力：语音输入（Web Speech API）、TTS 朗读（speechSynthesis）、简历文件上传。完整版叠加 Whisper ASR、语速/停顿分析与白板代码理解。</p></div>
+      <div class="card feature"><h3><span class="ic" data-ic="rag">📖</span>RAG 混合检索</h3><p>BM25 词面召回 + 端侧向量（MiniLM 384 维，Transformers.js 浏览器内计算）语义召回，两路归一分后加权融合，答案必须标注来源与两路得分，资料不足时明说「暂无相关资料」。后续规划升级为 pgvector + RRF + Rerank。</p></div>
+      <div class="card feature"><h3><span class="ic" data-ic="report">📊</span>可解释评分</h3><p>五个维度分数全部引用对话原话作为证据——分数由确定性规则引擎按可机械判定的信号给出（可复现、可解释）；配置 LLM 时叠加逐维度质性评语与教练总评，但分值始终由引擎给出，避免幻觉与不可复现。</p></div>
+      <div class="card feature"><h3><span class="ic" data-ic="interview">🎙️</span>多模态交互</h3><p>演示版已集成浏览器原生能力：语音输入（Web Speech API）、TTS 朗读（speechSynthesis）、简历文件上传。后续规划叠加 Whisper ASR、语速/停顿分析与白板代码理解。</p></div>
       <div class="card feature"><h3><span class="ic" data-ic="lock">🔒</span>隐私优先</h3><p>本地 PII 脱敏（身份证/手机号/邮箱）+ Prompt 注入检测，原始简历不上云；演示版 API Key 仅存 sessionStorage，关闭即清除；脱敏顺序经过单元测试验证。</p></div>
       <div class="card feature"><h3><span class="ic" data-ic="bolt">⚡</span>三级兜底</h3><p>无 API Key 自动 Mock；模型超时/限流自动降级本地流式输出；API 失败时启发式算法兜底——演示现场不翻车。</p></div>
     </div>
@@ -701,22 +701,22 @@ try {
     <div class="card arch">
       <div class="arch-flow">
         <span class="arch-node">用户浏览器</span><span class="arch-arrow">→</span>
-        <span class="arch-node">Next.js 15 前端</span><span class="arch-arrow">→</span>
-        <span class="arch-node">Route Handlers</span><span class="arch-arrow">→</span>
+        <span class="arch-node">原生 JS 前端（SPA）</span><span class="arch-arrow">→</span>
+        <span class="arch-node">FastAPI /api/*</span><span class="arch-arrow">→</span>
         <span class="arch-node">Agent 编排层</span><span class="arch-arrow">→</span>
-        <span class="arch-node">多模型路由（免费额度优先）</span>
+        <span class="arch-node">智谱 GLM-4-Flash（OpenAI 兼容）</span>
       </div>
       <div class="arch-flow">
         <span class="arch-node">Agent 编排层</span><span class="arch-arrow">→</span>
         <span class="arch-node">RAG 服务</span><span class="arch-arrow">→</span>
-        <span class="arch-node">pgvector 混合检索 + Rerank</span><span class="arch-arrow">·</span>
+        <span class="arch-node">BM25 + 端侧向量混合检索 + 五特征重排</span><span class="arch-arrow">·</span>
         <span class="arch-node">Web Speech API</span><span class="arch-arrow">·</span>
         <span class="arch-node">MCP 工具层</span><span class="arch-arrow">·</span>
-        <span class="arch-node">WebGPU 本地推理</span>
+        <span class="arch-node">端侧向量推理（Transformers.js / hashing 兜底）</span>
       </div>
-      <p>技术栈：Next.js 15 App Router · React 19 · TypeScript · Tailwind CSS v4 · Zustand · Recharts · Zod · Vitest。<br>
-      AI 层：版本化 Prompt（<code>prompts/*.md</code>）· Zod 约束输出 · 流式 SSE · 自动降级 · PII 脱敏 · 注入检测。<br>
-      本演示页即完整项目的 <code>/demo</code> 页：在线部署时连接真实后端（LLM 流式 / JWT / 服务端评分），离线时 Mock 逻辑与 <code>lib/ai</code> 降级链路保持一致。</p>
+      <p>技术栈：原生 JavaScript（SPA，无构建）· 三层 CSS（tokens / theme / 组件）· FastAPI · SQLite。<br>
+      AI 层：版本化 Prompt（<code>prompts/*.md</code>）· 服务端 SSE 流式代理 · 确定性评分引擎 + LLM 质性增强 · 自动降级 · PII 脱敏 · 注入检测。<br>
+      在线部署时连接真实后端（LLM 流式 / JWT / 服务端评分），离线时本地 Mock 降级，流程不中断。</p>
     </div>
   </section>
 
@@ -727,7 +727,7 @@ try {
     </div>
   </footer>
 
-  <div class="notice">本页面为<b>在线演示版</b>：当前已接通真实后端——真实 LLM 流式输出、JWT 登录、面试会话持久化、服务端评分全部在线可验（断网或无后端时自动降级本地 Mock，流程不中断）。完整功能版为 <code>futuremirror/</code> 目录下的 Next.js 项目：真实 LLM 驱动、SSE 流式输出、多模型免费额度路由、模型故障自动降级，仓库与文档可在「开发者模式」的交付材料中查看。</div>
+  <div class="notice">本页面为<b>在线演示版</b>：当前已接通真实后端——真实 LLM 流式输出、JWT 登录、面试会话持久化、服务端评分全部在线可验（断网或无后端时自动降级本地 Mock，流程不中断）。产品为单栈架构（原生 JS 前端 + FastAPI 后端），源码、技术文档与交付材料可在「开发者模式」中查看。</div>
 
   </div><!-- /app-page dashboard -->
 
@@ -745,7 +745,7 @@ try {
           <div>
             <div class="pane-title">📄 简历文本</div>
             <textarea id="resume" rows="7" placeholder="粘贴简历内容，或上传简历文件（.txt 自动读取）…" aria-label="简历文本"></textarea>
-            <div class="file-drop" id="resume-file">📎 上传简历文件（.pdf / .docx / .txt）——完整版支持 PDF/DOCX 解析，本演示版读取 .txt，其余仅展示文件形态</div>
+            <div class="file-drop" id="resume-file">📎 上传简历文件（.pdf / .docx / .txt）——PDF/DOCX 解析为规划项，本演示版读取 .txt，其余仅展示文件形态</div>
             <input type="file" id="resume-upload" accept=".pdf,.docx,.txt" style="margin-top:8px;font-size:13px" aria-label="上传简历文件">
             <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <button class="btn btn-outline btn-sm" onclick="localPiiMask()" title="在浏览器内用正则脱敏手机号/邮箱/身份证，不发起任何网络请求">🔒 本地脱敏预览</button>
@@ -762,7 +762,7 @@ try {
               没有合适的岗位？<button type="button" onclick="toggleManualJd()" id="jd-manual-btn">✏️ 手动输入 JD</button>
             </div>
             <textarea id="jd" rows="7" placeholder="粘贴目标岗位职位描述…" aria-label="目标岗位 JD" hidden></textarea>
-            <div class="file-drop" id="jd-file" hidden>📎 完整版支持 JD 链接抓取与岗位数据库匹配（MCP 工具 search_job_db）</div>
+            <div class="file-drop" id="jd-file" hidden>📎 JD 链接抓取为规划项；岗位数据库匹配已内置（MCP 工具 search_job_db）</div>
           </div>
         </div>
         <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
@@ -912,7 +912,7 @@ try {
           <span class="vec-status" id="vec-status">向量索引未初始化</span>
           <button class="btn btn-outline btn-sm" id="vec-build-btn" onclick="loadVecModel()" title="在浏览器内计算 384 维句向量（Transformers.js · all-MiniLM-L6-v2），零后端、零 API；权重随站点自托管（models/），同源读取，不再依赖 huggingface">⚡ 加载端侧模型 MiniLM</button>
         </div>
-        <p class="hint" style="margin-top:0;margin-bottom:10px">检索层为 <b>BM25 + 端侧向量混合检索</b>：BM25（k1=1.5 / b=0.75，中文 bigram 切分，标题字段加权）× <b>0.4</b> + 余弦相似度 × <b>0.6</b>，两路各自归一分后融合。<br>向量由 <b>Transformers.js</b> 在浏览器内计算（all-MiniLM-L6-v2，384 维，40 条面经向量预计算后写入 localStorage），<b>不需要后端、不需要 API、离线可跑</b>；无模型文件时自动降级为 n-gram hashing 向量（256 维），检索链路不中断。完整版技术方案为 pgvector + RRF + Rerank。</p>
+        <p class="hint" style="margin-top:0;margin-bottom:10px">检索层为 <b>BM25 + 端侧向量混合检索</b>：BM25（k1=1.5 / b=0.75，中文 bigram 切分，标题字段加权）× <b>0.4</b> + 余弦相似度 × <b>0.6</b>，两路各自归一分后融合。<br>向量由 <b>Transformers.js</b> 在浏览器内计算（all-MiniLM-L6-v2，384 维，40 条面经向量预计算后写入 localStorage），<b>不需要后端、不需要 API、离线可跑</b>；无模型文件时自动降级为 n-gram hashing 向量（256 维），检索链路不中断。后续规划升级为 pgvector + RRF + Rerank。</p>
         <div style="display:flex;gap:8px">
           <input type="text" id="rag-input" placeholder="试试：字节后端二面一般问什么？" onkeydown="if(event.key==='Enter')askRag()" aria-label="RAG 查询输入框">
           <button class="btn btn-primary btn-sm" onclick="askRag()">提问</button>
@@ -1162,7 +1162,7 @@ try {
         <button class="switch" id="sw-cross" role="switch" aria-checked="true" aria-label="十字鼠标追踪" onclick="togglePref('crosshair')"></button>
       </div>
       <div class="switch-row">
-        <div class="switch-text"><b>每周学习提醒</b><p>演示项：完整版将按 7 天学习路径推送邮件提醒</p></div>
+        <div class="switch-text"><b>每周学习提醒</b><p>演示项：后续规划按 7 天学习路径推送邮件提醒</p></div>
         <button class="switch" id="sw-weekly" role="switch" aria-checked="false" aria-label="每周学习提醒" onclick="togglePref('weekly')"></button>
       </div>
     </div>
@@ -1404,7 +1404,7 @@ try {
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">完整 Next.js 15 + React 19 + TypeScript 工程，含 README、Vitest 单测、Playwright E2E</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、1427 项前端断言 + 27 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -1520,22 +1520,22 @@ try {
       <div class="card arch" style="margin-top:0">
         <div class="arch-flow">
           <span class="arch-node">用户浏览器</span><span class="arch-arrow">→</span>
-          <span class="arch-node">Next.js 15 前端</span><span class="arch-arrow">→</span>
-          <span class="arch-node">Route Handlers</span><span class="arch-arrow">→</span>
+          <span class="arch-node">原生 JS 前端（SPA）</span><span class="arch-arrow">→</span>
+          <span class="arch-node">FastAPI /api/*</span><span class="arch-arrow">→</span>
           <span class="arch-node">Agent 编排层</span><span class="arch-arrow">→</span>
-          <span class="arch-node">多模型路由（免费额度优先）</span>
+          <span class="arch-node">智谱 GLM-4-Flash（OpenAI 兼容）</span>
         </div>
         <div class="arch-flow">
           <span class="arch-node">Agent 编排层</span><span class="arch-arrow">→</span>
           <span class="arch-node">RAG 服务</span><span class="arch-arrow">→</span>
-          <span class="arch-node">pgvector 混合检索 + Rerank</span><span class="arch-arrow">·</span>
+          <span class="arch-node">BM25 + 端侧向量混合检索 + 五特征重排</span><span class="arch-arrow">·</span>
           <span class="arch-node">Web Speech API</span><span class="arch-arrow">·</span>
           <span class="arch-node">MCP 工具层</span><span class="arch-arrow">·</span>
-          <span class="arch-node">WebGPU 本地推理</span>
+          <span class="arch-node">端侧向量推理（Transformers.js / hashing 兜底）</span>
         </div>
-        <p>技术栈：Next.js 15 App Router · React 19 · TypeScript · Tailwind CSS v4 · Zustand · Recharts · Zod · Vitest。<br>
-        AI 层：版本化 Prompt（<code>prompts/*.md</code>）· Zod 约束输出 · 流式 SSE · 自动降级 · PII 脱敏 · 注入检测。<br>
-        <b>演示版说明</b>：本演示页在线部署时连接真实后端（流式对话 / JWT 登录 / 服务端评分），离线时本地 Mock 逻辑与 <code>lib/ai</code> 同构；所有断言（含 MCP 工具、RAG 检索、评分引擎）均可在浏览器内验证。</p>
+        <p>技术栈：原生 JavaScript（SPA，无构建）· 三层 CSS · FastAPI · SQLite。<br>
+        AI 层：版本化 Prompt（<code>prompts/*.md</code>）· 服务端 SSE 流式代理 · 确定性评分引擎 + LLM 质性增强 · 自动降级 · PII 脱敏 · 注入检测。<br>
+        <b>演示版说明</b>：本演示页在线部署时连接真实后端（流式对话 / JWT 登录 / 服务端评分），离线时本地 Mock 降级，流程不中断；所有断言（含 MCP 工具、RAG 检索、评分引擎）均可在浏览器内验证。</p>
       </div>
     </section>
 
@@ -1561,7 +1561,7 @@ try {
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>TypeScript 全量、组件化、状态隔离、性能优化（懒加载 / 代码分割）、Vitest + Playwright（完整工程）、本页内联自检</td>
+              <td>原生 JS 模块化（38 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、1427 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -1587,13 +1587,13 @@ try {
     <!-- 9. 已知边界 -->
     <section class="eval-section" id="eval-boundary">
       <h2 class="eval-section-title">⚠️ 已知边界与限制</h2>
-      <p class="eval-section-sub">本演示页支持在线（真实后端）与本地（单文件离线）两种运行形态，以下为诚实的边界说明，完整工程见代码仓库。</p>
+      <p class="eval-section-sub">本演示页支持在线（真实后端）与本地（单文件离线）两种运行形态，以下为诚实的边界说明，完整源码见代码仓库。</p>
       <div class="boundary-list">
-        <div class="boundary-item"><b>演示页为单文件静态页，双形态运行</b>：在线部署时连接真实后端（真实 LLM 流式 / JWT 登录 / 服务端评分落库）；本地打开时全部逻辑（断言、MCP 工具、Mock 降级）在浏览器内执行，无后端依赖。完整 Next.js 工程另含 pgvector 混合检索与多模型路由。</div>
-        <div class="boundary-item"><b>本地单文件版登录为演示级</b>：密码仅做本地简单混淆存储，<b>不应用于生产</b>；在线演示已切换为真实后端 JWT 登录与会话持久化。完整工程采用 NextAuth + Postgres + 密码哈希。</div>
-        <div class="boundary-item"><b>向量库双形态</b>：本地单文件版用浏览器内单机索引（localStorage 存 40 条面经向量，MiniLM 384 维，混合打分在浏览器内完成）；在线版由服务端混合检索 + 五特征重排提供。完整工程升级为 pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank。</div>
-        <div class="boundary-item"><b>代码沙盒为浏览器 Worker 隔离</b>：具备 2s 超时熔断，仅支持纯 JS 逻辑题；完整工程集成 QuickJS WASM 沙盒，支持多语言与虚拟文件系统。</div>
-        <div class="boundary-item"><b>MCP 为本地模拟 Server</b>：协议结构与真实 MCP 一致，完整工程通过 <code>@mcp-b/webmcp-ts-sdk</code> 实现跨 Agent 真实发现。</div>
+        <div class="boundary-item"><b>演示页为单文件静态页，双形态运行</b>：在线部署时连接真实后端（真实 LLM 流式 / JWT 登录 / 服务端评分落库）；本地打开时全部逻辑（断言、MCP 工具、Mock 降级）在浏览器内执行，无后端依赖。RAG 检索在浏览器内完成（BM25 + 端侧向量 + 五特征重排）。</div>
+        <div class="boundary-item"><b>本地单文件版登录为演示级</b>：密码仅做本地简单混淆存储，<b>不应用于生产</b>；在线演示已切换为真实后端 JWT 登录与会话持久化。生产环境建议改用成熟认证体系与 PostgreSQL + 密码哈希。</div>
+        <div class="boundary-item"><b>向量库双形态</b>：本地单文件版用浏览器内单机索引（localStorage 存 40 条面经向量，MiniLM 384 维，混合打分在浏览器内完成）；在线与离线共用同一套浏览器内混合打分与五特征重排策略。后续规划升级为 pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank。</div>
+        <div class="boundary-item"><b>代码沙盒为浏览器 Worker 隔离</b>：具备 2s 超时熔断，仅支持纯 JS 逻辑题；后续规划集成 QuickJS WASM 沙盒，支持多语言与虚拟文件系统。</div>
+        <div class="boundary-item"><b>MCP 为本地模拟 Server</b>：协议结构与真实 MCP 一致，后续规划接入跨进程真实 MCP，实现跨 Agent 工具发现。</div>
         <div class="boundary-item"><b>演示视频录制中</b>：代码仓库 / 技术文档 / 在线演示地址均已就位（见本页「交付材料」区块），演示视频成片后补入。</div>
       </div>
     </section>
@@ -1695,7 +1695,7 @@ try {
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('prompt-modal').hidden=true" aria-label="关闭 Prompt 查看器">✕</button>
     </div>
     <pre id="prompt-view" class="prompt-code"></pre>
-    <p class="hint">Prompt 按面试模式版本化维护（<code>prompts/interviewer-*.md</code>），通过 Zod 约束 LLM 输出为单个追问问题；完整版另含评估 Prompt、教练 Prompt、安全过滤 Prompt。快捷键：Esc 关闭。</p>
+    <p class="hint">Prompt 按面试模式版本化维护（<code>prompts/interviewer-*.md</code>），通过版本化 Prompt + JSON 解析约束 LLM 输出为单个追问问题；另含评估 Prompt、教练 Prompt、安全过滤 Prompt。快捷键：Esc 关闭。</p>
   </div>
 </div>
 

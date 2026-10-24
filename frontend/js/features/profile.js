@@ -48,7 +48,18 @@ function paintAvatarEl(el) {
   el.textContent = "";
   el.style.background = "";
   if (p.avatar.type === "image" && p.avatar.value) {
-    el.innerHTML = `<img class="avatar-img" src="${esc(p.avatar.value)}" alt="头像">`;
+    const src = p.avatar.value;
+    // 仅放行 http(s) 与 data:image；用属性赋值（非 innerHTML）杜绝 URI 注入
+    if (/^(https?:|data:image\/)/i.test(src)) {
+      const img = document.createElement("img");
+      img.className = "avatar-img";
+      img.alt = "头像";
+      img.src = src;
+      el.appendChild(img);
+    } else {
+      el.textContent = initials(name);
+      el.setAttribute("style", avatarStyle(name));
+    }
   } else if (p.avatar.type === "emoji" && p.avatar.value) {
     el.innerHTML = `<span class="avatar-emoji">${esc(p.avatar.value)}</span>`;
     el.setAttribute("style", avatarStyle(name));

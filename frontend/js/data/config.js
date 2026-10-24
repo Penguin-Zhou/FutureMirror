@@ -7,7 +7,7 @@ const CONFIG = {
   liveUrl: "https://penguin-zhou.github.io/FutureMirror/",  // 在线演示（GitHub Pages，单文件演示版）
   videoUrl: "",       // 演示视频（5-8 分钟 MP4）
   docsUrl: "https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html",  // 技术文档（HTML 在线版，PDF 版以附件提交）
-  fullAppUrl: "https://github.com/Penguin-Zhou/FutureMirror",   // 完整 Next.js 项目地址（可与 repoUrl 相同）
+  fullAppUrl: "https://github.com/Penguin-Zhou/FutureMirror",   // 项目仓库地址（可与 repoUrl 相同）
   testAccount: "演示账号：demo@futuremirror.app / Demo123456（可在登录页一键登录，或点「一键使用演示账号」）",
   apiBase: "",       // 后端 API 地址：填完整 URL（如 https://xxx.app.workbuddy.host）走跨域连接；
                      // 填 "same-origin" 表示与 API 同源部署（构建时由 FM_API_BASE=same-origin 注入）；

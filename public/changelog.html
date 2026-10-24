@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1384</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1427</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -379,10 +379,10 @@ body {
       </div>
 
       <div class="cat">
-        <span class="cat-title cat-plan">📊 评分升级</span>
+        <span class="cat-title cat-plan">📊 评分增强</span>
         <ul class="changelog">
-          <li><b>LLM 评分 + Zod 约束</b>：在规则引擎之上叠加 LLM 语义评分，通过 Zod 约束输出 schema，保证评分维度与证据字段完整</li>
-          <li><b>校准样本集</b>：构建人工标注的评分一致性样本集，用 Kappa 系数量化 LLM 评分与人工评分的一致程度</li>
+          <li><b>确定性引擎 + LLM 质性增强（已在 Beta 1.1.2 落地）</b>：分数由确定性规则引擎给出（可复现、可解释），LLM 仅负责逐维度质性评语与教练总评的生成与兜底</li>
+          <li><b>人工专家评审一致性验证（规划中）</b>：邀请领域专家对抽样面试独立打分，与引擎分数做点对点对比，定位分维度偏差</li>
         </ul>
       </div>
 
@@ -485,12 +485,13 @@ body {
         <div class="vh-item"><b>页面能滚动了</b>：滚动吸附只留在落地页，应用内滚动不再被卡住</div>
         <div class="vh-item"><b>看板看得到自己了</b>：每次进报告都按最新会话重画，不再是基线快照</div>
         <div class="vh-item"><b>7 天计划成板块了</b>：按最弱维度动态生成 + 每日时间分配 + 打卡进度</div>
+        <div class="vh-item"><b>全栈收口了</b>：移除未部署的 Next.js 平行实验、接入 LLM 混合评分增强、文档去除非实证表述</div>
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">3</div><div class="m-label">修复缺陷</div></div>
         <div class="metric"><div class="m-val">36</div><div class="m-label">自制 SVG 图标</div></div>
-        <div class="metric"><div class="m-val">67</div><div class="m-label">v31 新增断言</div></div>
-        <div class="metric"><div class="m-val">1384</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">110</div><div class="m-label">v31 新增断言</div></div>
+        <div class="metric"><div class="m-val">1427</div><div class="m-label">前端断言总数</div></div>
       </div>
     </div>
   </div>

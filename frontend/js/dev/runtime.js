@@ -191,7 +191,7 @@ function runSelfCheck() {
     catch (e) { return `Case ${i + 1}: ✗ ${e.message}`; }
   });
   const summary = `工程自检 ${passed}/${cases.length} 通过\n\n` + lines.join("\n") +
-    `\n\n面镜 FutureMirror · 单文件演示版（Next.js 完整工程见 README）`;
+    `\n\n面镜 FutureMirror · 单文件演示版`;
   if (typeof alert === "function") alert(summary); else console.log(summary);
 }
 

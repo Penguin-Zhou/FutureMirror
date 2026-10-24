@@ -82,7 +82,7 @@ function analyze() {
   }));
 }
 
-/* 简历文件上传：.txt 读取，其余展示形态（完整版解析 PDF/DOCX） */
+/* 简历文件上传：.txt 读取，其余展示形态（后续规划解析 PDF/DOCX） */
 $("resume-upload").addEventListener("change", e => {
   const f = e.target.files[0];
   if (!f) return;
@@ -100,7 +100,7 @@ $("resume-upload").addEventListener("change", e => {
     box.textContent = `✅ 已读取 ${f.name}（${size} KB）——文本已填入左侧简历框`;
   } else {
     box.classList.add("has-file");
-    box.textContent = `✅ 已选择 ${f.name}（${size} KB）——完整版将解析 PDF/DOCX 并提取技能与项目经历，本演示版仅展示文件形态`;
+    box.textContent = `✅ 已选择 ${f.name}（${size} KB）——后续规划解析 PDF/DOCX 并提取技能与项目经历，本演示版仅展示文件形态`;
   }
 });
 

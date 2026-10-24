@@ -68,8 +68,15 @@ def test_sync_is_idempotent_by_seq():
         assert c.post(f"/api/interviews/{iv}/sync", headers=h, json=big).status_code == 400
 
 
-def test_report_body_scores_with_match_and_gaps():
-    """report 的 body（match_score/code_score/match_gaps）真实参与服务端评分。"""
+def test_report_body_scores_with_match_and_gaps(monkeypatch):
+    """report 的 body（match_score/code_score/match_gaps）真实参与服务端评分；
+    v31.5：LLM 增强在确定性分数之上覆盖点评文字，分数本身仍由确定性引擎给出。"""
+    # mock LLM 增强与就绪态，使断言确定性、不依赖真实网络/Key
+    monkeypatch.setattr("app.main.llm_ready", lambda: True)
+    monkeypatch.setattr(
+        "app.main.enrich_report",
+        lambda *a, **k: {"comments": ["E0", "E1", "E2", "E3", "E4"], "narrative": "教练总评示例"},
+    )
     with TestClient(app) as c:
         email = f"t{__import__('time').time_ns()}@ex.com"
         token = c.post("/api/auth/register",
@@ -82,10 +89,16 @@ def test_report_body_scores_with_match_and_gaps():
         ]})
         body = {"match_score": 90, "code_score": 0.9, "match_gaps": ["Kubernetes", "Go"]}
         rep = c.post(f"/api/interviews/{iv}/report", headers=h, json=body).json()
-        fit = next(d for d in rep["dims"] if d["key"] == "fit")
-        assert "匹配分 90" in fit["comment"] and "Kubernetes" in fit["comment"]
+        # 分数由确定性引擎给出，不受 LLM 影响
         depth = next(d for d in rep["dims"] if d["key"] == "depth")
         assert depth["score"] > 60   # code_score 0.9 拉高了内容深度
+        fit = next(d for d in rep["dims"] if d["key"] == "fit")
+        assert fit["score"] >= 80    # match_score 90 推高岗位匹配
+        # LLM 增强已合并：点评文字被覆盖，metadata 标记 llm_enriched
+        assert fit["comment"] == "E3"
+        assert rep["scoring"]["engine"] == "deterministic+llm"
+        assert rep["scoring"]["llm_enriched"] is True
+        assert rep["narrative"] == "教练总评示例"
 
 
 def test_scoring_never_crashes_on_empty():

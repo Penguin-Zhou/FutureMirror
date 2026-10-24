@@ -2,16 +2,13 @@
   "name": "futuremirror",
   "version": "1.1.2",
   "private": true,
-  "description": "面镜 FutureMirror：多 Agent 驱动的 AI 模拟面试与能力成长平台",
+  "description": "面镜 FutureMirror：AI 模拟面试与能力成长平台（原生 JS 前端 + FastAPI 后端）",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "test": "vitest run",
+    "test": "node scripts/run-tests.js",
     "test:watch": "vitest",
     "test:jsdom": "node scripts/run-tests.js",
     "test:demo": "node scripts/run-tests.js test-demo-logic",
-    "test:all": "node scripts/run-tests.js && vitest run && tsc --noEmit -p .",
+    "test:all": "node scripts/run-tests.js",
     "validate:demo": "node scripts/validate-demo.js",
     "build:demo": "node scripts/build-demo.js",
     "build:changelog": "node scripts/build-changelog.js",
@@ -20,26 +17,8 @@
     "mirror:stage": "node scripts/stage-mirror.js",
     "model:fetch": "node scripts/fetch-model.js"
   },
-  "dependencies": {
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.400.0",
-    "next": "^15.3.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "recharts": "^2.15.0",
-    "tailwind-merge": "^2.6.0",
-    "zod": "^3.25.0",
-    "zustand": "^5.0.0"
-  },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.0",
-    "@types/node": "^22.10.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
     "jsdom": "^25.0.1",
-    "postcss": "^8.5.0",
-    "tailwindcss": "^4.0.0",
-    "typescript": "^5.7.0",
     "vitest": "^3.0.0"
   }
 }
