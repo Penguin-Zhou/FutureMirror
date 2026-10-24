@@ -432,7 +432,7 @@
     <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级 / 选型论证</span></a></li>
     <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span></a></li>
     <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span></a></li>
-    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1427 + 27 项测试 / 3 种部署</span></a></li>
+    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1427 + 29 项测试 / 3 种部署</span></a></li>
     <li><a href="#ch7"><span class="toc-t">核心算法详解与原创性论证</span><span class="toc-d">三大算法 / 校准实证 / 模板差异化</span></a></li>
     <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span></a></li>
     <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 交付清单</span></a></li>
@@ -503,7 +503,7 @@
       <tr><td>题库</td><td>24 题 / 5 分类</td><td>SQL / 网络 / 操作系统 / 算法 / STAR</td></tr>
       <tr><td>MCP 工具</td><td>3 个</td><td><code>search_job_db</code> / <code>fetch_interview_experience</code> / <code>schedule_mock</code></td></tr>
       <tr><td>前端自动化断言</td><td>1427 项</td><td>单文件版 + 模块版 jsdom 测试（19 套）</td></tr>
-      <tr><td>后端单元测试</td><td>27 项</td><td>pytest 冒烟 + 评分引擎 + LLM 增强</td></tr>
+      <tr><td>后端单元测试</td><td>29 项</td><td>pytest 冒烟 + 评分引擎 + LLM 增强</td></tr>
       <tr><td>部署形态</td><td>3 种</td><td>单文件 / 模块版 / FastAPI 同源后端</td></tr>
     </tbody>
   </table>
@@ -515,7 +515,7 @@
     </thead>
     <tbody>
       <tr><td>单文件演示版</td><td><code>public/futuremirror-demo.html</code></td><td>零依赖、可离线运行（约 499KB，CSS/JS 全内联）</td></tr>
-      <tr><td>模块版前端</td><td><code>frontend/</code></td><td>27 个 JS 模块 + 3 层 CSS，与单文件版逐字节等价</td></tr>
+      <tr><td>模块版前端</td><td><code>frontend/</code></td><td>38 个 JS 模块 + 3 层 CSS，与单文件版逐字节等价</td></tr>
       <tr><td>FastAPI 后端</td><td><code>backend/</code></td><td>JWT 鉴权 + SQLite 持久化 + GLM SSE 流式代理 + 确定性评分引擎 + LLM 质性增强</td></tr>
     </tbody>
   </table>
@@ -1142,7 +1142,7 @@
       </tr>
       <tr>
         <td><strong>L2 回归防线</strong></td>
-        <td>1427 + 27 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
+        <td>1427 + 29 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
         <td>任何 Prompt / 规则 / 检索参数变更，先过测试再合入</td>
       </tr>
       <tr>
@@ -1263,7 +1263,7 @@
       <tr><th style="width:22%">层级</th><th style="width:20%">工具</th><th style="width:14%">数量</th><th>覆盖内容</th></tr>
     </thead>
     <tbody>
-      <tr><td>后端单元测试</td><td>pytest</td><td>27 项</td><td>健康检查、注册登录流程、评分引擎、LLM 增强兜底</td></tr>
+      <tr><td>后端单元测试</td><td>pytest</td><td>29 项</td><td>健康检查、注册登录流程、评分引擎、LLM 增强兜底</td></tr>
       <tr><td>静态验证</td><td>Node + 正则</td><td>—</td><td>JS 语法、DOM id 引用、onclick 处理器、标签配平</td></tr>
       <tr><td>代码规范</td><td>ESLint 10</td><td>0 error</td><td>38 个前端模块 + 33 个脚本；共享作用域白名单由 <code>gen-eslint-globals.js</code> 从源码生成</td></tr>
       <tr><td>代码格式</td><td>Prettier 3</td><td>—</td><td>脚本层与配置层全部通过 <code>format:check</code>（前端源码的豁免理由写在 <code>.prettierignore</code>）</td></tr>
@@ -1271,7 +1271,7 @@
       <tr><td>jsdom 集成测试</td><td>jsdom</td><td>17 文件 / 1182 项</td><td>v15-v31 + beta1 向量检索，覆盖所有功能模块、体验层 UX Kit、动态层与能力分布看板</td></tr>
       <tr><td>模块版启动测试</td><td>jsdom</td><td>28 项</td><td>拆分后的模块版能否独立启动</td></tr>
       <tr><td>后端集成测试</td><td>TestClient</td><td>—</td><td>API 契约一致性</td></tr>
-      <tr><td><strong>合计</strong></td><td>—</td><td><strong>1427 + 27</strong></td><td>全部通过</td></tr>
+      <tr><td><strong>合计</strong></td><td>—</td><td><strong>1427 + 29</strong></td><td>全部通过</td></tr>
     </tbody>
   </table>
 
@@ -1305,6 +1305,7 @@
   <div class="callout warn">
     <strong>关键部署注意事项</strong>
     <ul style="margin: 1.5mm 0 0 4mm;">
+      <li><strong>静态页必须压缩</strong>：单文件演示版 765KB，网关默认不压缩，后端已挂 <code>SelectiveGZipMiddleware</code>（实测 765KB → 220KB，−71%），并显式对 <code>/api/chat/stream</code> 跳过压缩——SSE 一旦被压缩，中间层缓冲会让逐字流式输出退化成整段到达；</li>
       <li><strong>必须用 http 服务打开，不能双击 <code>file://</code></strong>——<code>file://</code> 的 Origin 是 <code>null</code>，会被后端 CORS 拒绝；</li>
       <li><code>.env</code> 永不进仓库（<code>.gitignore</code> 已包含），Key 只存在于部署环境变量；</li>
       <li>部署后要把地址回填到构建命令：<code>FM_API_BASE=&lt;后端地址&gt;</code>（Pages 跨域）或 <code>same-origin</code>（后端同源托管），README 顶部入口同步更新。</li>
@@ -1572,7 +1573,7 @@ cd frontend && python -m http.server 5173
       <tr><td>RAG</td><td>调一次 embedding API，或纯向量检索，结果不可解释</td><td>六阶段管线：bigram 分词 → BM25 → 双通道语义 → 加权融合 → 五特征重排 → 强制引用</td><td>7.2；RAG 页三阶段得分</td></tr>
       <tr><td>评分</td><td>让 LLM 直接打分（黑箱、不可复现、每次不同）</td><td>规则引擎 + 双引擎对拍 + 舍入缺陷修复 + 单调性测试 + 证据链</td><td>7.3；校准表与 11 条断言</td></tr>
       <tr><td>LLM 集成</td><td>前端直连 Key（泄露风险）或纯 Mock 假界面</td><td>服务端代理（Key 零前端接触）+ 三级降级 + 线上真实流式已验证</td><td>4.1；线上 /api/health</td></tr>
-      <tr><td>工程完成度</td><td>能跑演示就行</td><td>1427 前端断言 + 27 后端测试 + 双引擎对拍 + 四渠道发布流水线</td><td>第 6 章</td></tr>
+      <tr><td>工程完成度</td><td>能跑演示就行</td><td>1427 前端断言 + 29 后端测试 + 双引擎对拍 + 四渠道发布流水线</td><td>第 6 章</td></tr>
     </tbody>
   </table>
   <div class="callout ok">
@@ -1644,7 +1645,7 @@ cd frontend && python -m http.server 5173
     <li><strong>BM25 + 端侧向量混合检索</strong>的 RAG 层，含缓存、降级、可解释得分；</li>
     <li><strong>可解释评分 + 证据链 + 动态学习路径</strong>的报告引擎；</li>
     <li><strong>三级降级</strong>的完整链路（后端 → 直连 → Mock），演示不中断；</li>
-    <li><strong>1427 + 27 项自动化测试</strong>，覆盖所有功能；</li>
+    <li><strong>1427 + 29 项自动化测试</strong>，覆盖所有功能；</li>
     <li><strong>开发者模式</strong>作为面向评委的技术透明度工具。</li>
   </ul>
 
@@ -1771,7 +1772,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <tr><td>README（架构 / 安装 / 测试）</td><td>✅</td><td>本仓库根目录</td></tr>
       <tr><td><code>.env.example</code>（无真实密钥）</td><td>✅</td><td><code>backend/.env.example</code></td></tr>
       <tr><td>Git 真实提交历史</td><td>✅</td><td>分阶段提交，非一次性推送</td></tr>
-      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>1427 + 27</td></tr>
+      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>1427 + 29</td></tr>
       <tr><td>单文件静态演示页</td><td>✅</td><td><code>public/futuremirror-demo.html</code></td></tr>
       <tr><td>演示视频 5-8 分钟 1080p</td><td>⬜</td><td>录制中</td></tr>
       <tr><td>技术文档（HTML 在线版）</td><td>✅</td><td><a href="https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror/docs/technical-doc.html</a>（仓库内 <code>docs/technical-doc.html</code>）</td></tr>
@@ -2280,7 +2281,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     </tr></tbody>
   </table>
   <h3>v22 · 后端适配与工程化（2026.10）</h3>
-  <div class="callout">FastAPI 后端落地——SQLite 数据模型 + scrypt 密码哈希 + JWT 鉴权、GLM SSE 流式代理（<strong>Key 只存服务端环境变量</strong>）、评分引擎 Python 同构移植、面试会话与报告落库；演示版改造为"后端优先 + 三级降级"（<code>fmApi</code> 适配层：健康检查 30s 缓存 / SSE 分片解析 / 登录注册走后端 / 报告服务端生成 + 本地兜底）；单文件版按版本横幅机械拆分为 <code>frontend/</code> 27 模块 + 3 CSS 层，<code>build-demo.js</code> 可逐字节重建。</div>
+  <div class="callout">FastAPI 后端落地——SQLite 数据模型 + scrypt 密码哈希 + JWT 鉴权、GLM SSE 流式代理（<strong>Key 只存服务端环境变量</strong>）、评分引擎 Python 同构移植、面试会话与报告落库；演示版改造为"后端优先 + 三级降级"（<code>fmApi</code> 适配层：健康检查 30s 缓存 / SSE 分片解析 / 登录注册走后端 / 报告服务端生成 + 本地兜底）；单文件版按版本横幅机械拆分为 <code>frontend/</code> 29 模块 + 3 CSS 层，<code>build-demo.js</code> 可逐字节重建。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>
     <li><strong>FastAPI 后端</strong>：<code>backend/</code> 目录，含 <code>db.py</code> / <code>llm.py</code> / <code>scoring.py</code> / <code>main.py</code>，附 <code>.env.example</code> 与 pytest 冒烟 + 评分引擎单测（6 项）</li>

@@ -13,6 +13,7 @@ import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Header, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import func, select
@@ -95,6 +96,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# 单文件演示版 HTML 约 750KB（CSS/JS 全内联，零子请求换首屏确定性）。
+# 但镜像网关不压缩，国内首屏要多传 540KB —— 这里补 gzip，
+# 实测 765KB → 约 224KB（-70%），与 GitHub Pages 的压缩水位对齐。
+# SSE 接口必须排除：某些代理会缓冲压缩流，逐字输出会退化成整段到达。
+GZIP_SKIP_PREFIXES = ("/api/chat/stream",)
+
+
+class SelectiveGZipMiddleware(GZipMiddleware):
+    """压缩静态页与 JSON 响应，跳过 SSE 流式接口。"""
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http" and scope.get("path", "").startswith(GZIP_SKIP_PREFIXES):
+            await self.app(scope, receive, send)
+            return
+        await super().__call__(scope, receive, send)
+
+
+app.add_middleware(SelectiveGZipMiddleware, minimum_size=1024)
 
 
 # ---------------- 鉴权 ----------------
