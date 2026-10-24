@@ -206,6 +206,38 @@ async function runTests() {
   ok(/%23BE3A1E/.test(d.querySelector('link[rel="icon"]').getAttribute("href")), "favicon 升级为含朱红瞳点的取景器");
 
   /* ================================================================
+     ⑥b 图表快照颜色链路（v31.1 hotfix：data-URI 双重编码致全黑）
+     ================================================================ */
+  console.log("\n—— ⑥b 快照颜色链路 ——");
+  ok(typeof viz.radarSnap === "function" && typeof viz.heatSnap === "function", "__bpViz 暴露 radarSnap / heatSnap");
+  const snapSrc = w.eval("window.__bpViz.radarSnap.toString() + window.__bpViz.heatSnap.toString()");
+  ok(!/%23/.test(snapSrc), "radarSnap/heatSnap 源码无 %23 预编码残留（防双重编码复发）");
+  const radarUri = w.eval("window.__bpViz.radarSnap(360, true)");
+  const heatUri = w.eval("window.__bpViz.heatSnap(360)");
+  ok(!!radarUri && /^data:image\/svg\+xml/.test(radarUri), "radarSnap 返回 data-URI");
+  ok(!/%2523/.test(radarUri), "radarSnap data-URI 无 %2523（双重编码特征）");
+  ok(/%23F4F1E8/.test(radarUri), "radarSnap data-URI 背景色正确编码为 %23F4F1E8");
+  ok(!/%2523/.test(heatUri), "heatSnap data-URI 无 %2523（双重编码特征）");
+  ok(/%23F4F1E8/.test(heatUri), "heatSnap data-URI 背景色正确编码为 %23F4F1E8");
+  /* 模拟浏览器侧一次解码：SVG 源码中的颜色必须全部合法 */
+  const decodeOnce = uri => decodeURIComponent(uri.replace("data:image/svg+xml;charset=utf-8,", ""));
+  const radarSvg = decodeOnce(radarUri), heatSvg = decodeOnce(heatUri);
+  const legal = svg => {
+    const cols = [...svg.matchAll(/(?:fill|stroke)='([^']*)'/g)].map(m => m[1]);
+    return cols.length > 0 && cols.every(c => c === "none" || /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c));
+  };
+  ok(legal(radarSvg), "radar 快照解码后颜色全部合法（" + (radarSvg.match(/fill='[^']*'/g) || []).slice(0, 2).join(" ") + " …）");
+  ok(legal(heatSvg), "heat 快照解码后颜色全部合法");
+  ok(/#F4F1E8/.test(radarSvg) && /#BE3A1E/.test(radarSvg) && /#B9B29A/.test(radarSvg), "radar 快照含暖纸底/朱红数据/卡其网格");
+  ok(/#F4F1E8/.test(heatSvg) && /#1C1913/.test(heatSvg), "heat 快照含暖纸底/墨阶格子");
+  /* 挂载后面板内两张快照 img：jsdom 无 IntersectionObserver，媒体层直接取资源并移除 data-src */
+  w.eval("window.__bpViz.refreshReportPanel()");
+  const shotImgs = d.querySelectorAll("#bp-viz-panel .bp-shot img");
+  ok(shotImgs.length === 2, "看板内两张快照 img 就位（实际 " + shotImgs.length + "）");
+  ok([...shotImgs].every(im => /^data:image\/svg\+xml/.test(im.getAttribute("src") || "")), "两张快照 src 均为 data-URI SVG（懒加载已取资源）");
+  ok(![...shotImgs].some(im => /%2523/.test(im.getAttribute("src") || "")), "快照 src 无双重编码痕迹");
+
+  /* ================================================================
      ⑦ 版本串口径
      ================================================================ */
   console.log("\n—— ⑦ 版本口径 ——");
