@@ -167,4 +167,20 @@ execFileSync(
 );
 const kb = (fs.statSync(PDF).size / 1024).toFixed(0) + "KB";
 console.log(`✅ PDF 已生成 → docs/FutureMirror.Beta.pdf（${kb}）`);
+
+/* ---------- 5) 页数门禁：赛事要求「不超过 30 页（含封面）」 ----------
+ * Chromium 输出的 PDF 里页面对象是明文 /Type /Page，可直接计数；
+ * 若将来对象流化导致数不到，退化为仅提示，不阻断构建。 */
+const MAX_PAGES = 30;
+const buf = fs.readFileSync(PDF).toString("latin1");
+const pages = (buf.match(/\/Type\s*\/Page[^s]/g) || []).length;
+if (pages === 0) {
+  console.warn("⚠️ 未从 PDF 中解析到页数（可能被对象流压缩），跳过页数门禁");
+} else if (pages > MAX_PAGES) {
+  console.error(`❌ 页数超限：${pages} 页 > ${MAX_PAGES} 页（含封面）。请收紧 @page 边距或压减打印版内容。`);
+  fs.rmSync(TMP, { force: true });
+  process.exit(1);
+} else {
+  console.log(`📐 页数 ${pages} / ${MAX_PAGES}（含封面），符合赛事上限`);
+}
 fs.rmSync(TMP, { force: true });
