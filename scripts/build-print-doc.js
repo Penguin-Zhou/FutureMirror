@@ -39,10 +39,7 @@ html = html.slice(0, ch9Start) + html.slice(ch10Start);
 /* ---------- 1b) 章节号连续化 ---------- */
 /* 附录整章被删后，原第 10 章正文页眉仍是 CHAPTER 10，而目录已把它排在 09 位，
    会出现「目录 09 / 正文 CHAPTER 10」的编号错位——打印版统一改为 CHAPTER 09 */
-html = html.replace(
-  '<div class="chapter-num">CHAPTER 10</div>',
-  '<div class="chapter-num">CHAPTER 09</div>'
-);
+html = html.replace('<div class="chapter-num">CHAPTER 10</div>', '<div class="chapter-num">CHAPTER 09</div>');
 
 /* ---------- 2) TOC：删附录条目，ch10 标注「摘要」 ---------- */
 html = html.replace(/\s*<li><a href="#ch9">.*?<\/a><\/li>/s, "");
