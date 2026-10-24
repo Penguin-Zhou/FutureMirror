@@ -1,6 +1,6 @@
 {
   "name": "futuremirror",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "private": true,
   "description": "面镜 FutureMirror：多 Agent 驱动的 AI 模拟面试与能力成长平台",
   "scripts": {
