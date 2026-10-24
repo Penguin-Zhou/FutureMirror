@@ -27,10 +27,10 @@ const BRANCH = "main";
 const CWD = path.join(__dirname, "..");
 
 function git(args, opts) {
-  return execFileSync("git", ["-C", CWD, ...args], Object.assign({ encoding: "utf8", maxBuffer: 1024 * 1024 * 64 }, opts)).trim();
+  return execFileSync("git", ["-C", CWD, "-c", "core.quotepath=false", ...args], Object.assign({ encoding: "utf8", maxBuffer: 1024 * 1024 * 64 }, opts)).trim();
 }
 function gitBuf(args) {
-  return execFileSync("git", ["-C", CWD, ...args], { maxBuffer: 1024 * 1024 * 512, encoding: "buffer" });
+  return execFileSync("git", ["-C", CWD, "-c", "core.quotepath=false", ...args], { maxBuffer: 1024 * 1024 * 512, encoding: "buffer" });
 }
 function gh(args, input) {
   return execFileSync("gh", ["api", ...args, ...(input ? ["--input", "-"] : [])], {
