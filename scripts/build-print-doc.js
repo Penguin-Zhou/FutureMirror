@@ -1,7 +1,8 @@
 /* ============================================================
  * build-print-doc.js —— 生成技术文档的「A4 精简打印版」
  *   docs/technical-doc.html（完整在线版，10 章）
- *     → 临时打印版：删除第 9 章附录、第 10 章版本日志压成摘要表
+ *     → 临时打印版：删除第 9 章附录、原第 10 章版本日志上移重编号为 09
+ *       并压成摘要表
  *     → Edge 无头打印为 docs/FutureMirror.Beta.pdf（含封面，约 29-30 页）
  *
  *   背景：在线版面向屏幕阅读（信息完整）；PDF 附件随赛事材料提交，
@@ -34,6 +35,14 @@ if (ch9Start < 0 || ch10Start < 0 || ch9Start >= ch10Start) {
   process.exit(1);
 }
 html = html.slice(0, ch9Start) + html.slice(ch10Start);
+
+/* ---------- 1b) 章节号连续化 ---------- */
+/* 附录整章被删后，原第 10 章正文页眉仍是 CHAPTER 10，而目录已把它排在 09 位，
+   会出现「目录 09 / 正文 CHAPTER 10」的编号错位——打印版统一改为 CHAPTER 09 */
+html = html.replace(
+  '<div class="chapter-num">CHAPTER 10</div>',
+  '<div class="chapter-num">CHAPTER 09</div>'
+);
 
 /* ---------- 2) TOC：删附录条目，ch10 标注「摘要」 ---------- */
 html = html.replace(/\s*<li><a href="#ch9">.*?<\/a><\/li>/s, "");
