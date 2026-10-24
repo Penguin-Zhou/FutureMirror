@@ -4,6 +4,13 @@
   "private": true,
   "description": "面镜 FutureMirror：AI 模拟面试与能力成长平台（原生 JS 前端 + FastAPI 后端）",
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "globals:gen": "node scripts/gen-eslint-globals.js",
+    "globals:check": "node scripts/gen-eslint-globals.js --check",
+    "verify": "npm run globals:check && npm run lint && npm run format:check && npm run test",
     "test": "node scripts/run-tests.js",
     "test:jsdom": "node scripts/run-tests.js",
     "test:demo": "node scripts/run-tests.js test-demo-logic",
@@ -17,6 +24,9 @@
     "model:fetch": "node scripts/fetch-model.js"
   },
   "devDependencies": {
-    "jsdom": "^25.0.1"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "jsdom": "^25.0.1",
+    "prettier": "^3.9.10"
   }
 }

@@ -19,17 +19,13 @@ const REPO = "Penguin-Zhou/FutureMirror";
 const BRANCH = "gh-pages";
 
 /* 相对 staged 目录、需要更新的文件（未列出的继承 base_tree） */
-const CHANGED = [
-  "index.html",
-  "404.html",
-  "README.md",
-  "changelog.html",
-  "docs/technical-doc.html",
-];
+const CHANGED = ["index.html", "404.html", "README.md", "changelog.html", "docs/technical-doc.html"];
 
 function gh(args, input) {
   return execFileSync("gh", ["api", ...args, ...(input ? ["--input", "-"] : [])], {
-    input: input || undefined, encoding: "utf8", maxBuffer: 1024 * 1024 * 512,
+    input: input || undefined,
+    encoding: "utf8",
+    maxBuffer: 1024 * 1024 * 512,
   }).trim();
 }
 
@@ -42,7 +38,10 @@ console.log(`gh-pages 头: ${headSha.slice(0, 7)}，base_tree: ${baseTree.slice(
 const entries = [];
 for (const rel of CHANGED) {
   const abs = path.join(STAGED, rel);
-  if (!fs.existsSync(abs)) { console.error(`❌ 缺少 ${rel}`); process.exit(1); }
+  if (!fs.existsSync(abs)) {
+    console.error(`❌ 缺少 ${rel}`);
+    process.exit(1);
+  }
   const b64 = fs.readFileSync(abs).toString("base64");
   const body = JSON.stringify({ content: b64, encoding: "base64" });
   const sha = JSON.parse(gh([`repos/${REPO}/git/blobs`, "-X", "POST"], body)).sha;

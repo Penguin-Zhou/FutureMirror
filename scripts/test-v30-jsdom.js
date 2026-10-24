@@ -15,17 +15,23 @@ const { JSDOM, VirtualConsole } = require("jsdom");
 const html = fs.readFileSync(path.join(__dirname, "..", "public", "futuremirror-demo.html"), "utf8");
 const CSS = (html.match(/<style[^>]*>[\s\S]*?<\/style>/gi) || []).join("\n");
 
-let pass = 0, fail = 0;
+let pass = 0,
+  fail = 0;
 function ok(cond, label) {
-  if (cond) { pass++; console.log("  ✅ " + label); }
-  else { fail++; console.log("  ❌ " + label); }
+  if (cond) {
+    pass++;
+    console.log("  ✅ " + label);
+  } else {
+    fail++;
+    console.log("  ❌ " + label);
+  }
 }
 
 function makeDom(opts) {
   const o = opts || {};
   const errors = [];
   const vc = new VirtualConsole();
-  vc.on("jsdomError", e => {
+  vc.on("jsdomError", (e) => {
     const msg = (e && e.message) || String(e);
     if (!/^Not implemented:/.test(msg)) errors.push(msg);
   });
@@ -38,11 +44,22 @@ function makeDom(opts) {
     beforeParse(window) {
       const noop = () => {};
       const base = window.matchMedia;
-      const mk = (q, m) => ({ matches: m, media: q, addListener: noop, removeListener: noop, addEventListener: noop, removeEventListener: noop });
-      window.matchMedia = q => {
+      const mk = (q, m) => ({
+        matches: m,
+        media: q,
+        addListener: noop,
+        removeListener: noop,
+        addEventListener: noop,
+        removeEventListener: noop,
+      });
+      window.matchMedia = (q) => {
         if (o.reduced && /reduce/.test(q)) return mk(q, true);
         if (o.fine && /pointer:\s*fine/.test(q)) return mk(q, true);
-        if (base) { try { return base.call(window, q); } catch (e) {} }
+        if (base) {
+          try {
+            return base.call(window, q);
+          } catch (e) {}
+        }
         return mk(q, false);
       };
       if (o.ws) {
@@ -51,21 +68,25 @@ function makeDom(opts) {
           this.url = url;
           this.readyState = 0;
           this.sent = [];
-          this.send = d => this.sent.push(d);
-          this.close = () => { this.readyState = 3; if (this.onclose) this.onclose({ code: 1000 }); };
+          this.send = (d) => this.sent.push(d);
+          this.close = () => {
+            this.readyState = 3;
+            if (this.onclose) this.onclose({ code: 1000 });
+          };
           window.__wsInstances.push(this);
         };
       }
     },
   });
-  const settle = () => new Promise(res => {
-    if (dom.window.document.readyState === "complete") return res();
-    dom.window.document.addEventListener("DOMContentLoaded", res, { once: true });
-    setTimeout(res, 900);
-  });
+  const settle = () =>
+    new Promise((res) => {
+      if (dom.window.document.readyState === "complete") return res();
+      dom.window.document.addEventListener("DOMContentLoaded", res, { once: true });
+      setTimeout(res, 900);
+    });
   return { dom, errors, settle };
 }
-const wait = ms => new Promise(r => setTimeout(r, ms));
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 setTimeout(runTests, 400);
 
@@ -78,7 +99,8 @@ async function runTests() {
   const A = makeDom({});
   await A.settle();
   await wait(150);
-  const wA = A.dom.window, dA = wA.document;
+  const wA = A.dom.window,
+    dA = wA.document;
 
   /* ---------- A1. 骨架屏 ---------- */
   console.log("\n--- A1. 骨架屏（占位 · 防抖 · 最小驻留）---");
@@ -96,9 +118,9 @@ async function runTests() {
   ok(wA.__bpSkeleton.mount(host, { rows: 1 }) === sk, "重复 mount 幂等（同一容器不叠加）");
   ok(wA.__bpSkeleton.pending() >= 1, "pending() 记录在场的骨架数量");
   const before = host.querySelector(".bp-skel");
-  sk.clear();                                  // 未到最小驻留：应延迟移除
+  sk.clear(); // 未到最小驻留：应延迟移除
   ok(!!host.querySelector(".bp-skel"), "最小驻留内调用 clear 不立即移除（防闪烁）");
-  sk.clear(true);                              // 强制立即移除
+  sk.clear(true); // 强制立即移除
   ok(!host.querySelector(".bp-skel") && before !== null, "clear(true) 立即移除占位");
   ok(wA.__bpSkeleton.pending() === 0, "清除后 pending 归零");
 
@@ -152,16 +174,31 @@ async function runTests() {
   ok(!!tbl, "演示页存在评分维度表格 .eval-table");
   if (tbl) {
     const xls = wA.__bpViz.toExcelHtml(tbl);
-    ok(xls.charCodeAt(0) === 0xFEFF, "Excel 导出带 UTF-8 BOM（中文不乱码）");
-    ok(/<table border="1">/.test(xls) && /urn:schemas-microsoft-com:office:excel/.test(xls), "输出 Excel 可识别的 HTML table 结构");
+    ok(xls.charCodeAt(0) === 0xfeff, "Excel 导出带 UTF-8 BOM（中文不乱码）");
+    ok(
+      /<table border="1">/.test(xls) && /urn:schemas-microsoft-com:office:excel/.test(xls),
+      "输出 Excel 可识别的 HTML table 结构"
+    );
     const btns = Array.prototype.slice.call(dA.querySelectorAll(".bp-table-tools .bp-mini-btn"));
     ok(btns.length === 2, "表格工具条含 2 个导出按钮（CSV + Excel）");
-    ok(btns.some(b => /导出 Excel/.test(b.textContent)), "存在「导出 Excel」按钮");
+    ok(
+      btns.some((b) => /导出 Excel/.test(b.textContent)),
+      "存在「导出 Excel」按钮"
+    );
     let threw = false;
-    try { btns.filter(b => /导出 Excel/.test(b.textContent))[0].click(); } catch (e) { threw = true; }
+    try {
+      btns.filter((b) => /导出 Excel/.test(b.textContent))[0].click();
+    } catch (e) {
+      threw = true;
+    }
     ok(!threw, "点击导出 Excel 不抛错（无 URL API 时静默降级）");
   } else {
-    ok(false, "表格存在性（缺失）"); ok(false, "BOM"); ok(false, "结构"); ok(false, "按钮数"); ok(false, "按钮名"); ok(false, "点击");
+    ok(false, "表格存在性（缺失）");
+    ok(false, "BOM");
+    ok(false, "结构");
+    ok(false, "按钮数");
+    ok(false, "按钮名");
+    ok(false, "点击");
   }
 
   /* ---------- A4. 实时看板：WebSocket + 降级轮询 ---------- */
@@ -171,8 +208,10 @@ async function runTests() {
   ok(typeof wA.__bpViz.wsEndpoint === "function", "wsEndpoint() 可推导 WebSocket 地址");
   const ep = wA.__bpViz.wsEndpoint();
   ok(/^wss?:\/\/[^/]+\/ws\/live$/.test(ep), "地址推导正确（same-origin → " + ep + "）");
-  ok(typeof wA.__bpViz.statsEndpoint === "function" &&
-     /\/api\/live\/stats$/.test(wA.__bpViz.statsEndpoint()), "REST 降级地址推导正确");
+  ok(
+    typeof wA.__bpViz.statsEndpoint === "function" && /\/api\/live\/stats$/.test(wA.__bpViz.statsEndpoint()),
+    "REST 降级地址推导正确"
+  );
 
   /* ---------- A5. 图表悬停详情 ---------- */
   console.log("\n--- A5. 图表悬停详情（折线 / 柱状 / 雷达统一）---");
@@ -221,9 +260,10 @@ async function runTests() {
   const B = makeDom({ ws: true });
   await B.settle();
   await wait(150);
-  const wB = B.dom.window, dB = wB.document;
+  const wB = B.dom.window,
+    dB = wB.document;
   ok(typeof wB.WebSocket === "function", "测试环境注入 WebSocket 构造器");
-  const booted = (wB.__wsInstances || []).length;   // 页面启动时报告看板已建连
+  const booted = (wB.__wsInstances || []).length; // 页面启动时报告看板已建连
   const liveHost = dB.createElement("div");
   dB.body.appendChild(liveHost);
   const live = wB.__bpViz.startLive(liveHost, () => [{ k: "本地", v: 1 }], 2500, { remote: true });
@@ -237,7 +277,9 @@ async function runTests() {
     if (sock.onopen) sock.onopen({});
     ok(live.mode() === "ws", "连接建立后看板标记为 WS 实时");
     if (sock.onmessage) {
-      sock.onmessage({ data: JSON.stringify({ ok: true, interviews: 7, finished: 3, turns: 21, avg_score: 76.4, llm_ready: true }) });
+      sock.onmessage({
+        data: JSON.stringify({ ok: true, interviews: 7, finished: 3, turns: 21, avg_score: 76.4, llm_ready: true }),
+      });
     }
     const txt = liveHost.textContent || "";
     ok(/在线会话/.test(txt) && /21/.test(txt), "服务端推送的聚合指标已上屏");
@@ -245,7 +287,10 @@ async function runTests() {
     if (sock.onclose) sock.onclose({ code: 1006 });
     ok(live.mode() === "poll", "连接断开后自动降级为轮询模式");
   } else {
-    ok(false, "WS 状态"); ok(false, "推送上屏"); ok(false, "通道标记"); ok(false, "降级");
+    ok(false, "WS 状态");
+    ok(false, "推送上屏");
+    ok(false, "通道标记");
+    ok(false, "降级");
   }
   live.stop();
   ok(live.ws() === null, "stop() 关闭连接并清理定时器");
@@ -258,12 +303,14 @@ async function runTests() {
   const C = makeDom({ reduced: true });
   await C.settle();
   await wait(150);
-  const wC = C.dom.window, dC = wC.document;
+  const wC = C.dom.window,
+    dC = wC.document;
   ok(wC.__bpMedia.reduced() === true, "媒体层识别减弱动效偏好");
   ok(/prefers-reduced-motion[^{]*\{[^}]*\.bp-media/.test(CSS), "CSS：减弱动效下媒体不做模糊/过渡");
   const cBox = dC.createElement("div");
   dC.body.appendChild(cBox);
-  cBox.innerHTML = '<img alt="c" data-src="data:image/svg+xml,%3Csvg%3E%3C/svg%3E" data-preview="data:image/svg+xml,%3Csvg%3E%3C/svg%3E">';
+  cBox.innerHTML =
+    '<img alt="c" data-src="data:image/svg+xml,%3Csvg%3E%3C/svg%3E" data-preview="data:image/svg+xml,%3Csvg%3E%3C/svg%3E">';
   ok(wC.__bpMedia.initLazy(cBox) === 1, "减弱动效下懒加载照常接管");
   ok(wC.__bpMedia.initPreview(cBox) === 1, "减弱动效下悬停预览照常可用（功能不缺失）");
   const cHost = dC.createElement("div");

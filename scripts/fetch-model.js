@@ -106,8 +106,10 @@ async function downloadOrt(name) {
     }
   }
 
-  const walk = d => fs.readdirSync(d, { withFileTypes: true })
-    .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
+  const walk = (d) =>
+    fs
+      .readdirSync(d, { withFileTypes: true })
+      .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
   const total = walk(path.join(ROOT, "public", "models"));
   const totalN = FILES.length + ORT_FILES.length;
   console.log(`\n模型目录：public/models/（${ok}/${totalN} 个文件，合计 ${human(total)}，跳过 ${skipped} 个已存在）`);

@@ -412,7 +412,7 @@
   <dl class="cover-meta">
     <dt>文档版本</dt>       <dd>v1.11（对应产品 Beta 1.1.2）</dd>
     <dt>应用方向</dt>       <dd>AI Agent 智能助手 / RAG 知识问答 / AI 教育与学习平台</dd>
-    <dt>技术栈</dt>         <dd>原生 JavaScript（SPA）· FastAPI · SQLite · GLM-4-Flash · 端侧 BM25 + 余弦混合检索</dd>
+    <dt>技术栈</dt>         <dd>原生 JavaScript（ES2022，SPA）· FastAPI · SQLite · GLM-4-Flash · Transformers.js 端侧向量 · ESLint 10 / Prettier 3 / JSDoc 类型契约</dd>
     <dt>代码仓库</dt>       <dd><a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">github.com/Penguin-Zhou/FutureMirror</a></dd>
     <dt>在线演示</dt>       <dd><a href="https://penguin-zhou.github.io/FutureMirror/" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror</a></dd>
     <dt>国内镜像</dt>       <dd><a href="https://futuremirror-demo.app.workbuddy.host/" target="_blank" rel="noopener">futuremirror-demo.app.workbuddy.host</a></dd>
@@ -429,7 +429,7 @@
   <ol>
     <li><a href="#ch1"><span class="toc-t">项目概述</span><span class="toc-d">定位 / 问题 / 数据 / 形态</span></a></li>
     <li><a href="#ch2"><span class="toc-t">需求分析</span><span class="toc-d">用户场景 / MoSCoW / 差异化</span></a></li>
-    <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级</span></a></li>
+    <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级 / 选型论证</span></a></li>
     <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span></a></li>
     <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span></a></li>
     <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1427 + 27 项测试 / 3 种部署</span></a></li>
@@ -521,7 +521,7 @@
   </table>
 
   <div class="chapter-footer">
-    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.1</span>
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.11</span>
     <span class="cf-chapter">CHAPTER 01 · 项目概述</span>
   </div>
 </section>
@@ -594,7 +594,7 @@
   </table>
 
   <div class="chapter-footer">
-    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.1</span>
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.11</span>
     <span class="cf-chapter">CHAPTER 02 · 需求分析</span>
   </div>
 </section>
@@ -674,8 +674,72 @@
     <strong>降级触发条件</strong>：<code>/api/health</code> 返回非 200、请求超时 60s、HTTP 5xx、SSE 流中断——任一触发即自动降级，且顶部横幅会如实告知用户当前形态。
   </p>
 
+  <h2>3.5 技术选型论证：为什么是原生栈，而不是 Next.js</h2>
+
+  <p>
+    作品的前端技术选型为<strong>原生 JavaScript（ES2022）+ HTML + CSS 手写设计系统</strong>，后端为 FastAPI 薄接入层。
+    这是一个需要正面回答的选择——现代前端框架是全栈 AI 应用的主流方案，本节逐条说明取舍依据，以及为此付出的工程补偿。
+  </p>
+
+  <h3>3.5.1 三条决定性约束</h3>
+  <table>
+    <thead>
+      <tr><th style="width:20%">约束</th><th style="width:44%">如果用框架会怎样</th><th>原生栈的解法</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>必须能离线演示</strong></td>
+        <td>Next.js / Vite 产物依赖构建环境与运行时（Node、<code>.next</code> 目录、Node 静态服务）；评委电脑断网或未装 Node 时，演示直接失败</td>
+        <td>构建脚本把 38 个模块与 3 层 CSS <strong>反合并成单个 648KB 的 HTML</strong>，双击即可运行，无 npm、无构建、无服务器</td>
+      </tr>
+      <tr>
+        <td><strong>评分引擎要能端侧独立跑</strong></td>
+        <td>框架的 SSR / RSC 心智模型会把「评分」推向服务端，端侧只能拿结果，无法解释过程</td>
+        <td>同一套五维规则在<strong>前端与后端各实现一份且逐条对拍</strong>（<code>report.js</code> ↔ <code>scoring.py</code>），断网时前端引擎照常出分，且两边对同一输入的输出一致</td>
+      </tr>
+      <tr>
+        <td><strong>演示要能证明「代码可解释」</strong></td>
+        <td>框架的抽象层（编译器、路由约定、Server Components）会带来大量「不是我写的代码」，答辩追问时解释成本高</td>
+        <td>全部 38 个模块均为手写、无编译转换，<code>scripts/split-frontend.js</code> 可把单文件产物<strong>逐字节还原成源码</strong>，源码与交付物一一对应</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>3.5.2 用工程补偿换掉框架红利</h3>
+  <p>
+    放弃框架意味着失去组件化、类型约束、代码规范等生态红利。这些不是被忽略，而是被显式补齐：
+  </p>
+  <table>
+    <thead>
+      <tr><th style="width:22%">框架通常提供的</th><th style="width:34%">本项目的补偿手段</th><th>可当场验证</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>组件化 / 模块边界</td><td>38 个模块按「core / data / features / dev」四层划分，由 <code>build-manifest.json</code> 声明加载顺序</td><td><code>npm run build:demo</code></td></tr>
+      <tr><td>代码规范（ESLint）</td><td>ESLint 10 扁平配置；因模块共享同一全局作用域，用 <code>gen-eslint-globals.js</code> 从源码自动提取 444 个共享符号做白名单，<code>no-undef</code> 仍然有效</td><td><code>npm run lint</code> → 0 error</td></tr>
+      <tr><td>格式化（Prettier）</td><td>Prettier 3 托管脚本层与配置层；前端源码因 <code>build-manifest</code> 行号基准与格式敏感断言而不纳入重排，理由写在 <code>.prettierignore</code> 注释里</td><td><code>npm run format:check</code></td></tr>
+      <tr><td>类型约束（TypeScript）</td><td>不引入编译步骤，改用 <code>jsconfig.json</code> + JSDoc + <code>types/models.d.ts</code>：编辑器内获得补全与跳转，运行时契约由 1427 条断言与后端 Pydantic 模型双向保证</td><td><code>npm run verify</code></td></tr>
+      <tr><td>状态管理（Zustand 等）</td><td>自研 <code>store</code>（约 30 行）：<code>sessionStorage</code> 优先、<code>localStorage</code> 回落，键名按用户 id 加前缀实现数据隔离</td><td>切换账号后数据不串号</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.5.3 已采用的「推荐栈」能力</h3>
+  <p>
+    在推荐技术栈中，凡是与本作品业务相关的条目均已真实接入，且都能在演示中触发：
+  </p>
+  <ul>
+    <li><strong>Transformers.js 端侧推理</strong>：<code>Xenova/all-MiniLM-L6-v2</code>（384 维）在浏览器内算句向量，模型权重随站点分发，推理 0 请求；无模型文件时自动降级为 n-gram hashing（256 维）</li>
+    <li><strong>Web Speech API</strong>：面试页提供语音作答（ASR），并用 <code>speechSynthesis</code> 朗读面试官问题（TTS，零成本、无外部请求）</li>
+    <li><strong>SSE 流式</strong>：对话逐 token 渲染；<strong>WebSocket</strong>：实时看板数据流，网关不支持升级时自动降级为 REST 轮询</li>
+    <li><strong>浏览器本地持久化</strong>：会话与历史报告存 <code>localStorage</code>/<code>sessionStorage</code>，不依赖登录也能演示</li>
+    <li><strong>商用 LLM API</strong>：智谱 GLM-4-Flash（免费额度），服务端代理转发，Key 不下发浏览器</li>
+  </ul>
+
+  <div class="callout">
+    <strong>结论</strong>：技术选型的判断标准是「能否把作品的核心价值稳定交付给评委」，而非「是否命中推荐列表」。本作品的核心价值是<strong>可解释的评分过程 + 端侧可独立运行 + 全部代码可还原可解释</strong>，这三点恰好与重框架的方向相反，因此选择原生栈，并用 ESLint / Prettier / JSDoc / 1427 条断言把工程规范补齐到可审查的水平。
+  </div>
+
   <div class="chapter-footer">
-    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.1</span>
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.11</span>
     <span class="cf-chapter">CHAPTER 03 · 系统架构设计</span>
   </div>
 </section>
@@ -1099,7 +1163,7 @@
   </p>
 
   <div class="chapter-footer">
-    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.1</span>
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.11</span>
     <span class="cf-chapter">CHAPTER 04 · AI 技术方案</span>
   </div>
 </section>
@@ -1183,7 +1247,7 @@
   </p>
 
   <div class="chapter-footer">
-    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.1</span>
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.11</span>
     <span class="cf-chapter">CHAPTER 05 · 核心功能实现</span>
   </div>
 </section>
@@ -1201,6 +1265,8 @@
     <tbody>
       <tr><td>后端单元测试</td><td>pytest</td><td>27 项</td><td>健康检查、注册登录流程、评分引擎、LLM 增强兜底</td></tr>
       <tr><td>静态验证</td><td>Node + 正则</td><td>—</td><td>JS 语法、DOM id 引用、onclick 处理器、标签配平</td></tr>
+      <tr><td>代码规范</td><td>ESLint 10</td><td>0 error</td><td>38 个前端模块 + 33 个脚本；共享作用域白名单由 <code>gen-eslint-globals.js</code> 从源码生成</td></tr>
+      <tr><td>代码格式</td><td>Prettier 3</td><td>—</td><td>脚本层与配置层全部通过 <code>format:check</code>（前端源码的豁免理由写在 <code>.prettierignore</code>）</td></tr>
       <tr><td>无头逻辑测试</td><td>Node</td><td>217 项</td><td>store / 用户系统 / 简历优化 / 职业探索 / 主题 / 报告</td></tr>
       <tr><td>jsdom 集成测试</td><td>jsdom</td><td>17 文件 / 1182 项</td><td>v15-v31 + beta1 向量检索，覆盖所有功能模块、体验层 UX Kit、动态层与能力分布看板</td></tr>
       <tr><td>模块版启动测试</td><td>jsdom</td><td>28 项</td><td>拆分后的模块版能否独立启动</td></tr>
@@ -1272,7 +1338,7 @@ cd frontend && python -m http.server 5173
 # 浏览器打开 http://localhost:5173（不要双击 index.html）</pre>
 
   <div class="chapter-footer">
-    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.1</span>
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.11</span>
     <span class="cf-chapter">CHAPTER 06 · 测试与部署</span>
   </div>
 </section>
@@ -1562,7 +1628,7 @@ cd frontend && python -m http.server 5173
   </div>
 
   <div class="chapter-footer">
-    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.1</span>
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.11</span>
     <span class="cf-chapter">CHAPTER 07 · 核心算法详解与原创性论证</span>
   </div>
 </section>
@@ -1618,7 +1684,7 @@ cd frontend && python -m http.server 5173
   </p>
 
   <div class="chapter-footer">
-    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.1</span>
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.11</span>
     <span class="cf-chapter">CHAPTER 08 · 总结与展望</span>
   </div>
 </section>
@@ -1843,7 +1909,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
   </table>
                   <h3>Beta 1.1.2 · 体验修复层：三个主流程缺陷修复 + 学习计划板块 + 全站图标（2026.10.24 当前版本）</h3>
   <div class="callout">收集一轮真实使用反馈，修掉 3 个影响主流程的缺陷（面试无法重面 / 题库页滚动粘滞 / 能力分布看板数据冻结），新增「学习计划」板块与「十字鼠标追踪」偏好开关，并用 36 枚自制蓝图风线性 SVG 图标替换全站 63 处模板化 emoji。新增 v31 测试套件 110 项断言锁定全部行为。</div>
-  <div class="callout info"><strong>本版收口：</strong>在体验修复之外完成全栈收口——移除未部署的 Next.js 平行实验，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（<strong>分数仍由确定性规则引擎给出</strong>，LLM 仅生成逐维度质性评语与教练总评，任一环节失败自动回退规则结果，杜绝分数幻觉）；并清理文档中未落地的学术化表述（一致性系数校准、schema 强约束、多阶段调参叙事），使材料与代码逐条对齐。</div>
+  <div class="callout info"><strong>本版收口：</strong>在体验修复之外完成全栈收口——移除未部署的 Next.js 平行实验，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（<strong>分数仍由确定性规则引擎给出</strong>，LLM 仅生成逐维度质性评语与教练总评，任一环节失败自动回退规则结果，杜绝分数幻觉）；并清理文档中未落地的学术化表述（一致性系数校准、schema 强约束、多阶段调参叙事），使材料与代码逐条对齐。工程规范同步补齐：ESLint 10 + Prettier 3 + <code>jsconfig.json</code>/JSDoc 类型契约，<code>npm run verify</code> 一条命令串联「符号表 → 规范 → 格式 → 1427 条断言」四道闸门；技术选型理由见 3.5。</div>
   <h4><strong>✨ 修复清单</strong></h4>
   <ul>
     <li><strong>模拟面试无法重新面试</strong>：重面入口此前只藏在 ⌘K 面板（清空对话记录）与报告页（再来一次），面试页 chat-head 新增「🔄 重新面试」按钮，沿用带撤销 toast 的重置快照机制，并补 <code>requireLogin()</code> 守卫</li>
@@ -2856,7 +2922,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     </tr></tbody>
   </table>
   <div class="chapter-footer">
-    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.1</span>
+    <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.11</span>
     <span class="cf-chapter">CHAPTER 10 · 版本更新日志</span>
   </div>
 </section>

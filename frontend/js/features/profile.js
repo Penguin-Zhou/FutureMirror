@@ -18,7 +18,7 @@ function esc(s) {
 }
 
 function getProfile() {
-  let p = null;
+  let p;
   try { p = store.get("fm_profile", null); } catch (e) { p = null; }
   p = p || {};
   return Object.assign({}, PROFILE_DEFAULTS, p, {

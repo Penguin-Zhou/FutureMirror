@@ -9,7 +9,7 @@ const html = fs.readFileSync(path.join(__dirname, "..", "public", "futuremirror-
 
 const errors = [];
 const vc = new VirtualConsole();
-vc.on("jsdomError", e => {
+vc.on("jsdomError", (e) => {
   const msg = (e && e.message) || String(e);
   if (!/^Not implemented:/.test(msg)) errors.push("jsdomError: " + msg);
 });
@@ -24,10 +24,16 @@ const dom = new JSDOM(html, {
 const { window } = dom;
 const { document } = window;
 
-let pass = 0, fail = 0;
+let pass = 0,
+  fail = 0;
 function ok(cond, label) {
-  if (cond) { pass++; console.log("  ✅ " + label); }
-  else { fail++; console.log("  ❌ " + label); }
+  if (cond) {
+    pass++;
+    console.log("  ✅ " + label);
+  } else {
+    fail++;
+    console.log("  ❌ " + label);
+  }
 }
 
 /* jsdom 无 IntersectionObserver：注入一个「立即触发」的假实现，用于验证渐入逻辑 */
@@ -68,17 +74,24 @@ function runTests() {
   ok(/--serif:\s*Georgia/.test(css), "衬线字体变量 --serif 已定义（Georgia）");
   ok(/--mono:\s*ui-monospace/.test(css), "等宽字体变量 --mono 已定义");
   ok(/--glass-border:/.test(css) && /--glass-highlight:/.test(css), "兼容变量已定义（玻璃变量扁平化兜底）");
-  ok(/:root\[data-accent="green"\]/.test(css) && /:root\[data-accent="blue"\]/.test(css), "主题色变体（牛客绿 / 科技蓝）保留");
+  ok(
+    /:root\[data-accent="green"\]/.test(css) && /:root\[data-accent="blue"\]/.test(css),
+    "主题色变体（牛客绿 / 科技蓝）保留"
+  );
 
   /* ---------- B. 去玻璃拟态 + 蓝图网格基底 ---------- */
   ok(!/backdrop-filter/.test(css), "全站无 backdrop-filter（玻璃拟态已移除）");
   ok(!/linear-gradient\(135deg, #(4f46e5|6366f1|8b5cf6)/.test(css), "无蓝紫渐变硬编码");
   /* 补充：早期残留是以 radial-gradient 的 rgba 形式存活的（indigo / violet / blue），
    * 上面那条只查了 linear-gradient + hex，抓不到。这里按色值本身兜底。 */
-  ok(!/rgba?\(\s*(99,\s*102,\s*241|139,\s*92,\s*246|59,\s*130,\s*246|79,\s*70,\s*229)/i.test(css),
-     "无蓝紫系色值残留（含 radial-gradient 的 rgba 写法）");
-  ok(!/#(4f46e5|6366f1|8b5cf6|ec4899|f43f5e|0ea5e9|22d3ee|10b981|14b8a6|d946ef)\b/i.test(css),
-     "无多色撞色硬编码（头像/装饰统一走墨阶 + 单一朱红）");
+  ok(
+    !/rgba?\(\s*(99,\s*102,\s*241|139,\s*92,\s*246|59,\s*130,\s*246|79,\s*70,\s*229)/i.test(css),
+    "无蓝紫系色值残留（含 radial-gradient 的 rgba 写法）"
+  );
+  ok(
+    !/#(4f46e5|6366f1|8b5cf6|ec4899|f43f5e|0ea5e9|22d3ee|10b981|14b8a6|d946ef)\b/i.test(css),
+    "无多色撞色硬编码（头像/装饰统一走墨阶 + 单一朱红）"
+  );
   ok(!/\.hero::before\s*\{[^}]*filter:\s*blur/.test(css), "装饰性光晕不使用 blur 滤镜（改用 opacity 控浓淡）");
   ok(ruleHas(".card", /background:\s*var\(--card\)/), ".card 实色纸面（无半透明玻璃）");
   ok(ruleHas("body", /background-image:[\s\S]*linear-gradient\(var\(--grid-line\)/), "body 铺设蓝图网格");
@@ -112,14 +125,31 @@ function runTests() {
   ok(tagline && tagline.textContent.includes("一次面试，多重机会"), "首屏价值主张标签「一次面试，多重机会」");
   ok(!!document.querySelector("#view-landing .hero-mock .mock-chat"), "产品预览 Mock（对话）存在");
   ok(!!document.querySelector("#view-landing .hero-mock .mock-radar svg"), "产品预览 Mock（雷达图）存在");
-  ok(css.includes('fill="color-mix') || document.querySelector('#view-landing .hero-mock polygon[fill="color-mix(in srgb,var(--brand) 30%,transparent)"]') !== null || /color-mix\(in srgb,var\(--brand\) 30%,transparent\)/.test(document.querySelector("#view-landing .hero-mock").innerHTML), "预览雷达填充跟随主题色");
+  ok(
+    css.includes('fill="color-mix') ||
+      document.querySelector(
+        '#view-landing .hero-mock polygon[fill="color-mix(in srgb,var(--brand) 30%,transparent)"]'
+      ) !== null ||
+      /color-mix\(in srgb,var\(--brand\) 30%,transparent\)/.test(
+        document.querySelector("#view-landing .hero-mock").innerHTML
+      ),
+    "预览雷达填充跟随主题色"
+  );
   ok(!!document.querySelector("#view-landing .landing-cta .btn-white"), "底部 CTA 白色按钮");
-  ok([...document.querySelectorAll("#view-landing .feature-block p")].some(p => p.textContent.includes("让简历通过机器筛选")), "特性区补充「通过机器筛选」价值描述");
+  ok(
+    [...document.querySelectorAll("#view-landing .feature-block p")].some((p) =>
+      p.textContent.includes("让简历通过机器筛选")
+    ),
+    "特性区补充「通过机器筛选」价值描述"
+  );
 
   /* ---------- G. 滚动渐入（IntersectionObserver） ---------- */
   ok(window.eval("typeof revealScan") === "function", "revealScan 函数已定义");
   ok(window.eval("typeof initRevealObserver") === "function", "initRevealObserver 函数已定义");
-  ok(window.eval("REVEAL_SELECTOR").includes(".feature-block") && window.eval("REVEAL_SELECTOR").includes(".page-card"), "渐入目标选择器覆盖核心卡片");
+  ok(
+    window.eval("REVEAL_SELECTOR").includes(".feature-block") && window.eval("REVEAL_SELECTOR").includes(".page-card"),
+    "渐入目标选择器覆盖核心卡片"
+  );
 
   installFakeIO();
   window.eval("revealScan()");
@@ -127,7 +157,10 @@ function runTests() {
   ok(fb.classList.contains("reveal") && fb.classList.contains("in"), "视口内卡片立即添加 reveal + in");
   const before = document.querySelectorAll("#view-landing .feature-block.reveal").length;
   window.eval("revealScan()");
-  ok(document.querySelectorAll("#view-landing .feature-block.reveal").length === before, "重复扫描不会重复处理（data-rv 去重）");
+  ok(
+    document.querySelectorAll("#view-landing .feature-block.reveal").length === before,
+    "重复扫描不会重复处理（data-rv 去重）"
+  );
 
   /* 动画结束后清理 class，避免与 :hover transform 冲突 */
   setTimeout(() => {
@@ -142,7 +175,14 @@ function runTests() {
 
       /* prefers-reduced-motion 时跳过动画 */
       const realMM = window.matchMedia;
-      window.matchMedia = q => ({ matches: /prefers-reduced-motion/.test(q), media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      window.matchMedia = (q) => ({
+        matches: /prefers-reduced-motion/.test(q),
+        media: q,
+        addListener() {},
+        removeListener() {},
+        addEventListener() {},
+        removeEventListener() {},
+      });
       const probe = document.createElement("div");
       probe.className = "agent";
       probe.id = "reveal-probe";
@@ -153,8 +193,16 @@ function runTests() {
       probe.remove();
 
       /* ---------- H. 版本号与回归（v18 起版本号随主线递增） ---------- */
-      ok(/beta1\.[01]|v(1[789]|2[012])/.test(document.querySelector(".sb-footer").textContent), "侧栏版本号为 v17+ / beta1.x");
-      ok(/版本 (beta1\.[01](\.\d+)?|v(1[789]|2[012])) · 蓝图编辑风 · (动态层|交互深化层|全站交互层|完整性补全层)已就绪/.test(html), "开发者日志版本号已就绪");
+      ok(
+        /beta1\.[01]|v(1[789]|2[012])/.test(document.querySelector(".sb-footer").textContent),
+        "侧栏版本号为 v17+ / beta1.x"
+      );
+      ok(
+        /版本 (beta1\.[01](\.\d+)?|v(1[789]|2[012])) · 蓝图编辑风 · (动态层|交互深化层|全站交互层|完整性补全层)已就绪/.test(
+          html
+        ),
+        "开发者日志版本号已就绪"
+      );
 
       /* v15/v16 功能回归：今日推荐 / 个人中心 */
       const picks = document.querySelectorAll("#today-picks .today-pick");
@@ -162,7 +210,10 @@ function runTests() {
       ok(typeof window.eval("startInterviewFor") === "function", "startInterviewFor 可用（v15 回归）");
       window.location.hash = "#/profile";
       setTimeout(() => {
-        ok(document.querySelector('.app-page[data-page="profile"]').classList.contains("active"), "个人中心页可打开（v16 回归）");
+        ok(
+          document.querySelector('.app-page[data-page="profile"]').classList.contains("active"),
+          "个人中心页可打开（v16 回归）"
+        );
         ok(document.getElementById("avatar-picker") !== null, "头像选择器存在（v16 回归）");
         ok(document.getElementById("profile-completion-text") !== null, "完成度组件存在（v16 回归）");
 

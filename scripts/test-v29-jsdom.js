@@ -13,17 +13,23 @@ const { JSDOM, VirtualConsole } = require("jsdom");
 const html = fs.readFileSync(path.join(__dirname, "..", "public", "futuremirror-demo.html"), "utf8");
 const CSS = (html.match(/<style[^>]*>[\s\S]*?<\/style>/gi) || []).join("\n");
 
-let pass = 0, fail = 0;
+let pass = 0,
+  fail = 0;
 function ok(cond, label) {
-  if (cond) { pass++; console.log("  ✅ " + label); }
-  else { fail++; console.log("  ❌ " + label); }
+  if (cond) {
+    pass++;
+    console.log("  ✅ " + label);
+  } else {
+    fail++;
+    console.log("  ❌ " + label);
+  }
 }
 
 function makeDom(opts) {
   const o = opts || {};
   const errors = [];
   const vc = new VirtualConsole();
-  vc.on("jsdomError", e => {
+  vc.on("jsdomError", (e) => {
     const msg = (e && e.message) || String(e);
     if (!/^Not implemented:/.test(msg)) errors.push(msg);
   });
@@ -36,24 +42,36 @@ function makeDom(opts) {
     beforeParse(window) {
       const noop = () => {};
       const base = window.matchMedia;
-      const mk = (q, m) => ({ matches: m, media: q, addListener: noop, removeListener: noop, addEventListener: noop, removeEventListener: noop });
-      window.matchMedia = q => {
+      const mk = (q, m) => ({
+        matches: m,
+        media: q,
+        addListener: noop,
+        removeListener: noop,
+        addEventListener: noop,
+        removeEventListener: noop,
+      });
+      window.matchMedia = (q) => {
         if (o.reduced && /reduce/.test(q)) return mk(q, true);
         if (o.fine && /pointer:\s*fine/.test(q)) return mk(q, true);
         if (o.dark && /prefers-color-scheme:\s*dark/.test(q)) return mk(q, true);
-        if (base) { try { return base.call(window, q); } catch (e) {} }
+        if (base) {
+          try {
+            return base.call(window, q);
+          } catch (e) {}
+        }
         return mk(q, false);
       };
     },
   });
-  const settle = () => new Promise(res => {
-    if (dom.window.document.readyState === "complete") return res();
-    dom.window.document.addEventListener("DOMContentLoaded", res, { once: true });
-    setTimeout(res, 900);
-  });
+  const settle = () =>
+    new Promise((res) => {
+      if (dom.window.document.readyState === "complete") return res();
+      dom.window.document.addEventListener("DOMContentLoaded", res, { once: true });
+      setTimeout(res, 900);
+    });
   return { dom, errors, settle };
 }
-const wait = ms => new Promise(r => setTimeout(r, ms));
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 setTimeout(runTests, 400);
 
@@ -66,7 +84,8 @@ async function runTests() {
   const A = makeDom({});
   await A.settle();
   await wait(120);
-  const wA = A.dom.window, dA = wA.document;
+  const wA = A.dom.window,
+    dA = wA.document;
 
   /* ---------- A1. 主题三态 · 自动跟随系统 ---------- */
   console.log("\n--- A1. 主题三态（auto / light / dark）---");
@@ -91,11 +110,19 @@ async function runTests() {
   ok(/body::after[\s\S]{0,200}var\(--grain\)/.test(CSS), "纸纹以 body::after 全屏层承载");
   ok(/background-image:\s*var\(--grain\)/.test(CSS), "纸纹用 SVG feTurbulence 噪点");
   ok(/feTurbulence/.test(CSS), "噪点由 feTurbulence 生成（非位图）");
-  ok(/\.bp-z1\{|  \.bp-z1 \{/.test(CSS) && /\.bp-z2 \{/.test(CSS) && /\.bp-z3 \{/.test(CSS), "墨阶景深 z1/z2/z3 三层");
+  ok(
+    /\.bp-z1\{| {2}\.bp-z1 \{/.test(CSS) && /\.bp-z2 \{/.test(CSS) && /\.bp-z3 \{/.test(CSS),
+    "墨阶景深 z1/z2/z3 三层"
+  );
   ok(/\.bp-z2::before/.test(CSS) && /var\(--card-2\)/.test(CSS), "景深用顶部高光发丝线（非投影）");
   ok(/\.bp-glass \{[\s\S]{0,160}var\(--glass-bg\)/.test(CSS), "毛玻璃等价 .bp-glass 用半透明纸底");
   ok(/\.bp-glow \{[^}]*outline:/.test(CSS), "光晕边框用 outline 外扩（非 box-shadow）");
-  ok(/\.bp-fs-hero \{[^}]*clamp\(/.test(CSS) && /\.bp-fs-h2 \{[^}]*clamp\(/.test(CSS) && /\.bp-fs-body \{[^}]*clamp\(/.test(CSS), "流体字号三档全部 clamp 平滑缩放");
+  ok(
+    /\.bp-fs-hero \{[^}]*clamp\(/.test(CSS) &&
+      /\.bp-fs-h2 \{[^}]*clamp\(/.test(CSS) &&
+      /\.bp-fs-body \{[^}]*clamp\(/.test(CSS),
+    "流体字号三档全部 clamp 平滑缩放"
+  );
 
   /* ---------- A3. 微交互 ---------- */
   console.log("\n--- A3. 微交互（光标 / 磁铁 / 触感 / 撤销）---");
@@ -103,7 +130,7 @@ async function runTests() {
   ok(/\.bp-cursor-dot \{/.test(CSS), "光标中心点 .bp-cursor-dot（朱红）");
   ok(/\.bp-cursor\.hot/.test(CSS), "悬停可交互元素时光标变直角方框");
   ok(/html\.bp-cursor-on \*/.test(CSS), "启用时隐藏系统箭头光标");
-  ok(/html\.bp-cursor-on input[^\{]*\{[^}]*cursor:\s*text/.test(CSS), "输入框保留文本光标（无障碍）");
+  ok(/html\.bp-cursor-on input[^{]*\{[^}]*cursor:\s*text/.test(CSS), "输入框保留文本光标（无障碍）");
   ok(/\.bp-magnet \{[^}]*var\(--spring\)/.test(CSS), "磁铁按钮用弹簧位移");
   ok(/\.bp-tactile:hover \{[^}]*scale\(1\.004\)/.test(CSS), "卡片触感为 scale 微放（非上浮）");
   ok(!/\.bp-tactile:hover[^}]*translateY/.test(CSS), "卡片 hover 不含 translateY 上浮");
@@ -114,7 +141,10 @@ async function runTests() {
 
   /* ---------- A4. 滚动驱动 ---------- */
   console.log("\n--- A4. 滚动驱动 ---");
-  ok(/header\.scrolled \{/.test(CSS) && /header\.scrolled \.nav \{[^}]*height:\s*48px/.test(CSS), "导航吸顶收缩 56 → 48");
+  ok(
+    /header\.scrolled \{/.test(CSS) && /header\.scrolled \.nav \{[^}]*height:\s*48px/.test(CSS),
+    "导航吸顶收缩 56 → 48"
+  );
   ok(/header\.scrolled \{[^}]*border-bottom-color/.test(CSS), "收缩时下边线加深（非阴影）");
   ok(/\.bp-snap-y \{[^}]*scroll-snap-type:\s*y/.test(CSS), "滚动吸附容器 scroll-snap-type: y");
   ok(/\.bp-snap-item \{[^}]*scroll-snap-align:\s*start/.test(CSS), "分段吸附对齐点 start");
@@ -139,10 +169,16 @@ async function runTests() {
   console.log("\n--- A6. 高级组件 ---");
   ok(/\.bp-dialog \{/.test(CSS) && /\.bp-dialog-grip \{[^}]*cursor:\s*move/.test(CSS), "弹窗可拖拽（grip 抓手）");
   ok(/\.bp-dialog-resize \{[^}]*nwse-resize/.test(CSS), "弹窗可调整大小（右下角手柄）");
-  ok(/\.bp-stepper \{/.test(CSS) && /\.bp-step\.on/.test(CSS) && /\.bp-step\.done/.test(CSS), "分步向导与当前/已完成态");
+  ok(
+    /\.bp-stepper \{/.test(CSS) && /\.bp-step\.on/.test(CSS) && /\.bp-step\.done/.test(CSS),
+    "分步向导与当前/已完成态"
+  );
   ok(/\.bp-tl \{[^}]*border-left/.test(CSS) && /\.bp-tl-item\.on::before/.test(CSS), "时间轴轴线与高亮节点");
   ok(/\.bp-aside \{[^}]*transition/.test(CSS) && /\.bp-aside\.collapsed/.test(CSS), "可折叠侧边栏与收起态");
-  ok(/::view-transition-old\(root\)/.test(CSS) && /::view-transition-new\(root\)/.test(CSS), "View Transition 转场伪元素");
+  ok(
+    /::view-transition-old\(root\)/.test(CSS) && /::view-transition-new\(root\)/.test(CSS),
+    "View Transition 转场伪元素"
+  );
   ok(/@keyframes bpReveal/.test(CSS) && /clip-path:\s*inset\(14px/.test(CSS), "转场兜底为 clip-path 印刷揭载");
 
   /* ---------- A7. 运行时装配 ---------- */
@@ -161,7 +197,12 @@ async function runTests() {
   ok(dA.querySelectorAll(".bp-dialog-resize").length >= 1, "DOM 中存在缩放手柄");
   ok(dA.querySelectorAll(".bp-tactile").length >= 1, "DOM 中存在触感卡片");
   ok(typeof wA.showView === "function" && wA.showView.__bpVT === true, "showView 已被 View Transition 包装");
-  ok(wA.__bpMotion.withVT(function () { wA.__bpVTflag = 1; }) === false && wA.__bpVTflag === 1, "无 API 时 withVT 直接执行不丢行为");
+  ok(
+    wA.__bpMotion.withVT(function () {
+      wA.__bpVTflag = 1;
+    }) === false && wA.__bpVTflag === 1,
+    "无 API 时 withVT 直接执行不丢行为"
+  );
 
   const panel = dA.getElementById("bp-viz-panel");
   ok(!!panel, "报告页能力分布看板已挂载");
@@ -170,7 +211,7 @@ async function runTests() {
   ok(panel && panel.querySelectorAll(".bp-step").length === 4, "分步向导 4 步");
   ok(panel && panel.querySelectorAll(".bp-tl-item").length === 4, "时间轴 4 节点");
   ok(panel && panel.querySelectorAll(".bp-live-item").length === 4, "实时看板 4 条指标");
-  ok(panel && panel.querySelectorAll('[data-card]').length === 2, "图表卡片可拖拽（2 张，带 data-card）");
+  ok(panel && panel.querySelectorAll("[data-card]").length === 2, "图表卡片可拖拽（2 张，带 data-card）");
   ok(panel && panel.querySelectorAll(".bp-board-card").length === 2, "仪表盘卡片已初始化");
   ok(!!wA.__bpViz.live() && typeof wA.__bpViz.live().stop === "function", "实时流可停止（避免泄漏）");
 
@@ -179,7 +220,7 @@ async function runTests() {
   ok(dA.querySelectorAll(".bp-pager").length >= 1, "分页器已插入");
   const api = wA.__bpViz.enhanceTable(dA.querySelector(".eval-table"));
   ok(api && typeof api.csv === "function", "表格增强 API 可用（重复调用幂等）");
-  ok(api && api.csv().charCodeAt(0) === 0xFEFF, "CSV 带 UTF-8 BOM（Excel 中文不乱码）");
+  ok(api && api.csv().charCodeAt(0) === 0xfeff, "CSV 带 UTF-8 BOM（Excel 中文不乱码）");
   ok(api && /"/.test(api.csv()), "CSV 单元格加引号转义");
 
   /* ---------- A8. 视觉纪律守恒 ---------- */
@@ -212,7 +253,8 @@ async function runTests() {
   const C = makeDom({ fine: true });
   await C.settle();
   await wait(120);
-  const wC = C.dom.window, dC = wC.document;
+  const wC = C.dom.window,
+    dC = wC.document;
   console.log("\n--- C. 精细指针 · 准线光标 ---");
   ok(wC.__bpMotion.fine() === true, "精细指针被正确侦测");
   ok(wC.__bpMotion.initCursor() === false, "重复调用 initCursor 幂等（不重复注入光标）");

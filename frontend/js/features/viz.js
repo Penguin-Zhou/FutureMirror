@@ -280,7 +280,7 @@
     const storeKey = key || "bp_board_order";
     const cards = Array.prototype.slice.call(board.children);
     board.classList.add("bp-board");
-    let saved = [];
+    let saved;
     try { saved = JSON.parse(win.localStorage.getItem(storeKey) || "[]"); } catch (e) { saved = []; }
     if (saved.length === cards.length) {
       saved.forEach(id => {
@@ -316,7 +316,7 @@
 
   /* ---------- ⑤ 实时数据流看板（本地状态 + 服务端 WebSocket，失败降级轮询） ---------- */
   function apiBase() {
-    let b = "";
+    let b;
     try { b = (typeof CONFIG !== "undefined" && CONFIG && CONFIG.apiBase) ? String(CONFIG.apiBase) : ""; } catch (e) { b = ""; }
     return b;
   }

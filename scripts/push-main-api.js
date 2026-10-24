@@ -27,14 +27,23 @@ const BRANCH = "main";
 const CWD = path.join(__dirname, "..");
 
 function git(args, opts) {
-  return execFileSync("git", ["-C", CWD, "-c", "core.quotepath=false", ...args], Object.assign({ encoding: "utf8", maxBuffer: 1024 * 1024 * 64 }, opts)).trim();
+  return execFileSync(
+    "git",
+    ["-C", CWD, "-c", "core.quotepath=false", ...args],
+    Object.assign({ encoding: "utf8", maxBuffer: 1024 * 1024 * 64 }, opts)
+  ).trim();
 }
 function gitBuf(args) {
-  return execFileSync("git", ["-C", CWD, "-c", "core.quotepath=false", ...args], { maxBuffer: 1024 * 1024 * 512, encoding: "buffer" });
+  return execFileSync("git", ["-C", CWD, "-c", "core.quotepath=false", ...args], {
+    maxBuffer: 1024 * 1024 * 512,
+    encoding: "buffer",
+  });
 }
 function gh(args, input) {
   return execFileSync("gh", ["api", ...args, ...(input ? ["--input", "-"] : [])], {
-    input: input || undefined, encoding: "utf8", maxBuffer: 1024 * 1024 * 512,
+    input: input || undefined,
+    encoding: "utf8",
+    maxBuffer: 1024 * 1024 * 512,
   }).trim();
 }
 function ghJson(args, input) {
@@ -48,11 +57,13 @@ const remoteTree = head.commit.tree.sha;
 console.log(`远端 ${BRANCH}: ${remoteSha.slice(0, 7)}（tree ${remoteTree.slice(0, 7)}）`);
 
 /* 1) 在本地历史里回溯：哪个提交的 tree 与远端一致 → 它就是「已推送到」的位置 */
-const history = git(["log", "--format=%H %T"]).split("\n").map(l => {
-  const [sha, tree] = l.split(" ");
-  return { sha, tree };
-});
-const baseIdx = history.findIndex(c => c.tree === remoteTree);
+const history = git(["log", "--format=%H %T"])
+  .split("\n")
+  .map((l) => {
+    const [sha, tree] = l.split(" ");
+    return { sha, tree };
+  });
+const baseIdx = history.findIndex((c) => c.tree === remoteTree);
 if (baseIdx < 0) {
   console.error("❌ 远端 tree 在本地历史中找不到对应提交，疑似真分叉，已中止（不会强制覆盖）");
   process.exit(1);
@@ -76,9 +87,15 @@ for (const c of pending) {
   const authorDate = git(["log", "-1", "--format=%aI", c.sha]);
 
   /* name-status：A 新增 / M 修改 / D 删除 / R 改名 */
-  const changed = git(["diff", "--name-status", c.sha + "~1", c.sha]).split("\n").filter(Boolean);
+  const changed = git(["diff", "--name-status", c.sha + "~1", c.sha])
+    .split("\n")
+    .filter(Boolean);
   /* 父 tree 的文件清单（删除守卫用：只删确实存在的路径） */
-  const parentFiles = new Set(git(["ls-tree", "-r", "--name-only", c.sha + "~1"]).split("\n").filter(Boolean));
+  const parentFiles = new Set(
+    git(["ls-tree", "-r", "--name-only", c.sha + "~1"])
+      .split("\n")
+      .filter(Boolean)
+  );
 
   const entries = [];
   for (const line of changed) {
@@ -90,32 +107,41 @@ for (const c of pending) {
       continue;
     }
     if (st.startsWith("R")) {
-      const oldRel = parts[1], newRel = parts[2];
+      const oldRel = parts[1],
+        newRel = parts[2];
       if (parentFiles.has(oldRel)) entries.push({ path: oldRel, mode: "100644", type: "blob", sha: null });
       const mode = git(["ls-tree", c.sha, "--", newRel]).split(/\s+/)[0] || "100644";
       const b64 = gitBuf(["show", `${c.sha}:${newRel}`]).toString("base64");
-      const sha = ghJson([`repos/${REPO}/git/blobs`, "-X", "POST"],
-        JSON.stringify({ content: b64, encoding: "base64" })).sha;
+      const sha = ghJson(
+        [`repos/${REPO}/git/blobs`, "-X", "POST"],
+        JSON.stringify({ content: b64, encoding: "base64" })
+      ).sha;
       entries.push({ path: newRel, mode, type: "blob", sha });
       continue;
     }
     const rel = parts[parts.length - 1];
     const mode = git(["ls-tree", c.sha, "--", rel]).split(/\s+/)[0] || "100644";
     const b64 = gitBuf(["show", `${c.sha}:${rel}`]).toString("base64");
-    const sha = ghJson([`repos/${REPO}/git/blobs`, "-X", "POST"],
-      JSON.stringify({ content: b64, encoding: "base64" })).sha;
+    const sha = ghJson(
+      [`repos/${REPO}/git/blobs`, "-X", "POST"],
+      JSON.stringify({ content: b64, encoding: "base64" })
+    ).sha;
     entries.push({ path: rel, mode, type: "blob", sha });
   }
 
-  const treeSha = ghJson([`repos/${REPO}/git/trees`, "-X", "POST"],
-    JSON.stringify({ base_tree: prevTree, tree: entries })).sha;
-  const commitSha = ghJson([`repos/${REPO}/git/commits`, "-X", "POST"],
+  const treeSha = ghJson(
+    [`repos/${REPO}/git/trees`, "-X", "POST"],
+    JSON.stringify({ base_tree: prevTree, tree: entries })
+  ).sha;
+  const commitSha = ghJson(
+    [`repos/${REPO}/git/commits`, "-X", "POST"],
     JSON.stringify({
       message,
       tree: treeSha,
       parents: [parent],
       author: { name: authorName, email: authorEmail, date: authorDate },
-    })).sha;
+    })
+  ).sha;
 
   console.log(`  ↳ ${commitSha.slice(0, 7)}  ${message.split("\n")[0].slice(0, 62)}（${entries.length} 条目）`);
   parent = commitSha;

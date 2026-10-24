@@ -9,10 +9,16 @@ const { JSDOM, VirtualConsole } = require("jsdom");
 
 const html = fs.readFileSync(path.join(__dirname, "..", "public", "futuremirror-demo.html"), "utf8");
 
-let pass = 0, fail = 0;
+let pass = 0,
+  fail = 0;
 function ok(cond, label) {
-  if (cond) { pass++; console.log("  ✅ " + label); }
-  else { fail++; console.log("  ❌ " + label); }
+  if (cond) {
+    pass++;
+    console.log("  ✅ " + label);
+  } else {
+    fail++;
+    console.log("  ❌ " + label);
+  }
 }
 
 /* ---------- 假 2d 上下文：记录调用 ---------- */
@@ -20,10 +26,26 @@ function makeFakeCtx() {
   const calls = { fillRect: 0, strokeRect: 0, stroke: 0, clearRect: 0 };
   const ctx = {
     calls,
-    fillStyle: "", strokeStyle: "", lineWidth: 1, globalAlpha: 1,
-    setTransform() {}, clearRect() { calls.clearRect++; },
-    beginPath() {}, moveTo() {}, lineTo() {}, stroke() { calls.stroke++; },
-    fillRect() { calls.fillRect++; }, strokeRect() { calls.strokeRect++; },
+    fillStyle: "",
+    strokeStyle: "",
+    lineWidth: 1,
+    globalAlpha: 1,
+    setTransform() {},
+    clearRect() {
+      calls.clearRect++;
+    },
+    beginPath() {},
+    moveTo() {},
+    lineTo() {},
+    stroke() {
+      calls.stroke++;
+    },
+    fillRect() {
+      calls.fillRect++;
+    },
+    strokeRect() {
+      calls.strokeRect++;
+    },
   };
   return ctx;
 }
@@ -33,7 +55,7 @@ function makeDom(opts) {
   const o = opts || {};
   const errors = [];
   const vc = new VirtualConsole();
-  vc.on("jsdomError", e => {
+  vc.on("jsdomError", (e) => {
     const msg = (e && e.message) || String(e);
     if (!/^Not implemented:/.test(msg)) errors.push(msg);
   });
@@ -47,21 +69,34 @@ function makeDom(opts) {
     virtualConsole: vc,
     beforeParse(window) {
       if (o.reduced) {
-        window.matchMedia = q => ({ matches: /reduce/.test(q), media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+        window.matchMedia = (q) => ({
+          matches: /reduce/.test(q),
+          media: q,
+          addListener() {},
+          removeListener() {},
+          addEventListener() {},
+          removeEventListener() {},
+        });
       }
       if (fake) {
-        window.HTMLCanvasElement.prototype.getContext = function () { return fake; };
+        window.HTMLCanvasElement.prototype.getContext = function () {
+          return fake;
+        };
       }
       const nativeRaf = window.requestAnimationFrame.bind(window);
-      window.requestAnimationFrame = cb => { rafCount++; return nativeRaf(cb); };
+      window.requestAnimationFrame = (cb) => {
+        rafCount++;
+        return nativeRaf(cb);
+      };
     },
   });
   /* jsdom 构造返回时 readyState 仍为 loading——粒子层 boot 等 DOMContentLoaded，先 settle */
-  const settle = () => new Promise(res => {
-    if (dom.window.document.readyState === "complete") return res();
-    dom.window.document.addEventListener("DOMContentLoaded", res, { once: true });
-    setTimeout(res, 800);
-  });
+  const settle = () =>
+    new Promise((res) => {
+      if (dom.window.document.readyState === "complete") return res();
+      dom.window.document.addEventListener("DOMContentLoaded", res, { once: true });
+      setTimeout(res, 800);
+    });
   return { dom, errors, rafCount: () => rafCount, settle };
 }
 
@@ -76,14 +111,18 @@ async function runTests() {
   const fakeA = makeFakeCtx();
   const A = makeDom({ fakeCtx: fakeA });
   await A.settle();
-  await new Promise(r => setTimeout(r, 60));   // 等首帧 rAF 驱动绘制
-  const wA = A.dom.window, dA = wA.document;
+  await new Promise((r) => setTimeout(r, 60)); // 等首帧 rAF 驱动绘制
+  const wA = A.dom.window,
+    dA = wA.document;
 
   /* ---------- A1. 粒子场注入与运行 ---------- */
   ok(!!dA.querySelector("canvas.bp-particles"), "粒子画布已注入 body（.bp-particles）");
   ok(dA.querySelector("canvas.bp-particles").getAttribute("aria-hidden") === "true", "粒子画布对辅助技术隐藏");
   ok(wA.__bpFx && wA.__bpFx.running === true, "__bpFx.running = true（rAF 循环已启动）");
-  ok(wA.__bpFx && wA.__bpFx.particles >= 30 && wA.__bpFx.particles <= 90, "粒子数在 30–90 封顶区间（当前 " + (wA.__bpFx && wA.__bpFx.particles) + "）");
+  ok(
+    wA.__bpFx && wA.__bpFx.particles >= 30 && wA.__bpFx.particles <= 90,
+    "粒子数在 30–90 封顶区间（当前 " + (wA.__bpFx && wA.__bpFx.particles) + "）"
+  );
   ok(fakeA.calls.fillRect > 0, "粒子以方点绘制（fillRect 调用 " + fakeA.calls.fillRect + " 次）");
   ok(fakeA.calls.stroke > 0, "近距离连线已绘制（stroke 调用 " + fakeA.calls.stroke + " 次）");
   ok(fakeA.calls.clearRect > 0, "每帧清屏（clearRect 调用）");
@@ -93,7 +132,9 @@ async function runTests() {
   try {
     wA.dispatchEvent(new wA.MouseEvent("mousemove", { clientX: 100, clientY: 100 }));
     wA.dispatchEvent(new wA.MouseEvent("mousemove", { clientX: 640, clientY: 400 }));
-  } catch (e) { mouseErr = String(e); }
+  } catch (e) {
+    mouseErr = String(e);
+  }
   ok(!mouseErr, "mousemove 斥力交互无异常" + (mouseErr ? " → " + mouseErr : ""));
 
   /* ---------- A3. 点击涟漪（仅落地页视图） ---------- */
@@ -101,10 +142,15 @@ async function runTests() {
   ok(!!dA.querySelector("#view-landing.active"), "初始视图为落地页（涟漪激活条件）");
   try {
     wA.dispatchEvent(new wA.MouseEvent("click", { clientX: 300, clientY: 300, bubbles: true }));
-  } catch (e) { /* window 级 click 无 target.closest，代码内 try 放行 */ }
-  return new Promise(r => setTimeout(r, 60))            // 等下一帧绘制涟漪
+  } catch (e) {
+    /* window 级 click 无 target.closest，代码内 try 放行 */
+  }
+  return new Promise((r) => setTimeout(r, 60)) // 等下一帧绘制涟漪
     .then(() => {
-      ok(fakeA.calls.strokeRect > strokeBefore, "点击产生方形涟漪（strokeRect 增量 " + (fakeA.calls.strokeRect - strokeBefore) + "）");
+      ok(
+        fakeA.calls.strokeRect > strokeBefore,
+        "点击产生方形涟漪（strokeRect 增量 " + (fakeA.calls.strokeRect - strokeBefore) + "）"
+      );
       return runParallaxAndRest();
     });
 
@@ -114,15 +160,18 @@ async function runTests() {
     const mock = dA.querySelector(".hero-mock");
     ok(!!spec && !!mock, "Hero 双栏元素存在（视差目标）");
     wA.dispatchEvent(new wA.MouseEvent("mousemove", { clientX: 40, clientY: 40 }));
-    await new Promise(resolve => wA.requestAnimationFrame(() => wA.requestAnimationFrame(resolve)));
+    await new Promise((resolve) => wA.requestAnimationFrame(() => wA.requestAnimationFrame(resolve)));
     const st = spec.style.transform || "";
     const mt = mock.style.transform || "";
     ok(/translate3d\(-?\d+(\.\d+)?px/.test(st), "规格面板视差位移（" + st + "）");
     ok(/translate3d\(-?\d+(\.\d+)?px/.test(mt), "预览窗反向视差位移（" + mt + "）");
-    const num = s => { const m = (s || "").match(/\(\s*(-?\d+(?:\.\d+)?)px/); return m ? parseFloat(m[1]) : NaN; };
+    const num = (s) => {
+      const m = (s || "").match(/\(\s*(-?\d+(?:\.\d+)?)px/);
+      return m ? parseFloat(m[1]) : NaN;
+    };
     ok(num(st) * num(mt) < 0, "双栏视差方向相反（空间深度，spec " + num(st) + "px vs mock " + num(mt) + "px）");
     wA.dispatchEvent(new wA.MouseEvent("mouseout"));
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500));
     ok(spec.style.transform === "" && mock.style.transform === "", "mouseout 后视差回弹（transition 兜底）");
     await runReduced();
   }
@@ -133,7 +182,8 @@ async function runTests() {
     const fakeR = makeFakeCtx();
     const R = makeDom({ fakeCtx: fakeR, reduced: true });
     await R.settle();
-    const wR = R.dom.window, dR = wR.document;
+    const wR = R.dom.window,
+      dR = wR.document;
     ok(!!dR.querySelector("canvas.bp-particles"), "reduced-motion 下画布仍注入（静态帧可见）");
     ok(wR.__bpFx && wR.__bpFx.staticOnly === true, "__bpFx.staticOnly = true");
     ok(wR.__bpFx && wR.__bpFx.running === false, "reduced-motion 下不启动 rAF 循环");
@@ -142,7 +192,7 @@ async function runTests() {
 
     /* ---------- CSS 层：动效宪法与微交互 ---------- */
     const css = dA.querySelector("style").textContent;
-    const has = s => css.includes(s);
+    const has = (s) => css.includes(s);
 
     /* B1. 粒子层 */
     ok(/\.bp-particles\s*\{[^}]*position:\s*fixed/.test(css), ".bp-particles fixed 全站背景层");
@@ -171,9 +221,15 @@ async function runTests() {
     ok(/\.landing-nav-links a:focus-visible::after[^}]*scaleX\(1\)/.test(css), "导航键盘焦点下划线展开");
 
     /* B6. 取景角标延展 + 顶规点亮 + 视差过渡 */
-    ok(/\.bp-crop:hover::before, \.bp-crop:hover::after\s*\{[^}]*width:\s*20px/.test(css), "取景角标 hover 延展 13→20px");
+    ok(
+      /\.bp-crop:hover::before, \.bp-crop:hover::after\s*\{[^}]*width:\s*20px/.test(css),
+      "取景角标 hover 延展 13→20px"
+    );
     ok(/\.page-card:hover\s*\{[^}]*border-top-color:\s*var\(--brand\)/.test(css), "page-card hover 顶规点亮朱红");
-    ok(/\.hero-spec, \.hero-mock\s*\{[^}]*transition:\s*transform/.test(css), "视差元素 transition 兜底（mouseout 回弹）");
+    ok(
+      /\.hero-spec, \.hero-mock\s*\{[^}]*transition:\s*transform/.test(css),
+      "视差元素 transition 兜底（mouseout 回弹）"
+    );
 
     /* B7. 动效宪法覆盖动态层 */
     const rmBlock = (css.match(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\}\s*\}/g) || []).join("\n");
@@ -184,7 +240,7 @@ async function runTests() {
     console.log("\n--- 降级链：无 2d context ---");
     const N = makeDom({});
     await N.settle();
-    await new Promise(r => setTimeout(r, 30));
+    await new Promise((r) => setTimeout(r, 30));
     const dN = N.dom.window.document;
     ok(!dN.querySelector("canvas.bp-particles"), "无 2d context 时画布被移除（整体降级）");
     ok(N.errors.length === 0, "降级过程无脚本错误" + (N.errors.length ? " → " + N.errors[0] : ""));

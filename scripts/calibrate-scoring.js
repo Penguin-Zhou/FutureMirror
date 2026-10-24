@@ -28,7 +28,9 @@ const dom = new JSDOM(fs.readFileSync(path.join(ROOT, "public", "futuremirror-de
   virtualConsole: vc,
 });
 const w = dom.window;
-w.eval(`window.matchMedia = q => ({ matches: false, media: q, addListener(){}, removeListener(){}, addEventListener(){}, removeEventListener(){} });`);
+w.eval(
+  `window.matchMedia = q => ({ matches: false, media: q, addListener(){}, removeListener(){}, addEventListener(){}, removeEventListener(){} });`
+);
 
 const results = [];
 for (const c of cases) {
@@ -43,7 +45,7 @@ for (const c of cases) {
   const total = Math.round(parsed.reduce((s, d) => s + d.score, 0) / parsed.length);
   results.push({ id: c.id, name: c.name, total, dims: parsed });
   if (!process.argv.includes("--diff")) {
-    const line = parsed.map(d => `${d.dimension} ${d.score}`).join(" | ");
+    const line = parsed.map((d) => `${d.dimension} ${d.score}`).join(" | ");
     console.log(`${c.id} ${c.name}`);
     console.log(`   总分 ${total} ｜ ${line}`);
   }
@@ -54,10 +56,12 @@ if (diffIdx > -1 && process.argv[diffIdx + 1]) {
   const py = JSON.parse(fs.readFileSync(process.argv[diffIdx + 1], "utf8"));
   let bad = 0;
   for (let i = 0; i < results.length; i++) {
-    const a = results[i], b = py[i];
-    const aTotal = a.total, bTotal = b.total;
-    const aDims = a.dims.map(d => d.score).join(",");
-    const bDims = b.dims.map(d => d.score).join(",");
+    const a = results[i],
+      b = py[i];
+    const aTotal = a.total,
+      bTotal = b.total;
+    const aDims = a.dims.map((d) => d.score).join(",");
+    const bDims = b.dims.map((d) => d.score).join(",");
     if (aTotal !== bTotal || aDims !== bDims) {
       bad++;
       console.log(`❌ ${a.id} 不一致：前端 total=${aTotal} dims=[${aDims}] ｜ 后端 total=${bTotal} dims=[${bDims}]`);

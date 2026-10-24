@@ -209,10 +209,10 @@ async function streamChat(messages, onDelta, signal) {
       body: JSON.stringify({ model: llm.model.trim(), stream: true, messages }),
     });
   } catch (e) {
-    if (e.name === "AbortError") throw new Error("请求超时（60s），免费模型响应可能较慢，请重试");
+    if (e.name === "AbortError") throw new Error("请求超时（60s），免费模型响应可能较慢，请重试", { cause: e });
     throw new Error(e.message === "Failed to fetch"
       ? "网络请求失败（浏览器直连被拦截或网络不通）：请确认 Base URL 的服务商支持 CORS 跨域直连（推荐智谱 GLM / OpenRouter）"
-      : e.message);
+      : e.message, { cause: e });
   }
   if (!res.ok) {
     let detail = "";
