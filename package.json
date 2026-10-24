@@ -5,7 +5,6 @@
   "description": "面镜 FutureMirror：AI 模拟面试与能力成长平台（原生 JS 前端 + FastAPI 后端）",
   "scripts": {
     "test": "node scripts/run-tests.js",
-    "test:watch": "vitest",
     "test:jsdom": "node scripts/run-tests.js",
     "test:demo": "node scripts/run-tests.js test-demo-logic",
     "test:all": "node scripts/run-tests.js",
@@ -18,7 +17,6 @@
     "model:fetch": "node scripts/fetch-model.js"
   },
   "devDependencies": {
-    "jsdom": "^25.0.1",
-    "vitest": "^3.0.0"
+    "jsdom": "^25.0.1"
   }
 }
