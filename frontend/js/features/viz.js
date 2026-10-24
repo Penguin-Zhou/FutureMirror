@@ -605,6 +605,25 @@
     return true;
   }
 
+  /* v31：报告重渲染后刷新看板——先停旧 live 定时器 / WS，摘除旧面板，
+   * 再按最新会话数据重挂。此前面板只在开机装配一次（守卫 return false），
+   * 面试后仍显示「基线数据」，用户看不到自己的真实分布（已反馈）。 */
+  function refreshReportPanel() {
+    removeReportPanel();
+    return mountReportPanel();
+  }
+  /* v31：报告为空态（未登录 / 无面试记录）时撤下看板，避免残留基线数据 */
+  function removeReportPanel() {
+    const old = doc.getElementById("bp-viz-panel");
+    if (!old) return false;
+    if (bpLive && typeof bpLive.stop === "function") {
+      try { bpLive.stop(); } catch (e) {}
+      bpLive = null;
+    }
+    if (old.parentNode) old.parentNode.removeChild(old);
+    return true;
+  }
+
   /* ---------- ⑨ 统一装配：表格 + 看板 + 图表提示 ---------- */
   function initAll() {
     const r = {};
@@ -632,6 +651,8 @@
     renderTimeline: renderTimeline,
     readVizData: readVizData,
     mountReportPanel: mountReportPanel,
+    refreshReportPanel: refreshReportPanel,
+    removeReportPanel: removeReportPanel,
     live: () => bpLive,
     toCsv: toCsv,
     toExcelHtml: toExcelHtml,
