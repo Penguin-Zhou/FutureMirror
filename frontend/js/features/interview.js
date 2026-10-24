@@ -467,6 +467,7 @@ function finishInterview() {
 }
 
 function restartInterview() {
+  if (!requireLogin()) return;
   // v29 撤销支持：重置前留存会话快照（turns 内含 v28 批注 notes）
   const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null };
   session.turns = [];
