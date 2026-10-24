@@ -80,12 +80,21 @@
     return true;
   }
 
-  /* ④ 滚动吸附（proximity 柔和，落地页分段对齐） */
+  /* ④ 滚动吸附（proximity 柔和，仅落地页视图生效） */
   function initSnap() {
     const secs = doc.querySelectorAll(".landing-section");
     Array.prototype.forEach.call(secs, s => s.classList.add("bp-snap-item"));
-    if (secs.length) doc.documentElement.classList.add("bp-snap-y");
+    // 吸附只作用于落地页视图：初始即按当前视图决定，进入挂载、离开拆除，
+    // 避免 bp-snap-y 挂到 documentElement 后全站滚动都被吸附阻滞（v31 修复）
+    const landing = doc.getElementById("view-landing");
+    if (landing && landing.classList.contains("active")) doc.documentElement.classList.add("bp-snap-y");
+    else doc.documentElement.classList.remove("bp-snap-y");
     return secs.length;
+  }
+  /* 视图切换时开合滚动吸附（showView 调用） */
+  function setSnap(on) {
+    doc.documentElement.classList.toggle("bp-snap-y", !!on);
+    return !!on;
   }
 
   /* ⑤ 横向画廊：窄屏时把统计卡组转为 scroll-snap 横向廊 */
@@ -301,6 +310,7 @@
     initMagnets: initMagnets,
     initNavShrink: initNavShrink,
     initSnap: initSnap,
+    setSnap: setSnap,
     initGalleries: initGalleries,
     initViewTransition: initViewTransition,
     initTactile: initTactile,

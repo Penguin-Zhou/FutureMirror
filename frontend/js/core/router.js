@@ -37,6 +37,8 @@ function showView(name) {
   }
   // v26：离开落地页时清除导航点亮（准线已全站化，输入聚焦自动隐身）
   try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
+  // v31：滚动吸附只作用于落地页视图——进入挂载、离开拆除（曾全局常驻导致应用内滚动粘滞）
+  try { if (window.__bpMotion && window.__bpMotion.setSnap) window.__bpMotion.setSnap(name === "landing"); } catch (e) {}
 }
 
 /* 落地页 CTA：已登录进应用，未登录进登录页 */
