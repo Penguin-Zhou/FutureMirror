@@ -19,7 +19,17 @@ const REPO = "Penguin-Zhou/FutureMirror";
 const BRANCH = "gh-pages";
 
 /* 相对 staged 目录、需要更新的文件（未列出的继承 base_tree） */
-const CHANGED = ["index.html", "404.html", "README.md", "changelog.html", "docs/technical-doc.html"];
+const CHANGED = [
+  "index.html",
+  "404.html",
+  "README.md",
+  "changelog.html",
+  "docs/technical-doc.html",
+  // 端侧人脸检测资源（自托管，Pages 同源可读）；缺失则跳过，前端自动回退 CDN
+  "models/faceapi/face-api.min.js",
+  "models/faceapi/weights/tiny_face_detector_model-weights_manifest.json",
+  "models/faceapi/weights/tiny_face_detector_model-shard1",
+];
 
 function gh(args, input) {
   return execFileSync("gh", ["api", ...args, ...(input ? ["--input", "-"] : [])], {
@@ -39,6 +49,10 @@ const entries = [];
 for (const rel of CHANGED) {
   const abs = path.join(STAGED, rel);
   if (!fs.existsSync(abs)) {
+    if (rel.indexOf("models/") === 0) {
+      console.warn(`⚠️ 跳过缺失的可选资源 ${rel}（前端将回退 CDN）`);
+      continue;
+    }
     console.error(`❌ 缺少 ${rel}`);
     process.exit(1);
   }

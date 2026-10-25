@@ -34,6 +34,31 @@ const ORT_BASE = "https://fastly.jsdelivr.net/npm/@xenova/transformers@2.17.2/di
 const ORT_FILES = ["ort-wasm-simd.wasm", "ort-wasm.wasm"];
 const FORCE = process.argv.includes("--force");
 
+/* 人脸检测（v33 摄像头状态监测）：face-api.js 库 + tinyFaceDetector 权重，同源自托管。
+ * 注意：npm 包 face-api.js 不含 weights/ 目录（该路径 404），权重必须取自 GitHub 仓库。 */
+const FACEAPI_DIR = path.join(ROOT, "public", "models", "faceapi");
+const FACEAPI_FILES = [
+  {
+    rel: "face-api.min.js",
+    urls: [
+      "https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js",
+      "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js",
+    ],
+  },
+  {
+    rel: "weights/tiny_face_detector_model-weights_manifest.json",
+    urls: [
+      "https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/tiny_face_detector_model-weights_manifest.json",
+    ],
+  },
+  {
+    rel: "weights/tiny_face_detector_model-shard1",
+    urls: [
+      "https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/tiny_face_detector_model-shard1",
+    ],
+  },
+];
+
 function human(n) {
   return n >= 1024 * 1024 ? (n / 1024 / 1024).toFixed(1) + "MB" : (n / 1024).toFixed(1) + "KB";
 }
@@ -57,6 +82,17 @@ async function downloadOrt(name) {
   const buf = Buffer.from(await res.arrayBuffer());
   const dest = path.join(ORT_DIR, name);
   fs.mkdirSync(ORT_DIR, { recursive: true });
+  fs.writeFileSync(dest, buf);
+  return buf.length;
+}
+
+/* 通用：按给定 URL 依次尝试下载到 dest（人脸检测资源用） */
+async function downloadUrl(url, dest) {
+  const res = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(180000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (!buf.length) throw new Error("空响应");
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.writeFileSync(dest, buf);
   return buf.length;
 }
@@ -106,12 +142,37 @@ async function downloadOrt(name) {
     }
   }
 
+  /* 人脸检测资源（face-api.js 库 + tinyFaceDetector 权重，同源托管） */
+  for (const item of FACEAPI_FILES) {
+    const dest = path.join(FACEAPI_DIR, item.rel);
+    if (!FORCE && fs.existsSync(dest) && fs.statSync(dest).size > 0) {
+      console.log(`[skip] faceapi/${item.rel.padEnd(48)} ${human(fs.statSync(dest).size)}`);
+      skipped++;
+      ok++;
+      continue;
+    }
+    let lastErr = "";
+    let done = false;
+    for (const url of item.urls) {
+      try {
+        const size = await downloadUrl(url, dest);
+        console.log(`[ok]   faceapi/${item.rel.padEnd(48)} ${human(size)}`);
+        ok++;
+        done = true;
+        break;
+      } catch (e) {
+        lastErr = e.message;
+      }
+    }
+    if (!done) console.error(`[fail] faceapi/${item.rel.padEnd(48)} ${lastErr}`);
+  }
+
   const walk = (d) =>
     fs
       .readdirSync(d, { withFileTypes: true })
       .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
   const total = walk(path.join(ROOT, "public", "models"));
-  const totalN = FILES.length + ORT_FILES.length;
+  const totalN = FILES.length + ORT_FILES.length + FACEAPI_FILES.length;
   console.log(`\n模型目录：public/models/（${ok}/${totalN} 个文件，合计 ${human(total)}，跳过 ${skipped} 个已存在）`);
   if (ok !== totalN) process.exit(1);
 })();

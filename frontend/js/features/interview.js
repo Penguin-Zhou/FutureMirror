@@ -712,8 +712,14 @@ let camLastDetect = null;
 let camLastLabel = "";
 let camLastSentAt = 0;
 
+/* 同源自托管优先：public/models/faceapi/ 随镜像(backend/static)与 Pages 一并分发，
+ * 国内网络不受 jsDelivr 影响；加载失败再回退 CDN。
+ * 注意：npm 包 face-api.js **不含 weights/ 目录**（该路径 404），权重回退必须走 GitHub raw，
+ * 这是此前「在场监测不可用」的根因。 */
+const FACEAPI_LIB_LOCAL = "models/faceapi/face-api.min.js";
+const FACEAPI_WEIGHTS_LOCAL = "models/faceapi/weights";
 const FACEAPI_JS = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
-const FACEAPI_WEIGHTS = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights";
+const FACEAPI_WEIGHTS = "https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights";
 
 function setCamState(label, cls) {
   const el = $("cam-state");
@@ -739,21 +745,37 @@ async function ensureInterviewId() {
   }
 }
 
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.onload = () => (window.faceapi ? resolve() : reject(new Error("faceapi 未挂载：" + src)));
+    s.onerror = () => reject(new Error("脚本加载失败：" + src));
+    document.head.appendChild(s);
+  });
+}
+
 async function loadFaceApi() {
   if (faceApiReady || faceApiFailed) return faceApiReady;
   if (faceApiLoading) return false;
   faceApiLoading = true;
   try {
     if (!window.faceapi) {
-      await new Promise((res, rej) => {
-        const s = document.createElement("script");
-        s.src = FACEAPI_JS;
-        s.onload = res;
-        s.onerror = () => rej(new Error("face-api.js 加载失败"));
-        document.head.appendChild(s);
-      });
+      try {
+        await loadScriptOnce(FACEAPI_LIB_LOCAL);   // 同源自托管优先
+      } catch (e) {
+        await loadScriptOnce(FACEAPI_JS);          // CDN 兜底
+      }
     }
-    await window.faceapi.nets.tinyFaceDetector.loadFromUri(FACEAPI_WEIGHTS);
+    if (!window.faceapi || !window.faceapi.nets || !window.faceapi.nets.tinyFaceDetector) {
+      throw new Error("face-api 未就绪");
+    }
+    try {
+      await window.faceapi.nets.tinyFaceDetector.loadFromUri(FACEAPI_WEIGHTS_LOCAL); // 同源权重优先
+    } catch (e) {
+      await window.faceapi.nets.tinyFaceDetector.loadFromUri(FACEAPI_WEIGHTS);       // CDN 权重兜底
+    }
     faceApiReady = true;
   } catch (e) {
     faceApiFailed = true;
@@ -795,7 +817,7 @@ async function toggleCamera() {
   camSendTimer = setInterval(camSendLoop, 2500);
   // 立即发一次「摄像头已开启」心跳，让后端立刻开始记录
   camSend({ face_present: null, attentive: null, label: "摄像头已开启 · 初始化", turn: session.turns.length, detector: "heartbeat" });
-  loadFaceApi().then((ok) => { if (!ok) setCamState("在场监测不可用（网络受限）", "warn"); });
+  loadFaceApi().then((ok) => { if (!ok) setCamState("在场监测不可用（模型加载失败）", "warn"); });
   addTimeline("系统", "📷 摄像头已开启，后台开始监测面试状态（在场 / 专注）", false);
   toast("摄像头已开启，后台开始监测面试状态");
 }
@@ -825,7 +847,7 @@ async function camDetectLoop() {
       faceApiFailed = true;   // 检测出错则回退到「不可用」提示，不阻塞面试
     }
   } else if (faceApiFailed) {
-    label = "在场监测不可用（网络受限）";
+    label = "在场监测不可用（模型加载失败）";
   }
   if (label && label !== "检测中…") {
     const cls = face_present === false ? "bad" : (attentive === false && face_present === true ? "warn" : (face_present ? "ok" : "off"));

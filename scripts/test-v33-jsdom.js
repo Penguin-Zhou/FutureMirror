@@ -1,6 +1,6 @@
 /* v33 jsdom 测试：摄像头面试状态监测（前端检测 + 后端聚合 · Beta 1.1.2）
  * 覆盖：① 摄像头按钮 / 预览 / 状态条 DOM 齐备且初始隐藏
- *       ② toggleCamera / stopCamera 模块就绪，face-api CDN 常量为 0.22.2
+ *       ② toggleCamera / stopCamera 模块就绪，face-api 同源自托管优先 + CDN 兜底
  *       ③ 运行时开启摄像头：getUserMedia → 预览、状态条显示、向后端发心跳
  *       ④ 隐私红线：后端只收到结构化结果（face_present/attentive/label），从不收原始帧
  *       ⑤ 检测循环：face-api 就绪后按「居中=专注」产出状态文案
@@ -78,12 +78,16 @@ async function runTests() {
   ok(ev("typeof stopCamera === 'function'"), "stopCamera 是函数");
   ok(ev("typeof camDetectLoop === 'function'"), "camDetectLoop 是函数");
   ok(
-    ev("typeof FACEAPI_JS === 'string' && FACEAPI_JS.indexOf('face-api.js@0.22.2') >= 0"),
-    "FACEAPI_JS 指向 face-api.js@0.22.2 CDN"
+    ev(
+      "typeof FACEAPI_LIB_LOCAL === 'string' && FACEAPI_LIB_LOCAL.indexOf('models/faceapi/face-api.min.js') >= 0 && typeof FACEAPI_JS === 'string' && FACEAPI_JS.indexOf('face-api.js@0.22.2') >= 0"
+    ),
+    "face-api 库：同源自托管(models/faceapi/) + CDN 兜底(@0.22.2)"
   );
   ok(
-    ev("typeof FACEAPI_WEIGHTS === 'string' && FACEAPI_WEIGHTS.indexOf('weights') >= 0"),
-    "FACEAPI_WEIGHTS 指向权重目录"
+    ev(
+      "typeof FACEAPI_WEIGHTS_LOCAL === 'string' && FACEAPI_WEIGHTS_LOCAL.indexOf('models/faceapi/weights') >= 0 && typeof FACEAPI_WEIGHTS === 'string' && FACEAPI_WEIGHTS.indexOf('weights') >= 0"
+    ),
+    "权重目录：同源自托管 + CDN 兜底（npm 包无 weights/ 已修正）"
   );
   // 静态：收尾 / 重置必须联动收摄像头（隐私：结束后不残留设备占用）
   ok(
