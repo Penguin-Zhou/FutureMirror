@@ -1228,7 +1228,16 @@
   .bp-tl-item.on::before { background: var(--brand); border-color: var(--brand); }
 
   /* ⑮ 可折叠侧边栏 */
-  .bp-aside { transition: width .26s var(--spring); overflow: hidden; }
+  /* v32 修正：原本是 overflow:hidden —— 它会连带砍掉「实时能力追踪」所在面板的
+   * 纵向滚动（内容被裁掉却无法滑动）。横向仍需裁剪（折叠时宽度收放），纵向放开。 */
+  .bp-aside {
+    transition: width .26s var(--spring);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
   .bp-aside.collapsed .bp-aside-label { opacity: 0; }
   .bp-aside-toggle {
     font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-2);

@@ -21,6 +21,71 @@ function setCurrentSpeaker(name) {
 }
 const MODE_LABEL = { general: "综合面 · 动态追问模式", tech: "技术面 · 项目深挖模式", pressure: "压力面 · 抗压追问模式" };
 
+/* ============ v32 · 面试轮次上限 ============ */
+/** 一场模拟面试固定 5 轮问答（与进度条 / 侧栏徽章的 x/5 口径保持一致） */
+const MAX_TURNS = 5;
+/** 是否已进入「面试官收尾」流程：防止 Mock / 真实 LLM 双通道重复触发自动结束 */
+let interviewClosed = false;
+
+/**
+ * 冻结 / 解冻回答输入框与发送按钮。
+ * 第 5 轮答完后冻结，避免用户在已收尾的会话里继续追加问答。
+ * @param {boolean} locked true 冻结 / false 解冻
+ * @returns {void}
+ */
+function lockInput(locked) {
+  const input = $("chat-input");
+  if (!input) return;
+  input.disabled = locked;
+  input.value = "";
+  input.placeholder = locked
+    ? `本轮面试已结束（${MAX_TURNS}/${MAX_TURNS}），点「重新面试」开始新一轮`
+    : "输入你的回答，Enter 发送";
+  const send = $("chat-send");
+  if (send) send.disabled = locked;
+}
+
+/**
+ * 第 5 题答完后的收尾入口：未达轮次上限则什么都不做。
+ * @returns {boolean} 是否已触发收尾
+ */
+function maybeFinishAtTurnLimit() {
+  if (interviewClosed || session.turns.length < MAX_TURNS) return false;
+  finishByInterviewer();
+  return true;
+}
+
+/**
+ * 面试官主动收尾：第 5 题答完后由面试官发出结束通知，自动结束本场面试。
+ * 只在 sendMsg 链路触发（刷新恢复会话、撤销重置均不触发），
+ * 因此是「答完第 5 题」这一动作的直接结果，而非历史回放的副作用。
+ * @returns {void}
+ */
+function finishByInterviewer() {
+  if (interviewClosed) return;
+  if (session.turns.length < MAX_TURNS) return;   // 未到轮次上限，不收尾
+  interviewClosed = true;
+  const body = $("chat-body");
+  const notice = document.createElement("div");
+  notice.className = "msg msg-system";
+  notice.textContent =
+    `面试官：本场（${MODE_SHORT[session.mode] || "模拟面试"}）${MAX_TURNS} 轮问答已完成，` +
+    `面试到此结束。观察员已汇总全部证据，正在生成你的可解释评估报告…`;
+  body.appendChild(notice);
+  body.scrollTop = body.scrollHeight;
+  addTimeline("规划 Agent", `🏁 已收集 ${MAX_TURNS} 轮证据 → 面试官发送结束通知，自动收尾并生成报告`, false);
+  stopAnswerTimer();
+  lockInput(true);
+  const hint = $("live-hint");
+  if (hint) {
+    hint.className = "live-hint ok";
+    hint.textContent = `🏁 本轮面试已结束（${MAX_TURNS}/${MAX_TURNS}），报告已生成`;
+  }
+  const pb = $("progress-bar");
+  if (pb) pb.style.width = "100%";
+  setTimeout(finishInterview, 1600);   // 留出读完通知的时间，再跳转报告页
+}
+
 /* ============ v10 · 面试题库（结构化，动态抽题：律师没问过的优先） ============ */
 const QUESTION_BANK = {
   general: [
@@ -313,6 +378,14 @@ function persistSession() { store.set("fm_session", session); }
 
 function sendMsg() {
   if (!requireLogin()) return;
+  // v32：已达 5 轮上限，本场已由面试官收尾——不再接受新一轮问答
+  if (interviewClosed || session.turns.length >= MAX_TURNS) {
+    interviewClosed = true;
+    lockInput(true);
+    toast(`本轮面试已完成 ${MAX_TURNS} 轮问答，报告已生成；如需再来一轮请点「重新面试」`);
+    finishInterview();
+    return;
+  }
   const input = $("chat-input");
   const text = input.value.trim();
   if (!text) return;
@@ -396,9 +469,11 @@ function sendMsgMock(text, speaker, keyword, notes) {
         session.turns.push({ agent: speaker.name, question, answer: text, notes, mode });
         persistSession();
         updateLiveTracker();
-        if (turn === 5) addTimeline("规划 Agent", "已收集 5 轮证据 → 评估上下文就绪，可结束面试生成报告", false);
+        if (turn === MAX_TURNS) addTimeline("规划 Agent", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
         $("chat-send").disabled = false;
         body.scrollTop = body.scrollHeight;
+        // v32：第 5 题答完 → 面试官发送结束通知并自动收尾
+        maybeFinishAtTurnLimit();
       }
     }, 28);
   }, 1250);
@@ -454,8 +529,10 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   session.turns.push({ agent: speaker.name, question: full, answer: text, notes, mode: session.mode });
   persistSession();
   updateLiveTracker();
-  if (turn === 5) addTimeline("规划 Agent", "已收集 5 轮证据 → 评估上下文就绪，可结束面试生成报告", false);
+  if (turn === MAX_TURNS) addTimeline("规划 Agent", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
   $("chat-send").disabled = false;
+  // v32：第 5 题答完 → 面试官发送结束通知并自动收尾
+  maybeFinishAtTurnLimit();
 }
 
 function finishInterview() {
@@ -477,6 +554,9 @@ function restartInterview() {
   session.interviewId = null;
   persistSession();
   turn = 0;
+  // v32：新一轮可继续答题（上一轮由第 5 题触发的自动结束状态一并清除）
+  interviewClosed = false;
+  lockInput(false);
   resetAnswerTimer();
   deepDive = { topic: null, left: 0 };
   $("chat-body").innerHTML = '<div class="msg msg-system">面试开始：选择模式并发送第一条消息，AI 面试官团队将依次提问</div>';
@@ -484,16 +564,16 @@ function restartInterview() {
   setCurrentSpeaker("规划 Agent");
   // 重置实时能力追踪器与进度条
   $("live-radar").innerHTML = "";
-  $("live-turn").textContent = "0/5";
+  $("live-turn").textContent = `0/${MAX_TURNS}`;
   $("live-words").textContent = "0";
   $("live-digits").textContent = "0";
   $("live-conf").textContent = "—";
   $("live-hint").className = "live-hint";
   $("live-hint").textContent = "发送第一条回答后开始追踪";
-  $("progress-bar").style.width = "0";
+  $("progress-bar").style.width = "0%";
   $("fallback-banner").hidden = true;
   const sbBadge0 = $("sb-interview-badge");
-  if (sbBadge0) { sbBadge0.textContent = "0/5"; sbBadge0.style.background = "var(--brand-bg)"; sbBadge0.style.color = "var(--brand)"; }
+  if (sbBadge0) { sbBadge0.textContent = `0/${MAX_TURNS}`; sbBadge0.style.background = "var(--brand-bg)"; sbBadge0.style.color = "var(--brand)"; }
   lastReportSig = "";
   renderReport();
   toast("已重置本轮面试（历史进步曲线已保留）", function () {
@@ -574,6 +654,9 @@ function restoreSession() {
     setCurrentSpeaker(session.turns[turn - 1].agent);
     updateLiveTracker();
   }
+  // v32：恢复（或撤销重置）到已满 5 轮的会话时，输入框保持收尾态
+  if (turn >= MAX_TURNS) { interviewClosed = true; lockInput(true); }
+  else { interviewClosed = false; lockInput(false); }
 }
 function addMsg(cls, text) {
   const body = $("chat-body");

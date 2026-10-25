@@ -34,7 +34,7 @@ function updateLiveTracker() {
   const digits = (all.match(/\d+/g) || []).length;
   const dims = scoreSession(); // 复用报告评分引擎
   $("live-radar").innerHTML = liveRadarSVG(dims);
-  $("live-turn").textContent = `${turns.length}/5`;
+  $("live-turn").textContent = `${turns.length}/${MAX_TURNS}`;
   $("live-words").textContent = words;
   $("live-digits").textContent = digits;
   // 模拟「AI 置信度」：回答越长、量化越多，置信度越高
@@ -42,7 +42,10 @@ function updateLiveTracker() {
   $("live-conf").textContent = conf + "%";
   const hint = $("live-hint");
   const lowest = [...dims].sort((a, b) => a.score - b.score)[0];
-  if (turns.length < 3) {
+  if (turns.length >= MAX_TURNS) {
+    hint.className = "live-hint ok";
+    hint.textContent = `🏁 本轮面试已结束（${MAX_TURNS}/${MAX_TURNS}），报告已生成`;
+  } else if (turns.length < 3) {
     hint.className = "live-hint";
     hint.textContent = `再回答 ${3 - turns.length} 轮可生成初步报告`;
   } else if (lowest.score < 60) {
@@ -52,13 +55,13 @@ function updateLiveTracker() {
     hint.className = "live-hint ok";
     hint.textContent = `✅ 已收集 ${turns.length} 轮证据，可结束面试生成报告`;
   }
-  $("progress-bar").style.width = Math.min(100, turns.length / 5 * 100) + "%";
+  $("progress-bar").style.width = Math.min(100, turns.length / MAX_TURNS * 100) + "%";
 
   // v10：左侧栏「模拟面试」项同步进度徽章（≥5 轮转绿）
   const sbBadge = $("sb-interview-badge");
   if (sbBadge) {
-    sbBadge.textContent = `${turns.length}/5`;
-    if (turns.length >= 5) {
+    sbBadge.textContent = `${turns.length}/${MAX_TURNS}`;
+    if (turns.length >= MAX_TURNS) {
       sbBadge.style.background = "color-mix(in srgb, var(--green) 16%, transparent)";
       sbBadge.style.color = "var(--green)";
     } else {

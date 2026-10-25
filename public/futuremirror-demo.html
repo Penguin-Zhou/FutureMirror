@@ -3041,7 +3041,16 @@ try {
   .bp-tl-item.on::before { background: var(--brand); border-color: var(--brand); }
 
   /* ⑮ 可折叠侧边栏 */
-  .bp-aside { transition: width .26s var(--spring); overflow: hidden; }
+  /* v32 修正：原本是 overflow:hidden —— 它会连带砍掉「实时能力追踪」所在面板的
+   * 纵向滚动（内容被裁掉却无法滑动）。横向仍需裁剪（折叠时宽度收放），纵向放开。 */
+  .bp-aside {
+    transition: width .26s var(--spring);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
   .bp-aside.collapsed .bp-aside-label { opacity: 0; }
   .bp-aside-toggle {
     font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-2);
@@ -4144,7 +4153,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>1427</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>1455</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>29</b> 页技术文档</span>
           </div>
         </div>
@@ -4155,7 +4164,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 1427 ／ pytest 29</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 1455 ／ pytest 29</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -4201,7 +4210,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">1427 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1455 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -4211,7 +4220,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">1427 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1455 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -5461,7 +5470,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、1427 项前端断言 + 29 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、1455 项前端断言 + 29 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -5618,7 +5627,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（38 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、1427 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（38 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、1455 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -6581,6 +6590,71 @@ function setCurrentSpeaker(name) {
 }
 const MODE_LABEL = { general: "综合面 · 动态追问模式", tech: "技术面 · 项目深挖模式", pressure: "压力面 · 抗压追问模式" };
 
+/* ============ v32 · 面试轮次上限 ============ */
+/** 一场模拟面试固定 5 轮问答（与进度条 / 侧栏徽章的 x/5 口径保持一致） */
+const MAX_TURNS = 5;
+/** 是否已进入「面试官收尾」流程：防止 Mock / 真实 LLM 双通道重复触发自动结束 */
+let interviewClosed = false;
+
+/**
+ * 冻结 / 解冻回答输入框与发送按钮。
+ * 第 5 轮答完后冻结，避免用户在已收尾的会话里继续追加问答。
+ * @param {boolean} locked true 冻结 / false 解冻
+ * @returns {void}
+ */
+function lockInput(locked) {
+  const input = $("chat-input");
+  if (!input) return;
+  input.disabled = locked;
+  input.value = "";
+  input.placeholder = locked
+    ? `本轮面试已结束（${MAX_TURNS}/${MAX_TURNS}），点「重新面试」开始新一轮`
+    : "输入你的回答，Enter 发送";
+  const send = $("chat-send");
+  if (send) send.disabled = locked;
+}
+
+/**
+ * 第 5 题答完后的收尾入口：未达轮次上限则什么都不做。
+ * @returns {boolean} 是否已触发收尾
+ */
+function maybeFinishAtTurnLimit() {
+  if (interviewClosed || session.turns.length < MAX_TURNS) return false;
+  finishByInterviewer();
+  return true;
+}
+
+/**
+ * 面试官主动收尾：第 5 题答完后由面试官发出结束通知，自动结束本场面试。
+ * 只在 sendMsg 链路触发（刷新恢复会话、撤销重置均不触发），
+ * 因此是「答完第 5 题」这一动作的直接结果，而非历史回放的副作用。
+ * @returns {void}
+ */
+function finishByInterviewer() {
+  if (interviewClosed) return;
+  if (session.turns.length < MAX_TURNS) return;   // 未到轮次上限，不收尾
+  interviewClosed = true;
+  const body = $("chat-body");
+  const notice = document.createElement("div");
+  notice.className = "msg msg-system";
+  notice.textContent =
+    `面试官：本场（${MODE_SHORT[session.mode] || "模拟面试"}）${MAX_TURNS} 轮问答已完成，` +
+    `面试到此结束。观察员已汇总全部证据，正在生成你的可解释评估报告…`;
+  body.appendChild(notice);
+  body.scrollTop = body.scrollHeight;
+  addTimeline("规划 Agent", `🏁 已收集 ${MAX_TURNS} 轮证据 → 面试官发送结束通知，自动收尾并生成报告`, false);
+  stopAnswerTimer();
+  lockInput(true);
+  const hint = $("live-hint");
+  if (hint) {
+    hint.className = "live-hint ok";
+    hint.textContent = `🏁 本轮面试已结束（${MAX_TURNS}/${MAX_TURNS}），报告已生成`;
+  }
+  const pb = $("progress-bar");
+  if (pb) pb.style.width = "100%";
+  setTimeout(finishInterview, 1600);   // 留出读完通知的时间，再跳转报告页
+}
+
 /* ============ v10 · 面试题库（结构化，动态抽题：律师没问过的优先） ============ */
 const QUESTION_BANK = {
   general: [
@@ -6873,6 +6947,14 @@ function persistSession() { store.set("fm_session", session); }
 
 function sendMsg() {
   if (!requireLogin()) return;
+  // v32：已达 5 轮上限，本场已由面试官收尾——不再接受新一轮问答
+  if (interviewClosed || session.turns.length >= MAX_TURNS) {
+    interviewClosed = true;
+    lockInput(true);
+    toast(`本轮面试已完成 ${MAX_TURNS} 轮问答，报告已生成；如需再来一轮请点「重新面试」`);
+    finishInterview();
+    return;
+  }
   const input = $("chat-input");
   const text = input.value.trim();
   if (!text) return;
@@ -6956,9 +7038,11 @@ function sendMsgMock(text, speaker, keyword, notes) {
         session.turns.push({ agent: speaker.name, question, answer: text, notes, mode });
         persistSession();
         updateLiveTracker();
-        if (turn === 5) addTimeline("规划 Agent", "已收集 5 轮证据 → 评估上下文就绪，可结束面试生成报告", false);
+        if (turn === MAX_TURNS) addTimeline("规划 Agent", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
         $("chat-send").disabled = false;
         body.scrollTop = body.scrollHeight;
+        // v32：第 5 题答完 → 面试官发送结束通知并自动收尾
+        maybeFinishAtTurnLimit();
       }
     }, 28);
   }, 1250);
@@ -7014,8 +7098,10 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   session.turns.push({ agent: speaker.name, question: full, answer: text, notes, mode: session.mode });
   persistSession();
   updateLiveTracker();
-  if (turn === 5) addTimeline("规划 Agent", "已收集 5 轮证据 → 评估上下文就绪，可结束面试生成报告", false);
+  if (turn === MAX_TURNS) addTimeline("规划 Agent", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
   $("chat-send").disabled = false;
+  // v32：第 5 题答完 → 面试官发送结束通知并自动收尾
+  maybeFinishAtTurnLimit();
 }
 
 function finishInterview() {
@@ -7037,6 +7123,9 @@ function restartInterview() {
   session.interviewId = null;
   persistSession();
   turn = 0;
+  // v32：新一轮可继续答题（上一轮由第 5 题触发的自动结束状态一并清除）
+  interviewClosed = false;
+  lockInput(false);
   resetAnswerTimer();
   deepDive = { topic: null, left: 0 };
   $("chat-body").innerHTML = '<div class="msg msg-system">面试开始：选择模式并发送第一条消息，AI 面试官团队将依次提问</div>';
@@ -7044,16 +7133,16 @@ function restartInterview() {
   setCurrentSpeaker("规划 Agent");
   // 重置实时能力追踪器与进度条
   $("live-radar").innerHTML = "";
-  $("live-turn").textContent = "0/5";
+  $("live-turn").textContent = `0/${MAX_TURNS}`;
   $("live-words").textContent = "0";
   $("live-digits").textContent = "0";
   $("live-conf").textContent = "—";
   $("live-hint").className = "live-hint";
   $("live-hint").textContent = "发送第一条回答后开始追踪";
-  $("progress-bar").style.width = "0";
+  $("progress-bar").style.width = "0%";
   $("fallback-banner").hidden = true;
   const sbBadge0 = $("sb-interview-badge");
-  if (sbBadge0) { sbBadge0.textContent = "0/5"; sbBadge0.style.background = "var(--brand-bg)"; sbBadge0.style.color = "var(--brand)"; }
+  if (sbBadge0) { sbBadge0.textContent = `0/${MAX_TURNS}`; sbBadge0.style.background = "var(--brand-bg)"; sbBadge0.style.color = "var(--brand)"; }
   lastReportSig = "";
   renderReport();
   toast("已重置本轮面试（历史进步曲线已保留）", function () {
@@ -7134,6 +7223,9 @@ function restoreSession() {
     setCurrentSpeaker(session.turns[turn - 1].agent);
     updateLiveTracker();
   }
+  // v32：恢复（或撤销重置）到已满 5 轮的会话时，输入框保持收尾态
+  if (turn >= MAX_TURNS) { interviewClosed = true; lockInput(true); }
+  else { interviewClosed = false; lockInput(false); }
 }
 function addMsg(cls, text) {
   const body = $("chat-body");
@@ -8155,7 +8247,7 @@ function updateLiveTracker() {
   const digits = (all.match(/\d+/g) || []).length;
   const dims = scoreSession(); // 复用报告评分引擎
   $("live-radar").innerHTML = liveRadarSVG(dims);
-  $("live-turn").textContent = `${turns.length}/5`;
+  $("live-turn").textContent = `${turns.length}/${MAX_TURNS}`;
   $("live-words").textContent = words;
   $("live-digits").textContent = digits;
   // 模拟「AI 置信度」：回答越长、量化越多，置信度越高
@@ -8163,7 +8255,10 @@ function updateLiveTracker() {
   $("live-conf").textContent = conf + "%";
   const hint = $("live-hint");
   const lowest = [...dims].sort((a, b) => a.score - b.score)[0];
-  if (turns.length < 3) {
+  if (turns.length >= MAX_TURNS) {
+    hint.className = "live-hint ok";
+    hint.textContent = `🏁 本轮面试已结束（${MAX_TURNS}/${MAX_TURNS}），报告已生成`;
+  } else if (turns.length < 3) {
     hint.className = "live-hint";
     hint.textContent = `再回答 ${3 - turns.length} 轮可生成初步报告`;
   } else if (lowest.score < 60) {
@@ -8173,13 +8268,13 @@ function updateLiveTracker() {
     hint.className = "live-hint ok";
     hint.textContent = `✅ 已收集 ${turns.length} 轮证据，可结束面试生成报告`;
   }
-  $("progress-bar").style.width = Math.min(100, turns.length / 5 * 100) + "%";
+  $("progress-bar").style.width = Math.min(100, turns.length / MAX_TURNS * 100) + "%";
 
   // v10：左侧栏「模拟面试」项同步进度徽章（≥5 轮转绿）
   const sbBadge = $("sb-interview-badge");
   if (sbBadge) {
-    sbBadge.textContent = `${turns.length}/5`;
-    if (turns.length >= 5) {
+    sbBadge.textContent = `${turns.length}/${MAX_TURNS}`;
+    if (turns.length >= MAX_TURNS) {
       sbBadge.style.background = "color-mix(in srgb, var(--green) 16%, transparent)";
       sbBadge.style.color = "var(--green)";
     } else {
