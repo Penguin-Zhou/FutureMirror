@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1487</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1513</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -335,7 +335,7 @@ body {
     <li><a href="#v16"><span class="cl-toc-tag">v16</span><span class="cl-toc-title-txt">个人中心 · 头像系统 · 偏好与数据管理</span></a></li>
     <li><a href="#v15"><span class="cl-toc-tag">v15 · Beta</span><span class="cl-toc-title-txt">工作台精简与互动升级</span></a></li>
     <li><a href="#v14"><span class="cl-toc-tag">v14</span><span class="cl-toc-title-txt">开发者模式升级</span></a></li>
-    <li><a href="#v13"><span class="cl-toc-tag">v13</span><span class="cl-toc-title-txt">评审专区（加密 + 一键进入）</span></a></li>
+    <li><a href="#v13"><span class="cl-toc-tag">v13</span><span class="cl-toc-title-txt">验证专区（加密 + 一键进入）</span></a></li>
     <li><a href="#v12"><span class="cl-toc-tag">v12</span><span class="cl-toc-title-txt">可验证运行时能力三件套</span></a></li>
     <li><a href="#v11"><span class="cl-toc-tag">v11</span><span class="cl-toc-title-txt">目标岗位下拉选择器</span></a></li>
     <li><a href="#v10"><span class="cl-toc-tag">v10</span><span class="cl-toc-title-txt">导航重构与数据扩充</span></a></li>
@@ -382,7 +382,7 @@ body {
         <span class="cat-title cat-plan">📊 评分增强</span>
         <ul class="changelog">
           <li><b>确定性引擎 + LLM 质性增强（已在 Beta 1.1.2 落地）</b>：分数由确定性规则引擎给出（可复现、可解释），LLM 仅负责逐维度质性评语与教练总评的生成与兜底</li>
-          <li><b>人工专家评审一致性验证（规划中）</b>：邀请领域专家对抽样面试独立打分，与引擎分数做点对点对比，定位分维度偏差</li>
+          <li><b>人工专家复核一致性验证（规划中）</b>：邀请领域专家对抽样面试独立打分，与引擎分数做点对点对比，定位分维度偏差</li>
         </ul>
       </div>
 
@@ -478,7 +478,7 @@ body {
     </div>
     <div class="version-body">
       <div class="v-summary">
-        收集一轮真实使用反馈，修掉 <strong>3 个影响主流程的缺陷</strong>，并把「7 天学习路径」从报告页里的一小块摘要升级为<strong>独立板块</strong>：<strong>① 模拟面试无法重新面试</strong>——重面入口此前只藏在 ⌘K 面板与报告页，面试页 chat-head 新增「🔄 重新面试」按钮（沿用带撤销 toast 的重置快照机制，并补登录守卫）；<strong>② 题库页滚动粘滞</strong>——滚动吸附 <code>.bp-snap-y</code> 此前无条件常驻挂在 <code>documentElement</code> 上，应用内所有页面的滚动都被分段吸附阻滞，现收窄为仅落地页视图生效（进入挂载、离开拆除），题库子页签切换后平滑回顶；<strong>③ 能力分布看板数据冻结</strong>——看板此前只在开机装配一次，面试后仍显示「基线数据」，新增 <code>refreshReportPanel()</code>（停旧 live → 摘旧面板 → 按最新会话重挂）并由 <code>renderReport()</code> 在渲染末尾调用，空态路径同步撤下面板。<strong>④ 新增「学习计划」板块</strong>——7 天路径 + 每日时间分配规划：计划内容一键「同步评估报告」按最弱维度动态生成（scoreSession + buildPlan），无报告时回落通用基线；每日时间按「学习 : 练习 : 复盘」权重切分，三档预算（45 / 60 / 90 分钟）切换后自动重算；逐任务打卡 + 进度条 + 印章完成态，支持复制 Markdown 与打印。<strong>⑤ 偏好设置新增「十字鼠标追踪」开关</strong>——准线默认开启，关闭即时撤除、开启即时恢复（<code>prefs.crosshair</code>）。<strong>⑥ 全站图标替换</strong>——36 枚自制蓝图风线性 SVG 图标（24×24、stroke=currentColor 继承文字色、方头直角、每枚仅一枚朱红 accent）替换 63 处模板化 emoji，覆盖侧栏 / 底 Tab / 页头 / 快速入口 / 统计卡 / 落地页 / 主题钮 / 用户菜单 / AI 悬浮球，favicon 升级为取景器标识；保留 emoji 作无 JS 兜底。<strong>⑦ 全栈收口与工程规范</strong>——移除未部署的 Next.js 平行实验层，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（<strong>分数仍由确定性规则引擎给出</strong>，LLM 仅生成逐维度质性评语与教练总评，异常自动回落，杜绝分数幻觉）；补齐 ESLint 10 + Prettier 3 + <code>jsconfig</code>/JSDoc 类型层与 <code>npm run verify</code> 单命令门禁（反合并架构下的 466 个共享全局符号由脚本从源码生成白名单）；技术文档新增 3.5「技术选型论证」并清除未落地的非实证表述。<strong>⑧ 摄像头面试状态监测（前端检测 + 后端聚合）</strong>——面试页 chat-head 新增 📷 按钮，开启后浏览器本地用 <code>face-api.js</code> 识别「人脸是否在场 / 是否专注」，仅把结构化结果（<code>face_present</code> / <code>attentive</code> / <code>label</code>）发给后端；后端 <code>InterviewStatusEvent</code> 持久化并按节拍聚合在场率 / 专注率，作为「后台检测面试状态」的权威状态方。原始视频帧不出浏览器，契合隐私红线；检测依赖加载失败自动降级为仅本地提示，不阻断面试主流程。
+        收集一轮真实使用反馈，修掉 <strong>3 个影响主流程的缺陷</strong>，并把「7 天学习路径」从报告页里的一小块摘要升级为<strong>独立板块</strong>：<strong>① 模拟面试无法重新面试</strong>——重面入口此前只藏在 ⌘K 面板与报告页，面试页 chat-head 新增「🔄 重新面试」按钮（沿用带撤销 toast 的重置快照机制，并补登录守卫）；<strong>② 题库页滚动粘滞</strong>——滚动吸附 <code>.bp-snap-y</code> 此前无条件常驻挂在 <code>documentElement</code> 上，应用内所有页面的滚动都被分段吸附阻滞，现收窄为仅落地页视图生效（进入挂载、离开拆除），题库子页签切换后平滑回顶；<strong>③ 能力分布看板数据冻结</strong>——看板此前只在开机装配一次，面试后仍显示「基线数据」，新增 <code>refreshReportPanel()</code>（停旧 live → 摘旧面板 → 按最新会话重挂）并由 <code>renderReport()</code> 在渲染末尾调用，空态路径同步撤下面板。<strong>④ 新增「学习计划」板块</strong>——7 天路径 + 每日时间分配规划：计划内容一键「同步评估报告」按最弱维度动态生成（scoreSession + buildPlan），无报告时回落通用基线；每日时间按「学习 : 练习 : 复盘」权重切分，三档预算（45 / 60 / 90 分钟）切换后自动重算；逐任务打卡 + 进度条 + 印章完成态，支持复制 Markdown 与打印。<strong>⑤ 偏好设置新增「十字鼠标追踪」开关</strong>——准线默认开启，关闭即时撤除、开启即时恢复（<code>prefs.crosshair</code>）。<strong>⑥ 全站图标替换</strong>——36 枚自制蓝图风线性 SVG 图标（24×24、stroke=currentColor 继承文字色、方头直角、每枚仅一枚朱红 accent）替换 63 处模板化 emoji，覆盖侧栏 / 底 Tab / 页头 / 快速入口 / 统计卡 / 落地页 / 主题钮 / 用户菜单 / AI 悬浮球，favicon 升级为取景器标识；保留 emoji 作无 JS 兜底。<strong>⑦ 全栈收口与工程规范</strong>——移除未部署的 Next.js 平行实验层，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（<strong>分数仍由确定性规则引擎给出</strong>，LLM 仅生成逐维度质性评语与教练总评，异常自动回落，杜绝分数幻觉）；补齐 ESLint 10 + Prettier 3 + <code>jsconfig</code>/JSDoc 类型层与 <code>npm run verify</code> 单命令门禁（反合并架构下的 472 个共享全局符号由脚本从源码生成白名单）；技术文档新增 3.5「技术选型论证」并清除未落地的非实证表述。<strong>⑧ 摄像头面试状态监测（前端检测 + 后端聚合）</strong>——面试页 chat-head 新增 📷 按钮，开启后浏览器本地用 <code>face-api.js</code> 识别「人脸是否在场 / 是否专注」，仅把结构化结果（<code>face_present</code> / <code>attentive</code> / <code>label</code>）发给后端；后端 <code>InterviewStatusEvent</code> 持久化并按节拍聚合在场率 / 专注率，作为「后台检测面试状态」的权威状态方。原始视频帧不出浏览器，契合隐私红线；检测依赖加载失败自动降级为仅本地提示，不阻断面试主流程。<strong>⑨ 评估报告纳入面试状态</strong>——报告新增「面试状态（摄像头在场检测）」区块：在场率 / 专注率 / 采样次数三项指标 + 最近状态，数据来自服务端对状态事件的聚合（<code>status</code> 随报告返回），后端不可用时回退本地最近一次聚合；「复制 Markdown」与系统分享同步带出该小节，未开启摄像头时给出中性说明而非空白。
       </div>
       <div class="v-highlights">
         <div class="vh-item"><b>面试能重来了</b>：chat-head 直接重新面试，重置可撤销</div>
@@ -487,13 +487,15 @@ body {
         <div class="vh-item"><b>7 天计划成板块了</b>：按最弱维度动态生成 + 每日时间分配 + 打卡进度</div>
         <div class="vh-item"><b>全栈收口了</b>：移除未部署的 Next.js 平行实验、接入 LLM 混合评分增强、补齐 ESLint + Prettier + JSDoc 规范、文档去除非实证表述</div>
         <div class="vh-item"><b>面试状态后台看得见</b>：摄像头本地识别在/离场与专注度，后端聚合在场率与专注率，原始画面不出浏览器</div>
+        <div class="vh-item"><b>报告里看得见状态了</b>：在场率 / 专注率 / 采样次数写进评估报告，导出的 Markdown 同步带上</div>
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">3</div><div class="m-label">修复缺陷</div></div>
         <div class="metric"><div class="m-val">36</div><div class="m-label">自制 SVG 图标</div></div>
         <div class="metric"><div class="m-val">110</div><div class="m-label">v31 新增断言</div></div>
+        <div class="metric"><div class="m-val">26</div><div class="m-label">v34 新增断言</div></div>
         <div class="metric"><div class="m-val">32</div><div class="m-label">v33 新增断言</div></div>
-        <div class="metric"><div class="m-val">1487</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">1513</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
       </div>
     </div>
@@ -586,7 +588,7 @@ body {
         在 v27 全站交互层之上继续深化「可操作」：命令面板 Pro（记录最近访问并空查询置顶、子序列评分过滤替代纯子串、面试页注入清空对话 / 切换模式 / 查看评分三条上下文指令）；报告可视化联动（雷达图自绘动画 stroke-dashoffset 0→全绘、维度行 hover 与对应雷达顶点同步高亮、维度悬浮提示，顺手清掉报告雷达的 indigo 硬编码填充改为朱红 tint）；表单焦点微交互（登录输入框聚焦时发丝线自左画出）；面试实时批注（每条面试官提问可附批注，落到 session.turns[i].notes，自动进入报告「评分证据」与学习路径证据链，零新增存储结构）。全站沿用动效宪法——reduced-motion 下全部静态落位、无 JS 内容完整可见。新增 test-v27-jsdom.js 测试套件 44 项断言锁定全部行为（含降级链）。
       </div>
       <div class="v-highlights">
-        <div class="vh-item"><b>命令面板会记忆</b>：最近访问置顶、子序列模糊匹配、面试页专属指令，评委演示一秒直达</div>
+        <div class="vh-item"><b>命令面板会记忆</b>：最近访问置顶、子序列模糊匹配、面试页专属指令，访客演示一秒直达</div>
         <div class="vh-item"><b>报告会联动</b>：雷达自绘 + 维度行与顶点同步高亮 + 悬浮提示，数据不再静态陈列</div>
         <div class="vh-item"><b>面试可批注</b>：每条提问随手写批注，自动沉淀进报告证据链，闭环可解释评分</div>
       </div>
@@ -634,7 +636,7 @@ body {
         在动态层之上增加<b>交互深化层</b>：命令面板（Ctrl/⌘+K 呼出，17 项命令覆盖区块跳转 / 10 个功能页 / 主题切换 / 开发者模式 / 回顶，分组 + 过滤 + 全键盘导航，面试页保留聚焦输入框原行为）；滚动驱动三件套——返回顶部（直角墨框 + SVG 朱红进度环，600px 阈值）、落地页导航滚动侦测（当前区块点亮朱红下划线）、工作流蓝图绘制线（入视口自左画出，120ms stagger）；落地页动态四件套——Hero 等宽打字机轮播（5 条价值点 + 方块硬切光标）、面试实录气泡依序揭载 + 流式光标、蓝图十字准线（落地页光标测绘线，触屏 / reduced-motion 不注入）、特性卡坐标读数（BLK 编号 + X/Y 测绘 chip）。新增 scrollfx.js / landingfx.js / command.js 三个模块，v25 测试套件 64 项断言锁定全部行为。
       </div>
       <div class="v-highlights">
-        <div class="vh-item"><b>⌘K 直达一切</b>：17 项命令分组呈现，过滤 + 全键盘，评委演示时可一秒跳到任意功能页</div>
+        <div class="vh-item"><b>⌘K 直达一切</b>：17 项命令分组呈现，过滤 + 全键盘，访客演示时可一秒跳到任意功能页</div>
         <div class="vh-item"><b>滚动可感知</b>：进度环 / 导航点亮 / 蓝图绘制线，长落地页有了「阅读仪表盘」</div>
         <div class="vh-item"><b>图纸气质延续</b>：十字准线、坐标读数、打字机光标——动态全部长在蓝图语言上</div>
       </div>
@@ -1207,7 +1209,7 @@ body {
     </div>
     <div class="version-body">
       <div class="v-summary">
-        Beta 版本收尾。工作台从"半成品拼接"升级为"干净的产品首页"：项目材料收进开发者模式，只服务评委；6 张快速入口卡片和 4 张数据看板卡全部可点击；新增"今日推荐岗位"制造每次打开的新鲜感。
+        Beta 版本收尾。工作台从"半成品拼接"升级为"干净的产品首页"：项目材料收进开发者模式，只服务访客；6 张快速入口卡片和 4 张数据看板卡全部可点击；新增"今日推荐岗位"制造每次打开的新鲜感。
       </div>
 
       <div class="cat">
@@ -1253,7 +1255,7 @@ body {
     </div>
     <div class="version-body">
       <div class="v-summary">
-        把"评审专区"正式升级为"开发者模式"。新增运行环境检测、性能指标、诊断日志、5 个开发者工具，让评委可以一站式验证技术能力，不再只是"看图"。
+        把"验证专区"正式升级为"开发者模式"。新增运行环境检测、性能指标、诊断日志、5 个开发者工具，让访客可以一站式验证技术能力，不再只是"看图"。
       </div>
 
       <div class="cat">
@@ -1270,7 +1272,7 @@ body {
       <div class="cat">
         <span class="cat-title cat-improve">🔧 优化改进</span>
         <ul class="changelog">
-          <li>"评审专区"全站改名为"开发者模式"</li>
+          <li>"验证专区"全站改名为"开发者模式"</li>
           <li>顶栏"代码仓库"按钮替换为「🎛 开发者模式」</li>
           <li>落地页底部入口同步改名为「🎛 开发者模式」</li>
           <li>密码弹窗文案全面更新</li>
@@ -1295,18 +1297,18 @@ body {
   <div class="version v13" id="v13">
     <div class="version-head">
       <span class="v-tag">v13</span>
-      <span class="v-title">评审专区（加密 + 一键进入）</span>
+      <span class="v-title">验证专区（加密 + 一键进入）</span>
       <span class="v-date">2026.09</span>
     </div>
     <div class="version-body">
       <div class="v-summary">
-        新增加密的"评审专区"，把技术验证内容（工程自检、MCP 运行时验证、技术架构、评分映射）从普通用户视野中隔离。提供三种进入方式：URL 一键、密码 <code>FM2026</code>、快捷键 <code>Ctrl+Shift+J</code>。
+        新增加密的"验证专区"，把技术验证内容（工程自检、MCP 运行时验证、技术架构、评分映射）从普通用户视野中隔离。提供三种进入方式：URL 一键、密码 <code>FM2026</code>、快捷键 <code>Ctrl+Shift+J</code>。
       </div>
 
       <div class="cat">
         <span class="cat-title cat-new">✨ 新增功能</span>
         <ul class="changelog">
-          <li><b>评审专区视图</b>：<code>#/evaluator?key=FM2026</code> 独立视图</li>
+          <li><b>验证专区视图</b>：<code>#/evaluator?key=FM2026</code> 独立视图</li>
           <li><b>交付材料清单</b>：5 个材料（仓库 / 视频 / 文档 / 在线演示 / 测试账号）状态与跳转</li>
           <li><b>工程自检面板</b>：5 项内联断言可视化运行</li>
           <li><b>MCP 运行时验证</b>：3 个工具的 tool_call → 执行 → JSON 返回完整链路</li>
@@ -1319,8 +1321,8 @@ body {
       <div class="cat">
         <span class="cat-title cat-improve">🔧 优化改进</span>
         <ul class="changelog">
-          <li>普通 dashboard 的"MCP 工具清单"增加提示行，指向评审专区</li>
-          <li>落地页 CTA 区域下方新增"评审入口"按钮</li>
+          <li>普通 dashboard 的"MCP 工具清单"增加提示行，指向验证专区</li>
+          <li>落地页 CTA 区域下方新增"复核入口"按钮</li>
         </ul>
       </div>
 
@@ -1347,7 +1349,7 @@ body {
     </div>
     <div class="version-body">
       <div class="v-summary">
-        目标是让"AI Native"从口号变成可现场验证的运行时代码。新增 MCP 实时控制台、代码面试沙盒、本地 PII 脱敏预览、工程自检面板——每一项都能被评委当场点击验证。
+        目标是让"AI Native"从口号变成可现场验证的运行时代码。新增 MCP 实时控制台、代码面试沙盒、本地 PII 脱敏预览、工程自检面板——每一项都能被访客当场点击验证。
       </div>
 
       <div class="cat">
@@ -1717,7 +1719,7 @@ body {
     </div>
     <div class="version-body">
       <div class="v-summary">
-        针对评审标准中"AI 技术深度 35%"与"用户体验 10%"做细颗粒度补齐：实时能力追踪器、Prompt 查看器、进度指示器、报告分享导出、降级 UI、Agent 决策理由。
+        针对能力评估标准中的「AI 技术深度」与「用户体验」做细颗粒度补齐：实时能力追踪器、Prompt 查看器、进度指示器、报告分享导出、降级 UI、Agent 决策理由。
       </div>
 
       <div class="cat">

@@ -123,3 +123,61 @@ def test_status_empty_interview_has_no_rates():
         assert g["presence_rate"] is None
         assert g["attentive_rate"] is None
         assert g["latest"] is None
+
+
+# ---------------- v34：评估报告携带面试状态聚合 ----------------
+
+def _seed_turns(c, h, iv, n=2):
+    """写入 n 轮问答，让报告有评分依据。"""
+    body = {"turns": [{"seq": i + 1, "agent": "技术面试官",
+                       "question": f"第 {i + 1} 题：讲讲你的项目",
+                       "answer": "我负责订单服务，通过分库把延迟从 800ms 降到 120ms，QPS 提升 3 倍。",
+                       "notes": "含量化数据"} for i in range(n)]}
+    r = c.post(f"/api/interviews/{iv}/sync", headers=h, json=body)
+    assert r.status_code == 200, r.text
+
+
+def test_report_includes_camera_status():
+    """报告返回体里带 status：在场率 / 专注率 / 采样次数与状态接口一致。"""
+    with TestClient(app) as c:
+        token = _register(c, f"t{__import__('time').time_ns()}@ex.com")
+        h = {"X-Auth-Token": token}
+        iv = c.post("/api/interviews", json={"mode": "tech"}, headers=h).json()["id"]
+        _seed_turns(c, h, iv)
+
+        for s in [{"face_present": True, "attentive": True, "label": "专注面试中", "turn": 1},
+                  {"face_present": True, "attentive": True, "label": "专注面试中", "turn": 2},
+                  {"face_present": False, "attentive": None, "label": "暂离（未检测到人脸）", "turn": 2}]:
+            assert c.post(f"/api/interviews/{iv}/status", headers=h, json=s).status_code == 200
+
+        r = c.post(f"/api/interviews/{iv}/report", headers=h, json={"match_score": None})
+        assert r.status_code == 200, r.text
+        rep = r.json()
+
+        assert "status" in rep
+        st = rep["status"]
+        # 在场率 = 2/3 ≈ 66.7；专注率 = 2/2 = 100
+        assert st["count"] == 3
+        assert abs(st["presence_rate"] - 66.7) < 0.2
+        assert st["attentive_rate"] == 100.0
+        assert st["latest"] == "暂离（未检测到人脸）"
+        # 与状态接口同一口径
+        g = c.get(f"/api/interviews/{iv}/status", headers=h).json()
+        assert g["count"] == st["count"] and g["presence_rate"] == st["presence_rate"]
+
+
+def test_report_without_camera_reports_zero_samples():
+    """未开启摄像头时，报告仍返回 status（count=0、比率为 null），前端据此显示中性提示。"""
+    with TestClient(app) as c:
+        token = _register(c, f"t{__import__('time').time_ns()}@ex.com")
+        h = {"X-Auth-Token": token}
+        iv = c.post("/api/interviews", json={}, headers=h).json()["id"]
+        _seed_turns(c, h, iv)
+
+        rep = c.post(f"/api/interviews/{iv}/report", headers=h, json={}).json()
+        assert rep["status"]["count"] == 0
+        assert rep["status"]["presence_rate"] is None
+        assert rep["status"]["attentive_rate"] is None
+        # 评分主链路不受影响
+        assert rep["total"] > 0 and len(rep["dims"]) == 5
+

@@ -1481,3 +1481,32 @@
   .cam-state.s-off { color: var(--faint); }
   .cam-sub { font-size: 12px; color: var(--muted); }
   #cam-btn.btn-primary { color: #fff; }
+
+  /* ============ v34 · 报告内「面试状态」指标（同风格：发丝线 / 直角 / 无投影） ============ */
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 12px 0 10px;
+    border: 1px solid var(--line);
+  }
+  .status-cell {
+    padding: 10px 12px;
+    border-left: 1px solid var(--line);
+    min-width: 0;
+  }
+  .status-cell:first-child { border-left: 0; }
+  .status-num {
+    font-family: var(--mono);
+    font-size: 26px;
+    line-height: 1.1;
+    color: var(--ink);
+    letter-spacing: -.01em;
+  }
+  .status-cap {
+    margin-top: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }

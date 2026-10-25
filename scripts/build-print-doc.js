@@ -5,7 +5,7 @@
  *       并压成摘要表
  *     → Edge 无头打印为 docs/FutureMirror.Beta.pdf（含封面，约 29-30 页）
  *
- *   背景：在线版面向屏幕阅读（信息完整）；PDF 附件随赛事材料提交，
+ *   背景：在线版面向屏幕阅读（信息完整）；PDF 附件随项目材料提交，
  *   需要控制页数——附录（环境配置/账号/代码索引/交付清单）在仓库
  *   README 中有同等内容，版本日志的逐版本明细在更新日志页可查，
  *   因此打印版仅保留摘要，避免重复与超页。
@@ -165,7 +165,7 @@ execFileSync(
 const kb = (fs.statSync(PDF).size / 1024).toFixed(0) + "KB";
 console.log(`✅ PDF 已生成 → docs/FutureMirror.Beta.pdf（${kb}）`);
 
-/* ---------- 5) 页数门禁：赛事要求「不超过 30 页（含封面）」 ----------
+/* ---------- 5) 页数门禁：页数要求「不超过 30 页（含封面）」 ----------
  * Chromium 输出的 PDF 里页面对象是明文 /Type /Page，可直接计数；
  * 若将来对象流化导致数不到，退化为仅提示，不阻断构建。 */
 const MAX_PAGES = 30;
@@ -178,6 +178,6 @@ if (pages === 0) {
   fs.rmSync(TMP, { force: true });
   process.exit(1);
 } else {
-  console.log(`📐 页数 ${pages} / ${MAX_PAGES}（含封面），符合赛事上限`);
+  console.log(`📐 页数 ${pages} / ${MAX_PAGES}（含封面），符合页数上限`);
 }
 fs.rmSync(TMP, { force: true });

@@ -108,6 +108,31 @@ function historySVG(history) {
   </svg>`;
 }
 
+/* v34：面试状态（摄像头在场检测）——
+ * 把后端对 InterviewStatusEvent 的聚合结果（在场率 / 专注率 / 采样次数）写进评估报告，
+ * 让「过程信号」与「评分证据」同处一份报告。数据来源优先级：
+ * 服务端 /api/interviews/{id}/report 返回的 status → 本地 camLastSummary（后端不可用时兜底）。 */
+let lastReportStatus = null;
+
+function reportStatusCard(st) {
+  const count = st && st.count ? st.count : 0;
+  const pr = st && st.presence_rate != null ? st.presence_rate : null;
+  const ar = st && st.attentive_rate != null ? st.attentive_rate : null;
+  const cell = (num, cap) =>
+    `<div class="status-cell"><div class="status-num">${num}</div><div class="status-cap">${cap}</div></div>`;
+  return `<div class="card" id="report-status" style="padding:14px 16px;margin-top:14px">
+      <div class="pane-title" style="margin-bottom:2px">🎥 面试状态（摄像头在场检测）<span class="tag-demo">端侧识别 · 仅上报结构化结果</span></div>
+      <div class="status-grid">
+        ${cell(pr == null ? "—" : pr + "%", "在场率")}
+        ${cell(ar == null ? "—" : ar + "%", "专注率")}
+        ${cell(count ? count + " 次" : "0 次", "采样次数")}
+      </div>
+      <p class="hint" style="margin-bottom:0">${count
+        ? `共 ${count} 次后台采样${st.latest ? `，最近状态「${esc(st.latest)}」` : ""}。视频帧始终留在浏览器内，服务端只收到结构化状态（是否在场 / 是否专注）。`
+        : "本次面试未开启摄像头，因此没有在场数据。开启摄像头后再完成一次面试，报告会附带在场率与专注率。"}</p>
+    </div>`;
+}
+
 async function renderReport(force) {
   const box = $("report-content");
   if (!currentUser) {
@@ -137,7 +162,7 @@ async function renderReport(force) {
   let backendPayload = null;
   if (fmApi.backendReady() && session.turns.length) {
     // v22.1 修复：同一会话（interviewId + 轮数 + 匹配分 + 代码分）只同步一次，
-    // 反复切到报告页不再重复 POST /sync（评委看 Network 面板不会有重复请求）
+    // 反复切到报告页不再重复 POST /sync（访客看 Network 面板不会有重复请求）
     const syncSig = () => [session.interviewId || "", session.turns.length,
                            matchResult ? matchResult.matchScore : "-",
                            typeof session.codeScore === "number" ? session.codeScore : "-"].join(":");
@@ -177,6 +202,10 @@ async function renderReport(force) {
     scoring = { engine: "heuristic", llm_enriched: false };
   }
   const rewrites = buildSentenceRewrites(session.turns);
+  /* v34：面试状态数据（无摄像头时为 null → 区块显示中性提示） */
+  const camStatus = (backendPayload && backendPayload.status) ||
+    (typeof camLastSummary === "object" && camLastSummary ? camLastSummary : null);
+  lastReportStatus = camStatus;
   const suggestions = [...dims].sort((a, b) => a.score - b.score).slice(0, 3)
     .map(d => `「${d.dimension}」${d.score} 分：${d.comment}`);
 
@@ -219,6 +248,7 @@ async function renderReport(force) {
           <div class="dim-tip" role="tooltip">${d.dimension} · ${d.score}<br>${d.comment}</div>
         </div>`).join("")}</div></div>
     </div>
+    ${reportStatusCard(camStatus)}
     ${narrative ? `<div class="notice-llm">🧭 教练总评：${esc(narrative)}</div>` : ""}
     <div class="pane-title" style="margin-top:18px">评分证据（引用你的真实回答）</div>
     <div id="evidence">${evidence.map(e => `

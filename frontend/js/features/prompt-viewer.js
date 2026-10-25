@@ -78,6 +78,17 @@ function reportToMarkdown() {
   const ev = buildEvidence(session.turns);
   const lines = [`# 面镜 FutureMirror 模拟面试报告`, ``, `**综合得分：${total}/100**`, ``, `## 维度得分`];
   dims.forEach(d => lines.push(`- **${d.dimension}**：${d.score} 分 — ${d.comment}`));
+  /* v34：面试状态随报告一起导出（在场率 / 专注率 / 采样次数） */
+  const st = typeof lastReportStatus === "object" && lastReportStatus ? lastReportStatus : null;
+  lines.push("", "## 面试状态（摄像头在场检测）");
+  if (st && st.count) {
+    lines.push(`- 在场率：${st.presence_rate == null ? "—" : st.presence_rate + "%"}`);
+    lines.push(`- 专注率：${st.attentive_rate == null ? "—" : st.attentive_rate + "%"}`);
+    lines.push(`- 采样次数：${st.count} 次${st.latest ? `（最近状态：${st.latest}）` : ""}`);
+    lines.push("- 视频帧始终留在浏览器内，服务端仅接收结构化状态");
+  } else {
+    lines.push("- 本次面试未开启摄像头，无在场数据");
+  }
   lines.push("", "## 评分证据");
   ev.forEach((e, i) => lines.push(`${i + 1}. **[${e.agent}]** “${e.quote}”  `, `   标注：${e.note}`));
   lines.push("", "## 改进建议");

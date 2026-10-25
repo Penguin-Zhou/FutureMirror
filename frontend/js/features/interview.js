@@ -711,6 +711,9 @@ let camInterviewId = null;
 let camLastDetect = null;
 let camLastLabel = "";
 let camLastSentAt = 0;
+/* v34：最近一次后台聚合结果（在场率/专注率/采样次数），供评估报告直接复用——
+ * 后端不可用时报告仍能展示本地已知的检测汇总。 */
+let camLastSummary = null;
 
 /* 同源自托管优先：public/models/faceapi/ 随镜像(backend/static)与 Pages 一并分发，
  * 国内网络不受 jsDelivr 影响；加载失败再回退 CDN。
@@ -881,6 +884,7 @@ async function camSend(status) {
     });
     if (res.ok) {
       const j = await res.json();
+      camLastSummary = j;   // v34：报告页复用在场率/专注率
       if (j && j.presence_rate != null) {
         const ar = j.attentive_rate != null ? j.attentive_rate + "%" : "—";
         $("cam-sub").textContent = `在场率 ${j.presence_rate}% · 专注率 ${ar}（后台聚合 ${j.count} 次采样）`;

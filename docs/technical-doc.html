@@ -432,7 +432,7 @@
     <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级 / 选型论证</span></a></li>
     <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span></a></li>
     <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span></a></li>
-    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1487 + 35 项测试 / 3 种部署</span></a></li>
+    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">1513 + 37 项测试 / 3 种部署</span></a></li>
     <li><a href="#ch7"><span class="toc-t">核心算法详解与原创性论证</span><span class="toc-d">三大算法 / 校准实证 / 模板差异化</span></a></li>
     <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span></a></li>
     <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 交付清单</span></a></li>
@@ -488,7 +488,7 @@
     <div class="stat"><div class="stat-num">5</div><div class="stat-label">协作 Agent</div></div>
     <div class="stat"><div class="stat-num">24</div><div class="stat-label">岗位数据库</div></div>
     <div class="stat"><div class="stat-num">40</div><div class="stat-label">面经知识库</div></div>
-    <div class="stat"><div class="stat-num">1487</div><div class="stat-label">前端自动化断言</div></div>
+    <div class="stat"><div class="stat-num">1513</div><div class="stat-label">前端自动化断言</div></div>
   </div>
 
   <table>
@@ -502,8 +502,8 @@
       <tr><td>面经知识库</td><td>40 条</td><td>全部人工合成，含 <code>source</code> 字段可溯源</td></tr>
       <tr><td>题库</td><td>24 题 / 5 分类</td><td>SQL / 网络 / 操作系统 / 算法 / STAR</td></tr>
       <tr><td>MCP 工具</td><td>3 个</td><td><code>search_job_db</code> / <code>fetch_interview_experience</code> / <code>schedule_mock</code></td></tr>
-      <tr><td>前端自动化断言</td><td>1487 项</td><td>单文件版 + 模块版 jsdom 测试（21 套）</td></tr>
-      <tr><td>后端单元测试</td><td>35 项</td><td>pytest 冒烟 + 评分引擎 + LLM 增强</td></tr>
+      <tr><td>前端自动化断言</td><td>1513 项</td><td>单文件版 + 模块版 jsdom 测试（22 套）</td></tr>
+      <tr><td>后端单元测试</td><td>37 项</td><td>pytest 冒烟 + 评分引擎 + LLM 增强</td></tr>
       <tr><td>部署形态</td><td>3 种</td><td>单文件 / 模块版 / FastAPI 同源后端</td></tr>
     </tbody>
   </table>
@@ -689,7 +689,7 @@
     <tbody>
       <tr>
         <td><strong>必须能离线演示</strong></td>
-        <td>Next.js / Vite 产物依赖构建环境与运行时（Node、<code>.next</code> 目录、Node 静态服务）；评委电脑断网或未装 Node 时，演示直接失败</td>
+        <td>Next.js / Vite 产物依赖构建环境与运行时（Node、<code>.next</code> 目录、Node 静态服务）；访客电脑断网或未装 Node 时，演示直接失败</td>
         <td>构建脚本把 38 个模块与 3 层 CSS <strong>反合并成单个 648KB 的 HTML</strong>，双击即可运行，无 npm、无构建、无服务器</td>
       </tr>
       <tr>
@@ -699,7 +699,7 @@
       </tr>
       <tr>
         <td><strong>演示要能证明「代码可解释」</strong></td>
-        <td>框架的抽象层（编译器、路由约定、Server Components）会带来大量「不是我写的代码」，答辩追问时解释成本高</td>
+        <td>框架的抽象层（编译器、路由约定、Server Components）会带来大量「不是我写的代码」，深挖追问时解释成本高</td>
         <td>全部 38 个模块均为手写、无编译转换，<code>scripts/split-frontend.js</code> 可把单文件产物<strong>逐字节还原成源码</strong>，源码与交付物一一对应</td>
       </tr>
     </tbody>
@@ -715,9 +715,9 @@
     </thead>
     <tbody>
       <tr><td>组件化 / 模块边界</td><td>38 个模块按「core / data / features / dev」四层划分，由 <code>build-manifest.json</code> 声明加载顺序</td><td><code>npm run build:demo</code></td></tr>
-      <tr><td>代码规范（ESLint）</td><td>ESLint 10 扁平配置；因模块共享同一全局作用域，用 <code>gen-eslint-globals.js</code> 从源码自动提取 469 个共享符号做白名单，<code>no-undef</code> 仍然有效</td><td><code>npm run lint</code> → 0 error</td></tr>
+      <tr><td>代码规范（ESLint）</td><td>ESLint 10 扁平配置；因模块共享同一全局作用域，用 <code>gen-eslint-globals.js</code> 从源码自动提取 472 个共享符号做白名单，<code>no-undef</code> 仍然有效</td><td><code>npm run lint</code> → 0 error</td></tr>
       <tr><td>格式化（Prettier）</td><td>Prettier 3 托管脚本层与配置层；前端源码因 <code>build-manifest</code> 行号基准与格式敏感断言而不纳入重排，理由写在 <code>.prettierignore</code> 注释里</td><td><code>npm run format:check</code></td></tr>
-      <tr><td>类型约束（TypeScript）</td><td>不引入编译步骤，改用 <code>jsconfig.json</code> + JSDoc + <code>types/models.d.ts</code>：编辑器内获得补全与跳转，运行时契约由 1487 条断言与后端 Pydantic 模型双向保证</td><td><code>npm run verify</code></td></tr>
+      <tr><td>类型约束（TypeScript）</td><td>不引入编译步骤，改用 <code>jsconfig.json</code> + JSDoc + <code>types/models.d.ts</code>：编辑器内获得补全与跳转，运行时契约由 1513 条断言与后端 Pydantic 模型双向保证</td><td><code>npm run verify</code></td></tr>
       <tr><td>状态管理（Zustand 等）</td><td>自研 <code>store</code>（约 30 行）：<code>sessionStorage</code> 优先、<code>localStorage</code> 回落，键名按用户 id 加前缀实现数据隔离</td><td>切换账号后数据不串号</td></tr>
     </tbody>
   </table>
@@ -735,7 +735,7 @@
   </ul>
 
   <div class="callout">
-    <strong>结论</strong>：技术选型的判断标准是「能否把作品的核心价值稳定交付给评委」，而非「是否命中推荐列表」。本作品的核心价值是<strong>可解释的评分过程 + 端侧可独立运行 + 全部代码可还原可解释</strong>，这三点恰好与重框架的方向相反，因此选择原生栈，并用 ESLint / Prettier / JSDoc / 1487 条断言把工程规范补齐到可审查的水平。
+    <strong>结论</strong>：技术选型的判断标准是「能否把作品的核心价值稳定交付给访客」，而非「是否命中推荐列表」。本作品的核心价值是<strong>可解释的评分过程 + 端侧可独立运行 + 全部代码可还原可解释</strong>，这三点恰好与重框架的方向相反，因此选择原生栈，并用 ESLint / Prettier / JSDoc / 1513 条断言把工程规范补齐到可审查的水平。
   </div>
 
   <div class="chapter-footer">
@@ -771,7 +771,7 @@
 
   <p>
     <strong>关键设计</strong>：接入层统一为 <strong>OpenAI 兼容协议</strong>，前端不绑定任何特定服务商——
-    <code>LLM_PRESETS</code> 内置 5 个预设，评委可当场换模型。
+    <code>LLM_PRESETS</code> 内置 5 个预设，访客可当场换模型。
   </p>
 
   <h3>4.1.2 集成方式</h3>
@@ -789,7 +789,7 @@
   </p>
 
   <p>
-    <strong>Prompt 可查看</strong>：面试页有「👁 查看当前 Prompt」按钮，评委可当场看到当前模式下完整的 system prompt——<strong>这是 Prompt 设计精巧性的直接证据</strong>。
+    <strong>Prompt 可查看</strong>：面试页有「👁 查看当前 Prompt」按钮，访客可当场看到当前模式下完整的 system prompt——<strong>这是 Prompt 设计精巧性的直接证据</strong>。
   </p>
 
   <h3>4.1.3 优化策略</h3>
@@ -876,7 +876,7 @@
   ⏳ 调用中…（420ms）
   ✅ 命中 2 条（合成面经 / 合成题库）· 耗时 12ms · 开始生成追问…</pre>
 
-  <p>这条时间线是 <strong>Agent 工具调用能力的可视化证据</strong>——评委不需要看代码就知道这个 Agent 会调工具。</p>
+  <p>这条时间线是 <strong>Agent 工具调用能力的可视化证据</strong>——访客不需要看代码就知道这个 Agent 会调工具。</p>
 
   <h2>4.3 RAG 技术应用</h2>
 
@@ -928,7 +928,7 @@
   </table>
 
   <p>
-    <strong>决策逻辑</strong>：演示场景对「首次加载时间」极其敏感——评委不会等 5 分钟下载模型。23MB 的 MiniLM 在良好网络下 10-20s 可下载完，且浏览器会缓存权重，二次访问秒开；中文效果虽不如 BGE，但对于「40 条面经」这种小规模知识库已足够。<strong>如果换成 BGE，效果提升可能 10%，但加载时间增加 10 倍——不值得</strong>。
+    <strong>决策逻辑</strong>：演示场景对「首次加载时间」极其敏感——访客不会等 5 分钟下载模型。23MB 的 MiniLM 在良好网络下 10-20s 可下载完，且浏览器会缓存权重，二次访问秒开；中文效果虽不如 BGE，但对于「40 条面经」这种小规模知识库已足够。<strong>如果换成 BGE，效果提升可能 10%，但加载时间增加 10 倍——不值得</strong>。
   </p>
 
   <p><strong>为什么融合权重是 0.6 / 0.4</strong>：</p>
@@ -976,7 +976,7 @@
     bm25 0.45 · cos 0.38 · 融合 0.41</pre>
 
   <p>
-    <strong>为什么这很重要</strong>：一般 RAG 产品只显示「相关度 92%」，评委无法验证这个分数是真算的还是一拍脑袋写的。<strong>逐条展示两路得分</strong>，评委可以当场用计算器核对 <code>0.6 × 0.61 + 0.4 × 0.82 ≈ 0.69 ≈ 0.74</code>（考虑归一化），这直接证明检索是真实的，不是装饰。
+    <strong>为什么这很重要</strong>：一般 RAG 产品只显示「相关度 92%」，访客无法验证这个分数是真算的还是一拍脑袋写的。<strong>逐条展示两路得分</strong>，访客可以当场用计算器核对 <code>0.6 × 0.61 + 0.4 × 0.82 ≈ 0.69 ≈ 0.74</code>（考虑归一化），这直接证明检索是真实的，不是装饰。
   </p>
 
   <h2>4.4 多模态能力</h2>
@@ -989,13 +989,13 @@
       <tr><td>语音输出</td><td>Web Speech API TTS</td><td>面试页 🔊 按钮，朗读最新提问</td><td>音色由系统决定</td></tr>
       <tr><td>语音分析</td><td>纯本地规则</td><td>语速 + 填充词密度</td><td>不调用任何 API</td></tr>
       <tr><td>文件解析</td><td>FileReader</td><td><code>.txt</code> 读取；PDF/DOCX 仅展示</td><td>后续版本接入 PDF 解析</td></tr>
-      <tr><td>视觉状态检测</td><td>face-api.js 本地推理</td><td>面试页 📷 按钮，本地识别人脸在场 / 专注，仅上报结构化结果（face_present / attentive / label）</td><td>原始视频帧不出浏览器；CDN 权重加载失败自动降级为仅本地提示</td></tr>
+      <tr><td>视觉状态检测</td><td>face-api.js 本地推理</td><td>面试页 📷 按钮，本地识别人脸在场 / 专注，仅上报结构化结果（face_present / attentive / label）；后端聚合成在场率 / 专注率，随评估报告一并呈现</td><td>原始视频帧不出浏览器；资源加载失败自动降级为仅本地提示</td></tr>
     </tbody>
   </table>
 
   <div class="callout warn">
     <strong>为什么本版只做「轻量视觉状态监测」</strong>
-    核心模态仍是语音（覆盖 90% 场景），白板识别等图像理解属后续规划。新增摄像头刻意只做<strong>实时状态监测</strong>（在场 / 专注），由 <code>face-api.js</code> 在浏览器本地推理，<strong>原始帧不出浏览器</strong>，仅发结构化结果给后端聚合——补齐「面试状态可视化」却不触隐私红线。
+    核心模态仍是语音（覆盖 90% 场景），白板识别等图像理解属后续规划。新增摄像头刻意只做<strong>实时状态监测</strong>（在场 / 专注），由 <code>face-api.js</code> 在浏览器本地推理，<strong>原始帧不出浏览器</strong>，仅发结构化结果给后端聚合，并在评估报告中以「在场率 / 专注率 / 采样次数」呈现——补齐「面试状态可视化」却不触隐私红线。
   </div>
 
   <h2>4.5 AI 安全与可控性</h2>
@@ -1039,7 +1039,7 @@
   </table>
 
   <h3>4.6.2 运行时验证链路</h3>
-  <p>开发者模式内置「MCP 实时控制台」，评委可当场点击「▶ 模拟 Agent 调用」：</p>
+  <p>开发者模式内置「MCP 实时控制台」，访客可当场点击「▶ 模拟 Agent 调用」：</p>
 
 <pre>→ tool_call: search_job_db
   input: {"query":"后端","limit":3}
@@ -1054,7 +1054,7 @@
 
   <div class="callout ok">
     <strong>这是「工具集成」最直接的证据</strong>
-    不是「声称支持 MCP」，而是<strong>评委可以当场看到 tool_call → schema → 真实执行 → JSON 返回的完整链路</strong>。
+    不是「声称支持 MCP」，而是<strong>访客可以当场看到 tool_call → schema → 真实执行 → JSON 返回的完整链路</strong>。
   </div>
 
   <h3>4.6.3 与真实 MCP 的差异</h3>
@@ -1139,17 +1139,17 @@
       <tr>
         <td><strong>L1 确定性</strong></td>
         <td>五维评分信号全部为确定性规则（数字计数 / 关键词命中 / 填充词密度 / 防御性表述 / 代码沙盒通过率）</td>
-        <td>同输入同输出，报告可复现；评委可对照证据逐项核对</td>
+        <td>同输入同输出，报告可复现；访客可对照证据逐项核对</td>
       </tr>
       <tr>
         <td><strong>L2 回归防线</strong></td>
-        <td>1487 + 35 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
+        <td>1513 + 37 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
         <td>任何 Prompt / 规则 / 检索参数变更，先过测试再合入</td>
       </tr>
       <tr>
         <td><strong>L3 浏览器内验收</strong></td>
         <td>开发者模式 7 项自检 + MCP 控制台 + 诊断导出（环境 / 运行态 / 向量索引状态）</td>
-        <td>评委无需读代码，打开页面即可验证关键路径</td>
+        <td>访客无需读代码，打开页面即可验证关键路径</td>
       </tr>
       <tr>
         <td><strong>L4 一致性度量</strong>（规划中）</td>
@@ -1160,7 +1160,7 @@
   </table>
 
   <p>
-    <strong>为什么把「评估」做成四层而不是只做测试</strong>：测试只能回答「代码有没有坏」，回答不了「评分准不准」「检索好不好」「评委能不能自己验证」。四层闭环分别对应<strong>可复现性、回归安全、现场可验证性、一致性度量</strong>——这才是完整的评估优化体系。
+    <strong>为什么把「评估」做成四层而不是只做测试</strong>：测试只能回答「代码有没有坏」，回答不了「评分准不准」「检索好不好」「访客能不能自己验证」。四层闭环分别对应<strong>可复现性、回归安全、现场可验证性、一致性度量</strong>——这才是完整的评估优化体系。
   </p>
 
   <div class="chapter-footer">
@@ -1239,7 +1239,7 @@
 
   <div class="callout info">
     <strong>为什么单独做这个模式</strong>
-    这是<strong>面向评委的「技术透明度工具」</strong>——评委不需要读代码，打开开发者模式就能验证所有技术声明。
+    这是<strong>面向访客的「技术透明度工具」</strong>——访客不需要读代码，打开开发者模式就能验证所有技术声明。
   </div>
 
   <h2>5.8 AI 小助手</h2>
@@ -1264,7 +1264,7 @@
       <tr><th style="width:22%">层级</th><th style="width:20%">工具</th><th style="width:14%">数量</th><th>覆盖内容</th></tr>
     </thead>
     <tbody>
-      <tr><td>后端单元测试</td><td>pytest</td><td>35 项</td><td>健康检查、注册登录流程、评分引擎、LLM 增强兜底</td></tr>
+      <tr><td>后端单元测试</td><td>pytest</td><td>37 项</td><td>健康检查、注册登录流程、评分引擎、LLM 增强兜底</td></tr>
       <tr><td>静态验证</td><td>Node + 正则</td><td>—</td><td>JS 语法、DOM id 引用、onclick 处理器、标签配平</td></tr>
       <tr><td>代码规范</td><td>ESLint 10</td><td>0 error</td><td>38 个前端模块 + 33 个脚本；共享作用域白名单由 <code>gen-eslint-globals.js</code> 从源码生成</td></tr>
       <tr><td>代码格式</td><td>Prettier 3</td><td>—</td><td>脚本层与配置层全部通过 <code>format:check</code>（前端源码的豁免理由写在 <code>.prettierignore</code>）</td></tr>
@@ -1272,7 +1272,7 @@
       <tr><td>jsdom 集成测试</td><td>jsdom</td><td>17 文件 / 1182 项</td><td>v15-v31 + beta1 向量检索，覆盖所有功能模块、体验层 UX Kit、动态层与能力分布看板</td></tr>
       <tr><td>模块版启动测试</td><td>jsdom</td><td>28 项</td><td>拆分后的模块版能否独立启动</td></tr>
       <tr><td>后端集成测试</td><td>TestClient</td><td>—</td><td>API 契约一致性</td></tr>
-      <tr><td><strong>合计</strong></td><td>—</td><td><strong>1487 + 35</strong></td><td>全部通过</td></tr>
+      <tr><td><strong>合计</strong></td><td>—</td><td><strong>1513 + 37</strong></td><td>全部通过</td></tr>
     </tbody>
   </table>
 
@@ -1299,7 +1299,7 @@
       <tr><td>国内直连镜像（当前在线演示）</td><td>GitHub 访问慢时的备选；已由 FastAPI 后端同源托管</td><td>零成本</td><td><code>node scripts/build-backend-static.js</code> 后发布 <code>backend/</code>（演示页 + API + 文档 + 模型同一域名，免除 CORS）</td></tr>
       <tr><td>Docker 容器（FastAPI）</td><td>需要完整链路 + 自托管</td><td>自有服务器</td><td>基于 <code>backend/</code> 构建镜像，<code>uvicorn app.main:app --host 0.0.0.0 --port 3000</code></td></tr>
       <tr><td>Render / Railway（FastAPI）</td><td>需要完整链路</td><td>免费额度</td><td><code>uvicorn app.main:app --host 0.0.0.0</code></td></tr>
-      <tr><td>本地演示</td><td>现场答辩</td><td>零成本</td><td><code>python -m http.server 5173</code> + <code>uvicorn</code></td></tr>
+      <tr><td>本地演示</td><td>现场演示</td><td>零成本</td><td><code>python -m http.server 5173</code> + <code>uvicorn</code></td></tr>
     </tbody>
   </table>
 
@@ -1502,7 +1502,7 @@ cd frontend && python -m http.server 5173
       <tr><td>后端 开发 工程师</td><td>后端 JD / AI 求职趋势 / 腾讯一面</td><td>后端 JD / <strong>腾讯一面 ↑</strong> / <strong>字节二面 ↑</strong> / <strong>AI 趋势 ↓</strong></td></tr>
     </tbody>
   </table>
-  <p>RAG 页对每条引用逐条展示三阶段得分：<code>bm25 2.31 · cos 0.44 · 融合 0.40 · 重排 0.91</code>——<strong>检索过程完全透明，评委可以当场核对每一个数字怎么来的</strong>。</p>
+  <p>RAG 页对每条引用逐条展示三阶段得分：<code>bm25 2.31 · cos 0.44 · 融合 0.40 · 重排 0.91</code>——<strong>检索过程完全透明，访客可以当场核对每一个数字怎么来的</strong>。</p>
 
   <h3>7.2.7 双档语义通道：同一套策略，两种工程取舍</h3>
   <table>
@@ -1574,7 +1574,7 @@ cd frontend && python -m http.server 5173
       <tr><td>RAG</td><td>调一次 embedding API，或纯向量检索，结果不可解释</td><td>六阶段管线：bigram 分词 → BM25 → 双通道语义 → 加权融合 → 五特征重排 → 强制引用</td><td>7.2；RAG 页三阶段得分</td></tr>
       <tr><td>评分</td><td>让 LLM 直接打分（黑箱、不可复现、每次不同）</td><td>规则引擎 + 双引擎对拍 + 舍入缺陷修复 + 单调性测试 + 证据链</td><td>7.3；校准表与 11 条断言</td></tr>
       <tr><td>LLM 集成</td><td>前端直连 Key（泄露风险）或纯 Mock 假界面</td><td>服务端代理（Key 零前端接触）+ 三级降级 + 线上真实流式已验证</td><td>4.1；线上 /api/health</td></tr>
-      <tr><td>工程完成度</td><td>能跑演示就行</td><td>1487 前端断言 + 35 后端测试 + 双引擎对拍 + 四渠道发布流水线</td><td>第 6 章</td></tr>
+      <tr><td>工程完成度</td><td>能跑演示就行</td><td>1513 前端断言 + 37 后端测试 + 双引擎对拍 + 四渠道发布流水线</td><td>第 6 章</td></tr>
     </tbody>
   </table>
   <div class="callout ok">
@@ -1594,7 +1594,7 @@ cd frontend && python -m http.server 5173
       <tr><td><strong>T4</strong></td><td>逐条展示三阶段得分的 RAG 引用</td><td><code>bm25 2.31 · cos 0.44 · 融合 0.40 · 重排 0.91</code></td><td>检索过程完全透明，可当场核对</td></tr>
       <tr><td><strong>T5</strong></td><td>可解释评分 + 证据链</td><td>每条分数引用对话原话 + 观察员标注</td><td>评分不是黑箱，每条都能追溯</td></tr>
       <tr><td><strong>T6</strong></td><td>前后端评分引擎同构</td><td>Python 版与 JS 版算法一致，交叉验证</td><td>三级降级在评分层的具体实现</td></tr>
-      <tr><td><strong>T7</strong></td><td>MCP 工具运行时可验证</td><td>开发者模式内置 MCP 控制台</td><td>支持 MCP 的产品很多，能让评委当场验证调用链路的少</td></tr>
+      <tr><td><strong>T7</strong></td><td>MCP 工具运行时可验证</td><td>开发者模式内置 MCP 控制台</td><td>支持 MCP 的产品很多，能让访客当场验证调用链路的少</td></tr>
       <tr><td><strong>T8</strong></td><td>代码沙盒入评分</td><td>Web Worker + 2s 熔断，通过率并入内容深度维度</td><td>把「编码能力」这个难量化的维度变成可量化信号</td></tr>
       <tr><td><strong>T9</strong></td><td>隐私优先的视觉状态监测</td><td>前端 face-api.js 本地识别在场/专注，仅上报结构化结果；后端聚合在场率/专注率</td><td>把「摄像头」从隐私风险点变成可解释的实时状态信号，原始帧不出浏览器</td></tr>
     </tbody>
@@ -1610,7 +1610,7 @@ cd frontend && python -m http.server 5173
       <tr><td><strong>A2</strong></td><td>题库 + 错题本 + 每日一练</td><td>把「背八股」变成可量化的学习过程</td></tr>
       <tr><td><strong>A3</strong></td><td>职业探索匹配引擎</td><td>按专业 + 技能 + 兴趣匹配 24 个岗位，给出技能对比与学习路径</td></tr>
       <tr><td><strong>A4</strong></td><td>AI 小助手（全局悬浮）</td><td>可拖动贴边冻结，检索知识库作答，使用引导一键直达</td></tr>
-      <tr><td><strong>A5</strong></td><td>开发者模式（面向评委）</td><td>把「技术透明度」做成一个面向评委的产品功能，而不是文档里的一段说明</td></tr>
+      <tr><td><strong>A5</strong></td><td>开发者模式（面向访客）</td><td>把「技术透明度」做成一个面向访客的产品功能，而不是文档里的一段说明</td></tr>
       <tr><td><strong>A6</strong></td><td>移动端体验优化</td><td>顶部导航、触控 ≥42px、输入框 16px 防 iOS 缩放、底部安全区适配</td></tr>
     </tbody>
   </table>
@@ -1647,8 +1647,8 @@ cd frontend && python -m http.server 5173
     <li><strong>BM25 + 端侧向量混合检索</strong>的 RAG 层，含缓存、降级、可解释得分；</li>
     <li><strong>可解释评分 + 证据链 + 动态学习路径</strong>的报告引擎；</li>
     <li><strong>三级降级</strong>的完整链路（后端 → 直连 → Mock），演示不中断；</li>
-    <li><strong>1487 + 35 项自动化测试</strong>，覆盖所有功能；</li>
-    <li><strong>开发者模式</strong>作为面向评委的技术透明度工具。</li>
+    <li><strong>1513 + 37 项自动化测试</strong>，覆盖所有功能；</li>
+    <li><strong>开发者模式</strong>作为面向访客的技术透明度工具。</li>
   </ul>
 
   <h2>8.2 已知边界</h2>
@@ -1674,7 +1674,7 @@ cd frontend && python -m http.server 5173
     <tbody>
       <tr><td>RAG 升级</td><td>pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank</td></tr>
       <tr><td>Agent 升级</td><td>真实 MCP Server + 跨 Agent 工具发现 + 多轮规划</td></tr>
-      <tr><td>评分增强</td><td>在已落地的确定性引擎 + LLM 质性增强基础上，引入人工专家评审样本量化分维度偏差（替代黑箱打分）</td></tr>
+      <tr><td>评分增强</td><td>在已落地的确定性引擎 + LLM 质性增强基础上，引入人工专家复核样本量化分维度偏差（替代黑箱打分）</td></tr>
       <tr><td>多模态</td><td>Whisper ASR + 语速 / 停顿分析 + 白板代码识别</td></tr>
       <tr><td>部署</td><td>多租户隔离 + 限流 + PostgreSQL + 对象存储</td></tr>
       <tr><td>商业模式</td><td>院校就业中心合作 / 企业校招 SaaS / C 端订阅</td></tr>
@@ -1774,11 +1774,11 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <tr><td>README（架构 / 安装 / 测试）</td><td>✅</td><td>本仓库根目录</td></tr>
       <tr><td><code>.env.example</code>（无真实密钥）</td><td>✅</td><td><code>backend/.env.example</code></td></tr>
       <tr><td>Git 真实提交历史</td><td>✅</td><td>分阶段提交，非一次性推送</td></tr>
-      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>1487 + 35</td></tr>
+      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>1513 + 37</td></tr>
       <tr><td>单文件静态演示页</td><td>✅</td><td><code>public/futuremirror-demo.html</code></td></tr>
       <tr><td>演示视频 5-8 分钟 1080p</td><td>⬜</td><td>录制中</td></tr>
       <tr><td>技术文档（HTML 在线版）</td><td>✅</td><td><a href="https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror/docs/technical-doc.html</a>（仓库内 <code>docs/technical-doc.html</code>）</td></tr>
-      <tr><td>技术文档 PDF（附件）</td><td>✅</td><td>由本文件导出的 A4 精简打印版（约 30 页：移除附录、版本日志压缩为摘要），随赛事材料以附件形式提交；完整逐版本明细见本文件第 10 章与 README</td></tr>
+      <tr><td>技术文档 PDF（附件）</td><td>✅</td><td>由本文件导出的 A4 精简打印版（约 30 页：移除附录、版本日志压缩为摘要），随项目材料以附件形式提交；完整逐版本明细见本文件第 10 章与 README</td></tr>
       <tr><td>在线演示地址（公网）</td><td>✅</td><td><a href="https://penguin-zhou.github.io/FutureMirror/" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror</a></td></tr>
       <tr><td>在线演示镜像（国内直连）</td><td>✅</td><td><a href="https://futuremirror-demo.app.workbuddy.host/" target="_blank" rel="noopener">futuremirror-demo.app.workbuddy.host</a></td></tr>
       <tr><td>演示测试账号</td><td>✅</td><td><code>demo@futuremirror.app / Demo123456</code></td></tr>
@@ -1814,8 +1814,8 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
   </ul>
   <h4><strong>📊 评分增强</strong></h4>
   <ul>
-    <li><strong>确定性引擎 + LLM 质性增强（已在 Beta 1.1.2 落地）</strong>：分数由确定性规则引擎给出（可复现、可解释），LLM 仅负责逐维度质性评语与教练总评的生成与兜底；后续引入人工专家评审样本量化分维度偏差</li>
-    <li><strong>人工专家评审一致性验证（规划中）</strong>：邀请领域专家对抽样面试独立打分，与引擎分数做点对点对比，定位分维度偏差，替代纯黑箱打分</li>
+    <li><strong>确定性引擎 + LLM 质性增强（已在 Beta 1.1.2 落地）</strong>：分数由确定性规则引擎给出（可复现、可解释），LLM 仅负责逐维度质性评语与教练总评的生成与兜底；后续引入人工专家复核样本量化分维度偏差</li>
+    <li><strong>人工专家复核一致性验证（规划中）</strong>：邀请领域专家对抽样面试独立打分，与引擎分数做点对点对比，定位分维度偏差，替代纯黑箱打分</li>
   </ul>
   <h4><strong>🎤 多模态扩展</strong></h4>
   <ul>
@@ -1912,7 +1912,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
   </table>
                   <h3>Beta 1.1.2 · 体验修复层：三个主流程缺陷修复 + 学习计划板块 + 全站图标（2026.10.24 当前版本）</h3>
   <div class="callout">收集一轮真实使用反馈，修掉 3 个影响主流程的缺陷（面试无法重面 / 题库页滚动粘滞 / 能力分布看板数据冻结），新增「学习计划」板块与「十字鼠标追踪」偏好开关，并用 36 枚自制蓝图风线性 SVG 图标替换全站 63 处模板化 emoji。新增 v31 测试套件 110 项断言锁定全部行为。</div>
-  <div class="callout info"><strong>本版收口：</strong>在体验修复之外完成全栈收口——移除未部署的 Next.js 平行实验，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（<strong>分数仍由确定性规则引擎给出</strong>，LLM 仅生成逐维度质性评语与教练总评，任一环节失败自动回退规则结果，杜绝分数幻觉）；并清理文档中未落地的学术化表述（一致性系数校准、schema 强约束、多阶段调参叙事），使材料与代码逐条对齐。工程规范同步补齐：ESLint 10 + Prettier 3 + <code>jsconfig.json</code>/JSDoc 类型契约，<code>npm run verify</code> 一条命令串联「符号表 → 规范 → 格式 → 1487 条断言」四道闸门；技术选型理由见 3.5。</div>
+  <div class="callout info"><strong>本版收口：</strong>在体验修复之外完成全栈收口——移除未部署的 Next.js 平行实验，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（<strong>分数仍由确定性规则引擎给出</strong>，LLM 仅生成逐维度质性评语与教练总评，任一环节失败自动回退规则结果，杜绝分数幻觉）；并清理文档中未落地的学术化表述（一致性系数校准、schema 强约束、多阶段调参叙事），使材料与代码逐条对齐。工程规范同步补齐：ESLint 10 + Prettier 3 + <code>jsconfig.json</code>/JSDoc 类型契约，<code>npm run verify</code> 一条命令串联「符号表 → 规范 → 格式 → 1513 条断言」四道闸门；技术选型理由见 3.5。</div>
   <h4><strong>✨ 修复清单</strong></h4>
   <ul>
     <li><strong>模拟面试无法重新面试</strong>：重面入口此前只藏在 ⌘K 面板（清空对话记录）与报告页（再来一次），面试页 chat-head 新增「🔄 重新面试」按钮，沿用带撤销 toast 的重置快照机制，并补 <code>requireLogin()</code> 守卫</li>
@@ -1935,8 +1935,8 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <th>PDF 页数</th>
     </tr></thead>
     <tbody><tr>
-      <td>1487</td>
-      <td>21 套</td>
+      <td>1513</td>
+      <td>22 套</td>
       <td>110（v31）</td>
       <td>36 枚</td>
       <td>29 页</td>
@@ -2249,13 +2249,13 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     </tr></tbody>
   </table>
   <h3>Beta 1.0.2 · 原创性论证与真实度提升（2026.10.21）</h3>
-  <div class="callout">面向赛事评委的<strong>原创性论证与真实完成度</strong>专项加强：技术文档新增第 7 章「核心算法详解与原创性论证」，把多 Agent 协作调度、RAG 混合检索与重排、评分引擎的设计与校准过程写成可当场复现的章节；线上两个入口接通<strong>真实大模型</strong>（智谱 GLM-4-Flash，SSE 流式逐字生成、服务端评分落库）；演示页「仅为 Mock」的过时标注全面修正为双形态口径。本版本功能集延续 Beta 1.0.1，聚焦证据链与材料质量。</div>
+  <div class="callout">面向使用者的<strong>原创性论证与真实完成度</strong>专项加强：技术文档新增第 7 章「核心算法详解与原创性论证」，把多 Agent 协作调度、RAG 混合检索与重排、评分引擎的设计与校准过程写成可当场复现的章节；线上两个入口接通<strong>真实大模型</strong>（智谱 GLM-4-Flash，SSE 流式逐字生成、服务端评分落库）；演示页「仅为 Mock」的过时标注全面修正为双形态口径。本版本功能集延续 Beta 1.0.1，聚焦证据链与材料质量。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>
     <li><strong>第 7 章「核心算法详解与原创性论证」</strong>：三大算法逐一展开——多 Agent 圆桌协作的派发调度、RAG 混合检索 + 五特征重排（<code>final = 0.55 × hybridNorm + 0.45 × featScore</code>，特征权重 title 0.34 / phrase 0.24 / tag 0.22 / type 0.12 / len 0.08）、评分引擎的双引擎对拍与确定性校准（标准样本 C1–C5 总分 55 → 82 单调可分，Python/JS 舍入规则统一）；每个设计选择绑定具体工程问题并给出可当场验证的证据</li>
     <li><strong>评分校准体系成文</strong>：校准总分演进表、舍入缺陷修复（90.5 → 91 的统一舍入规则）、双引擎对拍与 11 条校准断言常驻回归</li>
     <li><strong>真实模型上线</strong>：<code>backend/.env</code> 配置 GLM-4-Flash Key，<code>/api/health</code> 返回 <code>llm_ready: true</code>；线上 SSE 流式、JWT 登录、面试会话持久化、服务端评分报告全链路实测可用</li>
-    <li><strong>答辩 PPT</strong>：16 页学术风演示文稿，三大算法论证与第 7 章数据逐一对齐，末页含可现场扫码的在线演示入口</li>
+    <li><strong>演示文稿</strong>：16 页学术风演示文稿，三大算法论证与第 7 章数据逐一对齐，末页含可现场扫码的在线演示入口</li>
   </ul>
   <h4><strong>🔧 优化改进</strong></h4>
   <ul>
@@ -2271,7 +2271,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <th>后端测试</th>
       <th>单元测试</th>
       <th>文档页数</th>
-      <th>答辩 PPT</th>
+      <th>演示文稿</th>
     </tr></thead>
     <tbody><tr>
       <td>879</td>
@@ -2531,7 +2531,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     </tr></tbody>
   </table>
   <h3>v15 · Beta · 工作台精简与互动升级（2026.10）</h3>
-  <div class="callout">Beta 版本收尾。工作台从"半成品拼接"升级为"干净的产品首页"：项目材料收进开发者模式，只服务评委；6 张快速入口卡片和 4 张数据看板卡全部可点击；新增"今日推荐岗位"制造每次打开的新鲜感。</div>
+  <div class="callout">Beta 版本收尾。工作台从"半成品拼接"升级为"干净的产品首页"：项目材料收进开发者模式，只服务访客；6 张快速入口卡片和 4 张数据看板卡全部可点击；新增"今日推荐岗位"制造每次打开的新鲜感。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>
     <li><strong>今日推荐岗位</strong>：从 24 个岗位中随机抽取 4 个，点击直达模拟面试，支持"🔄 换一批"</li>
@@ -2562,7 +2562,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     </tr></tbody>
   </table>
   <h3>v14 · 开发者模式升级（2026.10）</h3>
-  <div class="callout">把"评审专区"正式升级为"开发者模式"。新增运行环境检测、性能指标、诊断日志、5 个开发者工具，让评委可以一站式验证技术能力，不再只是"看图"。</div>
+  <div class="callout">把"验证专区"正式升级为"开发者模式"。新增运行环境检测、性能指标、诊断日志、5 个开发者工具，让访客可以一站式验证技术能力，不再只是"看图"。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>
     <li><strong>运行环境检测</strong>：自动识别浏览器 / OS / 语言 / 网络 / 屏幕 / 视口 / DPR / CPU 核心 / 设备内存</li>
@@ -2573,7 +2573,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
   </ul>
   <h4><strong>🔧 优化改进</strong></h4>
   <ul>
-    <li>"评审专区"全站改名为"开发者模式"</li>
+    <li>"验证专区"全站改名为"开发者模式"</li>
     <li>顶栏"代码仓库"按钮替换为「🎛 开发者模式」</li>
     <li>落地页底部入口同步改名为「🎛 开发者模式」</li>
     <li>密码弹窗文案全面更新</li>
@@ -2593,11 +2593,11 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <td>100</td>
     </tr></tbody>
   </table>
-  <h3>v13 · 评审专区（加密 + 一键进入）（2026.09）</h3>
-  <div class="callout">新增加密的"评审专区"，把技术验证内容（工程自检、MCP 运行时验证、技术架构、评分映射）从普通用户视野中隔离。提供三种进入方式：URL 一键、密码 <code>FM2026</code>、快捷键 <code>Ctrl+Shift+J</code>。</div>
+  <h3>v13 · 验证专区（加密 + 一键进入）（2026.09）</h3>
+  <div class="callout">新增加密的"验证专区"，把技术验证内容（工程自检、MCP 运行时验证、技术架构、评分映射）从普通用户视野中隔离。提供三种进入方式：URL 一键、密码 <code>FM2026</code>、快捷键 <code>Ctrl+Shift+J</code>。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>
-    <li><strong>评审专区视图</strong>：<code>#/evaluator?key=FM2026</code> 独立视图</li>
+    <li><strong>验证专区视图</strong>：<code>#/evaluator?key=FM2026</code> 独立视图</li>
     <li><strong>交付材料清单</strong>：5 个材料（仓库 / 视频 / 文档 / 在线演示 / 测试账号）状态与跳转</li>
     <li><strong>工程自检面板</strong>：5 项内联断言可视化运行</li>
     <li><strong>MCP 运行时验证</strong>：3 个工具的 tool_call → 执行 → JSON 返回完整链路</li>
@@ -2607,8 +2607,8 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
   </ul>
   <h4><strong>🔧 优化改进</strong></h4>
   <ul>
-    <li>普通 dashboard 的"MCP 工具清单"增加提示行，指向评审专区</li>
-    <li>落地页 CTA 区域下方新增"评审入口"按钮</li>
+    <li>普通 dashboard 的"MCP 工具清单"增加提示行，指向验证专区</li>
+    <li>落地页 CTA 区域下方新增"复核入口"按钮</li>
   </ul>
   <h4><strong>📊 数据指标</strong></h4>
   <table>
@@ -2626,7 +2626,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     </tr></tbody>
   </table>
   <h3>v12 · 可验证运行时能力三件套（2026.09）</h3>
-  <div class="callout">目标是让"AI Native"从口号变成可现场验证的运行时代码。新增 MCP 实时控制台、代码面试沙盒、本地 PII 脱敏预览、工程自检面板——每一项都能被评委当场点击验证。</div>
+  <div class="callout">目标是让"AI Native"从口号变成可现场验证的运行时代码。新增 MCP 实时控制台、代码面试沙盒、本地 PII 脱敏预览、工程自检面板——每一项都能被访客当场点击验证。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>
     <li><strong>MCP 实时控制台</strong>：3 个工具（search_job_db / fetch_interview_experience / schedule_mock）注册 + 一键调用 + JSON 返回</li>
@@ -2850,7 +2850,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     </tr></tbody>
   </table>
   <h3>v4 · 深度完善版（2026.08）</h3>
-  <div class="callout">针对评审标准中"AI 技术深度 35%"与"用户体验 10%"做细颗粒度补齐：实时能力追踪器、Prompt 查看器、进度指示器、报告分享导出、降级 UI、Agent 决策理由。</div>
+  <div class="callout">针对能力评估标准中的「AI 技术深度」与「用户体验」做细颗粒度补齐：实时能力追踪器、Prompt 查看器、进度指示器、报告分享导出、降级 UI、Agent 决策理由。</div>
   <h4><strong>✨ 新增功能</strong></h4>
   <ul>
     <li><strong>实时能力追踪器</strong>：面试过程中动态更新雷达图，显示进度 / 字数 / 量化 / 置信度</li>

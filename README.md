@@ -1,14 +1,14 @@
 # 面镜 FutureMirror · 多 Agent 模拟面试与能力成长平台
 
 > **AI辅助开发声明**  
-> 本项目开发过程使用AI编程工具作为辅助手段，CSS主题样板、通用工具函数、测试用例骨架、部分页面文案由AI辅助生成，**所有AI产出内容均经过参赛团队逐行审查、修改、调试与测试**，完整Git提交记录可查看开发演进过程，团队可完整解释全部代码逻辑。
+> 本项目开发过程使用AI编程工具作为辅助手段，CSS主题样板、通用工具函数、测试用例骨架、部分页面文案由AI辅助生成，**所有AI产出内容均经过开发团队逐行审查、修改、调试与测试**，完整Git提交记录可查看开发演进过程，团队可完整解释全部代码逻辑。
 >
 > 项目核心业务架构：多‑Agent圆桌协作机制、证据驱动可解释评分引擎、版本化Prompt约束体系、三级降级容错方案、RAG检索引用机制（BM25 + 端侧向量混合检索，余弦与词面双路融合）、全套业务产品设计与自动化测试体系均为团队独立设计与实现。演示知识库全部为人工合成示例数据，无爬取真实网络数据。  
-> 本作品为原型演示系统，仅用于竞赛演示，不直接作为生产系统使用。
+> 本作品为原型演示系统，仅用于原型演示，不直接作为生产系统使用。
 
 **版本定位：Beta 1.1.2 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 同源后端）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
 
-**技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 29 页。**PDF 版由该文档 A4 打印导出，随赛事材料以附件形式提交**（仓库 Release 亦提供下载）。
+**技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 29 页。**PDF 版由该文档 A4 打印导出，随项目材料以附件形式提交**（仓库 Release 亦提供下载）。
 
 **在线演示（免安装，浏览器直接打开）：<https://penguin-zhou.github.io/FutureMirror/>**（GitHub Pages）· **国内直连镜像：<https://futuremirror-demo.app.workbuddy.host/>** · 演示账号 `demo@futuremirror.app / Demo123456`
 
@@ -26,13 +26,13 @@
 | **只给分数，不知道为什么** | 市面工具给一个总分或一段泛泛点评，用户不知道哪句话被扣分    | 五维评分**每条都引用对话原话作为证据**，报告可逐条核对；最弱维度自动生成 Day 1–Day N 学习计划 |
 | **简历与岗位对不上**    | 用户凭感觉投递，不知道 JD 里哪些技能自己缺失        | 简历 × JD 技能抽取 → 匹配分 + 已具备技能 + 能力缺口 + 补强建议，缺口直接作为面试提问方向   |
 | **不知道练得有没有进步**  | 刷题/面试都是碎片化，缺少可回看的历史与趋势          | 面试记录与报告落库（SQLite），题库有成绩档案、正确率、掌握度、趋势看板                  |
-| **演示/教学场景断网即废** | 依赖云 API 的产品在赛场网络不稳定时直接白屏        | 三级降级：后端真实模型 → 浏览器直连 Key → 本地 Mock，无网也能完整走完流程            |
+| **演示/教学场景断网即废** | 依赖云 API 的产品在现场网络不稳定时直接白屏        | 三级降级：后端真实模型 → 浏览器直连 Key → 本地 Mock，无网也能完整走完流程            |
 
 ### 1.2 目标用户
 
 - **求职者（主要）**：准备校招/社招的技术与非技术岗位候选人，需要低成本、高频次、有反馈的面试练习；
 - **高校就业指导/训练营（次要）**：需要可批量、可留痕、可解释的模拟面试工具；
-- **评委与开发者（演示态）**：需要在不装环境、无网络、无 Key 的情况下 3 分钟内看懂系统做了什么、怎么做的。
+- **访客与开发者（演示态）**：需要在不装环境、无网络、无 Key 的情况下 3 分钟内看懂系统做了什么、怎么做的。
 
 ### 1.3 系统做什么 / 不做什么
 
@@ -85,14 +85,14 @@
 | Node.js | ≥ 18（开发验证用 22.22.2） | 跑测试脚本                   |
 | Python  | ≥ 3.10（开发验证用 3.13）  | FastAPI 后端、静态文件服务                   |
 | 浏览器     | Chrome / Edge 最新版   | 演示（需支持 SSE、Web Worker、localStorage） |
-| 可选      | `sqlite3` 命令行       | 答辩时验证数据真落库                          |
+| 可选      | `sqlite3` 命令行       | 演示时验证数据真落库                          |
 
 **两种安装形态，按需选择**（可只做 A，也可 A+B 全做）：
 
 | 形态                    | 需要装什么                 | 适合场景                    |
 | --------------------- | --------------------- | ----------------------- |
-| A. 单文件演示版             | **零安装**，浏览器直接打开       | 赛场断网、评委临时查看、快速演示        |
-| B. 模块版前端 + FastAPI 后端 | Node（仅测试用）+ Python 依赖 | 正式答辩（要展示真实落库与 Key 不进前端） |
+| A. 单文件演示版             | **零安装**，浏览器直接打开       | 现场断网、访客临时查看、快速演示        |
+| B. 模块版前端 + FastAPI 后端 | Node（仅测试用）+ Python 依赖 | 正式演示（要展示真实落库与 Key 不进前端） |
 
 ### 3.2 安装 A：单文件演示版（零依赖）
 
@@ -116,9 +116,9 @@
 > - 镜像由 FastAPI 后端同源托管，重新发布：`node scripts/build-backend-static.js` 组装 `backend/static/` 后发布 `backend/` 目录（一个域名同时提供页面与 `/api/*`，彻底免除 CORS）。`backend/static/` 为纯产物，已被 `.gitignore` 忽略，不参与版本管理；
 > - 本地调试用的 `.mirror-site/` 静态装配脚本（`stage-mirror.js`）保留，但在线镜像已改由后端托管，不再需要单独发布静态目录。
 >
-> 技术文档（`docs/technical-doc.html`）随同一条发布链路上线，两个入口地址见本文件顶部；PDF 版由该文档打印导出，以附件形式随赛事材料提交。
+> 技术文档（`docs/technical-doc.html`）随同一条发布链路上线，两个入口地址见本文件顶部；PDF 版由该文档打印导出，以附件形式随项目材料提交。
 
-### 3.3 安装 B：模块版前端 + FastAPI 后端（推荐答辩使用）
+### 3.3 安装 B：模块版前端 + FastAPI 后端（推荐演示使用）
 
 **第 1 步：启动后端**
 
@@ -538,9 +538,9 @@ RAG 检索不是关键词匹配，而是**词面 + 语义双路召回后归一�
 | 向量库  | `localStorage["fm_kb_vec_v1"]`（40 条预计算向量 + 元信息）                   | 二次访问「缓存命中」零推理；条目数与知识库不符时**拒绝加载**，避免脏索引                                                                       |
 | 离线兜底 | n-gram hashing 向量（`hashEmbed`，256 维，有符号特征哈希 + L2 归一）              | 无模型文件 / CDN 不可达时自动启用，检索链路不中断，状态条如实标注「非语义」                                                                    |
 | 融合   | `score = 0.6 × cosine + 0.4 × bm25_normalized`                    | 两路各自 min-max 归一后加权；纯语义召回设余弦门槛（MiniLM 0.15 / hashing 0.32）防噪声                                                 |
-| 可解释  | 每条引用显示 `bm25 0.82 · cos 0.61 · 融合 0.74`                           | 评委可当场核对分数，不是黑箱「相似度」                                                                                          |
+| 可解释  | 每条引用显示 `bm25 0.82 · cos 0.61 · 融合 0.74`                           | 访客可当场核对分数，不是黑箱「相似度」                                                                                          |
 
-答辩口径：**检索层是 BM25 + 端侧向量混合检索**，向量由 Transformers.js 在浏览器内计算（零 API 成本、离线可跑），两路归一分后加权融合；后续版本规划升级为 **pgvector + RRF + Rerank**。
+核验口径：**检索层是 BM25 + 端侧向量混合检索**，向量由 Transformers.js 在浏览器内计算（零 API 成本、离线可跑），两路归一分后加权融合；后续版本规划升级为 **pgvector + RRF + Rerank**。
 
 ### 后端接口一览
 
@@ -571,7 +571,7 @@ futuremirror/
 │   │   ├── scoring.py              # 可解释评分引擎（前端 scoreSession 的 Python 版）
 │   │   ├── db.py                   # SQLAlchemy 模型与会话
 │   │   └── main.py                 # FastAPI 装配 + 路由（JWT 鉴权/会话/报告/健康检查）
-│   ├── tests/                      # pytest：冒烟 + 鉴权 + 评分引擎 + 评语增强（35 项）
+│   ├── tests/                      # pytest：冒烟 + 鉴权 + 评分引擎 + 评语增强（37 项）
 │   ├── requirements.txt            # 后端依赖清单（版本固定）
 │   └── .env.example                # 复制为 .env 填 Key；.env 永不进仓库
 ├── frontend/                       # 模块版前端（由单文件版拆分，行为逐字节等价）
@@ -595,7 +595,7 @@ futuremirror/
 ├── docs/
 │   ├── technical-doc.html          # 技术文档（10 章正式版，可在线阅读）
 │   ├── FutureMirror.Beta.pdf       # 打印版技术文档（含封面，30 页）
-│   ├── FutureMirror答辩.pptx        # 竞赛答辩演示稿
+│   ├── FutureMirror.Deck.pptx        # 项目演示文稿
 │   └── archive/                    # 技术文档早期草稿（仅供演进追溯）
 ├── types/models.d.ts               # 前端数据模型类型声明（配合 JSDoc，无编译步骤）
 ├── eslint.config.js                # ESLint 10 扁平配置（npm run lint → 0 error）
@@ -612,12 +612,12 @@ futuremirror/
 
 ```bash
 # 后端
-cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM 评语增强（35 项）
+cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM 评语增强（37 项）
 
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 1487 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 1513 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -640,7 +640,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **1487 项前端断言 + 35 项后端单测**，全部通过。
+合计 **1513 项前端断言 + 37 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -687,7 +687,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 
 ### 10.4 文案与视觉美化｜林宇豪（Vito）
 
-- 撰写 README 文档、AI 辅助开发声明、全套技术说明书与赛事申报材料；
+- 撰写 README 文档、AI 辅助开发声明、全套技术说明书与项目材料；
 - 负责演示视频的内容设计与讲解准备；
 - 负责全部技术文档排版美化、图文规整，优化文档视觉观感。
 
@@ -703,11 +703,11 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 35 项 + 前端 1487 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 37 项 + 前端 1513 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
-| 演示视频 5-8 分钟 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
+| 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
-| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，约 29 页，**随赛事材料以附件形式提交**；仓库 Release 同附（修复版 v1.0.0-beta.1）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0-beta.1/FutureMirror.Beta.pdf> |
+| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，约 29 页，**随项目材料以附件形式提交**；仓库 Release 同附（修复版 v1.0.0-beta.1）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0-beta.1/FutureMirror.Beta.pdf> |
 | 在线演示（公网可访问）            | ✅  | <https://penguin-zhou.github.io/FutureMirror/>                                                                                                                                    |
 | 在线演示镜像（国内直连）           | ✅  | <https://futuremirror-demo.app.workbuddy.host/>                                                                                                                                   |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456`                                                                                                                                              |
@@ -778,7 +778,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **全站图标替换**：36 枚自制蓝图风线性 SVG（24×24、`currentColor`、方头直角、单一朱红 accent）替换 63 处模板化 emoji；favicon 升级为取景器标识；保留 emoji 作无 JS 兜底
 - **全栈收口与工程规范**：移除未部署的 Next.js 平行实验层，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（分数仍由确定性引擎给出，LLM 只补逐维度质性评语与教练总评，异常自动回落）；补齐 ESLint 10 + Prettier 3 + `jsconfig`/JSDoc 类型层，并新增 `npm run verify` 单命令门禁（globals 校验 → lint → format → test）
 
-测试基线：**1487** 项前端断言（21 套 jsdom，v31 套件 110 项）+ **35** 项后端 pytest；ESLint 10 `0 error` / Prettier 3 全绿；技术文档 PDF **30 页**。
+测试基线：**1513** 项前端断言（22 套 jsdom，v31 套件 110 项）+ **37** 项后端 pytest；ESLint 10 `0 error` / Prettier 3 全绿；技术文档 PDF **30 页**。
 
 ## Beta 1.1.1 · 审计加固层（2026.10.23）
 
@@ -832,7 +832,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **📊 评分增强**
 
-- **确定性引擎 + LLM 质性增强（已在 Beta 1.1.2 落地）**：分数由确定性规则引擎给出（可复现、可解释），LLM 仅负责逐维度质性评语与教练总评的生成与兜底；后续引入人工专家评审样本量化分维度偏差
+- **确定性引擎 + LLM 质性增强（已在 Beta 1.1.2 落地）**：分数由确定性规则引擎给出（可复现、可解释），LLM 仅负责逐维度质性评语与教练总评的生成与兜底；后续引入人工专家复核样本量化分维度偏差
 
 **🎤 多模态扩展**
 
@@ -1085,14 +1085,14 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 ### Beta 1.0.2 · 原创性论证与真实度提升（2026.10.21）
 
-> 面向赛事评委的**原创性论证与真实完成度**专项加强：技术文档新增第 7 章「核心算法详解与原创性论证」，把多 Agent 协作调度、RAG 混合检索与重排、评分引擎的设计与校准过程写成可当场复现的章节；线上两个入口接通**真实大模型**（智谱 GLM-4-Flash，SSE 流式逐字生成、服务端评分落库）；演示页「仅为 Mock」的过时标注全面修正为双形态口径。本版本功能集延续 Beta 1.0.1，聚焦证据链与材料质量。
+> 面向使用者的**原创性论证与真实完成度**专项加强：技术文档新增第 7 章「核心算法详解与原创性论证」，把多 Agent 协作调度、RAG 混合检索与重排、评分引擎的设计与校准过程写成可当场复现的章节；线上两个入口接通**真实大模型**（智谱 GLM-4-Flash，SSE 流式逐字生成、服务端评分落库）；演示页「仅为 Mock」的过时标注全面修正为双形态口径。本版本功能集延续 Beta 1.0.1，聚焦证据链与材料质量。
 
 **✨ 新增功能**
 
 - **第 7 章「核心算法详解与原创性论证」**：三大算法逐一展开——多 Agent 圆桌协作的派发调度、RAG 混合检索 + 五特征重排（`final = 0.55 × hybridNorm + 0.45 × featScore`，特征权重 title 0.34 / phrase 0.24 / tag 0.22 / type 0.12 / len 0.08）、评分引擎的双引擎对拍与确定性校准（标准样本 C1–C5 总分 55 → 82 单调可分，Python/JS 舍入规则统一）；每个设计选择绑定具体工程问题并给出可当场验证的证据
 - **评分校准体系成文**：校准总分演进表、舍入缺陷修复（90.5 → 91 的统一舍入规则）、双引擎对拍与 11 条校准断言常驻回归
 - **真实模型上线**：`backend/.env` 配置 GLM-4-Flash Key，`/api/health` 返回 `llm_ready: true`；线上 SSE 流式、JWT 登录、面试会话持久化、服务端评分报告全链路实测可用
-- **答辩 PPT**（`FutureMirror答辩.pptx`，16 页）：三大核心算法论证 + 真实完成度 + 现场验证入口，与技术文档第 7 章配套
+- **演示文稿**（`FutureMirror.Deck.pptx`，16 页）：三大核心算法论证 + 真实完成度 + 现场验证入口，与技术文档第 7 章配套
 
 **🔧 优化改进**
 
@@ -1104,7 +1104,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 | 967        | 17        | 16（vitest） | 37      | 16 页    |
 | ---------- | --------- | ------------ | ------- | -------- |
-| 前端断言 | 后端测试 | 单元测试 | 文档页数 | 答辩 PPT |
+| 前端断言 | 后端测试 | 单元测试 | 文档页数 | 演示文稿 |
 
 ### v22 · 后端适配与工程化（2026.10）
 
@@ -1308,7 +1308,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 ### v15 · Beta · 工作台精简与互动升级（2026.10）
 
-> Beta 版本收尾。工作台从"半成品拼接"升级为"干净的产品首页"：项目材料收进开发者模式，只服务评委；6 张快速入口卡片和 4 张数据看板卡全部可点击；新增"今日推荐岗位"制造每次打开的新鲜感。
+> Beta 版本收尾。工作台从"半成品拼接"升级为"干净的产品首页"：项目材料收进开发者模式，只服务访客；6 张快速入口卡片和 4 张数据看板卡全部可点击；新增"今日推荐岗位"制造每次打开的新鲜感。
 
 **✨ 新增功能**
 
@@ -1332,7 +1332,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 ### v14 · 开发者模式升级（2026.10）
 
-> 把"评审专区"正式升级为"开发者模式"。新增运行环境检测、性能指标、诊断日志、5 个开发者工具，让评委可以一站式验证技术能力，不再只是"看图"。
+> 把"验证专区"正式升级为"开发者模式"。新增运行环境检测、性能指标、诊断日志、5 个开发者工具，让访客可以一站式验证技术能力，不再只是"看图"。
 
 **✨ 新增功能**
 
@@ -1344,7 +1344,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **🔧 优化改进**
 
-- "评审专区"全站改名为"开发者模式"
+- "验证专区"全站改名为"开发者模式"
 - 顶栏"代码仓库"按钮替换为「🎛 开发者模式」
 - 落地页底部入口同步改名为「🎛 开发者模式」
 - 密码弹窗文案全面更新
@@ -1355,13 +1355,13 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 |---|---|---|---|
 | 环境检测项 | 性能指标 | 开发者工具 | 日志上限 |
 
-### v13 · 评审专区（加密 + 一键进入）（2026.09）
+### v13 · 验证专区（加密 + 一键进入）（2026.09）
 
-> 新增加密的"评审专区"，把技术验证内容（工程自检、MCP 运行时验证、技术架构、评分映射）从普通用户视野中隔离。提供三种进入方式：URL 一键、密码 `FM2026`、快捷键 `Ctrl+Shift+J`。
+> 新增加密的"验证专区"，把技术验证内容（工程自检、MCP 运行时验证、技术架构、评分映射）从普通用户视野中隔离。提供三种进入方式：URL 一键、密码 `FM2026`、快捷键 `Ctrl+Shift+J`。
 
 **✨ 新增功能**
 
-- **评审专区视图**：`#/evaluator?key=FM2026` 独立视图
+- **验证专区视图**：`#/evaluator?key=FM2026` 独立视图
 - **交付材料清单**：5 个材料（仓库 / 视频 / 文档 / 在线演示 / 测试账号）状态与跳转
 - **工程自检面板**：5 项内联断言可视化运行
 - **MCP 运行时验证**：3 个工具的 tool_call → 执行 → JSON 返回完整链路
@@ -1371,8 +1371,8 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 **🔧 优化改进**
 
-- 普通 dashboard 的"MCP 工具清单"增加提示行，指向评审专区
-- 落地页 CTA 区域下方新增"评审入口"按钮
+- 普通 dashboard 的"MCP 工具清单"增加提示行，指向验证专区
+- 落地页 CTA 区域下方新增"复核入口"按钮
 
 **📊 数据指标**
 
@@ -1382,7 +1382,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 ### v12 · 可验证运行时能力三件套（2026.09）
 
-> 目标是让"AI Native"从口号变成可现场验证的运行时代码。新增 MCP 实时控制台、代码面试沙盒、本地 PII 脱敏预览、工程自检面板——每一项都能被评委当场点击验证。
+> 目标是让"AI Native"从口号变成可现场验证的运行时代码。新增 MCP 实时控制台、代码面试沙盒、本地 PII 脱敏预览、工程自检面板——每一项都能被访客当场点击验证。
 
 **✨ 新增功能**
 
@@ -1581,7 +1581,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 
 ### v4 · 深度完善版（2026.08）
 
-> 针对评审标准中"AI 技术深度 35%"与"用户体验 10%"做细颗粒度补齐：实时能力追踪器、Prompt 查看器、进度指示器、报告分享导出、降级 UI、Agent 决策理由。
+> 针对能力评估标准中的「AI 技术深度」与「用户体验」做细颗粒度补齐：实时能力追踪器、Prompt 查看器、进度指示器、报告分享导出、降级 UI、Agent 决策理由。
 
 **✨ 新增功能**
 

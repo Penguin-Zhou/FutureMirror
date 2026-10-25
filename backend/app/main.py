@@ -320,6 +320,11 @@ def gen_report(interview_id: str, body: ReportIn,
     else:
         result["scoring"] = {"engine": "deterministic", "llm_enriched": False}
 
+    # v34：把摄像头在场检测的后台聚合结果随报告一起返回，让「面试状态」
+    # 与评分证据同处一份报告（在场率 / 专注率 / 采样次数 + 最近状态）。
+    # 未开启摄像头时 count 为 0，前端据此给出中性提示。
+    result["status"] = _status_summary(db, interview_id)
+
     old = db.scalar(select(Report).where(Report.interview_id == interview_id))
     if old:
         db.delete(old)

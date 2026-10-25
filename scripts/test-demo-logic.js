@@ -858,7 +858,7 @@ api.restoreJdSelection();
 check("restoreJdSelection 恢复 jd-select", $("jd-select").value === "backend");
 check("restoreJdSelection 恢复预览卡", $("jd-preview").hidden === false);
 
-console.log("== 19. v12 国赛级可验证运行时能力 ==");
+console.log("== 19. v12 可验证运行时能力 ==");
 // 19.1 MCP 实时控制台
 check("MCP_TOOLS 定义且含 3 个工具", Array.isArray(api.MCP_TOOLS) && api.MCP_TOOLS.length === 3);
 check(

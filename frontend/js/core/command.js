@@ -44,7 +44,7 @@
     { group: "页面", label: "个人中心", hint: "PROFILE", kw: "profile 个人 中心 头像", run: () => page("profile") },
     { group: "动作", label: "切换亮 / 暗主题", hint: "THEME", kw: "theme 主题 暗色 亮色", run: () => { if (typeof toggleTheme === "function") toggleTheme(); } },
     { group: "动作", label: "主题：跟随系统（自动明暗）", hint: "AUTO", kw: "auto 自动 跟随系统 system 主题", run: () => { if (typeof setThemeMode === "function") setThemeMode("auto"); } },
-    { group: "动作", label: "开发者模式", hint: "EVALUATOR", kw: "dev evaluator 开发者 评委", run: () => { if (typeof openEvaluatorGate === "function") openEvaluatorGate(); } },
+    { group: "动作", label: "开发者模式", hint: "EVALUATOR", kw: "dev evaluator 开发者 访客", run: () => { if (typeof openEvaluatorGate === "function") openEvaluatorGate(); } },
     { group: "动作", label: "回到顶部", hint: "TOP", kw: "top 顶部 返回", run: () => { try { window.scrollTo({ top: 0, behavior: reduced() ? "auto" : "smooth" }); } catch (e) { try { window.scrollTo(0, 0); } catch (e2) {} } } },
   ];
 

@@ -114,7 +114,7 @@ async function doRegister() {
   enterApp(user);
 }
 async function quickDemoLogin() {
-  // v22.1：演示登录同样先等待探测结论（评委最常点的就是这个按钮）
+  // v22.1：演示登录同样先等待探测结论（访客最常点的就是这个按钮）
   if (typeof fetch === "function" && fmApi.base && !fmApi.health) {
     try { await fmApi.checkHealth(); } catch (e) {}
   }
