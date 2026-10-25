@@ -76,6 +76,25 @@ class Report(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+class InterviewStatusEvent(Base):
+    """面试状态采样事件：摄像头开启后前端按节拍上报的在场/专注检测结果。
+
+    v33：前端用 face-api.js 本地识别「人脸是否在场 / 是否专注」，仅把结构化结果
+    （不传原始视频帧）发给后端；后端作为状态权威方做持久化、聚合与下发，
+    因此「后台检测面试状态」由后端状态服务实现，原始像素不出浏览器。
+    """
+
+    __tablename__ = "interview_status_events"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    interview_id: Mapped[str] = mapped_column(ForeignKey("interviews.id"), index=True)
+    ts: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    face_present: Mapped[bool | None] = mapped_column(Boolean, default=None)
+    attentive: Mapped[bool | None] = mapped_column(Boolean, default=None)
+    label: Mapped[str] = mapped_column(String(40), default="")
+    turn: Mapped[int] = mapped_column(Integer, default=0)
+    detector: Mapped[str] = mapped_column(String(20), default="faceapi")
+
+
 def init_db() -> None:
     Base.metadata.create_all(engine)
 

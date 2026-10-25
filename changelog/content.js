@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1455</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1487</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -198,12 +198,12 @@ export const changelogHtml = `
        ======================================================== -->
   <div class="version vbeta1-12 current" id="vbeta1-12">    <div class="version-head">
       <span class="v-tag v-tag-current">Beta 1.1.2</span>
-      <span class="v-title">体验修复层 · 重新面试入口 + 滚动吸附收窄 + 看板实时刷新 + 学习计划板块 + 全站图标</span>
+      <span class="v-title">体验修复层 · 重新面试入口 + 滚动吸附收窄 + 看板实时刷新 + 学习计划板块 + 全站图标 + 摄像头面试状态监测</span>
       <span class="v-date">2026.10.24 <span class="cur-mark">当前版本</span></span>
     </div>
     <div class="version-body">
       <div class="v-summary">
-        收集一轮真实使用反馈，修掉 <strong>3 个影响主流程的缺陷</strong>，并把「7 天学习路径」从报告页里的一小块摘要升级为<strong>独立板块</strong>：<strong>① 模拟面试无法重新面试</strong>——重面入口此前只藏在 ⌘K 面板与报告页，面试页 chat-head 新增「🔄 重新面试」按钮（沿用带撤销 toast 的重置快照机制，并补登录守卫）；<strong>② 题库页滚动粘滞</strong>——滚动吸附 <code>.bp-snap-y</code> 此前无条件常驻挂在 <code>documentElement</code> 上，应用内所有页面的滚动都被分段吸附阻滞，现收窄为仅落地页视图生效（进入挂载、离开拆除），题库子页签切换后平滑回顶；<strong>③ 能力分布看板数据冻结</strong>——看板此前只在开机装配一次，面试后仍显示「基线数据」，新增 <code>refreshReportPanel()</code>（停旧 live → 摘旧面板 → 按最新会话重挂）并由 <code>renderReport()</code> 在渲染末尾调用，空态路径同步撤下面板。<strong>④ 新增「学习计划」板块</strong>——7 天路径 + 每日时间分配规划：计划内容一键「同步评估报告」按最弱维度动态生成（scoreSession + buildPlan），无报告时回落通用基线；每日时间按「学习 : 练习 : 复盘」权重切分，三档预算（45 / 60 / 90 分钟）切换后自动重算；逐任务打卡 + 进度条 + 印章完成态，支持复制 Markdown 与打印。<strong>⑤ 偏好设置新增「十字鼠标追踪」开关</strong>——准线默认开启，关闭即时撤除、开启即时恢复（<code>prefs.crosshair</code>）。<strong>⑥ 全站图标替换</strong>——36 枚自制蓝图风线性 SVG 图标（24×24、stroke=currentColor 继承文字色、方头直角、每枚仅一枚朱红 accent）替换 63 处模板化 emoji，覆盖侧栏 / 底 Tab / 页头 / 快速入口 / 统计卡 / 落地页 / 主题钮 / 用户菜单 / AI 悬浮球，favicon 升级为取景器标识；保留 emoji 作无 JS 兜底。<strong>⑦ 全栈收口与工程规范</strong>——移除未部署的 Next.js 平行实验层，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（<strong>分数仍由确定性规则引擎给出</strong>，LLM 仅生成逐维度质性评语与教练总评，异常自动回落，杜绝分数幻觉）；补齐 ESLint 10 + Prettier 3 + <code>jsconfig</code>/JSDoc 类型层与 <code>npm run verify</code> 单命令门禁（反合并架构下的 444 个共享全局符号由脚本从源码生成白名单）；技术文档新增 3.5「技术选型论证」并清除未落地的非实证表述。
+        收集一轮真实使用反馈，修掉 <strong>3 个影响主流程的缺陷</strong>，并把「7 天学习路径」从报告页里的一小块摘要升级为<strong>独立板块</strong>：<strong>① 模拟面试无法重新面试</strong>——重面入口此前只藏在 ⌘K 面板与报告页，面试页 chat-head 新增「🔄 重新面试」按钮（沿用带撤销 toast 的重置快照机制，并补登录守卫）；<strong>② 题库页滚动粘滞</strong>——滚动吸附 <code>.bp-snap-y</code> 此前无条件常驻挂在 <code>documentElement</code> 上，应用内所有页面的滚动都被分段吸附阻滞，现收窄为仅落地页视图生效（进入挂载、离开拆除），题库子页签切换后平滑回顶；<strong>③ 能力分布看板数据冻结</strong>——看板此前只在开机装配一次，面试后仍显示「基线数据」，新增 <code>refreshReportPanel()</code>（停旧 live → 摘旧面板 → 按最新会话重挂）并由 <code>renderReport()</code> 在渲染末尾调用，空态路径同步撤下面板。<strong>④ 新增「学习计划」板块</strong>——7 天路径 + 每日时间分配规划：计划内容一键「同步评估报告」按最弱维度动态生成（scoreSession + buildPlan），无报告时回落通用基线；每日时间按「学习 : 练习 : 复盘」权重切分，三档预算（45 / 60 / 90 分钟）切换后自动重算；逐任务打卡 + 进度条 + 印章完成态，支持复制 Markdown 与打印。<strong>⑤ 偏好设置新增「十字鼠标追踪」开关</strong>——准线默认开启，关闭即时撤除、开启即时恢复（<code>prefs.crosshair</code>）。<strong>⑥ 全站图标替换</strong>——36 枚自制蓝图风线性 SVG 图标（24×24、stroke=currentColor 继承文字色、方头直角、每枚仅一枚朱红 accent）替换 63 处模板化 emoji，覆盖侧栏 / 底 Tab / 页头 / 快速入口 / 统计卡 / 落地页 / 主题钮 / 用户菜单 / AI 悬浮球，favicon 升级为取景器标识；保留 emoji 作无 JS 兜底。<strong>⑦ 全栈收口与工程规范</strong>——移除未部署的 Next.js 平行实验层，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（<strong>分数仍由确定性规则引擎给出</strong>，LLM 仅生成逐维度质性评语与教练总评，异常自动回落，杜绝分数幻觉）；补齐 ESLint 10 + Prettier 3 + <code>jsconfig</code>/JSDoc 类型层与 <code>npm run verify</code> 单命令门禁（反合并架构下的 466 个共享全局符号由脚本从源码生成白名单）；技术文档新增 3.5「技术选型论证」并清除未落地的非实证表述。<strong>⑧ 摄像头面试状态监测（前端检测 + 后端聚合）</strong>——面试页 chat-head 新增 📷 按钮，开启后浏览器本地用 <code>face-api.js</code> 识别「人脸是否在场 / 是否专注」，仅把结构化结果（<code>face_present</code> / <code>attentive</code> / <code>label</code>）发给后端；后端 <code>InterviewStatusEvent</code> 持久化并按节拍聚合在场率 / 专注率，作为「后台检测面试状态」的权威状态方。原始视频帧不出浏览器，契合隐私红线；检测依赖加载失败自动降级为仅本地提示，不阻断面试主流程。
       </div>
       <div class="v-highlights">
         <div class="vh-item"><b>面试能重来了</b>：chat-head 直接重新面试，重置可撤销</div>
@@ -211,12 +211,14 @@ export const changelogHtml = `
         <div class="vh-item"><b>看板看得到自己了</b>：每次进报告都按最新会话重画，不再是基线快照</div>
         <div class="vh-item"><b>7 天计划成板块了</b>：按最弱维度动态生成 + 每日时间分配 + 打卡进度</div>
         <div class="vh-item"><b>全栈收口了</b>：移除未部署的 Next.js 平行实验、接入 LLM 混合评分增强、补齐 ESLint + Prettier + JSDoc 规范、文档去除非实证表述</div>
+        <div class="vh-item"><b>面试状态后台看得见</b>：摄像头本地识别在/离场与专注度，后端聚合在场率与专注率，原始画面不出浏览器</div>
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">3</div><div class="m-label">修复缺陷</div></div>
         <div class="metric"><div class="m-val">36</div><div class="m-label">自制 SVG 图标</div></div>
         <div class="metric"><div class="m-val">110</div><div class="m-label">v31 新增断言</div></div>
-        <div class="metric"><div class="m-val">1455</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">32</div><div class="m-label">v33 新增断言</div></div>
+        <div class="metric"><div class="m-val">1487</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
       </div>
     </div>

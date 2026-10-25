@@ -124,18 +124,18 @@ html = html.slice(0, firstH3) + summaryTable + "\n" + html.slice(ch10Close);
  * 目标：含封面 ≤30 页。Edge 默认页边距约 19mm、正文字号约 11pt，
  * 这里收紧页边距并整体降一档字号，内容一字不减。 */
 const PRINT_TUNE = `<style id="bp-print-tune">
-@page { size: A4; margin: 9mm 8mm; }
+@page { size: A4; margin: 7mm 7mm; }
 @media print {
-  html, body { font-size: 8.2pt !important; line-height: 1.3 !important; }
+  html, body { font-size: 8.0pt !important; line-height: 1.25 !important; }
   .page { max-width: none !important; padding: 0 !important; }
-  h1 { font-size: 17pt !important; }
-  h2 { font-size: 14pt !important; }
-  h3 { font-size: 11.5pt !important; }
-  h4 { font-size: 9.6pt !important; }
-  table { font-size: 7.8pt !important; }
-  .callout { padding: 6px 9px !important; margin: 8px 0 !important; }
-  li { margin-bottom: 1px !important; }
-  p { margin-bottom: 4px !important; }
+  h1 { font-size: 16pt !important; }
+  h2 { font-size: 13pt !important; }
+  h3 { font-size: 11pt !important; }
+  h4 { font-size: 9.2pt !important; }
+  table { font-size: 7.5pt !important; }
+  .callout { padding: 5px 8px !important; margin: 6px 0 !important; }
+  li { margin-bottom: 0 !important; }
+  p { margin-bottom: 3px !important; }
 }
 </style>`;
 if (html.indexOf("</head>") > 0) html = html.replace("</head>", PRINT_TUNE + "\n</head>");

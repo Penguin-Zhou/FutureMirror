@@ -539,12 +539,14 @@ function finishInterview() {
   if (!requireLogin()) return;
   if (!session.turns.length) { toast("请先完成至少一轮问答，再结束面试生成报告"); return; }
   stopAnswerTimer();
+  try { stopCamera(); } catch (e) {}   // 面试结束即收掉摄像头，状态检测随之停止
   addTimeline("教练 Agent", `汇总 ${session.turns.length} 轮对话 → 正在生成可解释评分报告与学习路径…`, false);
   switchTab("report");
 }
 
 function restartInterview() {
   if (!requireLogin()) return;
+  try { stopCamera(); } catch (e) {}   // 重置前收掉摄像头，避免悬挂设备占用
   // v29 撤销支持：重置前留存会话快照（turns 内含 v28 批注 notes）
   const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null };
   session.turns = [];
@@ -697,4 +699,192 @@ function fillChatSuggestion(text) {
   input.value = text;
   input.focus();
 }
+
+/* ============ v33 · 摄像头面试状态监测（前端检测 + 后端聚合） ============ */
+/* 设计：前端用 face-api.js（按需从 CDN 加载，默认零运行时依赖）在本地识别
+ * 「人脸是否在场 / 是否专注」，仅把结构化结果发给后端；后端 InterviewStatusEvent
+ * 持久化并聚合在场率 / 专注率，作为「后台检测面试状态」的权威状态方。原始视频帧不出浏览器。 */
+let camStream = null, camVideo = null, camOn = false;
+let faceApiLoading = false, faceApiReady = false, faceApiFailed = false;
+let camDetectTimer = null, camSendTimer = null;
+let camInterviewId = null;
+let camLastDetect = null;
+let camLastLabel = "";
+let camLastSentAt = 0;
+
+const FACEAPI_JS = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
+const FACEAPI_WEIGHTS = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights";
+
+function setCamState(label, cls) {
+  const el = $("cam-state");
+  if (!el) return;
+  el.textContent = label;
+  el.className = "cam-state" + (cls ? " s-" + cls : "");
+}
+
+async function ensureInterviewId() {
+  if (session.interviewId) return session.interviewId;
+  try {
+    const res = await fetch(fmApi.base + "/api/interviews", {
+      method: "POST",
+      headers: fmApi.authHeaders(),
+      body: JSON.stringify({ mode: session.mode || "general", job: "" }),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    session.interviewId = (await res.json()).id;
+    persistSession();
+    return session.interviewId;
+  } catch (e) {
+    return null;   // 后端不可用则仅做本地检测，不上报
+  }
+}
+
+async function loadFaceApi() {
+  if (faceApiReady || faceApiFailed) return faceApiReady;
+  if (faceApiLoading) return false;
+  faceApiLoading = true;
+  try {
+    if (!window.faceapi) {
+      await new Promise((res, rej) => {
+        const s = document.createElement("script");
+        s.src = FACEAPI_JS;
+        s.onload = res;
+        s.onerror = () => rej(new Error("face-api.js 加载失败"));
+        document.head.appendChild(s);
+      });
+    }
+    await window.faceapi.nets.tinyFaceDetector.loadFromUri(FACEAPI_WEIGHTS);
+    faceApiReady = true;
+  } catch (e) {
+    faceApiFailed = true;
+    faceApiReady = false;
+  } finally {
+    faceApiLoading = false;
+  }
+  return faceApiReady;
+}
+
+async function toggleCamera() {
+  if (!requireLogin()) return;
+  if (camOn) { stopCamera(); return; }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    toast("当前环境不支持摄像头（需 HTTPS 或 localhost）");
+    return;
+  }
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: false });
+  } catch (e) {
+    const name = e && e.name;
+    const msg = name === "NotAllowedError" ? "摄像头权限被拒绝" :
+                name === "NotFoundError" ? "未找到摄像头设备" : "无法打开摄像头";
+    toast(msg);
+    return;
+  }
+  camStream = stream;
+  camVideo = $("cam-preview");
+  camVideo.srcObject = camStream;
+  try { await camVideo.play(); } catch (e) {}
+  camOn = true;
+  const btn = $("cam-btn");
+  if (btn) { btn.classList.add("btn-primary"); btn.textContent = "📷"; }
+  $("cam-bar").hidden = false;
+  setCamState("检测中…", "off");
+  camInterviewId = await ensureInterviewId();
+  camDetectTimer = setInterval(camDetectLoop, 1500);
+  camSendTimer = setInterval(camSendLoop, 2500);
+  // 立即发一次「摄像头已开启」心跳，让后端立刻开始记录
+  camSend({ face_present: null, attentive: null, label: "摄像头已开启 · 初始化", turn: session.turns.length, detector: "heartbeat" });
+  loadFaceApi().then((ok) => { if (!ok) setCamState("在场监测不可用（网络受限）", "warn"); });
+  addTimeline("系统", "📷 摄像头已开启，后台开始监测面试状态（在场 / 专注）", false);
+  toast("摄像头已开启，后台开始监测面试状态");
+}
+
+async function camDetectLoop() {
+  if (!camOn || !camVideo || !camVideo.videoWidth) return;
+  let face_present = null, attentive = null, label = "检测中…";
+  if (faceApiReady && window.faceapi) {
+    try {
+      const det = await window.faceapi.detectSingleFace(
+        camVideo, new window.faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })
+      );
+      if (det) {
+        face_present = true;
+        const vw = camVideo.videoWidth, vh = camVideo.videoHeight;
+        const cx = det.box.x + det.box.width / 2;
+        const cy = det.box.y + det.box.height / 2;
+        const offX = Math.abs(cx - vw / 2) / (vw / 2);
+        const offY = Math.abs(cy - vh / 2) / (vh / 2);
+        attentive = offX < 0.45 && offY < 0.55;   // 大致居中 = 面向镜头
+        label = attentive ? "专注面试中" : "在场但注意力分散";
+      } else {
+        face_present = false;
+        label = "暂离（未检测到人脸）";
+      }
+    } catch (e) {
+      faceApiFailed = true;   // 检测出错则回退到「不可用」提示，不阻塞面试
+    }
+  } else if (faceApiFailed) {
+    label = "在场监测不可用（网络受限）";
+  }
+  if (label && label !== "检测中…") {
+    const cls = face_present === false ? "bad" : (attentive === false && face_present === true ? "warn" : (face_present ? "ok" : "off"));
+    setCamState(label, cls);
+    camLastDetect = { face_present, attentive, label, turn: session.turns.length, detector: faceApiReady ? "faceapi" : (faceApiFailed ? "unavailable" : "init") };
+  }
+}
+
+function camSendLoop() {
+  if (!camOn) return;
+  const now = Date.now();
+  if (now - camLastSentAt < 2200) return;
+  const st = camLastDetect || { face_present: null, attentive: null, label: "摄像头已开启", turn: session.turns.length, detector: "heartbeat" };
+  camSend(st);
+  camLastSentAt = now;
+}
+
+async function camSend(status) {
+  if (!status || (status.label === camLastLabel && status.detector !== "heartbeat")) return;
+  camLastLabel = status.label;
+  if (!camInterviewId) camInterviewId = await ensureInterviewId();
+  if (!camInterviewId) return;   // 无后端则仅本地显示
+  try {
+    const res = await fetch(fmApi.base + "/api/interviews/" + camInterviewId + "/status", {
+      method: "POST",
+      headers: fmApi.authHeaders(),
+      body: JSON.stringify({
+        face_present: status.face_present, attentive: status.attentive,
+        label: status.label, turn: status.turn || 0, detector: status.detector || "faceapi",
+      }),
+    });
+    if (res.ok) {
+      const j = await res.json();
+      if (j && j.presence_rate != null) {
+        const ar = j.attentive_rate != null ? j.attentive_rate + "%" : "—";
+        $("cam-sub").textContent = `在场率 ${j.presence_rate}% · 专注率 ${ar}（后台聚合 ${j.count} 次采样）`;
+      }
+    }
+  } catch (e) { /* 静默，下一节拍重试 */ }
+}
+
+function stopCamera() {
+  if (!camOn && !camStream) return;
+  camOn = false;
+  if (camDetectTimer) { clearInterval(camDetectTimer); camDetectTimer = null; }
+  if (camSendTimer) { clearInterval(camSendTimer); camSendTimer = null; }
+  if (camStream) { camStream.getTracks().forEach((t) => t.stop()); camStream = null; }
+  if (camVideo) { try { camVideo.srcObject = null; } catch (e) {} camVideo = null; }
+  const btn = $("cam-btn");
+  if (btn) { btn.classList.remove("btn-primary"); btn.textContent = "📷"; }
+  const bar = $("cam-bar");
+  if (bar) bar.hidden = true;
+  if (camInterviewId) {
+    camSend({ face_present: false, attentive: null, label: "摄像头已关闭", turn: session.turns.length, detector: "heartbeat" }).catch(() => {});
+  }
+  camLastDetect = null;
+  camLastLabel = "";
+}
+
+/* 面试结束 / 重置 / 离开页面时收掉摄像头，避免悬挂设备占用 */
+window.addEventListener("beforeunload", function () { try { stopCamera(); } catch (e) {} });
 

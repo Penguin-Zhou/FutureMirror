@@ -21,7 +21,8 @@ from sqlalchemy.orm import Session
 
 load_dotenv()
 
-from .db import (Interview, Report, Turn, User, SessionLocal, get_db,  # noqa: E402
+from .db import (Interview, InterviewStatusEvent, Report, Turn, User,  # noqa: E402
+                 SessionLocal, get_db,
                  hash_password, init_db, verify_password)
 from .llm import LLM_MODEL, llm_ready, sse_response                    # noqa: E402
 from .scoring import score_session                                     # noqa: E402
@@ -343,6 +344,73 @@ def list_interviews(user: User = Depends(current_user), db: Session = Depends(ge
                     "created_at": r.created_at.isoformat(),
                     "total": rep.total if rep else None})
     return out
+
+
+# ---------------- 摄像头面试状态检测（前端识别 + 后端聚合） ----------------
+class StatusIn(BaseModel):
+    face_present: bool | None = None
+    attentive: bool | None = None
+    label: str = ""
+    turn: int = 0
+    detector: str = "faceapi"
+
+
+def _status_summary(db: Session, interview_id: str) -> dict:
+    """把一次面试的全部状态采样聚合成「在场率 / 专注率 / 最新状态」。"""
+    rows = db.scalars(
+        select(InterviewStatusEvent)
+        .where(InterviewStatusEvent.interview_id == interview_id)
+        .order_by(InterviewStatusEvent.ts)
+    ).all()
+    present = [r for r in rows if r.face_present is not None]
+    att = [r for r in rows if r.attentive is not None]
+    presence_rate = round(100.0 * sum(1 for r in present if r.face_present) / len(present), 1) if present else None
+    attentive_rate = round(100.0 * sum(1 for r in att if r.attentive) / len(att), 1) if att else None
+    latest = rows[-1] if rows else None
+    return {
+        "ok": True,
+        "count": len(rows),
+        "latest": latest.label if latest else None,
+        "presence_rate": presence_rate,
+        "attentive_rate": attentive_rate,
+        "events": [
+            {"ts": r.ts.isoformat(), "face_present": r.face_present,
+             "attentive": r.attentive, "label": r.label, "turn": r.turn}
+            for r in rows[-20:]
+        ],
+    }
+
+
+@app.post("/api/interviews/{interview_id}/status")
+def post_interview_status(interview_id: str, body: StatusIn,
+                          user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """前端按节拍上报面试状态检测结果；后端记录并返回聚合指标。
+
+    前端只发结构化结果（face_present/attentive/label），不传原始视频帧，
+    因此原始像素不出浏览器，后端是状态的权威聚合方（「后台检测面试状态」）。
+    """
+    iv = db.get(Interview, interview_id)
+    if not iv or iv.user_id != user.id:
+        raise HTTPException(404, "会话不存在")
+    db.add(InterviewStatusEvent(
+        interview_id=interview_id,
+        face_present=body.face_present,
+        attentive=body.attentive,
+        label=body.label,
+        turn=body.turn,
+        detector=body.detector,
+    ))
+    db.commit()
+    return _status_summary(db, interview_id)
+
+
+@app.get("/api/interviews/{interview_id}/status")
+def get_interview_status(interview_id: str,
+                         user: User = Depends(current_user), db: Session = Depends(get_db)):
+    iv = db.get(Interview, interview_id)
+    if not iv or iv.user_id != user.id:
+        raise HTTPException(404, "会话不存在")
+    return _status_summary(db, interview_id)
 
 
 # ---------------- 实时看板：聚合指标（REST + WebSocket 双通道） ----------------

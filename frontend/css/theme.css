@@ -1440,3 +1440,44 @@
     body::after { display: none; }
     .card, .page-card { border-color: #ccc; }
   }
+
+  /* ============ v33 · 摄像头面试状态监测（蓝图编辑风：发丝线 / 零投影 / 直角） ============ */
+  .cam-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 2px solid var(--ink);
+  }
+  .cam-bar[hidden] { display: none; }
+  #cam-preview {
+    width: 160px;
+    height: 120px;
+    object-fit: cover;
+    background: var(--plate);
+    border: 1px solid var(--line-2);
+    transform: scaleX(-1);   /* 镜像，更接近真实观感 */
+  }
+  .cam-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .cam-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .cam-state {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cam-state.s-ok { color: var(--green); }
+  .cam-state.s-warn { color: var(--amber); }
+  .cam-state.s-bad { color: var(--red); }
+  .cam-state.s-off { color: var(--faint); }
+  .cam-sub { font-size: 12px; color: var(--muted); }
+  #cam-btn.btn-primary { color: #fff; }
