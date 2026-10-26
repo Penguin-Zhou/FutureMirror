@@ -129,7 +129,9 @@ function reportStatusCard(st) {
       </div>
       <p class="hint" style="margin-bottom:0">${count
         ? `共 ${count} 次后台采样${st.latest ? `，最近状态「${esc(st.latest)}」` : ""}。视频帧始终留在浏览器内，服务端只收到结构化状态（是否在场 / 是否专注）。`
-        : "本次面试未开启摄像头，因此没有在场数据。开启摄像头后再完成一次面试，报告会附带在场率与专注率。"}</p>
+        : (typeof camWasActiveThisSession !== "undefined" && camWasActiveThisSession
+          ? "本次面试已开启摄像头（端侧检测），但后台与本地都未收到在场采样——可能是后端瞬时不可达或部署环境未连接后端。请确认后端已连接后重试，或检查浏览器是否允许摄像头权限。"
+          : "本次面试未开启摄像头，因此没有在场数据。开启摄像头后再完成一次面试，报告会附带在场率与专注率。")}</p>
     </div>`;
 }
 
@@ -202,9 +204,12 @@ async function renderReport(force) {
     scoring = { engine: "heuristic", llm_enriched: false };
   }
   const rewrites = buildSentenceRewrites(session.turns);
-  /* v34：面试状态数据（无摄像头时为 null → 区块显示中性提示） */
-  const camStatus = (backendPayload && backendPayload.status) ||
-    (typeof camLastSummary === "object" && camLastSummary ? camLastSummary : null);
+  /* v34：面试状态数据（无摄像头时为 null → 区块显示中性提示）。
+   * 优先级：服务端 status（有采样）→ 本地 camLastSummary（后台为零但端侧确有数据时兜底，
+   * 防止 interview_id 错配或后端瞬时不可达导致数据丢失）→ null。 */
+  const camStatus = (backendPayload && backendPayload.status && backendPayload.status.count)
+    ? backendPayload.status
+    : (typeof camLastSummary === "object" && camLastSummary ? camLastSummary : null);
   lastReportStatus = camStatus;
   const suggestions = [...dims].sort((a, b) => a.score - b.score).slice(0, 3)
     .map(d => `「${d.dimension}」${d.score} 分：${d.comment}`);

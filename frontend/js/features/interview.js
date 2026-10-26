@@ -550,6 +550,7 @@ function restartInterview() {
   // v29 撤销支持：重置前留存会话快照（turns 内含 v28 批注 notes）
   const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null };
   session.turns = [];
+  camWasActiveThisSession = false;   // 新一轮面试，重置摄像头开启标记（上一轮的摄像头状态不带入）
   // v22.1：一轮面试对应后端一条独立会话记录——清掉 interviewId，
   // 下次生成报告时新建（否则幂等 /sync 会把新一轮问答判重为「已入库」，
   // 报告页读到的是上一轮的旧数据）
@@ -714,6 +715,9 @@ let camLastSentAt = 0;
 /* v34：最近一次后台聚合结果（在场率/专注率/采样次数），供评估报告直接复用——
  * 后端不可用时报告仍能展示本地已知的检测汇总。 */
 let camLastSummary = null;
+/* 本次面试会话是否真的开过摄像头（finishInterview 收掉摄像头后仍能追溯，
+ * 用于报告在「两端都无采样」时给出诚实提示，而非误导为「未开启摄像头」）。 */
+let camWasActiveThisSession = false;
 
 /* 同源自托管优先：public/models/faceapi/ 随镜像(backend/static)与 Pages 一并分发，
  * 国内网络不受 jsDelivr 影响；加载失败再回退 CDN。
@@ -811,6 +815,7 @@ async function toggleCamera() {
   camVideo.srcObject = camStream;
   try { await camVideo.play(); } catch (e) {}
   camOn = true;
+  camWasActiveThisSession = true;   // 标记本次面试确实开过摄像头，供报告诚实归因
   const btn = $("cam-btn");
   if (btn) { btn.classList.add("btn-primary"); btn.textContent = "📷"; }
   $("cam-bar").hidden = false;

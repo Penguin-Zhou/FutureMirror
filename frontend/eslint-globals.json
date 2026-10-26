@@ -141,6 +141,7 @@
   "camSend": "writable",
   "camSendLoop": "writable",
   "camStream": "writable",
+  "camWasActiveThisSession": "writable",
   "cancelReview": "writable",
   "careerSelection": "writable",
   "clearAllData": "writable",

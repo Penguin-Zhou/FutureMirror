@@ -617,7 +617,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 1513 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 1522 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -640,7 +640,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **1513 项前端断言 + 37 项后端单测**，全部通过。
+合计 **1522 项前端断言 + 37 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -703,7 +703,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 37 项 + 前端 1513 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 37 项 + 前端 1522 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -778,7 +778,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **全站图标替换**：36 枚自制蓝图风线性 SVG（24×24、`currentColor`、方头直角、单一朱红 accent）替换 63 处模板化 emoji；favicon 升级为取景器标识；保留 emoji 作无 JS 兜底
 - **全栈收口与工程规范**：移除未部署的 Next.js 平行实验层，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（分数仍由确定性引擎给出，LLM 只补逐维度质性评语与教练总评，异常自动回落）；补齐 ESLint 10 + Prettier 3 + `jsconfig`/JSDoc 类型层，并新增 `npm run verify` 单命令门禁（globals 校验 → lint → format → test）
 
-测试基线：**1513** 项前端断言（22 套 jsdom，v31 套件 110 项）+ **37** 项后端 pytest；ESLint 10 `0 error` / Prettier 3 全绿；技术文档 PDF **30 页**。
+测试基线：**1522** 项前端断言（23 套 jsdom，v31 套件 110 项）+ **37** 项后端 pytest；ESLint 10 `0 error` / Prettier 3 全绿；技术文档 PDF **30 页**。
 
 ## Beta 1.1.1 · 审计加固层（2026.10.23）
 

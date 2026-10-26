@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1513</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1522</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -220,7 +220,7 @@ export const changelogHtml = `
         <div class="metric"><div class="m-val">110</div><div class="m-label">v31 新增断言</div></div>
         <div class="metric"><div class="m-val">26</div><div class="m-label">v34 新增断言</div></div>
         <div class="metric"><div class="m-val">32</div><div class="m-label">v33 新增断言</div></div>
-        <div class="metric"><div class="m-val">1513</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">1522</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
       </div>
     </div>
