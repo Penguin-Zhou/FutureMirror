@@ -12,11 +12,12 @@
   const S = 'fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"';
   const A = 'fill="var(--brand)" stroke="none"';   // 朱红 accent
   const BP_ICONS = {
-    /* ---- 导航十一枚 ---- */
+    /* ---- 导航十二枚（v36 新增 mbti） ---- */
     dashboard: `<rect x="3.5" y="3.5" width="7" height="7" ${S}/><rect x="13.5" y="3.5" width="7" height="7" ${S}/><rect x="3.5" y="13.5" width="7" height="7" ${S}/><rect x="14.5" y="14.5" width="5" height="5" ${A}/>`,
     match: `<path d="M5 3.5h8l4 4v13H5z" ${S}/><path d="M13 3.5v4h4" ${S}/><circle cx="15.5" cy="15" r="3" ${S}/><path d="M17.6 17.1L20 19.5" ${S}/>`,
     resume: `<path d="M4.5 3.5h9l5 5v12h-14z" ${S}/><path d="M13.5 3.5v5h5" ${S}/><path d="M7.5 12.5l2 2 3.5-3.5" ${S}/><path d="M7.5 16.5h6" ${S}/>`,
     career: `<circle cx="12" cy="12" r="8.5" ${S}/><path d="M15.5 8.5L13 13l-4.5 2.5L11 11z" ${S}/><circle cx="12" cy="12" r="1.2" ${A}/>`,
+    mbti: `<path d="M12 4.6c-2.6 0-4.3 1.7-4.3 3.6 0 .9.3 1.6.8 2.2-1 .6-1.6 1.5-1.6 2.6 0 1.9 1.9 3.2 4.3 3.2.9 0 1.7-.2 2.3-.6.5.4 1.3.6 2.3.6 2.4 0 4.3-1.3 4.3-3.2 0-1.1-.6-2-1.6-2.6.5-.6.8-1.3.8-2.2 0-1.9-1.7-3.6-4.3-3.6z" ${S}/><path d="M12 4.6v11.8" ${S}/><circle cx="9.4" cy="10.4" r="1" ${A}/><circle cx="14.6" cy="10.4" r="1" ${S}/>`,
     interview: `<rect x="9.2" y="3" width="5.6" height="10.5" rx="2.8" ${S}/><path d="M6 11.2a6 6 0 0 0 12 0" ${S}/><path d="M12 17.2v3.3" ${S}/><path d="M8.5 20.5h7" ${S}/>`,
     rag: `<path d="M12 6.8C10.2 5.2 7.4 4.6 4.2 5v13.4c3.2-.4 6 .2 7.8 1.6" ${S}/><path d="M12 6.8c1.8-1.6 4.6-2.2 7.8-1.6v13.4c-3.2-.4-6 .2-7.8 1.6" ${S}/><path d="M12 6.8v13.6" ${S}/>`,
     report: `<path d="M3.5 20.5h17" ${S}/><path d="M6 20.5V12" ${S}/><path d="M11 20.5V7" ${S}/><path d="M16 20.5v-6" stroke="var(--brand)" stroke-width="1.5" fill="none" stroke-linecap="square" stroke-linejoin="miter"/>`,

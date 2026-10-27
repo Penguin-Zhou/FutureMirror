@@ -41,6 +41,10 @@ const runtimeCreated = [
   "quiz-search-input",
   "quiz-search-results",
   "quiz-cat-zone",
+  // v36：运行时注入
+  "mqa-input", // 对话式匹配增强的输入框（renderMatchQa 注入）
+  "js-advice-stream", // 求职信息 AI 建议的流式输出容器
+  "rj-stream", // 真实岗位面试建议的流式容器（实际 id 为 rj-stream-<jobId>）
 ];
 const missing = refs.filter((r) => !ids.has(r) && !runtimeCreated.includes(r));
 console.log("主脚本引用 id:", refs.length, "| 缺失:", missing.length ? missing.join(",") : "无");

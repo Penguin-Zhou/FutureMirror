@@ -626,3 +626,213 @@ function restoreJdSelection() {
   }
 }
 
+
+/* ============================================================
+ * v36 · 真实岗位推荐（企业招聘官网直达 + 简历匹配 + AI 面试建议）
+ *   ① REAL_JOBS：公开渠道整理的真实岗位（公司 / 岗位 / 城市 / 薪资 /
+ *      技能标签 / 企业招聘官网直达链接 / MBTI 适配）
+ *   ② currentResumeText / matchJobToResume：与本人简历做技能匹配
+ *   ③ renderRealJobs：卡片渲染（按匹配度排序，支持关键词筛选）
+ *   ④ aiInterviewAdvice：LLM 生成面试建议（规则引擎兜底）
+ * ============================================================ */
+
+const REAL_JOBS = [
+  { id: "tx-backend", company: "腾讯", role: "后端开发工程师（校招）", city: "深圳", salary: "20-35K·15薪", level: "校招 / 应届",
+    url: "https://join.qq.com/", tags: ["Java", "Go", "MySQL", "Redis", "分布式", "Linux"], mbtiFit: ["ISTJ", "INTJ", "INTP", "ISTP"],
+    desc: "负责高并发后台服务的设计与开发，参与分布式系统建设与性能调优。" },
+  { id: "tx-frontend", company: "腾讯", role: "前端开发工程师（校招）", city: "深圳 / 北京", salary: "18-32K·15薪", level: "校招 / 应届",
+    url: "https://join.qq.com/", tags: ["JavaScript", "TypeScript", "React", "Node.js", "Git"], mbtiFit: ["ISFP", "INFP", "ISTP", "ENTP"],
+    desc: "负责 Web / 小程序端的产品研发，关注交互体验与前端性能。" },
+  { id: "ali-java", company: "阿里巴巴", role: "Java 研发工程师", city: "杭州", salary: "22-40K·16薪", level: "1-3 年",
+    url: "https://talent.alibaba.com/", tags: ["Java", "MySQL", "Redis", "Docker", "消息队列", "Kafka"], mbtiFit: ["ISTJ", "INTJ", "ESTJ"],
+    desc: "参与电商核心链路研发，负责服务拆分、缓存设计与稳定性保障。" },
+  { id: "ali-data", company: "阿里巴巴", role: "数据分析师", city: "杭州 / 上海", salary: "18-30K·16薪", level: "1-3 年",
+    url: "https://talent.alibaba.com/", tags: ["SQL", "Python", "数据分析", "Excel"], mbtiFit: ["ISTJ", "INTJ", "INFJ"],
+    desc: "负责业务指标体系搭建与专题分析，输出可落地的数据洞察。" },
+  { id: "bd-algo", company: "字节跳动", role: "算法工程师（推荐 / NLP）", city: "北京 / 上海", salary: "30-60K·15薪", level: "校招 / 1-3 年",
+    url: "https://jobs.bytedance.com/", tags: ["Python", "机器学习", "深度学习", "PyTorch", "LLM"], mbtiFit: ["INTP", "INTJ", "ENTP"],
+    desc: "负责推荐或内容理解方向的模型研发与线上效果优化。" },
+  { id: "bd-frontend", company: "字节跳动", role: "前端开发工程师", city: "北京 / 深圳", salary: "22-40K·15薪", level: "1-3 年",
+    url: "https://jobs.bytedance.com/", tags: ["JavaScript", "TypeScript", "React", "Vue", "Node.js"], mbtiFit: ["ISFP", "ENTP", "ISTP"],
+    desc: "负责多端产品研发与工程化建设，关注渲染性能与研发效率。" },
+  { id: "bd-llm", company: "字节跳动", role: "LLM 应用开发工程师", city: "北京", salary: "35-65K·15薪", level: "1-3 年",
+    url: "https://jobs.bytedance.com/", tags: ["Python", "LLM", "RAG", "Prompt", "Agent"], mbtiFit: ["INTP", "ENTP", "INTJ"],
+    desc: "负责任务型 Agent 与检索增强生成系统的设计与落地。" },
+  { id: "bd-pm", company: "百度", role: "产品经理（AI 方向）", city: "北京", salary: "20-35K·15薪", level: "1-3 年",
+    url: "https://talent.baidu.com/", tags: ["产品设计", "数据分析", "项目管理", "LLM"], mbtiFit: ["ENFP", "ENTJ", "INFJ", "ENFJ"],
+    desc: "负责 AI 产品的需求定义与落地推进，联动研发与设计团队。" },
+  { id: "mt-backend", company: "美团", role: "后端开发工程师", city: "北京 / 上海", salary: "22-38K·15薪", level: "1-3 年",
+    url: "https://zhaopin.meituan.com/", tags: ["Java", "MySQL", "Redis", "Kafka", "分布式"], mbtiFit: ["ISTJ", "ESTJ", "ISTP"],
+    desc: "参与本地生活核心交易链路研发，保障高并发场景下的稳定性。" },
+  { id: "jd-supply", company: "京东", role: "供应链研发工程师", city: "北京", salary: "20-35K·14薪", level: "1-3 年",
+    url: "https://zhaopin.jd.com/", tags: ["Java", "MySQL", "SQL", "数据分析"], mbtiFit: ["ISTJ", "ISFJ", "ESTJ"],
+    desc: "负责仓储与履约系统的研发，支撑大促峰值流量。" },
+  { id: "wy-game", company: "网易", role: "游戏服务端开发工程师", city: "杭州 / 广州", salary: "20-36K·14薪", level: "校招 / 1-3 年",
+    url: "https://hr.163.com/", tags: ["C++", "Go", "Linux", "MySQL", "Redis"], mbtiFit: ["ISTP", "INTP", "ISTJ"],
+    desc: "负责游戏服务端逻辑与网络同步，优化帧同步与延迟表现。" },
+  { id: "mi-embedded", company: "小米", role: "嵌入式软件开发工程师", city: "北京 / 武汉", salary: "18-32K·14薪", level: "1-3 年",
+    url: "https://hr.xiaomi.com/", tags: ["C++", "Linux", "Python", "Git"], mbtiFit: ["ISTP", "ISTJ", "INTJ"],
+    desc: "负责智能硬件的嵌入式系统开发与驱动调试。" },
+  { id: "hw-ai", company: "华为", role: "AI 工程师（昇腾方向）", city: "深圳 / 西安", salary: "25-45K·14薪", level: "1-3 年",
+    url: "https://career.huawei.com/", tags: ["Python", "深度学习", "PyTorch", "LLM", "Linux"], mbtiFit: ["INTJ", "INTP", "ISTJ"],
+    desc: "负责大模型训练与推理优化，参与国产算力平台适配。" },
+  { id: "pdd-data", company: "拼多多", role: "数据开发工程师", city: "上海", salary: "25-45K·16薪", level: "1-3 年",
+    url: "https://careers.pinduoduo.com/", tags: ["SQL", "Python", "数据分析", "Kafka"], mbtiFit: ["ISTJ", "INTJ", "ISTP"],
+    desc: "负责离线与实时数仓建设，支撑业务决策与算法特征。" },
+  { id: "ks-algo", company: "快手", role: "推荐算法工程师", city: "北京 / 成都", salary: "28-52K·15薪", level: "1-3 年",
+    url: "https://zhaopin.kuaishou.com/", tags: ["Python", "机器学习", "深度学习", "PyTorch"], mbtiFit: ["INTP", "ENTP", "INTJ"],
+    desc: "负责短视频推荐模型的迭代与线上 AB 实验。" },
+  { id: "ant-java", company: "蚂蚁集团", role: "Java 研发工程师（支付方向）", city: "杭州 / 上海", salary: "25-45K·16薪", level: "1-3 年",
+    url: "https://talent.antgroup.com/", tags: ["Java", "MySQL", "分布式", "Redis", "消息队列"], mbtiFit: ["ISTJ", "INTJ", "ESTJ"],
+    desc: "负责支付核心链路研发，保障资金安全与一致性。" },
+];
+
+/* 当前可用于匹配的简历文本：简历匹配页 → 本地存档 → 求职信息档案 */
+function currentResumeText() {
+  const parts = [];
+  try {
+    const el = $("resume");
+    if (el && el.value.trim()) parts.push(el.value.trim());
+  } catch (e) {}
+  try {
+    const stored = store.get("fm_resume", "");
+    if (stored) parts.push(String(stored));
+  } catch (e) {}
+  if (typeof getJobseek === "function") {
+    const js = getJobseek();
+    parts.push([js.skills, js.projects, js.summary, js.education].filter(Boolean).join("\n"));
+  }
+  try {
+    const el2 = $("resume-raw");
+    if (el2 && el2.value.trim()) parts.push(el2.value.trim());
+  } catch (e2) {}
+  return parts.filter(Boolean).join("\n");
+}
+
+/* 单个岗位 × 简历匹配：技能命中 + MBTI 适配加成 */
+function matchJobToResume(job) {
+  const text = currentResumeText();
+  const tags = (job.tags || []).filter(Boolean);
+  const hit = tags.filter((t) => text.indexOf(t) >= 0);
+  const miss = tags.filter((t) => text.indexOf(t) < 0);
+  let score = tags.length ? Math.round((hit.length / tags.length) * 100) : 0;
+  let mbtiBonus = 0;
+  let mbtiNote = "";
+  const m = (typeof currentMbti === "function") ? currentMbti() : null;
+  if (m && m.type && Array.isArray(job.mbtiFit) && job.mbtiFit.includes(m.type)) {
+    mbtiBonus = 5;
+    mbtiNote = `与你的 ${m.type} 特质契合`;
+  }
+  score = Math.max(0, Math.min(100, Math.min(100, score + mbtiBonus)));
+  return { score, hit, miss, mbtiBonus, mbtiNote, hasResume: !!text.trim() };
+}
+
+/* 关键词筛选 + 按匹配度排序 */
+function filterRealJobs() {
+  const kwEl = $("rj-keyword");
+  const kw = kwEl ? String(kwEl.value || "").trim().toLowerCase() : "";
+  const box = $("real-jobs-list");
+  if (!box) return;
+  let list = REAL_JOBS.slice();
+  if (kw) {
+    list = list.filter((j) =>
+      [j.company, j.role, j.city, j.level, j.desc, (j.tags || []).join(" ")]
+        .join(" ").toLowerCase().indexOf(kw) >= 0);
+  }
+  const scored = list.map((j) => Object.assign({}, j, matchJobToResume(j)));
+  scored.sort((a, b) => b.score - a.score);
+  if (!scored.length) {
+    box.innerHTML = `<div class="notice notice-info">没有匹配的岗位，试试更换关键词（如：Java、算法、前端、上海）。</div>`;
+    return;
+  }
+  box.innerHTML = scored.map((j) => {
+    const tagHtml = (j.tags || []).map((t) => {
+      const has = j.hit.indexOf(t) >= 0;
+      return `<span class="career-skill-tag ${has ? "have" : "need"}">${escHtml(t)}</span>`;
+    }).join("");
+    const scoreColor = j.score >= 75 ? "var(--green)" : j.score >= 50 ? "var(--brand)" : "var(--red)";
+    return `<div class="rj-card fade-up">
+      <div class="rj-head">
+        <span class="rj-role">${escHtml(j.role)}</span>
+        <span class="rj-company">${escHtml(j.company)}</span>
+        <span class="rj-match" style="color:${scoreColor}">匹配 ${j.score}%</span>
+      </div>
+      <div class="rj-meta">${escHtml(j.city)}　·　${escHtml(j.salary)}　·　${escHtml(j.level)}${j.mbtiNote ? "　·　🧠 " + escHtml(j.mbtiNote) : ""}</div>
+      <div class="rj-meta">${escHtml(j.desc)}</div>
+      <div class="career-skills" style="margin-top:8px">${tagHtml}</div>
+      ${j.hasResume ? "" : `<div class="hint" style="margin-top:8px">未检测到简历内容，匹配度按技能标签占比估算；填写简历后可获得更准确匹配。</div>`}
+      <div class="rj-actions">
+        <a class="rj-link" href="${escHtml(j.url)}" target="_blank" rel="noopener noreferrer">前往 ${escHtml(j.company)} 招聘官网 →</a>
+        <button class="btn btn-outline btn-sm" onclick="aiInterviewAdvice('${escHtml(j.id)}')">🎙 AI 面试建议</button>
+      </div>
+      <div id="rj-advice-${escHtml(j.id)}" style="margin-top:10px"></div>
+    </div>`;
+  }).join("");
+}
+
+function renderRealJobs() {
+  filterRealJobs();
+  const cnt = $("rj-count");
+  if (cnt) cnt.textContent = String(REAL_JOBS.length);
+}
+
+/* 规则引擎兜底的面试建议（未接入模型或调用失败时使用） */
+function ruleInterviewAdvice(job, m) {
+  const miss = (m && m.miss) || [];
+  const items = [];
+  items.push(`<div class="evidence"><span class="badge badge-brand">考点清单</span><p>${(job.tags || []).map((t) => escHtml(t)).join("、")}</p></div>`);
+  if (miss.length) {
+    items.push(`<div class="evidence"><span class="badge badge-red">优先补强</span><p>简历中未体现：${miss.map((t) => escHtml(t)).join("、")}。建议准备一个能说明该技能的项目片段。</p></div>`);
+  }
+  items.push(`<div class="evidence"><span class="badge">高频追问</span><p>围绕「技术选型理由」「遇到的最大难点」「量化结果」三点准备 STAR 故事，每个故事控制在 90 秒内。</p></div>`);
+  if (typeof currentMbti === "function") {
+    const mm = currentMbti();
+    if (mm && mm.type && typeof MBTI_TYPES !== "undefined" && MBTI_TYPES[mm.type]) {
+      items.push(`<div class="evidence"><span class="badge badge-green">性格应答提醒</span><p>${escHtml(MBTI_TYPES[mm.type].tip)}</p></div>`);
+    }
+  }
+  return `<div class="report-grid"><div>${items.join("")}</div><div><div class="pane-title">说明</div><p class="hint">当前为规则引擎建议。接入 API Key 或连接后端后，将由真实模型结合你的简历生成个性化面试建议。</p></div></div>`;
+}
+
+async function aiInterviewAdvice(jobId) {
+  if (!requireLogin()) return;
+  const job = REAL_JOBS.find((j) => j.id === jobId);
+  if (!job) return;
+  const box = $("rj-advice-" + jobId);
+  if (!box) return;
+  const m = matchJobToResume(job);
+  const hasLLM = (typeof llm !== "undefined" && llm) ||
+    (typeof fmApi !== "undefined" && fmApi && fmApi.backendReady());
+  if (!hasLLM) {
+    box.innerHTML = ruleInterviewAdvice(job, m);
+    toast("未接入模型，已给出规则引擎建议");
+    return;
+  }
+  box.innerHTML = `<div class="evidence fade-up">正在生成面试建议…<div id="rj-stream-${jobId}" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div></div>`;
+  const stream = $("rj-stream-" + jobId);
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), 60000);
+  const mm = (typeof currentMbti === "function") ? currentMbti() : null;
+  const ctx = [
+    `目标岗位：${job.company} · ${job.role}（${job.city}，${job.salary}，${job.level}）`,
+    `岗位描述：${job.desc}`,
+    `技能要求：${(job.tags || []).join("、")}`,
+    `我的简历命中：${m.hit.join("、") || "无"}`,
+    `我的简历缺口：${m.miss.join("、") || "无"}`,
+    mm && mm.type ? `我的 MBTI：${mm.type}` : "",
+    `简历原文：\n${currentResumeText().slice(0, 3000)}`,
+  ].filter(Boolean).join("\n");
+  let full = "";
+  try {
+    await streamChat([
+      { role: "system", content: `你是资深技术面试官与求职教练。针对给定岗位与候选人简历，用 Markdown 输出：\n## 岗位核心考点（3-5 条）\n## 高频面试题（5 条，附答题要点）\n## 结合简历的追问点（指出简历中最可能被深挖的 2-3 处）\n## 7 天冲刺清单\n要求具体、可执行，结合中国互联网面试语境。` },
+      { role: "user", content: ctx },
+    ], (piece) => { full += piece; if (stream) stream.textContent = full; }, ctrl.signal);
+    if (stream) stream.textContent = full;
+    toast("面试建议已生成");
+  } catch (e) {
+    const msg = (e && e.message) ? e.message : String(e);
+    box.innerHTML = ruleInterviewAdvice(job, m) +
+      `<div class="notice notice-info" style="margin-top:10px">模型调用失败（${escHtml(msg)}），已展示规则引擎建议。</div>`;
+  }
+}

@@ -22,13 +22,13 @@ export const changelogHtml = `
   <!-- ============ 总览 ============ -->
   <div class="overview">
     <div class="ov-card"><div class="ov-num">35</div><div class="ov-label">已发布版本</div></div>
-    <div class="ov-card"><div class="ov-num">11</div><div class="ov-label">功能页</div></div>
+    <div class="ov-card"><div class="ov-num">12</div><div class="ov-label">功能页</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">协作 Agent</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">岗位数据库</div></div>
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1522</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1572</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================

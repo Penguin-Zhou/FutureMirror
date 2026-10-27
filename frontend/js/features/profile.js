@@ -7,6 +7,7 @@ const PROFILE_SKILLS = ["JavaScript", "TypeScript", "Python", "Java", "Go", "Rea
 const PROFILE_DEFAULTS = {
   avatar: { type: "auto", value: "" },
   city: "", degree: "", years: "", status: "在职看机会", target: "", bio: "", skills: [],
+  mbti: "", mbtiAt: 0, mbtiClarity: 0,
   prefs: { voice: true, autoSpeak: false, weekly: false, crosshair: true },
   vip: false,
 };
@@ -219,6 +220,7 @@ function renderProfile() {
   if (p.degree) tags.push("🎓 " + p.degree);
   if (p.years) tags.push("⏳ " + p.years);
   if (p.status) tags.push("💼 " + p.status);
+  if (p.mbti) tags.push("🧠 MBTI " + p.mbti);   // v36：MBTI 测评完成后自动同步
   $("profile-tags").innerHTML = tags.length
     ? tags.map(t => `<span class="badge">${esc(t)}</span>`).join("")
     : `<span class="badge badge-amber">资料待完善</span>`;

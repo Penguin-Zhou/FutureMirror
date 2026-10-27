@@ -481,6 +481,9 @@ try {
       <a class="sb-item" href="#/career" data-nav="career">
         <span class="sb-icon" data-ic="career">🧭</span> 职业探索
       </a>
+      <a class="sb-item" href="#/mbti" data-nav="mbti">
+        <span class="sb-icon" data-ic="mbti">🧠</span> MBTI 测评
+      </a>
 
       <div class="sb-group-label">训练与评估</div>
       <a class="sb-item" href="#/interview" data-nav="interview">
@@ -773,6 +776,24 @@ try {
         <div id="match-result"></div>
       
     </div>
+
+    <!-- v36 · 对话式匹配增强：4 轮追问补充证据，实时修正匹配度 -->
+    <div class="page-card">
+      <div class="pane-title">💬 对话式增强匹配
+        <span class="tag-demo">v36 · 4 轮追问 · 每答一题实时修正匹配度</span>
+      </div>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        简历往往写不下全部信息。通过 4 轮对话补充「没写出来的证据」（量化结果、技能熟练度、隐藏经历），
+        系统会把新证据并入匹配计算，匹配度随回答实时上升。
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="startMatchQa()">💬 开始对话式增强（4 问）</button>
+      </div>
+      <div class="mqa-wrap" id="match-qa" hidden style="margin-top:12px">
+        <div id="match-qa-body"></div>
+      </div>
+      <div id="match-qa-summary"></div>
+    </div>
   </div>
 
   <!-- ========================================================
@@ -973,6 +994,69 @@ try {
         <div id="resume-result" style="margin-top:20px"></div>
       
     </div>
+
+    <!-- v36 · 求职信息档案：填写 → AI 优化建议 → 一键导出 PDF -->
+    <div class="page-card" id="jobseek-card">
+      <div class="pane-title">📇 求职信息档案
+        <span class="tag-demo">v36 · 填写后可一键导出 PDF 简历</span>
+      </div>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        填写求职信息，AI 结合目标岗位给出针对性优化建议；确认无误后一键导出 PDF（数据仅存本地，不上传）。
+      </p>
+
+      <div class="grid2">
+        <div>
+          <div class="pane-title" style="font-size:14px">👤 基本信息</div>
+          <div class="js-form-grid">
+            <label for="js-name">姓名</label>
+            <input id="js-name" type="text" placeholder="张三" aria-label="姓名">
+            <label for="js-role">目标岗位</label>
+            <input id="js-role" type="text" placeholder="后端开发工程师" aria-label="目标岗位">
+            <label for="js-city">期望城市</label>
+            <input id="js-city" type="text" placeholder="上海" aria-label="期望城市">
+            <label for="js-degree">学历</label>
+            <select id="js-degree" aria-label="学历">
+              <option value="">请选择</option>
+              <option>大专</option><option>本科</option><option>硕士</option><option>博士</option><option>其他</option>
+            </select>
+            <label for="js-years">工作经验</label>
+            <select id="js-years" aria-label="工作经验">
+              <option value="">请选择</option>
+              <option>应届毕业生</option><option>1 年以内</option><option>1-3 年</option>
+              <option>3-5 年</option><option>5 年以上</option>
+            </select>
+            <label for="js-email">邮箱</label>
+            <input id="js-email" type="email" placeholder="you@example.com" aria-label="邮箱">
+            <label for="js-phone">电话</label>
+            <input id="js-phone" type="text" placeholder="138-0000-0000" aria-label="电话">
+          </div>
+
+          <div class="pane-title" style="font-size:14px;margin-top:14px">🛠 技能标签（逗号分隔）</div>
+          <input id="js-skills" type="text" placeholder="Java, MySQL, Redis, Docker" aria-label="技能标签">
+        </div>
+
+        <div>
+          <div class="pane-title" style="font-size:14px">🎓 教育背景</div>
+          <textarea id="js-edu" rows="2" placeholder="2023—2027　某某大学　软件工程　本科" aria-label="教育背景"></textarea>
+
+          <div class="pane-title" style="font-size:14px;margin-top:10px">🚀 项目与经历</div>
+          <textarea id="js-projects" rows="4" placeholder="电商秒杀系统（Java + Redis + MySQL）：主导缓存与库存扣减设计，QPS 从 200 提升到 1200…" aria-label="项目与经历"></textarea>
+
+          <div class="pane-title" style="font-size:14px;margin-top:10px">💬 自我评价</div>
+          <textarea id="js-summary" rows="2" placeholder="具备高并发后端项目经验，熟悉缓存与数据库优化…" aria-label="自我评价"></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="fillJobseekDemo()">填入示例</button>
+        <button class="btn btn-primary btn-sm" id="js-advice-btn" onclick="aiResumeAdvice()">🤖 AI 优化建议</button>
+        <button class="btn btn-outline btn-sm" onclick="exportResumePdf()">📄 一键导出 PDF</button>
+      </div>
+
+      <div id="js-advice-result" style="margin-top:16px">
+        <div class="notice notice-info">填写求职信息后点击「🤖 AI 优化建议」，这里会输出岗位匹配诊断、逐条改写与面试风险预警。</div>
+      </div>
+    </div>
   </div>
 
   <!-- ========================================================
@@ -1030,6 +1114,79 @@ try {
           <div class="notice notice-info">选择你的专业、技能与兴趣方向，点击「为我推荐岗位」查看 Top 3 匹配岗位与学习路径。</div>
         </div>
       
+    </div>
+
+    <!-- v36 · 真实岗位推荐：官网直达 + 简历匹配 + AI 面试建议 -->
+    <div class="page-card">
+      <div class="pane-title">🏢 真实岗位推荐
+        <span class="tag-demo">v36 · <b id="rj-count">16</b> 个真实岗位 · 官网直达</span>
+      </div>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        岗位为公开渠道整理的企业真实岗位（公司 / 城市 / 薪资 / 技能要求），点击链接直达该企业招聘官网；
+        系统会用你的简历逐条计算匹配度，并可生成针对性面试建议。
+      </p>
+      <div class="notice notice-info" style="margin-bottom:12px">
+        说明：岗位信息为公开渠道整理的示例条目，实际在招职位与要求请以企业招聘官网为准。
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <input id="rj-keyword" type="text" placeholder="按公司 / 岗位 / 城市筛选，如：Java、算法、上海" aria-label="岗位关键词"
+               style="flex:1;min-width:220px">
+        <button class="btn btn-primary btn-sm" onclick="renderRealJobs()">🔍 筛选岗位</button>
+      </div>
+      <div id="real-jobs-list">
+        <div class="notice notice-info">正在按你的简历计算匹配度…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       页面：MBTI 职业性格测评（mbti · v36 新增）
+       ======================================================== -->
+  <div class="app-page" data-page="mbti">
+    <div class="page-header">
+      <h2><span class="ph-icon" data-ic="mbti">🧠</span> MBTI 职业性格测评</h2>
+      <p>4 维度 × 20 题情境量表 → 输出 16 型人格结果，自动同步到个人中心，供岗位推荐与面试建议参考。</p>
+    </div>
+    <div class="page-card">
+      <div class="pane-title">🧠 MBTI 职业性格测评
+        <span class="tag-demo">v36 · 端侧计算 · 结果仅存本地</span>
+      </div>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        答题约需 2 分钟。结果用于校准岗位推荐与面试建议，不会上传服务器。
+      </p>
+
+      <div id="mbti-intro">
+        <div class="grid2">
+          <div>
+            <div class="pane-title" style="font-size:14px">📐 四个维度</div>
+            <div class="evidence">
+              <p style="line-height:1.9">
+                <b>精力来源</b>　外向 E ↔ 内向 I<br>
+                <b>信息获取</b>　实感 S ↔ 直觉 N<br>
+                <b>决策方式</b>　思考 T ↔ 情感 F<br>
+                <b>生活态度</b>　判断 J ↔ 知觉 P
+              </p>
+            </div>
+          </div>
+          <div>
+            <div class="pane-title" style="font-size:14px">🧭 结果怎么用</div>
+            <div class="evidence">
+              <p style="line-height:1.9">
+                · 自动写入「个人中心」，与求职信息合并展示<br>
+                · 岗位推荐会参考适配方向<br>
+                · 面试建议会给出该性格的应答提醒<br>
+                · 随时可重新测评，历史结果保留在本地
+              </p>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary btn-sm" onclick="startMbti()">开始测评（20 题）→</button>
+        </div>
+      </div>
+
+      <div id="mbti-quiz" hidden></div>
+      <div id="mbti-result"></div>
     </div>
   </div>
 
@@ -1746,5 +1903,6 @@ try {
   <script src="js/features/viz.js"></script>
   <script src="js/core/skeleton.js"></script>
   <script src="js/core/media.js"></script>
+  <script src="js/features/mbti.js"></script>
 </body>
 </html>

@@ -191,3 +191,173 @@ async function parsePdfText(file) {
   };
 }
 
+
+/* ============================================================
+ * v36 · 对话式匹配增强（4 轮追问 → 补充证据 → 修正匹配度）
+ *   ① MATCH_QA_STEPS：围绕量化结果 / 技能熟练度 / 缺口补强 / 隐藏经历
+ *   ② startMatchQa / submitMatchQaAnswer / finishMatchQa / renderMatchQa
+ *   ③ applyQaEvidence：从回答中提取技能证据与量化证据，重算覆盖式匹配分
+ *   匹配分口径与 heuristicParse 一致：JD 技能覆盖率（确定性可解释）
+ * ============================================================ */
+
+const MATCH_QA_STEPS = [
+  { key: "highlight", q: "第 1 问：你最拿得出手的一段经历是什么？请尽量带上量化结果（如 QPS、用户量、提升百分比）。" },
+  { key: "skills", q: "第 2 问：针对目标岗位的要求，你实际用过哪些技术？分别用了多久、熟练度如何？" },
+  { key: "gap", q: "第 3 问：岗位要求中你目前不具备的技能，有没有相关的学习或项目经验可以补上？" },
+  { key: "extra", q: "第 4 问：还有哪些简历里没写、但与岗位相关的经历（竞赛 / 开源 / 实习 / 课程设计）？" },
+];
+
+let matchQaState = null;
+
+/* JD 技能集合：优先取当前 JD 文本，回退为「已具备 + 缺口」并集 */
+function currentJdSkills() {
+  const jdText = ($("jd") && $("jd").value ? $("jd").value : "");
+  const fromJd = SKILL_DICT.filter((s) => jdText.indexOf(s) >= 0);
+  if (fromJd.length) return fromJd;
+  if (matchResult) return (matchResult.skills || []).concat(matchResult.gaps || []);
+  return [];
+}
+
+/* 覆盖率口径重算（与 heuristicParse 完全一致） */
+function recomputeMatchScore(jdSkills) {
+  if (!jdSkills || !jdSkills.length) return matchResult ? matchResult.matchScore : 0;
+  const covered = jdSkills.filter((s) => (matchResult.skills || []).indexOf(s) >= 0).length;
+  return Math.round((covered / jdSkills.length) * 100);
+}
+
+/* 从一轮回答中提取证据：技能命中 → 补 skills / 消 gaps；数字 → 量化证据 */
+function applyQaEvidence(text) {
+  const t = String(text || "");
+  const added = [];
+  SKILL_DICT.forEach((s) => {
+    if (t.indexOf(s) >= 0 && matchResult.skills.indexOf(s) < 0) {
+      matchResult.skills.push(s);
+      added.push(s);
+    }
+  });
+  const closed = [];
+  matchResult.gaps = (matchResult.gaps || []).filter((g) => {
+    if (added.indexOf(g) >= 0 || t.indexOf(g) >= 0) { closed.push(g); return false; }
+    return true;
+  });
+  const quantified = (t.match(/\d+(\.\d+)?\s*(%|％|倍|QPS|qps|人|万|条|次|ms|秒|天)/g) || []).length;
+  const jdSkills = currentJdSkills();
+  const next = recomputeMatchScore(jdSkills);
+  const delta = next - matchResult.matchScore;
+  matchResult.matchScore = next;
+  matchResult.qaEvidence = (matchResult.qaEvidence || 0) + (added.length + quantified);
+  try { store.set("fm_match", matchResult); } catch (e) {}
+  return { added, closed, quantified, delta, score: next };
+}
+
+function startMatchQa() {
+  if (!requireLogin()) return;
+  if (!matchResult) { toast("请先点击「⚡ 生成匹配报告」"); return; }
+  matchQaState = {
+    i: 0,
+    log: [],
+    baseScore: matchResult.matchScore,
+    baseGaps: (matchResult.gaps || []).length,
+    added: [],
+    closed: [],
+    quantified: 0,
+  };
+  const box = $("match-qa");
+  if (box) box.hidden = false;
+  appendMatchQaMsg("ai", "🪞 匹配增强助手：简历往往写不下全部信息。我用 4 个问题帮你把「没写出来的证据」补齐，每答一题就会实时修正匹配度。");
+  appendMatchQaMsg("ai", MATCH_QA_STEPS[0].q);
+  renderMatchQa();
+}
+
+function appendMatchQaMsg(role, text) {
+  if (!matchQaState) return;
+  matchQaState.log.push({ role, text });
+}
+
+function renderMatchQa() {
+  const box = $("match-qa-body");
+  if (!box || !matchQaState) return;
+  const done = matchQaState.i >= MATCH_QA_STEPS.length;
+  box.innerHTML = `
+    <div class="mqa-log">
+      ${matchQaState.log.map((m) => `<div class="mqa-msg ${m.role}">${escHtml(m.text)}</div>`).join("")}
+    </div>
+    ${done ? "" : `
+    <div class="mqa-input-row">
+      <textarea id="mqa-input" rows="2" placeholder="输入你的回答…（可随时点「结束并应用」）" aria-label="匹配增强回答"></textarea>
+      <button class="btn btn-primary btn-sm" onclick="submitMatchQaAnswer()">提交</button>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+      <span class="hint" style="margin-top:0">第 ${matchQaState.i + 1} / ${MATCH_QA_STEPS.length} 问</span>
+      <button class="btn btn-outline btn-sm" onclick="finishMatchQa()">结束并应用 →</button>
+    </div>`}`;
+}
+
+function submitMatchQaAnswer() {
+  if (!matchQaState) { toast("请先点击「💬 对话式增强匹配」"); return; }
+  const input = $("mqa-input");
+  const text = input ? String(input.value || "").trim() : "";
+  if (!text) { toast("请先输入内容"); return; }
+  if (input) input.value = "";
+  appendMatchQaMsg("user", text);
+  const r = applyQaEvidence(text);
+  matchQaState.added = matchQaState.added.concat(r.added);
+  matchQaState.closed = matchQaState.closed.concat(r.closed);
+  matchQaState.quantified += r.quantified;
+  const deltaTxt = r.delta > 0 ? `（匹配度 +${r.delta} → ${r.score}%）` : r.delta < 0 ? `（匹配度 ${r.delta} → ${r.score}%）` : `（匹配度维持 ${r.score}%）`;
+  const parts = [];
+  if (r.added.length) parts.push(`新增技能证据：${r.added.join("、")}`);
+  if (r.closed.length) parts.push(`已补齐缺口：${r.closed.join("、")}`);
+  if (r.quantified) parts.push(`量化证据 ${r.quantified} 条`);
+  appendMatchQaMsg("ai", `已记录 ${deltaTxt}。${parts.length ? parts.join("；") + "。" : "本轮未识别到新的技能证据，可补充具体技术名词与数字。"}`);
+  matchQaState.i++;
+  if (matchQaState.i < MATCH_QA_STEPS.length) appendMatchQaMsg("ai", MATCH_QA_STEPS[matchQaState.i].q);
+  paintMatchRing(r.score);
+  renderMatchQa();
+}
+
+/* 同步刷新匹配环（若报告仍在页面上） */
+function paintMatchRing(score) {
+  const ring = $("ring-fill");
+  if (ring) {
+    const c = 2 * Math.PI * 42;
+    ring.style.strokeDashoffset = (c * (1 - score / 100)).toFixed(1);
+  }
+  const txt = document.querySelector("#match-result svg text");
+  if (txt) txt.textContent = String(score);
+}
+
+function finishMatchQa() {
+  if (!matchQaState) return;
+  const s = matchQaState;
+  const delta = matchResult.matchScore - s.baseScore;
+  const box = $("match-qa-summary");
+  if (box) {
+    box.innerHTML = `
+      <div class="card fade-up" style="padding:14px;margin-top:10px">
+        <div class="pane-title" style="font-size:14px">📈 对话增强结果</div>
+        <div class="live-metrics" style="margin-top:10px">
+          <div class="metric"><span>最新匹配分</span><b>${matchResult.matchScore}</b></div>
+          <div class="metric"><span>较初始</span><b style="color:${delta > 0 ? "var(--green)" : "var(--muted)"}">${delta > 0 ? "+" + delta : delta}</b></div>
+          <div class="metric"><span>新增技能证据</span><b>${s.added.length}</b></div>
+          <div class="metric"><span>补齐缺口</span><b>${s.closed.length}</b></div>
+          <div class="metric"><span>量化证据</span><b>${s.quantified}</b></div>
+        </div>
+        <p class="hint" style="margin-top:10px">
+          ${s.added.length || s.closed.length
+            ? `通过对话补充的证据已并入匹配结果：${[...new Set(s.added.concat(s.closed))].join("、")}。`
+            : "本轮未补充到新的技能证据。建议在回答中写出具体技术名词与量化数据。"}
+        </p>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="startMatchQa()">再来一轮</button>
+          <button class="btn btn-primary btn-sm" onclick="analyze()">用新证据重算报告 →</button>
+          <button class="btn btn-outline btn-sm" onclick="switchTab('career')">看看真实岗位 →</button>
+        </div>
+      </div>`;
+  }
+  appendMatchQaMsg("ai", `✅ 已应用。匹配度 ${s.baseScore}% → ${matchResult.matchScore}%（${delta > 0 ? "+" + delta : delta}）。`);
+  s.i = MATCH_QA_STEPS.length;
+  renderMatchQa();
+  toast(`匹配度已更新：${matchResult.matchScore}%`);
+  try { logDev("info", `对话式匹配增强完成：${s.baseScore}% → ${matchResult.matchScore}%`); } catch (e) {}
+}

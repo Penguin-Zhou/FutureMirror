@@ -243,7 +243,7 @@ async function runTests() {
   ok(/var\(--brand\)/.test(bpIcons.icon("report") || ""), "report 图标含朱红 accent");
   ok(/var\(--brand\)/.test(bpIcons.icon("plan") || ""), "plan 图标含朱红 accent");
   const sbSvgs = d.querySelectorAll(".sb-item .sb-icon[data-ic] svg.bp-ic").length;
-  ok(sbSvgs === 11, "侧栏 11 枚图标换装（实际 " + sbSvgs + "）");
+  ok(sbSvgs === 12, "侧栏 12 枚图标换装（实际 " + sbSvgs + "，v36 新增 mbti）");
   const tbSvgs = d.querySelectorAll(".tabbar-item .tb-icon[data-ic] svg.bp-ic").length;
   ok(tbSvgs === 10, "底 Tab 10 枚图标换装（实际 " + tbSvgs + "）");
   const qeSvgs = d.querySelectorAll(".qe-icon[data-ic] svg.bp-ic").length;

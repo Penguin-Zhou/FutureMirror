@@ -166,3 +166,260 @@ async function optimizeWithLLM() {
   }
 }
 
+/* ============================================================
+ * v36 · 简历板块升级
+ *   ① 求职信息档案：JOBSEEK_DEFAULTS / getJobseek / saveJobseek
+ *      / readJobseekForm / fillJobseekDemo / jobseekToText
+ *   ② AI 优化建议：aiResumeAdvice（LLM 为主，规则引擎兜底）
+ *   ③ 一键导出 PDF：buildResumeHtml / exportResumePdf（打印即 PDF，零依赖）
+ * ============================================================ */
+
+/* ---------- ① 求职信息档案（localStorage：fm_jobseek，按账号隔离） ---------- */
+const JOBSEEK_DEFAULTS = {
+  name: "", targetRole: "", city: "", degree: "", years: "",
+  email: "", phone: "", skills: "", education: "", projects: "", summary: "",
+};
+
+function getJobseek() {
+  let p;
+  try { p = store.get("fm_jobseek", null); } catch (e) { p = null; }
+  return Object.assign({}, JOBSEEK_DEFAULTS, p || {});
+}
+
+function saveJobseek(patch) {
+  const next = Object.assign({}, getJobseek(), patch || {});
+  try { store.set("fm_jobseek", next, true); } catch (e) {}
+  try { if (typeof logDev === "function") logDev("info", "求职信息已保存"); } catch (e) {}
+  return next;
+}
+
+function readJobseekForm() {
+  const v = (id) => { const el = $(id); return el ? String(el.value || "").trim() : ""; };
+  return saveJobseek({
+    name: v("js-name"), targetRole: v("js-role"), city: v("js-city"),
+    degree: v("js-degree"), years: v("js-years"), email: v("js-email"),
+    phone: v("js-phone"), skills: v("js-skills"), education: v("js-edu"),
+    projects: v("js-projects"), summary: v("js-summary"),
+  });
+}
+
+const JOBSEEK_DEMO = {
+  name: "张三", targetRole: "后端开发工程师", city: "上海", degree: "本科", years: "应届毕业生",
+  email: "zhangsan@example.com", phone: "138-0000-0000",
+  skills: "Java, MySQL, Redis, Docker, Linux, Kafka",
+  education: "2023—2027　某某大学　软件工程　本科",
+  projects: "电商秒杀系统（Java + Redis + MySQL）：主导缓存与库存扣减设计，QPS 从 200 提升到 1200；技术社团部长，组织 3 场编程 workshop。",
+  summary: "具备高并发后端项目经验，熟悉缓存与数据库优化，希望在上海从事后端开发工作。",
+};
+
+function fillJobseekDemo() {
+  Object.keys(JOBSEEK_DEMO).forEach((k) => {
+    const map = {
+      name: "js-name", targetRole: "js-role", city: "js-city", degree: "js-degree",
+      years: "js-years", email: "js-email", phone: "js-phone", skills: "js-skills",
+      education: "js-edu", projects: "js-projects", summary: "js-summary",
+    };
+    const el = $(map[k]);
+    if (el) el.value = JOBSEEK_DEMO[k];
+  });
+  saveJobseek(JOBSEEK_DEMO);
+  toast("已填入示例求职信息");
+}
+
+/* 求职信息 → 结构化纯文本（供 LLM 上下文与规则引擎复用） */
+function jobseekToText(p, raw) {
+  const p2 = p || getJobseek();
+  const raw2 = raw || (($("resume-raw") && $("resume-raw").value.trim()) || "");
+  const lines = [
+    `【求职意向】目标岗位：${p2.targetRole || "未填写"}；期望城市：${p2.city || "未填写"}`,
+    `【基本信息】姓名：${p2.name || "未填写"}；学历：${p2.degree || "未填写"}；经验：${p2.years || "未填写"}`,
+    `【联系方式】邮箱：${p2.email || "未填写"}；电话：${p2.phone || "未填写"}`,
+    `【技能标签】${p2.skills || "未填写"}`,
+    `【教育背景】${p2.education || "未填写"}`,
+    `【项目与经历】${p2.projects || "未填写"}`,
+    `【自我评价】${p2.summary || "未填写"}`,
+  ];
+  if (raw2) lines.push(`【简历原文】\n${raw2}`);
+  if (typeof matchResult !== "undefined" && matchResult && matchResult.gaps && matchResult.gaps.length) {
+    lines.push(`【已知能力缺口】${matchResult.gaps.join("、")}`);
+  }
+  return lines.join("\n");
+}
+
+/* ---------- ② AI 优化建议 ---------- */
+const RESUME_ADVICE_SYSTEM = `你是资深招聘顾问与简历优化专家。请基于用户的求职信息与简历内容，用 Markdown 输出以下五部分：
+## 一、岗位匹配诊断（目标岗位 vs 现有经历，给出匹配度判断与理由）
+## 二、简历结构优化（3-5 条，指出该增删哪些板块）
+## 三、逐条改写建议（每条给出「原文 → 问题 → 改写后」，改写后必须带量化占位符）
+## 四、面试风险预警（3 条，指出面试官最可能追问的薄弱点）
+## 五、7 天提升清单（按天给出可执行的补强动作）
+要求：结合中国校招/社招语境，语言具体、可落地，避免空泛套话。`;
+
+/* 规则引擎兜底建议（未接入模型或调用失败时使用，保证功能不空转） */
+function ruleResumeAdvice(p, raw) {
+  const p2 = p || getJobseek();
+  const text = raw || (($("resume-raw") && $("resume-raw").value.trim()) || "");
+  const body = text || p2.projects || "";
+  const r = body ? analyzeResumeText(body) : null;
+  const jdSkills = (p2.skills || "").split(/[,，、]/).map((s) => s.trim()).filter(Boolean);
+  const hit = jdSkills.filter((s) => SKILL_DICT.includes(s));
+  const miss = jdSkills.filter((s) => !SKILL_DICT.includes(s));
+  const items = [];
+  items.push(`<div class="evidence"><span class="badge badge-green">岗位匹配</span><p>目标岗位「${escHtml(p2.targetRole || "未填写")}」：已识别技能 ${hit.length} 项${hit.length ? "（" + escHtml(hit.join("、")) + "）" : ""}${miss.length ? "；未被技能词典收录 " + miss.length + " 项，建议改写为行业通用写法" : ""}。</p></div>`);
+  if (r) {
+    const weak = r.dims.filter((d) => d.score < 60);
+    items.push(`<div class="evidence"><span class="badge ${weak.length ? "badge-red" : "badge-green"}">六维诊断</span><p>健康度 ${r.total}/100${weak.length ? "，薄弱维度：" + escHtml(weak.map((d) => d.name).join("、")) : "，各维度均达标"}。</p></div>`);
+    if (r.rewrites.length) {
+      items.push(`<div class="evidence"><span class="badge badge-red">改写建议</span>${r.rewrites.slice(0, 3).map((w) => `<p style="margin-top:6px"><b>原文：</b><q>${escHtml(w.original)}</q><br><b>改写：</b>${escHtml(w.suggestion)}</p>`).join("")}</div>`);
+    }
+  } else {
+    items.push(`<div class="evidence"><span class="badge badge-red">内容缺失</span><p>尚未填写简历原文或项目经历，建议先粘贴简历或填写「项目与经历」。</p></div>`);
+  }
+  items.push(`<div class="evidence"><span class="badge">面试风险</span><p>面试官通常围绕「量化数据真实性」「技术选型理由」「难点与权衡」三点追问，请为每段经历准备这三类应答。</p></div>`);
+  return `<div class="report-grid"><div>${items.join("")}</div><div><div class="pane-title">说明</div><p class="hint">当前为规则引擎建议（未接入模型或调用失败时的兜底）。接入 API Key 或连接后端后将由真实模型生成个性化建议。</p></div></div>`;
+}
+
+async function aiResumeAdvice() {
+  if (!requireLogin()) return;
+  const p = readJobseekForm();
+  const raw = ($("resume-raw") && $("resume-raw").value.trim()) || "";
+  if (!p.targetRole && !p.projects && !raw) {
+    toast("请先填写求职信息（至少目标岗位或项目经历）");
+    return;
+  }
+  const btn = $("js-advice-btn");
+  const box = $("js-advice-result");
+  if (!box) return;
+  const hasLLM = (typeof llm !== "undefined" && llm) ||
+    (typeof fmApi !== "undefined" && fmApi && fmApi.backendReady());
+  if (btn) { btn.disabled = true; btn.textContent = "⏳ AI 分析中…"; }
+
+  if (!hasLLM) {
+    box.innerHTML = ruleResumeAdvice(p, raw);
+    if (btn) { btn.disabled = false; btn.textContent = "🤖 AI 优化建议"; }
+    toast("未接入模型，已给出规则引擎建议");
+    return;
+  }
+
+  const modelLabel = (typeof fmApi !== "undefined" && fmApi && fmApi.backendReady())
+    ? `后端 ${fmApi.backendModel()}`
+    : (typeof llm !== "undefined" && llm ? llm.model : "模型");
+  box.innerHTML = `<div class="evidence fade-up"><b>（真实模型 · ${escHtml(modelLabel)}）</b>正在生成优化建议…<div id="js-advice-stream" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div></div>`;
+  const stream = $("js-advice-stream");
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), 60000);
+  let full = "";
+  try {
+    await streamChat([
+      { role: "system", content: RESUME_ADVICE_SYSTEM },
+      { role: "user", content: jobseekToText(p, raw) },
+    ], (piece) => { full += piece; if (stream) stream.textContent = full; }, ctrl.signal);
+    if (stream) stream.textContent = full;
+    toast("AI 优化建议已生成");
+  } catch (e) {
+    const msg = (e && e.message) ? e.message : String(e);
+    box.innerHTML = ruleResumeAdvice(p, raw) +
+      `<div class="notice notice-info" style="margin-top:10px">模型调用失败（${escHtml(msg)}），已展示规则引擎建议。</div>`;
+    toast("模型调用失败，已回退规则引擎");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "🤖 AI 优化建议"; }
+  }
+}
+
+/* ---------- ③ 一键导出 PDF（构建打印视图 + window.print，零依赖） ---------- */
+function buildResumeHtml(p) {
+  const p2 = p || getJobseek();
+  const raw = ($("resume-raw") && $("resume-raw").value.trim()) || "";
+  const skills = (p2.skills || "").split(/[,，、]/).map((s) => s.trim()).filter(Boolean);
+  const esc2 = (s) => escHtml(String(s == null ? "" : s));
+  const block = (title, content) => (content
+    ? `<section class="sec"><h2>${esc2(title)}</h2><div class="body">${esc2(content).replace(/\n/g, "<br>")}</div></section>`
+    : "");
+  return `<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>${esc2(p2.name || "简历")} · ${esc2(p2.targetRole || "求职简历")}</title>
+<style>
+  @page { size: A4; margin: 14mm 12mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, "Songti SC", "SimSun", serif; color: #1C1913; background: #F4F1E8; margin: 0; padding: 24px; }
+  .sheet { max-width: 780px; margin: 0 auto; background: #fff; padding: 28px 32px; border: 1px solid #D8D2BF; }
+  header { border-bottom: 2px solid #1C1913; padding-bottom: 12px; margin-bottom: 18px; }
+  h1 { font-size: 24px; margin: 0 0 6px; letter-spacing: 1px; }
+  .meta { font-size: 12px; color: #6B6555; line-height: 1.8; }
+  .meta b { color: #BE3A1E; font-weight: 400; }
+  .sec { margin-bottom: 16px; }
+  .sec h2 { font-size: 13px; letter-spacing: 2px; color: #1C1913; border-left: 3px solid #BE3A1E; padding-left: 8px; margin: 0 0 8px; }
+  .body { font-size: 12.5px; line-height: 1.85; color: #33302A; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 11.5px; border: 1px solid #B9B29A; padding: 2px 8px; background: #F4F1E8; }
+  footer { margin-top: 22px; padding-top: 10px; border-top: 1px solid #D8D2BF; font-size: 10.5px; color: #8A8474; text-align: center; }
+  @media print { body { background: #fff; padding: 0; } .sheet { border: 0; } }
+</style></head>
+<body><div class="sheet">
+  <header>
+    <h1>${esc2(p2.name || "（未填写姓名）")}</h1>
+    <div class="meta">
+      <b>求职意向</b> ${esc2(p2.targetRole || "未填写")}　|　<b>城市</b> ${esc2(p2.city || "未填写")}<br>
+      <b>学历</b> ${esc2(p2.degree || "未填写")}　|　<b>经验</b> ${esc2(p2.years || "未填写")}<br>
+      <b>邮箱</b> ${esc2(p2.email || "未填写")}　|　<b>电话</b> ${esc2(p2.phone || "未填写")}
+    </div>
+  </header>
+  ${skills.length ? `<section class="sec"><h2>技能标签</h2><div class="tags">${skills.map((s) => `<span class="tag">${esc2(s)}</span>`).join("")}</div></section>` : ""}
+  ${block("教育背景", p2.education)}
+  ${block("项目与经历", p2.projects)}
+  ${block("自我评价", p2.summary)}
+  ${raw ? block("简历原文", raw) : ""}
+  <footer>由 面镜 FutureMirror 生成 · 内容由本人填写，导出前请核对真实性</footer>
+</div></body></html>`;
+}
+
+function exportResumePdf() {
+  if (!requireLogin()) return;
+  const p = readJobseekForm();
+  if (!p.name && !p.targetRole && !p.projects) {
+    toast("请先填写求职信息，再导出 PDF");
+    return;
+  }
+  const html = buildResumeHtml(p);
+  let w = null;
+  try { w = window.open("", "_blank"); } catch (e) { w = null; }
+  if (!w) {
+    // 弹出被拦截时降级：用隐藏 iframe 打印，保证导出路径不中断
+    try {
+      const old = document.getElementById("fm-print-frame");
+      if (old) old.remove();
+      const fr = document.createElement("iframe");
+      fr.id = "fm-print-frame";
+      fr.style.position = "fixed";
+      fr.style.right = "0";
+      fr.style.bottom = "0";
+      fr.style.width = "0";
+      fr.style.height = "0";
+      fr.style.border = "0";
+      document.body.appendChild(fr);
+      const d = fr.contentDocument || fr.contentWindow.document;
+      d.open(); d.write(html); d.close();
+      setTimeout(() => {
+        try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch (e2) { toast("导出失败，请允许弹出窗口后重试"); }
+      }, 400);
+      toast("已生成简历，正在唤起打印（可另存为 PDF）");
+      return;
+    } catch (e3) {
+      toast("导出失败：" + ((e3 && e3.message) || e3));
+      return;
+    }
+  }
+  try {
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => {
+      try { w.focus(); w.print(); } catch (e4) { toast("唤起打印失败，请手动 Ctrl+P"); }
+    }, 400);
+    toast("已生成简历，正在唤起打印（可另存为 PDF）");
+    try { logDev("info", "简历 PDF 导出：" + (p.name || "未署名")); } catch (e5) {}
+  } catch (e6) {
+    toast("导出失败：" + ((e6 && e6.message) || e6));
+  }
+}
+

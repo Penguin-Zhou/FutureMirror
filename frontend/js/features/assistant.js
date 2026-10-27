@@ -47,7 +47,12 @@ function toggleAiAssistant(force) {
 function renderAiQuick() {
   const box = $("ai-panel-quick");
   if (!box) return;
-  box.innerHTML = AI_PRESETS.map((p, i) => `<button class="ai-quick-chip" onclick="askAiPreset(${i})">${p.chip}</button>`).join("");
+  const base = AI_PRESETS.map((p, i) => `<button class="ai-quick-chip" onclick="askAiPreset(${i})">${p.chip}</button>`).join("");
+  /* v36：已载入报告上下文时，追加报告追问快捷问题 */
+  const extra = aiReportCtx
+    ? REPORT_FOLLOWUP_QUESTIONS.map((q, i) => `<button class="ai-quick-chip" onclick="askReportFollowupPreset(${i})">📊 ${escHtml(q)}</button>`).join("")
+    : "";
+  box.innerHTML = base + extra;
 }
 function askAiPreset(i) {
   const p = AI_PRESETS[i];
@@ -76,6 +81,40 @@ async function sendAiAssistant() {
     const actions = (preset.actions || []).map(a =>
       `<button class="btn btn-primary btn-sm" onclick="navTo('${a.page}');toggleAiAssistant(false)">${a.label}</button>`).join("");
     appendAiMsg("ai", esc(preset.a).replace(/\n/g, "<br>") + (actions ? `<div class="ai-actions">${actions}</div>` : ""), true);
+    return;
+  }
+
+  /* 1.5) v36 报告追问：已载入报告上下文时，基于真实报告数据作答（不编造分数） */
+  if (aiReportCtx) {
+    const bubble = appendAiMsg("ai", "思考中…", true);
+    if (bubble) bubble.classList.add("typing");
+    if (llm || fmApi.backendReady()) {
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 60000);
+      let full = "";
+      try {
+        await streamChat([
+          { role: "system", content: "你是面镜 FutureMirror 的面试教练。用户正在追问自己的评估报告。必须严格基于【本次评估报告】中的真实数据作答，不得编造任何分数或证据；数据未覆盖的部分要诚实说明，并给出可执行的下一步。" },
+          { role: "user", content: `问题：${q}\n\n${aiReportCtx}` },
+        ], (piece) => {
+          full += piece;
+          if (bubble) { bubble.classList.remove("typing"); bubble.textContent = full; }
+          const b2 = $("ai-assistant-messages");
+          if (b2) b2.scrollTop = b2.scrollHeight;
+        }, ctrl.signal);
+        if (bubble) { bubble.classList.remove("typing"); bubble.textContent = full || "（模型未返回内容）"; }
+      } catch (e) {
+        if (bubble) {
+          bubble.classList.remove("typing");
+          bubble.textContent = "模型调用失败（" + (e && e.message ? e.message : "未知错误") + "）。以下基于你的真实报告数据作答：\n" + ruleReportAnswer(q);
+        }
+      }
+    } else if (bubble) {
+      bubble.classList.remove("typing");
+      bubble.innerHTML = "（未接入模型 · 基于你的真实报告数据作答）<br>" + escHtml(ruleReportAnswer(q)).replace(/\n/g, "<br>");
+    }
+    const b3 = $("ai-assistant-messages");
+    if (b3) b3.scrollTop = b3.scrollHeight;
     return;
   }
 
@@ -272,3 +311,102 @@ function appendAiMsg(role, text, isHtml) {
   else if (document && document.addEventListener) document.addEventListener("DOMContentLoaded", bootAiFab);
 })();
 
+
+/* ============================================================
+ * v36 · 报告追问：把评估报告注入 AI 小助手上下文
+ *   ① buildReportContext：维度得分 / 评分证据 / 学习路径 → 结构化文本
+ *   ② askReportFollowup / askReportFollowupPreset：打开小助手并携带上下文
+ *   ③ reportFollowupCard：报告页预设追问卡
+ *   原则：回答必须基于用户真实报告数据，无数据时明确提示先完成面试
+ * ============================================================ */
+
+const REPORT_FOLLOWUP_QUESTIONS = [
+  "我这次最弱的是哪个维度？该怎么补？",
+  "把最弱维度的评分证据逐条解释一下",
+  "给我一份针对本次表现的 7 天改进计划",
+  "我的回答里哪些话拖了分？怎么改写？",
+];
+
+/* 报告上下文（最近一次报告的结构化快照） */
+let aiReportCtx = null;
+
+function buildReportContext() {
+  if (typeof lastReportData === "undefined" || !lastReportData) return "";
+  const r = lastReportData;
+  const dims = (r.dims || []).map((d) => `${d.dimension} ${d.score} 分：${d.comment || ""}`).join("\n");
+  const ev = (r.evidence || []).slice(0, 8)
+    .map((e) => `[${e.agent || "观察员"}] 原话“${e.quote || ""}” → ${e.note || ""}`).join("\n");
+  const plan = (r.plan || []).slice(0, 7)
+    .map((p) => (p && p.day ? `${p.day}：${p.task || ""}` : "")).filter(Boolean).join("\n");
+  const weakest = r.weakest && r.weakest.dimension ? `最弱维度：${r.weakest.dimension}（${r.weakest.score} 分）` : "";
+  return [
+    `【本次评估报告】总分 ${r.total}/100　${weakest}`,
+    `维度得分：\n${dims}`,
+    `评分证据（引用真实回答）：\n${ev || "（无）"}`,
+    `7 天学习路径：\n${plan || "（无）"}`,
+  ].join("\n\n");
+}
+
+/* 无模型时的确定性兜底回答（基于真实报告数据，不编造） */
+function ruleReportAnswer(q) {
+  const r = (typeof lastReportData !== "undefined" && lastReportData) ? lastReportData : null;
+  if (!r) return "还没有可用的评估报告，请先完成一次模拟面试再来追问。";
+  const s = String(q || "");
+  const weak = [...(r.dims || [])].sort((a, b) => a.score - b.score)[0];
+  if (/最弱|哪个维度|短板/.test(s) && weak) {
+    return `本次最弱维度是「${weak.dimension}」${weak.score} 分。${weak.comment || ""}\n建议优先补齐该维度，再回头复盘得分较高的维度。`;
+  }
+  if (/证据|为什么|依据/.test(s)) {
+    const list = (r.evidence || []).slice(0, 3);
+    if (!list.length) return "本次报告暂无可引用的评分证据。";
+    return `以下是引用你真实回答的评分证据：\n${list.map((e, i) => `${i + 1}. [${e.agent || "观察员"}] “${e.quote || ""}” → ${e.note || ""}`).join("\n")}`;
+  }
+  if (/计划|7\s*天|提升|改进/.test(s)) {
+    const plan = (r.plan || []).slice(0, 7);
+    if (!plan.length) return "本次报告暂未生成学习路径。";
+    return `已为你生成的学习路径：\n${plan.map((p) => `${p.day}：${p.task || ""}`).join("\n")}`;
+  }
+  if (/改写|拖了分|怎么改/.test(s)) {
+    return `优先改写最弱维度「${weak ? weak.dimension : "—"}」相关的回答：把「负责 / 参与」升级为「主导」，并补上量化结果（如 QPS、人数、百分比）。报告中「句子级改写建议」区块已给出逐句模板。`;
+  }
+  return `本次报告总分 ${r.total}/100，最弱维度「${weak ? weak.dimension : "—"}」。你可以问我：最弱维度怎么补、评分证据逐条解释、7 天改进计划、哪些话拖了分。`;
+}
+
+function askReportFollowup(q) {
+  const ctx = buildReportContext();
+  if (!ctx) { toast("还没有评估报告，请先完成一次模拟面试"); return; }
+  aiReportCtx = ctx;
+  toggleAiAssistant(true);
+  renderAiQuick();
+  if (q) {
+    const input = $("ai-assistant-input");
+    if (input) input.value = q;
+    sendAiAssistant();
+  } else {
+    appendAiMsg("ai", "已载入你本次的评估报告 📊 可以直接问：最弱维度怎么补、评分证据逐条解释、哪些话拖了分。你也可以自由提问。", true);
+  }
+}
+
+function askReportFollowupPreset(i) {
+  const q = REPORT_FOLLOWUP_QUESTIONS[i];
+  if (!q) return;
+  askReportFollowup(q);
+}
+
+/* 报告页「追问细节」区块 */
+function reportFollowupCard() {
+  return `<div class="card" style="padding:14px 16px;margin-top:14px">
+    <div class="pane-title" style="margin-bottom:2px">🤖 对报告追问细节
+      <span class="tag-demo">v36 · 报告数据已注入 AI 小助手</span>
+    </div>
+    <p class="hint" style="margin-top:0">
+      点击预设问题或打开小助手自由提问，AI 会携带本次报告的维度得分、评分证据与学习路径作答——基于你的真实数据，不编造分数。
+    </p>
+    <div class="career-chips" style="margin-top:8px">
+      ${REPORT_FOLLOWUP_QUESTIONS.map((q, i) => `<button class="chip-btn" onclick="askReportFollowupPreset(${i})">${escHtml(q)}</button>`).join("")}
+    </div>
+    <div style="margin-top:10px">
+      <button class="btn btn-primary btn-sm" onclick="askReportFollowup()">🤖 打开 AI 小助手自由追问 →</button>
+    </div>
+  </div>`;
+}

@@ -114,6 +114,10 @@ function historySVG(history) {
  * 服务端 /api/interviews/{id}/report 返回的 status → 本地 camLastSummary（后端不可用时兜底）。 */
 let lastReportStatus = null;
 
+/* v36：最近一次报告的原始数据，供 AI 小助手「追问细节」时引用。
+ * 只存维度得分 / 证据 / 学习路径等结构化结果，回答一律基于真实数据，不编造分数。 */
+let lastReportData = null;
+
 function reportStatusCard(st) {
   const count = st && st.count ? st.count : 0;
   const pr = st && st.presence_rate != null ? st.presence_rate : null;
@@ -211,6 +215,11 @@ async function renderReport(force) {
     ? backendPayload.status
     : (typeof camLastSummary === "object" && camLastSummary ? camLastSummary : null);
   lastReportStatus = camStatus;
+  /* v36：沉淀报告上下文（供 AI 小助手追问） */
+  lastReportData = {
+    total, dims, evidence, plan, weakest,
+    turns: (session.turns || []).slice(0, 12).map((t) => ({ q: t.question || "", a: t.answer || "" })),
+  };
   const suggestions = [...dims].sort((a, b) => a.score - b.score).slice(0, 3)
     .map(d => `「${d.dimension}」${d.score} 分：${d.comment}`);
 
@@ -232,6 +241,7 @@ async function renderReport(force) {
           <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 导出 PDF</button>
           <button class="btn btn-outline btn-sm" onclick="shareReport()">🔗 分享报告</button>
           <button class="btn btn-outline btn-sm" onclick="restartInterview()">🔄 再来一次</button>
+          <button class="btn btn-outline btn-sm" onclick="askReportFollowup()" title="把本次报告注入 AI 小助手，针对维度与证据追问细节">🤖 追问细节</button>
         </div>
         <div>
           <div style="font-size:36px;font-weight:800;color:var(--brand);line-height:1" id="report-total" data-count="${total}">${total}</div>
@@ -279,6 +289,7 @@ async function renderReport(force) {
       <div class="pane-title" style="margin-bottom:4px">📈 历史进步曲线 <span class="tag-demo">localStorage 本地存储</span></div>
       <div id="history-box"></div>
     </div>
+    ${reportFollowupCard()}
     ${reviewEntryCard()}`;
 
   // v27：全站交互层——总分滚动 + 维度条生长（reduced-motion 下静态落位）

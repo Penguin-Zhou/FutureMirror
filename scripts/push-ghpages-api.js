@@ -29,6 +29,9 @@ const CHANGED = [
   "models/faceapi/face-api.min.js",
   "models/faceapi/weights/tiny_face_detector_model-weights_manifest.json",
   "models/faceapi/weights/tiny_face_detector_model-shard1",
+  // 端侧 PDF 解析（同源自托管 + CDN 兜底）；缺失则跳过，前端自动回退 CDN
+  "models/pdfjs/pdf.min.js",
+  "models/pdfjs/pdf.worker.min.js",
 ];
 
 function gh(args, input) {

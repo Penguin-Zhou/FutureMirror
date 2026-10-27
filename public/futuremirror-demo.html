@@ -4163,6 +4163,63 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   .lp-day { break-inside: avoid; }
   .lp-ov-fill { transition: none; }
 }
+
+/* ============================================================
+ * v36 · 求职信息档案 / MBTI 测评 / 真实岗位 / 对话式匹配
+ * ============================================================ */
+.js-form-grid {
+  display: grid; grid-template-columns: 86px 1fr; gap: 8px 10px; align-items: center;
+}
+.js-form-grid label { font-size: 12px; color: var(--muted); }
+@media (max-width: 860px) {
+  .js-form-grid { grid-template-columns: 1fr; }
+  .js-form-grid label { margin-bottom: -6px; }
+}
+
+/* ---- MBTI ---- */
+.mbti-progress-wrap { margin-bottom: 14px; }
+.mbti-progress-bar { height: 4px; background: var(--line); }
+.mbti-progress-fill { height: 4px; background: var(--brand); transition: width .35s ease; }
+.mbti-q-card { border: 1px solid var(--line); padding: 16px; margin-bottom: 12px; }
+.mbti-q-text { font-size: 14.5px; font-weight: 700; line-height: 1.7; margin-bottom: 12px; }
+.mbti-opts { display: grid; gap: 8px; }
+.mbti-opt {
+  text-align: left; font-size: 13px; padding: 10px 12px; cursor: pointer;
+  background: transparent; border: 1px solid var(--line); color: var(--muted);
+  font-family: inherit; transition: border-color .18s ease, color .18s ease;
+}
+.mbti-opt:hover { border-color: var(--ink); color: var(--ink); }
+.mbti-type-big {
+  font-family: var(--mono); font-size: 34px; font-weight: 700;
+  letter-spacing: 3px; color: var(--ink);
+}
+.mbti-dim-row {
+  display: grid; grid-template-columns: 96px 1fr 128px; gap: 10px;
+  align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line);
+}
+.mbti-dim-row .mbti-dim-name { font-size: 12px; color: var(--muted); }
+.mbti-dim-row .mbti-dim-pct { font-size: 11.5px; color: var(--faint); text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 860px) { .mbti-dim-row { grid-template-columns: 76px 1fr 84px; } }
+
+/* ---- 真实岗位 ---- */
+.rj-card { border: 1px solid var(--line); padding: 14px; margin-bottom: 10px; }
+.rj-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.rj-role { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.rj-company { font-size: 13px; color: var(--muted); }
+.rj-meta { font-size: 12px; color: var(--faint); margin-top: 4px; line-height: 1.8; }
+.rj-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.rj-link { font-size: 12px; color: var(--brand); text-decoration: none; border-bottom: 1px solid var(--line); }
+.rj-link:hover { border-color: var(--brand); }
+.rj-match { font-family: var(--mono); font-size: 12px; color: var(--ink); }
+
+/* ---- 对话式匹配 ---- */
+.mqa-wrap { border: 1px solid var(--line); padding: 14px; margin-top: 10px; }
+.mqa-log { max-height: 260px; overflow-y: auto; margin-bottom: 10px; display: grid; gap: 8px; }
+.mqa-msg { font-size: 13px; line-height: 1.75; padding: 8px 10px; border-left: 2px solid var(--line); }
+.mqa-msg.ai { border-left-color: var(--brand); background: var(--bg-deep); }
+.mqa-msg.user { border-left-color: var(--ink); }
+.mqa-input-row { display: flex; gap: 8px; }
+.mqa-input-row textarea { flex: 1; min-height: 44px; }
 </style>
 </head>
 <body>
@@ -4617,6 +4674,9 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
       <a class="sb-item" href="#/career" data-nav="career">
         <span class="sb-icon" data-ic="career">🧭</span> 职业探索
       </a>
+      <a class="sb-item" href="#/mbti" data-nav="mbti">
+        <span class="sb-icon" data-ic="mbti">🧠</span> MBTI 测评
+      </a>
 
       <div class="sb-group-label">训练与评估</div>
       <a class="sb-item" href="#/interview" data-nav="interview">
@@ -4909,6 +4969,24 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <div id="match-result"></div>
       
     </div>
+
+    <!-- v36 · 对话式匹配增强：4 轮追问补充证据，实时修正匹配度 -->
+    <div class="page-card">
+      <div class="pane-title">💬 对话式增强匹配
+        <span class="tag-demo">v36 · 4 轮追问 · 每答一题实时修正匹配度</span>
+      </div>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        简历往往写不下全部信息。通过 4 轮对话补充「没写出来的证据」（量化结果、技能熟练度、隐藏经历），
+        系统会把新证据并入匹配计算，匹配度随回答实时上升。
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="startMatchQa()">💬 开始对话式增强（4 问）</button>
+      </div>
+      <div class="mqa-wrap" id="match-qa" hidden style="margin-top:12px">
+        <div id="match-qa-body"></div>
+      </div>
+      <div id="match-qa-summary"></div>
+    </div>
   </div>
 
   <!-- ========================================================
@@ -5109,6 +5187,69 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <div id="resume-result" style="margin-top:20px"></div>
       
     </div>
+
+    <!-- v36 · 求职信息档案：填写 → AI 优化建议 → 一键导出 PDF -->
+    <div class="page-card" id="jobseek-card">
+      <div class="pane-title">📇 求职信息档案
+        <span class="tag-demo">v36 · 填写后可一键导出 PDF 简历</span>
+      </div>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        填写求职信息，AI 结合目标岗位给出针对性优化建议；确认无误后一键导出 PDF（数据仅存本地，不上传）。
+      </p>
+
+      <div class="grid2">
+        <div>
+          <div class="pane-title" style="font-size:14px">👤 基本信息</div>
+          <div class="js-form-grid">
+            <label for="js-name">姓名</label>
+            <input id="js-name" type="text" placeholder="张三" aria-label="姓名">
+            <label for="js-role">目标岗位</label>
+            <input id="js-role" type="text" placeholder="后端开发工程师" aria-label="目标岗位">
+            <label for="js-city">期望城市</label>
+            <input id="js-city" type="text" placeholder="上海" aria-label="期望城市">
+            <label for="js-degree">学历</label>
+            <select id="js-degree" aria-label="学历">
+              <option value="">请选择</option>
+              <option>大专</option><option>本科</option><option>硕士</option><option>博士</option><option>其他</option>
+            </select>
+            <label for="js-years">工作经验</label>
+            <select id="js-years" aria-label="工作经验">
+              <option value="">请选择</option>
+              <option>应届毕业生</option><option>1 年以内</option><option>1-3 年</option>
+              <option>3-5 年</option><option>5 年以上</option>
+            </select>
+            <label for="js-email">邮箱</label>
+            <input id="js-email" type="email" placeholder="you@example.com" aria-label="邮箱">
+            <label for="js-phone">电话</label>
+            <input id="js-phone" type="text" placeholder="138-0000-0000" aria-label="电话">
+          </div>
+
+          <div class="pane-title" style="font-size:14px;margin-top:14px">🛠 技能标签（逗号分隔）</div>
+          <input id="js-skills" type="text" placeholder="Java, MySQL, Redis, Docker" aria-label="技能标签">
+        </div>
+
+        <div>
+          <div class="pane-title" style="font-size:14px">🎓 教育背景</div>
+          <textarea id="js-edu" rows="2" placeholder="2023—2027　某某大学　软件工程　本科" aria-label="教育背景"></textarea>
+
+          <div class="pane-title" style="font-size:14px;margin-top:10px">🚀 项目与经历</div>
+          <textarea id="js-projects" rows="4" placeholder="电商秒杀系统（Java + Redis + MySQL）：主导缓存与库存扣减设计，QPS 从 200 提升到 1200…" aria-label="项目与经历"></textarea>
+
+          <div class="pane-title" style="font-size:14px;margin-top:10px">💬 自我评价</div>
+          <textarea id="js-summary" rows="2" placeholder="具备高并发后端项目经验，熟悉缓存与数据库优化…" aria-label="自我评价"></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="fillJobseekDemo()">填入示例</button>
+        <button class="btn btn-primary btn-sm" id="js-advice-btn" onclick="aiResumeAdvice()">🤖 AI 优化建议</button>
+        <button class="btn btn-outline btn-sm" onclick="exportResumePdf()">📄 一键导出 PDF</button>
+      </div>
+
+      <div id="js-advice-result" style="margin-top:16px">
+        <div class="notice notice-info">填写求职信息后点击「🤖 AI 优化建议」，这里会输出岗位匹配诊断、逐条改写与面试风险预警。</div>
+      </div>
+    </div>
   </div>
 
   <!-- ========================================================
@@ -5166,6 +5307,79 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
           <div class="notice notice-info">选择你的专业、技能与兴趣方向，点击「为我推荐岗位」查看 Top 3 匹配岗位与学习路径。</div>
         </div>
       
+    </div>
+
+    <!-- v36 · 真实岗位推荐：官网直达 + 简历匹配 + AI 面试建议 -->
+    <div class="page-card">
+      <div class="pane-title">🏢 真实岗位推荐
+        <span class="tag-demo">v36 · <b id="rj-count">16</b> 个真实岗位 · 官网直达</span>
+      </div>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        岗位为公开渠道整理的企业真实岗位（公司 / 城市 / 薪资 / 技能要求），点击链接直达该企业招聘官网；
+        系统会用你的简历逐条计算匹配度，并可生成针对性面试建议。
+      </p>
+      <div class="notice notice-info" style="margin-bottom:12px">
+        说明：岗位信息为公开渠道整理的示例条目，实际在招职位与要求请以企业招聘官网为准。
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <input id="rj-keyword" type="text" placeholder="按公司 / 岗位 / 城市筛选，如：Java、算法、上海" aria-label="岗位关键词"
+               style="flex:1;min-width:220px">
+        <button class="btn btn-primary btn-sm" onclick="renderRealJobs()">🔍 筛选岗位</button>
+      </div>
+      <div id="real-jobs-list">
+        <div class="notice notice-info">正在按你的简历计算匹配度…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       页面：MBTI 职业性格测评（mbti · v36 新增）
+       ======================================================== -->
+  <div class="app-page" data-page="mbti">
+    <div class="page-header">
+      <h2><span class="ph-icon" data-ic="mbti">🧠</span> MBTI 职业性格测评</h2>
+      <p>4 维度 × 20 题情境量表 → 输出 16 型人格结果，自动同步到个人中心，供岗位推荐与面试建议参考。</p>
+    </div>
+    <div class="page-card">
+      <div class="pane-title">🧠 MBTI 职业性格测评
+        <span class="tag-demo">v36 · 端侧计算 · 结果仅存本地</span>
+      </div>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        答题约需 2 分钟。结果用于校准岗位推荐与面试建议，不会上传服务器。
+      </p>
+
+      <div id="mbti-intro">
+        <div class="grid2">
+          <div>
+            <div class="pane-title" style="font-size:14px">📐 四个维度</div>
+            <div class="evidence">
+              <p style="line-height:1.9">
+                <b>精力来源</b>　外向 E ↔ 内向 I<br>
+                <b>信息获取</b>　实感 S ↔ 直觉 N<br>
+                <b>决策方式</b>　思考 T ↔ 情感 F<br>
+                <b>生活态度</b>　判断 J ↔ 知觉 P
+              </p>
+            </div>
+          </div>
+          <div>
+            <div class="pane-title" style="font-size:14px">🧭 结果怎么用</div>
+            <div class="evidence">
+              <p style="line-height:1.9">
+                · 自动写入「个人中心」，与求职信息合并展示<br>
+                · 岗位推荐会参考适配方向<br>
+                · 面试建议会给出该性格的应答提醒<br>
+                · 随时可重新测评，历史结果保留在本地
+              </p>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary btn-sm" onclick="startMbti()">开始测评（20 题）→</button>
+        </div>
+      </div>
+
+      <div id="mbti-quiz" hidden></div>
+      <div id="mbti-result"></div>
     </div>
   </div>
 
@@ -5995,7 +6209,7 @@ function trackLight(e) {
 /* ============================================================
  * 0.6 应用内子路由（hash 路由）
  * ============================================================ */
-const APP_PAGES = ["dashboard", "match", "interview", "rag", "resume", "career", "report", "profile", "jobs", "quiz", "plan"];
+const APP_PAGES = ["dashboard", "match", "resume", "mbti", "career", "interview", "rag", "report", "profile", "jobs", "quiz", "plan"];
 const APP_PAGE_TITLES = {
   dashboard: "工作台",
   match: "简历匹配",
@@ -6003,6 +6217,7 @@ const APP_PAGE_TITLES = {
   rag: "面经问答",
   resume: "简历优化",
   career: "职业探索",
+  mbti: "MBTI 测评",
   report: "评估报告",
   profile: "个人中心",
   jobs: "求职管理",
@@ -6050,6 +6265,8 @@ function applyRoute() {
   if (page === "jobs") { try { renderJobsPage(); } catch (e) {} }
   if (page === "quiz") { try { renderQuizPage(); } catch (e) {} }
   if (page === "plan") { try { renderPlanPage(); } catch (e) {} }
+  if (page === "mbti") { try { renderMbtiPage(); } catch (e) {} }
+  if (page === "career") { try { renderRealJobs(); } catch (e) {} }
 
   // 6) 顶栏状态胶囊同步（游客 / Mock / 真实）
   try { syncStatusPill(); } catch (e) {}
@@ -6734,6 +6951,176 @@ async function parsePdfText(file) {
   };
 }
 
+
+/* ============================================================
+ * v36 · 对话式匹配增强（4 轮追问 → 补充证据 → 修正匹配度）
+ *   ① MATCH_QA_STEPS：围绕量化结果 / 技能熟练度 / 缺口补强 / 隐藏经历
+ *   ② startMatchQa / submitMatchQaAnswer / finishMatchQa / renderMatchQa
+ *   ③ applyQaEvidence：从回答中提取技能证据与量化证据，重算覆盖式匹配分
+ *   匹配分口径与 heuristicParse 一致：JD 技能覆盖率（确定性可解释）
+ * ============================================================ */
+
+const MATCH_QA_STEPS = [
+  { key: "highlight", q: "第 1 问：你最拿得出手的一段经历是什么？请尽量带上量化结果（如 QPS、用户量、提升百分比）。" },
+  { key: "skills", q: "第 2 问：针对目标岗位的要求，你实际用过哪些技术？分别用了多久、熟练度如何？" },
+  { key: "gap", q: "第 3 问：岗位要求中你目前不具备的技能，有没有相关的学习或项目经验可以补上？" },
+  { key: "extra", q: "第 4 问：还有哪些简历里没写、但与岗位相关的经历（竞赛 / 开源 / 实习 / 课程设计）？" },
+];
+
+let matchQaState = null;
+
+/* JD 技能集合：优先取当前 JD 文本，回退为「已具备 + 缺口」并集 */
+function currentJdSkills() {
+  const jdText = ($("jd") && $("jd").value ? $("jd").value : "");
+  const fromJd = SKILL_DICT.filter((s) => jdText.indexOf(s) >= 0);
+  if (fromJd.length) return fromJd;
+  if (matchResult) return (matchResult.skills || []).concat(matchResult.gaps || []);
+  return [];
+}
+
+/* 覆盖率口径重算（与 heuristicParse 完全一致） */
+function recomputeMatchScore(jdSkills) {
+  if (!jdSkills || !jdSkills.length) return matchResult ? matchResult.matchScore : 0;
+  const covered = jdSkills.filter((s) => (matchResult.skills || []).indexOf(s) >= 0).length;
+  return Math.round((covered / jdSkills.length) * 100);
+}
+
+/* 从一轮回答中提取证据：技能命中 → 补 skills / 消 gaps；数字 → 量化证据 */
+function applyQaEvidence(text) {
+  const t = String(text || "");
+  const added = [];
+  SKILL_DICT.forEach((s) => {
+    if (t.indexOf(s) >= 0 && matchResult.skills.indexOf(s) < 0) {
+      matchResult.skills.push(s);
+      added.push(s);
+    }
+  });
+  const closed = [];
+  matchResult.gaps = (matchResult.gaps || []).filter((g) => {
+    if (added.indexOf(g) >= 0 || t.indexOf(g) >= 0) { closed.push(g); return false; }
+    return true;
+  });
+  const quantified = (t.match(/\d+(\.\d+)?\s*(%|％|倍|QPS|qps|人|万|条|次|ms|秒|天)/g) || []).length;
+  const jdSkills = currentJdSkills();
+  const next = recomputeMatchScore(jdSkills);
+  const delta = next - matchResult.matchScore;
+  matchResult.matchScore = next;
+  matchResult.qaEvidence = (matchResult.qaEvidence || 0) + (added.length + quantified);
+  try { store.set("fm_match", matchResult); } catch (e) {}
+  return { added, closed, quantified, delta, score: next };
+}
+
+function startMatchQa() {
+  if (!requireLogin()) return;
+  if (!matchResult) { toast("请先点击「⚡ 生成匹配报告」"); return; }
+  matchQaState = {
+    i: 0,
+    log: [],
+    baseScore: matchResult.matchScore,
+    baseGaps: (matchResult.gaps || []).length,
+    added: [],
+    closed: [],
+    quantified: 0,
+  };
+  const box = $("match-qa");
+  if (box) box.hidden = false;
+  appendMatchQaMsg("ai", "🪞 匹配增强助手：简历往往写不下全部信息。我用 4 个问题帮你把「没写出来的证据」补齐，每答一题就会实时修正匹配度。");
+  appendMatchQaMsg("ai", MATCH_QA_STEPS[0].q);
+  renderMatchQa();
+}
+
+function appendMatchQaMsg(role, text) {
+  if (!matchQaState) return;
+  matchQaState.log.push({ role, text });
+}
+
+function renderMatchQa() {
+  const box = $("match-qa-body");
+  if (!box || !matchQaState) return;
+  const done = matchQaState.i >= MATCH_QA_STEPS.length;
+  box.innerHTML = `
+    <div class="mqa-log">
+      ${matchQaState.log.map((m) => `<div class="mqa-msg ${m.role}">${escHtml(m.text)}</div>`).join("")}
+    </div>
+    ${done ? "" : `
+    <div class="mqa-input-row">
+      <textarea id="mqa-input" rows="2" placeholder="输入你的回答…（可随时点「结束并应用」）" aria-label="匹配增强回答"></textarea>
+      <button class="btn btn-primary btn-sm" onclick="submitMatchQaAnswer()">提交</button>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+      <span class="hint" style="margin-top:0">第 ${matchQaState.i + 1} / ${MATCH_QA_STEPS.length} 问</span>
+      <button class="btn btn-outline btn-sm" onclick="finishMatchQa()">结束并应用 →</button>
+    </div>`}`;
+}
+
+function submitMatchQaAnswer() {
+  if (!matchQaState) { toast("请先点击「💬 对话式增强匹配」"); return; }
+  const input = $("mqa-input");
+  const text = input ? String(input.value || "").trim() : "";
+  if (!text) { toast("请先输入内容"); return; }
+  if (input) input.value = "";
+  appendMatchQaMsg("user", text);
+  const r = applyQaEvidence(text);
+  matchQaState.added = matchQaState.added.concat(r.added);
+  matchQaState.closed = matchQaState.closed.concat(r.closed);
+  matchQaState.quantified += r.quantified;
+  const deltaTxt = r.delta > 0 ? `（匹配度 +${r.delta} → ${r.score}%）` : r.delta < 0 ? `（匹配度 ${r.delta} → ${r.score}%）` : `（匹配度维持 ${r.score}%）`;
+  const parts = [];
+  if (r.added.length) parts.push(`新增技能证据：${r.added.join("、")}`);
+  if (r.closed.length) parts.push(`已补齐缺口：${r.closed.join("、")}`);
+  if (r.quantified) parts.push(`量化证据 ${r.quantified} 条`);
+  appendMatchQaMsg("ai", `已记录 ${deltaTxt}。${parts.length ? parts.join("；") + "。" : "本轮未识别到新的技能证据，可补充具体技术名词与数字。"}`);
+  matchQaState.i++;
+  if (matchQaState.i < MATCH_QA_STEPS.length) appendMatchQaMsg("ai", MATCH_QA_STEPS[matchQaState.i].q);
+  paintMatchRing(r.score);
+  renderMatchQa();
+}
+
+/* 同步刷新匹配环（若报告仍在页面上） */
+function paintMatchRing(score) {
+  const ring = $("ring-fill");
+  if (ring) {
+    const c = 2 * Math.PI * 42;
+    ring.style.strokeDashoffset = (c * (1 - score / 100)).toFixed(1);
+  }
+  const txt = document.querySelector("#match-result svg text");
+  if (txt) txt.textContent = String(score);
+}
+
+function finishMatchQa() {
+  if (!matchQaState) return;
+  const s = matchQaState;
+  const delta = matchResult.matchScore - s.baseScore;
+  const box = $("match-qa-summary");
+  if (box) {
+    box.innerHTML = `
+      <div class="card fade-up" style="padding:14px;margin-top:10px">
+        <div class="pane-title" style="font-size:14px">📈 对话增强结果</div>
+        <div class="live-metrics" style="margin-top:10px">
+          <div class="metric"><span>最新匹配分</span><b>${matchResult.matchScore}</b></div>
+          <div class="metric"><span>较初始</span><b style="color:${delta > 0 ? "var(--green)" : "var(--muted)"}">${delta > 0 ? "+" + delta : delta}</b></div>
+          <div class="metric"><span>新增技能证据</span><b>${s.added.length}</b></div>
+          <div class="metric"><span>补齐缺口</span><b>${s.closed.length}</b></div>
+          <div class="metric"><span>量化证据</span><b>${s.quantified}</b></div>
+        </div>
+        <p class="hint" style="margin-top:10px">
+          ${s.added.length || s.closed.length
+            ? `通过对话补充的证据已并入匹配结果：${[...new Set(s.added.concat(s.closed))].join("、")}。`
+            : "本轮未补充到新的技能证据。建议在回答中写出具体技术名词与量化数据。"}
+        </p>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="startMatchQa()">再来一轮</button>
+          <button class="btn btn-primary btn-sm" onclick="analyze()">用新证据重算报告 →</button>
+          <button class="btn btn-outline btn-sm" onclick="switchTab('career')">看看真实岗位 →</button>
+        </div>
+      </div>`;
+  }
+  appendMatchQaMsg("ai", `✅ 已应用。匹配度 ${s.baseScore}% → ${matchResult.matchScore}%（${delta > 0 ? "+" + delta : delta}）。`);
+  s.i = MATCH_QA_STEPS.length;
+  renderMatchQa();
+  toast(`匹配度已更新：${matchResult.matchScore}%`);
+  try { logDev("info", `对话式匹配增强完成：${s.baseScore}% → ${matchResult.matchScore}%`); } catch (e) {}
+}
 /* ============================================================
  * 5. 模拟面试（多 Agent + 规划/工具调用/证据时间线 + 语音 + 真实 LLM）
  * ============================================================ */
@@ -8428,6 +8815,10 @@ function historySVG(history) {
  * 服务端 /api/interviews/{id}/report 返回的 status → 本地 camLastSummary（后端不可用时兜底）。 */
 let lastReportStatus = null;
 
+/* v36：最近一次报告的原始数据，供 AI 小助手「追问细节」时引用。
+ * 只存维度得分 / 证据 / 学习路径等结构化结果，回答一律基于真实数据，不编造分数。 */
+let lastReportData = null;
+
 function reportStatusCard(st) {
   const count = st && st.count ? st.count : 0;
   const pr = st && st.presence_rate != null ? st.presence_rate : null;
@@ -8525,6 +8916,11 @@ async function renderReport(force) {
     ? backendPayload.status
     : (typeof camLastSummary === "object" && camLastSummary ? camLastSummary : null);
   lastReportStatus = camStatus;
+  /* v36：沉淀报告上下文（供 AI 小助手追问） */
+  lastReportData = {
+    total, dims, evidence, plan, weakest,
+    turns: (session.turns || []).slice(0, 12).map((t) => ({ q: t.question || "", a: t.answer || "" })),
+  };
   const suggestions = [...dims].sort((a, b) => a.score - b.score).slice(0, 3)
     .map(d => `「${d.dimension}」${d.score} 分：${d.comment}`);
 
@@ -8546,6 +8942,7 @@ async function renderReport(force) {
           <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 导出 PDF</button>
           <button class="btn btn-outline btn-sm" onclick="shareReport()">🔗 分享报告</button>
           <button class="btn btn-outline btn-sm" onclick="restartInterview()">🔄 再来一次</button>
+          <button class="btn btn-outline btn-sm" onclick="askReportFollowup()" title="把本次报告注入 AI 小助手，针对维度与证据追问细节">🤖 追问细节</button>
         </div>
         <div>
           <div style="font-size:36px;font-weight:800;color:var(--brand);line-height:1" id="report-total" data-count="${total}">${total}</div>
@@ -8593,6 +8990,7 @@ async function renderReport(force) {
       <div class="pane-title" style="margin-bottom:4px">📈 历史进步曲线 <span class="tag-demo">localStorage 本地存储</span></div>
       <div id="history-box"></div>
     </div>
+    ${reportFollowupCard()}
     ${reviewEntryCard()}`;
 
   // v27：全站交互层——总分滚动 + 维度条生长（reduced-motion 下静态落位）
@@ -10379,6 +10777,263 @@ async function optimizeWithLLM() {
 }
 
 /* ============================================================
+ * v36 · 简历板块升级
+ *   ① 求职信息档案：JOBSEEK_DEFAULTS / getJobseek / saveJobseek
+ *      / readJobseekForm / fillJobseekDemo / jobseekToText
+ *   ② AI 优化建议：aiResumeAdvice（LLM 为主，规则引擎兜底）
+ *   ③ 一键导出 PDF：buildResumeHtml / exportResumePdf（打印即 PDF，零依赖）
+ * ============================================================ */
+
+/* ---------- ① 求职信息档案（localStorage：fm_jobseek，按账号隔离） ---------- */
+const JOBSEEK_DEFAULTS = {
+  name: "", targetRole: "", city: "", degree: "", years: "",
+  email: "", phone: "", skills: "", education: "", projects: "", summary: "",
+};
+
+function getJobseek() {
+  let p;
+  try { p = store.get("fm_jobseek", null); } catch (e) { p = null; }
+  return Object.assign({}, JOBSEEK_DEFAULTS, p || {});
+}
+
+function saveJobseek(patch) {
+  const next = Object.assign({}, getJobseek(), patch || {});
+  try { store.set("fm_jobseek", next, true); } catch (e) {}
+  try { if (typeof logDev === "function") logDev("info", "求职信息已保存"); } catch (e) {}
+  return next;
+}
+
+function readJobseekForm() {
+  const v = (id) => { const el = $(id); return el ? String(el.value || "").trim() : ""; };
+  return saveJobseek({
+    name: v("js-name"), targetRole: v("js-role"), city: v("js-city"),
+    degree: v("js-degree"), years: v("js-years"), email: v("js-email"),
+    phone: v("js-phone"), skills: v("js-skills"), education: v("js-edu"),
+    projects: v("js-projects"), summary: v("js-summary"),
+  });
+}
+
+const JOBSEEK_DEMO = {
+  name: "张三", targetRole: "后端开发工程师", city: "上海", degree: "本科", years: "应届毕业生",
+  email: "zhangsan@example.com", phone: "138-0000-0000",
+  skills: "Java, MySQL, Redis, Docker, Linux, Kafka",
+  education: "2023—2027　某某大学　软件工程　本科",
+  projects: "电商秒杀系统（Java + Redis + MySQL）：主导缓存与库存扣减设计，QPS 从 200 提升到 1200；技术社团部长，组织 3 场编程 workshop。",
+  summary: "具备高并发后端项目经验，熟悉缓存与数据库优化，希望在上海从事后端开发工作。",
+};
+
+function fillJobseekDemo() {
+  Object.keys(JOBSEEK_DEMO).forEach((k) => {
+    const map = {
+      name: "js-name", targetRole: "js-role", city: "js-city", degree: "js-degree",
+      years: "js-years", email: "js-email", phone: "js-phone", skills: "js-skills",
+      education: "js-edu", projects: "js-projects", summary: "js-summary",
+    };
+    const el = $(map[k]);
+    if (el) el.value = JOBSEEK_DEMO[k];
+  });
+  saveJobseek(JOBSEEK_DEMO);
+  toast("已填入示例求职信息");
+}
+
+/* 求职信息 → 结构化纯文本（供 LLM 上下文与规则引擎复用） */
+function jobseekToText(p, raw) {
+  const p2 = p || getJobseek();
+  const raw2 = raw || (($("resume-raw") && $("resume-raw").value.trim()) || "");
+  const lines = [
+    `【求职意向】目标岗位：${p2.targetRole || "未填写"}；期望城市：${p2.city || "未填写"}`,
+    `【基本信息】姓名：${p2.name || "未填写"}；学历：${p2.degree || "未填写"}；经验：${p2.years || "未填写"}`,
+    `【联系方式】邮箱：${p2.email || "未填写"}；电话：${p2.phone || "未填写"}`,
+    `【技能标签】${p2.skills || "未填写"}`,
+    `【教育背景】${p2.education || "未填写"}`,
+    `【项目与经历】${p2.projects || "未填写"}`,
+    `【自我评价】${p2.summary || "未填写"}`,
+  ];
+  if (raw2) lines.push(`【简历原文】\n${raw2}`);
+  if (typeof matchResult !== "undefined" && matchResult && matchResult.gaps && matchResult.gaps.length) {
+    lines.push(`【已知能力缺口】${matchResult.gaps.join("、")}`);
+  }
+  return lines.join("\n");
+}
+
+/* ---------- ② AI 优化建议 ---------- */
+const RESUME_ADVICE_SYSTEM = `你是资深招聘顾问与简历优化专家。请基于用户的求职信息与简历内容，用 Markdown 输出以下五部分：
+## 一、岗位匹配诊断（目标岗位 vs 现有经历，给出匹配度判断与理由）
+## 二、简历结构优化（3-5 条，指出该增删哪些板块）
+## 三、逐条改写建议（每条给出「原文 → 问题 → 改写后」，改写后必须带量化占位符）
+## 四、面试风险预警（3 条，指出面试官最可能追问的薄弱点）
+## 五、7 天提升清单（按天给出可执行的补强动作）
+要求：结合中国校招/社招语境，语言具体、可落地，避免空泛套话。`;
+
+/* 规则引擎兜底建议（未接入模型或调用失败时使用，保证功能不空转） */
+function ruleResumeAdvice(p, raw) {
+  const p2 = p || getJobseek();
+  const text = raw || (($("resume-raw") && $("resume-raw").value.trim()) || "");
+  const body = text || p2.projects || "";
+  const r = body ? analyzeResumeText(body) : null;
+  const jdSkills = (p2.skills || "").split(/[,，、]/).map((s) => s.trim()).filter(Boolean);
+  const hit = jdSkills.filter((s) => SKILL_DICT.includes(s));
+  const miss = jdSkills.filter((s) => !SKILL_DICT.includes(s));
+  const items = [];
+  items.push(`<div class="evidence"><span class="badge badge-green">岗位匹配</span><p>目标岗位「${escHtml(p2.targetRole || "未填写")}」：已识别技能 ${hit.length} 项${hit.length ? "（" + escHtml(hit.join("、")) + "）" : ""}${miss.length ? "；未被技能词典收录 " + miss.length + " 项，建议改写为行业通用写法" : ""}。</p></div>`);
+  if (r) {
+    const weak = r.dims.filter((d) => d.score < 60);
+    items.push(`<div class="evidence"><span class="badge ${weak.length ? "badge-red" : "badge-green"}">六维诊断</span><p>健康度 ${r.total}/100${weak.length ? "，薄弱维度：" + escHtml(weak.map((d) => d.name).join("、")) : "，各维度均达标"}。</p></div>`);
+    if (r.rewrites.length) {
+      items.push(`<div class="evidence"><span class="badge badge-red">改写建议</span>${r.rewrites.slice(0, 3).map((w) => `<p style="margin-top:6px"><b>原文：</b><q>${escHtml(w.original)}</q><br><b>改写：</b>${escHtml(w.suggestion)}</p>`).join("")}</div>`);
+    }
+  } else {
+    items.push(`<div class="evidence"><span class="badge badge-red">内容缺失</span><p>尚未填写简历原文或项目经历，建议先粘贴简历或填写「项目与经历」。</p></div>`);
+  }
+  items.push(`<div class="evidence"><span class="badge">面试风险</span><p>面试官通常围绕「量化数据真实性」「技术选型理由」「难点与权衡」三点追问，请为每段经历准备这三类应答。</p></div>`);
+  return `<div class="report-grid"><div>${items.join("")}</div><div><div class="pane-title">说明</div><p class="hint">当前为规则引擎建议（未接入模型或调用失败时的兜底）。接入 API Key 或连接后端后将由真实模型生成个性化建议。</p></div></div>`;
+}
+
+async function aiResumeAdvice() {
+  if (!requireLogin()) return;
+  const p = readJobseekForm();
+  const raw = ($("resume-raw") && $("resume-raw").value.trim()) || "";
+  if (!p.targetRole && !p.projects && !raw) {
+    toast("请先填写求职信息（至少目标岗位或项目经历）");
+    return;
+  }
+  const btn = $("js-advice-btn");
+  const box = $("js-advice-result");
+  if (!box) return;
+  const hasLLM = (typeof llm !== "undefined" && llm) ||
+    (typeof fmApi !== "undefined" && fmApi && fmApi.backendReady());
+  if (btn) { btn.disabled = true; btn.textContent = "⏳ AI 分析中…"; }
+
+  if (!hasLLM) {
+    box.innerHTML = ruleResumeAdvice(p, raw);
+    if (btn) { btn.disabled = false; btn.textContent = "🤖 AI 优化建议"; }
+    toast("未接入模型，已给出规则引擎建议");
+    return;
+  }
+
+  const modelLabel = (typeof fmApi !== "undefined" && fmApi && fmApi.backendReady())
+    ? `后端 ${fmApi.backendModel()}`
+    : (typeof llm !== "undefined" && llm ? llm.model : "模型");
+  box.innerHTML = `<div class="evidence fade-up"><b>（真实模型 · ${escHtml(modelLabel)}）</b>正在生成优化建议…<div id="js-advice-stream" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div></div>`;
+  const stream = $("js-advice-stream");
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), 60000);
+  let full = "";
+  try {
+    await streamChat([
+      { role: "system", content: RESUME_ADVICE_SYSTEM },
+      { role: "user", content: jobseekToText(p, raw) },
+    ], (piece) => { full += piece; if (stream) stream.textContent = full; }, ctrl.signal);
+    if (stream) stream.textContent = full;
+    toast("AI 优化建议已生成");
+  } catch (e) {
+    const msg = (e && e.message) ? e.message : String(e);
+    box.innerHTML = ruleResumeAdvice(p, raw) +
+      `<div class="notice notice-info" style="margin-top:10px">模型调用失败（${escHtml(msg)}），已展示规则引擎建议。</div>`;
+    toast("模型调用失败，已回退规则引擎");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "🤖 AI 优化建议"; }
+  }
+}
+
+/* ---------- ③ 一键导出 PDF（构建打印视图 + window.print，零依赖） ---------- */
+function buildResumeHtml(p) {
+  const p2 = p || getJobseek();
+  const raw = ($("resume-raw") && $("resume-raw").value.trim()) || "";
+  const skills = (p2.skills || "").split(/[,，、]/).map((s) => s.trim()).filter(Boolean);
+  const esc2 = (s) => escHtml(String(s == null ? "" : s));
+  const block = (title, content) => (content
+    ? `<section class="sec"><h2>${esc2(title)}</h2><div class="body">${esc2(content).replace(/\n/g, "<br>")}</div></section>`
+    : "");
+  return `<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>${esc2(p2.name || "简历")} · ${esc2(p2.targetRole || "求职简历")}</title>
+<style>
+  @page { size: A4; margin: 14mm 12mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, "Songti SC", "SimSun", serif; color: #1C1913; background: #F4F1E8; margin: 0; padding: 24px; }
+  .sheet { max-width: 780px; margin: 0 auto; background: #fff; padding: 28px 32px; border: 1px solid #D8D2BF; }
+  header { border-bottom: 2px solid #1C1913; padding-bottom: 12px; margin-bottom: 18px; }
+  h1 { font-size: 24px; margin: 0 0 6px; letter-spacing: 1px; }
+  .meta { font-size: 12px; color: #6B6555; line-height: 1.8; }
+  .meta b { color: #BE3A1E; font-weight: 400; }
+  .sec { margin-bottom: 16px; }
+  .sec h2 { font-size: 13px; letter-spacing: 2px; color: #1C1913; border-left: 3px solid #BE3A1E; padding-left: 8px; margin: 0 0 8px; }
+  .body { font-size: 12.5px; line-height: 1.85; color: #33302A; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 11.5px; border: 1px solid #B9B29A; padding: 2px 8px; background: #F4F1E8; }
+  footer { margin-top: 22px; padding-top: 10px; border-top: 1px solid #D8D2BF; font-size: 10.5px; color: #8A8474; text-align: center; }
+  @media print { body { background: #fff; padding: 0; } .sheet { border: 0; } }
+</style></head>
+<body><div class="sheet">
+  <header>
+    <h1>${esc2(p2.name || "（未填写姓名）")}</h1>
+    <div class="meta">
+      <b>求职意向</b> ${esc2(p2.targetRole || "未填写")}　|　<b>城市</b> ${esc2(p2.city || "未填写")}<br>
+      <b>学历</b> ${esc2(p2.degree || "未填写")}　|　<b>经验</b> ${esc2(p2.years || "未填写")}<br>
+      <b>邮箱</b> ${esc2(p2.email || "未填写")}　|　<b>电话</b> ${esc2(p2.phone || "未填写")}
+    </div>
+  </header>
+  ${skills.length ? `<section class="sec"><h2>技能标签</h2><div class="tags">${skills.map((s) => `<span class="tag">${esc2(s)}</span>`).join("")}</div></section>` : ""}
+  ${block("教育背景", p2.education)}
+  ${block("项目与经历", p2.projects)}
+  ${block("自我评价", p2.summary)}
+  ${raw ? block("简历原文", raw) : ""}
+  <footer>由 面镜 FutureMirror 生成 · 内容由本人填写，导出前请核对真实性</footer>
+</div></body></html>`;
+}
+
+function exportResumePdf() {
+  if (!requireLogin()) return;
+  const p = readJobseekForm();
+  if (!p.name && !p.targetRole && !p.projects) {
+    toast("请先填写求职信息，再导出 PDF");
+    return;
+  }
+  const html = buildResumeHtml(p);
+  let w = null;
+  try { w = window.open("", "_blank"); } catch (e) { w = null; }
+  if (!w) {
+    // 弹出被拦截时降级：用隐藏 iframe 打印，保证导出路径不中断
+    try {
+      const old = document.getElementById("fm-print-frame");
+      if (old) old.remove();
+      const fr = document.createElement("iframe");
+      fr.id = "fm-print-frame";
+      fr.style.position = "fixed";
+      fr.style.right = "0";
+      fr.style.bottom = "0";
+      fr.style.width = "0";
+      fr.style.height = "0";
+      fr.style.border = "0";
+      document.body.appendChild(fr);
+      const d = fr.contentDocument || fr.contentWindow.document;
+      d.open(); d.write(html); d.close();
+      setTimeout(() => {
+        try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch (e2) { toast("导出失败，请允许弹出窗口后重试"); }
+      }, 400);
+      toast("已生成简历，正在唤起打印（可另存为 PDF）");
+      return;
+    } catch (e3) {
+      toast("导出失败：" + ((e3 && e3.message) || e3));
+      return;
+    }
+  }
+  try {
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => {
+      try { w.focus(); w.print(); } catch (e4) { toast("唤起打印失败，请手动 Ctrl+P"); }
+    }, 400);
+    toast("已生成简历，正在唤起打印（可另存为 PDF）");
+    try { logDev("info", "简历 PDF 导出：" + (p.name || "未署名")); } catch (e5) {}
+  } catch (e6) {
+    toast("导出失败：" + ((e6 && e6.message) || e6));
+  }
+}
+
+/* ============================================================
  * 13. 职业探索：岗位数据库 + 匹配引擎
  * ============================================================ */
 const CAREER_DB = [
@@ -11005,6 +11660,216 @@ function restoreJdSelection() {
   }
 }
 
+
+/* ============================================================
+ * v36 · 真实岗位推荐（企业招聘官网直达 + 简历匹配 + AI 面试建议）
+ *   ① REAL_JOBS：公开渠道整理的真实岗位（公司 / 岗位 / 城市 / 薪资 /
+ *      技能标签 / 企业招聘官网直达链接 / MBTI 适配）
+ *   ② currentResumeText / matchJobToResume：与本人简历做技能匹配
+ *   ③ renderRealJobs：卡片渲染（按匹配度排序，支持关键词筛选）
+ *   ④ aiInterviewAdvice：LLM 生成面试建议（规则引擎兜底）
+ * ============================================================ */
+
+const REAL_JOBS = [
+  { id: "tx-backend", company: "腾讯", role: "后端开发工程师（校招）", city: "深圳", salary: "20-35K·15薪", level: "校招 / 应届",
+    url: "https://join.qq.com/", tags: ["Java", "Go", "MySQL", "Redis", "分布式", "Linux"], mbtiFit: ["ISTJ", "INTJ", "INTP", "ISTP"],
+    desc: "负责高并发后台服务的设计与开发，参与分布式系统建设与性能调优。" },
+  { id: "tx-frontend", company: "腾讯", role: "前端开发工程师（校招）", city: "深圳 / 北京", salary: "18-32K·15薪", level: "校招 / 应届",
+    url: "https://join.qq.com/", tags: ["JavaScript", "TypeScript", "React", "Node.js", "Git"], mbtiFit: ["ISFP", "INFP", "ISTP", "ENTP"],
+    desc: "负责 Web / 小程序端的产品研发，关注交互体验与前端性能。" },
+  { id: "ali-java", company: "阿里巴巴", role: "Java 研发工程师", city: "杭州", salary: "22-40K·16薪", level: "1-3 年",
+    url: "https://talent.alibaba.com/", tags: ["Java", "MySQL", "Redis", "Docker", "消息队列", "Kafka"], mbtiFit: ["ISTJ", "INTJ", "ESTJ"],
+    desc: "参与电商核心链路研发，负责服务拆分、缓存设计与稳定性保障。" },
+  { id: "ali-data", company: "阿里巴巴", role: "数据分析师", city: "杭州 / 上海", salary: "18-30K·16薪", level: "1-3 年",
+    url: "https://talent.alibaba.com/", tags: ["SQL", "Python", "数据分析", "Excel"], mbtiFit: ["ISTJ", "INTJ", "INFJ"],
+    desc: "负责业务指标体系搭建与专题分析，输出可落地的数据洞察。" },
+  { id: "bd-algo", company: "字节跳动", role: "算法工程师（推荐 / NLP）", city: "北京 / 上海", salary: "30-60K·15薪", level: "校招 / 1-3 年",
+    url: "https://jobs.bytedance.com/", tags: ["Python", "机器学习", "深度学习", "PyTorch", "LLM"], mbtiFit: ["INTP", "INTJ", "ENTP"],
+    desc: "负责推荐或内容理解方向的模型研发与线上效果优化。" },
+  { id: "bd-frontend", company: "字节跳动", role: "前端开发工程师", city: "北京 / 深圳", salary: "22-40K·15薪", level: "1-3 年",
+    url: "https://jobs.bytedance.com/", tags: ["JavaScript", "TypeScript", "React", "Vue", "Node.js"], mbtiFit: ["ISFP", "ENTP", "ISTP"],
+    desc: "负责多端产品研发与工程化建设，关注渲染性能与研发效率。" },
+  { id: "bd-llm", company: "字节跳动", role: "LLM 应用开发工程师", city: "北京", salary: "35-65K·15薪", level: "1-3 年",
+    url: "https://jobs.bytedance.com/", tags: ["Python", "LLM", "RAG", "Prompt", "Agent"], mbtiFit: ["INTP", "ENTP", "INTJ"],
+    desc: "负责任务型 Agent 与检索增强生成系统的设计与落地。" },
+  { id: "bd-pm", company: "百度", role: "产品经理（AI 方向）", city: "北京", salary: "20-35K·15薪", level: "1-3 年",
+    url: "https://talent.baidu.com/", tags: ["产品设计", "数据分析", "项目管理", "LLM"], mbtiFit: ["ENFP", "ENTJ", "INFJ", "ENFJ"],
+    desc: "负责 AI 产品的需求定义与落地推进，联动研发与设计团队。" },
+  { id: "mt-backend", company: "美团", role: "后端开发工程师", city: "北京 / 上海", salary: "22-38K·15薪", level: "1-3 年",
+    url: "https://zhaopin.meituan.com/", tags: ["Java", "MySQL", "Redis", "Kafka", "分布式"], mbtiFit: ["ISTJ", "ESTJ", "ISTP"],
+    desc: "参与本地生活核心交易链路研发，保障高并发场景下的稳定性。" },
+  { id: "jd-supply", company: "京东", role: "供应链研发工程师", city: "北京", salary: "20-35K·14薪", level: "1-3 年",
+    url: "https://zhaopin.jd.com/", tags: ["Java", "MySQL", "SQL", "数据分析"], mbtiFit: ["ISTJ", "ISFJ", "ESTJ"],
+    desc: "负责仓储与履约系统的研发，支撑大促峰值流量。" },
+  { id: "wy-game", company: "网易", role: "游戏服务端开发工程师", city: "杭州 / 广州", salary: "20-36K·14薪", level: "校招 / 1-3 年",
+    url: "https://hr.163.com/", tags: ["C++", "Go", "Linux", "MySQL", "Redis"], mbtiFit: ["ISTP", "INTP", "ISTJ"],
+    desc: "负责游戏服务端逻辑与网络同步，优化帧同步与延迟表现。" },
+  { id: "mi-embedded", company: "小米", role: "嵌入式软件开发工程师", city: "北京 / 武汉", salary: "18-32K·14薪", level: "1-3 年",
+    url: "https://hr.xiaomi.com/", tags: ["C++", "Linux", "Python", "Git"], mbtiFit: ["ISTP", "ISTJ", "INTJ"],
+    desc: "负责智能硬件的嵌入式系统开发与驱动调试。" },
+  { id: "hw-ai", company: "华为", role: "AI 工程师（昇腾方向）", city: "深圳 / 西安", salary: "25-45K·14薪", level: "1-3 年",
+    url: "https://career.huawei.com/", tags: ["Python", "深度学习", "PyTorch", "LLM", "Linux"], mbtiFit: ["INTJ", "INTP", "ISTJ"],
+    desc: "负责大模型训练与推理优化，参与国产算力平台适配。" },
+  { id: "pdd-data", company: "拼多多", role: "数据开发工程师", city: "上海", salary: "25-45K·16薪", level: "1-3 年",
+    url: "https://careers.pinduoduo.com/", tags: ["SQL", "Python", "数据分析", "Kafka"], mbtiFit: ["ISTJ", "INTJ", "ISTP"],
+    desc: "负责离线与实时数仓建设，支撑业务决策与算法特征。" },
+  { id: "ks-algo", company: "快手", role: "推荐算法工程师", city: "北京 / 成都", salary: "28-52K·15薪", level: "1-3 年",
+    url: "https://zhaopin.kuaishou.com/", tags: ["Python", "机器学习", "深度学习", "PyTorch"], mbtiFit: ["INTP", "ENTP", "INTJ"],
+    desc: "负责短视频推荐模型的迭代与线上 AB 实验。" },
+  { id: "ant-java", company: "蚂蚁集团", role: "Java 研发工程师（支付方向）", city: "杭州 / 上海", salary: "25-45K·16薪", level: "1-3 年",
+    url: "https://talent.antgroup.com/", tags: ["Java", "MySQL", "分布式", "Redis", "消息队列"], mbtiFit: ["ISTJ", "INTJ", "ESTJ"],
+    desc: "负责支付核心链路研发，保障资金安全与一致性。" },
+];
+
+/* 当前可用于匹配的简历文本：简历匹配页 → 本地存档 → 求职信息档案 */
+function currentResumeText() {
+  const parts = [];
+  try {
+    const el = $("resume");
+    if (el && el.value.trim()) parts.push(el.value.trim());
+  } catch (e) {}
+  try {
+    const stored = store.get("fm_resume", "");
+    if (stored) parts.push(String(stored));
+  } catch (e) {}
+  if (typeof getJobseek === "function") {
+    const js = getJobseek();
+    parts.push([js.skills, js.projects, js.summary, js.education].filter(Boolean).join("\n"));
+  }
+  try {
+    const el2 = $("resume-raw");
+    if (el2 && el2.value.trim()) parts.push(el2.value.trim());
+  } catch (e2) {}
+  return parts.filter(Boolean).join("\n");
+}
+
+/* 单个岗位 × 简历匹配：技能命中 + MBTI 适配加成 */
+function matchJobToResume(job) {
+  const text = currentResumeText();
+  const tags = (job.tags || []).filter(Boolean);
+  const hit = tags.filter((t) => text.indexOf(t) >= 0);
+  const miss = tags.filter((t) => text.indexOf(t) < 0);
+  let score = tags.length ? Math.round((hit.length / tags.length) * 100) : 0;
+  let mbtiBonus = 0;
+  let mbtiNote = "";
+  const m = (typeof currentMbti === "function") ? currentMbti() : null;
+  if (m && m.type && Array.isArray(job.mbtiFit) && job.mbtiFit.includes(m.type)) {
+    mbtiBonus = 5;
+    mbtiNote = `与你的 ${m.type} 特质契合`;
+  }
+  score = Math.max(0, Math.min(100, Math.min(100, score + mbtiBonus)));
+  return { score, hit, miss, mbtiBonus, mbtiNote, hasResume: !!text.trim() };
+}
+
+/* 关键词筛选 + 按匹配度排序 */
+function filterRealJobs() {
+  const kwEl = $("rj-keyword");
+  const kw = kwEl ? String(kwEl.value || "").trim().toLowerCase() : "";
+  const box = $("real-jobs-list");
+  if (!box) return;
+  let list = REAL_JOBS.slice();
+  if (kw) {
+    list = list.filter((j) =>
+      [j.company, j.role, j.city, j.level, j.desc, (j.tags || []).join(" ")]
+        .join(" ").toLowerCase().indexOf(kw) >= 0);
+  }
+  const scored = list.map((j) => Object.assign({}, j, matchJobToResume(j)));
+  scored.sort((a, b) => b.score - a.score);
+  if (!scored.length) {
+    box.innerHTML = `<div class="notice notice-info">没有匹配的岗位，试试更换关键词（如：Java、算法、前端、上海）。</div>`;
+    return;
+  }
+  box.innerHTML = scored.map((j) => {
+    const tagHtml = (j.tags || []).map((t) => {
+      const has = j.hit.indexOf(t) >= 0;
+      return `<span class="career-skill-tag ${has ? "have" : "need"}">${escHtml(t)}</span>`;
+    }).join("");
+    const scoreColor = j.score >= 75 ? "var(--green)" : j.score >= 50 ? "var(--brand)" : "var(--red)";
+    return `<div class="rj-card fade-up">
+      <div class="rj-head">
+        <span class="rj-role">${escHtml(j.role)}</span>
+        <span class="rj-company">${escHtml(j.company)}</span>
+        <span class="rj-match" style="color:${scoreColor}">匹配 ${j.score}%</span>
+      </div>
+      <div class="rj-meta">${escHtml(j.city)}　·　${escHtml(j.salary)}　·　${escHtml(j.level)}${j.mbtiNote ? "　·　🧠 " + escHtml(j.mbtiNote) : ""}</div>
+      <div class="rj-meta">${escHtml(j.desc)}</div>
+      <div class="career-skills" style="margin-top:8px">${tagHtml}</div>
+      ${j.hasResume ? "" : `<div class="hint" style="margin-top:8px">未检测到简历内容，匹配度按技能标签占比估算；填写简历后可获得更准确匹配。</div>`}
+      <div class="rj-actions">
+        <a class="rj-link" href="${escHtml(j.url)}" target="_blank" rel="noopener noreferrer">前往 ${escHtml(j.company)} 招聘官网 →</a>
+        <button class="btn btn-outline btn-sm" onclick="aiInterviewAdvice('${escHtml(j.id)}')">🎙 AI 面试建议</button>
+      </div>
+      <div id="rj-advice-${escHtml(j.id)}" style="margin-top:10px"></div>
+    </div>`;
+  }).join("");
+}
+
+function renderRealJobs() {
+  filterRealJobs();
+  const cnt = $("rj-count");
+  if (cnt) cnt.textContent = String(REAL_JOBS.length);
+}
+
+/* 规则引擎兜底的面试建议（未接入模型或调用失败时使用） */
+function ruleInterviewAdvice(job, m) {
+  const miss = (m && m.miss) || [];
+  const items = [];
+  items.push(`<div class="evidence"><span class="badge badge-brand">考点清单</span><p>${(job.tags || []).map((t) => escHtml(t)).join("、")}</p></div>`);
+  if (miss.length) {
+    items.push(`<div class="evidence"><span class="badge badge-red">优先补强</span><p>简历中未体现：${miss.map((t) => escHtml(t)).join("、")}。建议准备一个能说明该技能的项目片段。</p></div>`);
+  }
+  items.push(`<div class="evidence"><span class="badge">高频追问</span><p>围绕「技术选型理由」「遇到的最大难点」「量化结果」三点准备 STAR 故事，每个故事控制在 90 秒内。</p></div>`);
+  if (typeof currentMbti === "function") {
+    const mm = currentMbti();
+    if (mm && mm.type && typeof MBTI_TYPES !== "undefined" && MBTI_TYPES[mm.type]) {
+      items.push(`<div class="evidence"><span class="badge badge-green">性格应答提醒</span><p>${escHtml(MBTI_TYPES[mm.type].tip)}</p></div>`);
+    }
+  }
+  return `<div class="report-grid"><div>${items.join("")}</div><div><div class="pane-title">说明</div><p class="hint">当前为规则引擎建议。接入 API Key 或连接后端后，将由真实模型结合你的简历生成个性化面试建议。</p></div></div>`;
+}
+
+async function aiInterviewAdvice(jobId) {
+  if (!requireLogin()) return;
+  const job = REAL_JOBS.find((j) => j.id === jobId);
+  if (!job) return;
+  const box = $("rj-advice-" + jobId);
+  if (!box) return;
+  const m = matchJobToResume(job);
+  const hasLLM = (typeof llm !== "undefined" && llm) ||
+    (typeof fmApi !== "undefined" && fmApi && fmApi.backendReady());
+  if (!hasLLM) {
+    box.innerHTML = ruleInterviewAdvice(job, m);
+    toast("未接入模型，已给出规则引擎建议");
+    return;
+  }
+  box.innerHTML = `<div class="evidence fade-up">正在生成面试建议…<div id="rj-stream-${jobId}" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div></div>`;
+  const stream = $("rj-stream-" + jobId);
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), 60000);
+  const mm = (typeof currentMbti === "function") ? currentMbti() : null;
+  const ctx = [
+    `目标岗位：${job.company} · ${job.role}（${job.city}，${job.salary}，${job.level}）`,
+    `岗位描述：${job.desc}`,
+    `技能要求：${(job.tags || []).join("、")}`,
+    `我的简历命中：${m.hit.join("、") || "无"}`,
+    `我的简历缺口：${m.miss.join("、") || "无"}`,
+    mm && mm.type ? `我的 MBTI：${mm.type}` : "",
+    `简历原文：\n${currentResumeText().slice(0, 3000)}`,
+  ].filter(Boolean).join("\n");
+  let full = "";
+  try {
+    await streamChat([
+      { role: "system", content: `你是资深技术面试官与求职教练。针对给定岗位与候选人简历，用 Markdown 输出：\n## 岗位核心考点（3-5 条）\n## 高频面试题（5 条，附答题要点）\n## 结合简历的追问点（指出简历中最可能被深挖的 2-3 处）\n## 7 天冲刺清单\n要求具体、可执行，结合中国互联网面试语境。` },
+      { role: "user", content: ctx },
+    ], (piece) => { full += piece; if (stream) stream.textContent = full; }, ctrl.signal);
+    if (stream) stream.textContent = full;
+    toast("面试建议已生成");
+  } catch (e) {
+    const msg = (e && e.message) ? e.message : String(e);
+    box.innerHTML = ruleInterviewAdvice(job, m) +
+      `<div class="notice notice-info" style="margin-top:10px">模型调用失败（${escHtml(msg)}），已展示规则引擎建议。</div>`;
+  }
+}
 /* ============================================================
  * v12 · 生产级「可验证运行时能力」三件套
  *  1) MCP 实时控制台：本地模拟 tool_call → 真实执行 → JSON 返回
@@ -11901,6 +12766,7 @@ const PROFILE_SKILLS = ["JavaScript", "TypeScript", "Python", "Java", "Go", "Rea
 const PROFILE_DEFAULTS = {
   avatar: { type: "auto", value: "" },
   city: "", degree: "", years: "", status: "在职看机会", target: "", bio: "", skills: [],
+  mbti: "", mbtiAt: 0, mbtiClarity: 0,
   prefs: { voice: true, autoSpeak: false, weekly: false, crosshair: true },
   vip: false,
 };
@@ -12113,6 +12979,7 @@ function renderProfile() {
   if (p.degree) tags.push("🎓 " + p.degree);
   if (p.years) tags.push("⏳ " + p.years);
   if (p.status) tags.push("💼 " + p.status);
+  if (p.mbti) tags.push("🧠 MBTI " + p.mbti);   // v36：MBTI 测评完成后自动同步
   $("profile-tags").innerHTML = tags.length
     ? tags.map(t => `<span class="badge">${esc(t)}</span>`).join("")
     : `<span class="badge badge-amber">资料待完善</span>`;
@@ -14104,11 +14971,12 @@ function printPlanPage() { try { window.print(); } catch (e) {} }
   const S = 'fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"';
   const A = 'fill="var(--brand)" stroke="none"';   // 朱红 accent
   const BP_ICONS = {
-    /* ---- 导航十一枚 ---- */
+    /* ---- 导航十二枚（v36 新增 mbti） ---- */
     dashboard: `<rect x="3.5" y="3.5" width="7" height="7" ${S}/><rect x="13.5" y="3.5" width="7" height="7" ${S}/><rect x="3.5" y="13.5" width="7" height="7" ${S}/><rect x="14.5" y="14.5" width="5" height="5" ${A}/>`,
     match: `<path d="M5 3.5h8l4 4v13H5z" ${S}/><path d="M13 3.5v4h4" ${S}/><circle cx="15.5" cy="15" r="3" ${S}/><path d="M17.6 17.1L20 19.5" ${S}/>`,
     resume: `<path d="M4.5 3.5h9l5 5v12h-14z" ${S}/><path d="M13.5 3.5v5h5" ${S}/><path d="M7.5 12.5l2 2 3.5-3.5" ${S}/><path d="M7.5 16.5h6" ${S}/>`,
     career: `<circle cx="12" cy="12" r="8.5" ${S}/><path d="M15.5 8.5L13 13l-4.5 2.5L11 11z" ${S}/><circle cx="12" cy="12" r="1.2" ${A}/>`,
+    mbti: `<path d="M12 4.6c-2.6 0-4.3 1.7-4.3 3.6 0 .9.3 1.6.8 2.2-1 .6-1.6 1.5-1.6 2.6 0 1.9 1.9 3.2 4.3 3.2.9 0 1.7-.2 2.3-.6.5.4 1.3.6 2.3.6 2.4 0 4.3-1.3 4.3-3.2 0-1.1-.6-2-1.6-2.6.5-.6.8-1.3.8-2.2 0-1.9-1.7-3.6-4.3-3.6z" ${S}/><path d="M12 4.6v11.8" ${S}/><circle cx="9.4" cy="10.4" r="1" ${A}/><circle cx="14.6" cy="10.4" r="1" ${S}/>`,
     interview: `<rect x="9.2" y="3" width="5.6" height="10.5" rx="2.8" ${S}/><path d="M6 11.2a6 6 0 0 0 12 0" ${S}/><path d="M12 17.2v3.3" ${S}/><path d="M8.5 20.5h7" ${S}/>`,
     rag: `<path d="M12 6.8C10.2 5.2 7.4 4.6 4.2 5v13.4c3.2-.4 6 .2 7.8 1.6" ${S}/><path d="M12 6.8c1.8-1.6 4.6-2.2 7.8-1.6v13.4c-3.2-.4-6 .2-7.8 1.6" ${S}/><path d="M12 6.8v13.6" ${S}/>`,
     report: `<path d="M3.5 20.5h17" ${S}/><path d="M6 20.5V12" ${S}/><path d="M11 20.5V7" ${S}/><path d="M16 20.5v-6" stroke="var(--brand)" stroke-width="1.5" fill="none" stroke-linecap="square" stroke-linejoin="miter"/>`,
@@ -14219,7 +15087,12 @@ function toggleAiAssistant(force) {
 function renderAiQuick() {
   const box = $("ai-panel-quick");
   if (!box) return;
-  box.innerHTML = AI_PRESETS.map((p, i) => `<button class="ai-quick-chip" onclick="askAiPreset(${i})">${p.chip}</button>`).join("");
+  const base = AI_PRESETS.map((p, i) => `<button class="ai-quick-chip" onclick="askAiPreset(${i})">${p.chip}</button>`).join("");
+  /* v36：已载入报告上下文时，追加报告追问快捷问题 */
+  const extra = aiReportCtx
+    ? REPORT_FOLLOWUP_QUESTIONS.map((q, i) => `<button class="ai-quick-chip" onclick="askReportFollowupPreset(${i})">📊 ${escHtml(q)}</button>`).join("")
+    : "";
+  box.innerHTML = base + extra;
 }
 function askAiPreset(i) {
   const p = AI_PRESETS[i];
@@ -14248,6 +15121,40 @@ async function sendAiAssistant() {
     const actions = (preset.actions || []).map(a =>
       `<button class="btn btn-primary btn-sm" onclick="navTo('${a.page}');toggleAiAssistant(false)">${a.label}</button>`).join("");
     appendAiMsg("ai", esc(preset.a).replace(/\n/g, "<br>") + (actions ? `<div class="ai-actions">${actions}</div>` : ""), true);
+    return;
+  }
+
+  /* 1.5) v36 报告追问：已载入报告上下文时，基于真实报告数据作答（不编造分数） */
+  if (aiReportCtx) {
+    const bubble = appendAiMsg("ai", "思考中…", true);
+    if (bubble) bubble.classList.add("typing");
+    if (llm || fmApi.backendReady()) {
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 60000);
+      let full = "";
+      try {
+        await streamChat([
+          { role: "system", content: "你是面镜 FutureMirror 的面试教练。用户正在追问自己的评估报告。必须严格基于【本次评估报告】中的真实数据作答，不得编造任何分数或证据；数据未覆盖的部分要诚实说明，并给出可执行的下一步。" },
+          { role: "user", content: `问题：${q}\n\n${aiReportCtx}` },
+        ], (piece) => {
+          full += piece;
+          if (bubble) { bubble.classList.remove("typing"); bubble.textContent = full; }
+          const b2 = $("ai-assistant-messages");
+          if (b2) b2.scrollTop = b2.scrollHeight;
+        }, ctrl.signal);
+        if (bubble) { bubble.classList.remove("typing"); bubble.textContent = full || "（模型未返回内容）"; }
+      } catch (e) {
+        if (bubble) {
+          bubble.classList.remove("typing");
+          bubble.textContent = "模型调用失败（" + (e && e.message ? e.message : "未知错误") + "）。以下基于你的真实报告数据作答：\n" + ruleReportAnswer(q);
+        }
+      }
+    } else if (bubble) {
+      bubble.classList.remove("typing");
+      bubble.innerHTML = "（未接入模型 · 基于你的真实报告数据作答）<br>" + escHtml(ruleReportAnswer(q)).replace(/\n/g, "<br>");
+    }
+    const b3 = $("ai-assistant-messages");
+    if (b3) b3.scrollTop = b3.scrollHeight;
     return;
   }
 
@@ -14444,6 +15351,105 @@ function appendAiMsg(role, text, isHtml) {
   else if (document && document.addEventListener) document.addEventListener("DOMContentLoaded", bootAiFab);
 })();
 
+
+/* ============================================================
+ * v36 · 报告追问：把评估报告注入 AI 小助手上下文
+ *   ① buildReportContext：维度得分 / 评分证据 / 学习路径 → 结构化文本
+ *   ② askReportFollowup / askReportFollowupPreset：打开小助手并携带上下文
+ *   ③ reportFollowupCard：报告页预设追问卡
+ *   原则：回答必须基于用户真实报告数据，无数据时明确提示先完成面试
+ * ============================================================ */
+
+const REPORT_FOLLOWUP_QUESTIONS = [
+  "我这次最弱的是哪个维度？该怎么补？",
+  "把最弱维度的评分证据逐条解释一下",
+  "给我一份针对本次表现的 7 天改进计划",
+  "我的回答里哪些话拖了分？怎么改写？",
+];
+
+/* 报告上下文（最近一次报告的结构化快照） */
+let aiReportCtx = null;
+
+function buildReportContext() {
+  if (typeof lastReportData === "undefined" || !lastReportData) return "";
+  const r = lastReportData;
+  const dims = (r.dims || []).map((d) => `${d.dimension} ${d.score} 分：${d.comment || ""}`).join("\n");
+  const ev = (r.evidence || []).slice(0, 8)
+    .map((e) => `[${e.agent || "观察员"}] 原话“${e.quote || ""}” → ${e.note || ""}`).join("\n");
+  const plan = (r.plan || []).slice(0, 7)
+    .map((p) => (p && p.day ? `${p.day}：${p.task || ""}` : "")).filter(Boolean).join("\n");
+  const weakest = r.weakest && r.weakest.dimension ? `最弱维度：${r.weakest.dimension}（${r.weakest.score} 分）` : "";
+  return [
+    `【本次评估报告】总分 ${r.total}/100　${weakest}`,
+    `维度得分：\n${dims}`,
+    `评分证据（引用真实回答）：\n${ev || "（无）"}`,
+    `7 天学习路径：\n${plan || "（无）"}`,
+  ].join("\n\n");
+}
+
+/* 无模型时的确定性兜底回答（基于真实报告数据，不编造） */
+function ruleReportAnswer(q) {
+  const r = (typeof lastReportData !== "undefined" && lastReportData) ? lastReportData : null;
+  if (!r) return "还没有可用的评估报告，请先完成一次模拟面试再来追问。";
+  const s = String(q || "");
+  const weak = [...(r.dims || [])].sort((a, b) => a.score - b.score)[0];
+  if (/最弱|哪个维度|短板/.test(s) && weak) {
+    return `本次最弱维度是「${weak.dimension}」${weak.score} 分。${weak.comment || ""}\n建议优先补齐该维度，再回头复盘得分较高的维度。`;
+  }
+  if (/证据|为什么|依据/.test(s)) {
+    const list = (r.evidence || []).slice(0, 3);
+    if (!list.length) return "本次报告暂无可引用的评分证据。";
+    return `以下是引用你真实回答的评分证据：\n${list.map((e, i) => `${i + 1}. [${e.agent || "观察员"}] “${e.quote || ""}” → ${e.note || ""}`).join("\n")}`;
+  }
+  if (/计划|7\s*天|提升|改进/.test(s)) {
+    const plan = (r.plan || []).slice(0, 7);
+    if (!plan.length) return "本次报告暂未生成学习路径。";
+    return `已为你生成的学习路径：\n${plan.map((p) => `${p.day}：${p.task || ""}`).join("\n")}`;
+  }
+  if (/改写|拖了分|怎么改/.test(s)) {
+    return `优先改写最弱维度「${weak ? weak.dimension : "—"}」相关的回答：把「负责 / 参与」升级为「主导」，并补上量化结果（如 QPS、人数、百分比）。报告中「句子级改写建议」区块已给出逐句模板。`;
+  }
+  return `本次报告总分 ${r.total}/100，最弱维度「${weak ? weak.dimension : "—"}」。你可以问我：最弱维度怎么补、评分证据逐条解释、7 天改进计划、哪些话拖了分。`;
+}
+
+function askReportFollowup(q) {
+  const ctx = buildReportContext();
+  if (!ctx) { toast("还没有评估报告，请先完成一次模拟面试"); return; }
+  aiReportCtx = ctx;
+  toggleAiAssistant(true);
+  renderAiQuick();
+  if (q) {
+    const input = $("ai-assistant-input");
+    if (input) input.value = q;
+    sendAiAssistant();
+  } else {
+    appendAiMsg("ai", "已载入你本次的评估报告 📊 可以直接问：最弱维度怎么补、评分证据逐条解释、哪些话拖了分。你也可以自由提问。", true);
+  }
+}
+
+function askReportFollowupPreset(i) {
+  const q = REPORT_FOLLOWUP_QUESTIONS[i];
+  if (!q) return;
+  askReportFollowup(q);
+}
+
+/* 报告页「追问细节」区块 */
+function reportFollowupCard() {
+  return `<div class="card" style="padding:14px 16px;margin-top:14px">
+    <div class="pane-title" style="margin-bottom:2px">🤖 对报告追问细节
+      <span class="tag-demo">v36 · 报告数据已注入 AI 小助手</span>
+    </div>
+    <p class="hint" style="margin-top:0">
+      点击预设问题或打开小助手自由提问，AI 会携带本次报告的维度得分、评分证据与学习路径作答——基于你的真实数据，不编造分数。
+    </p>
+    <div class="career-chips" style="margin-top:8px">
+      ${REPORT_FOLLOWUP_QUESTIONS.map((q, i) => `<button class="chip-btn" onclick="askReportFollowupPreset(${i})">${escHtml(q)}</button>`).join("")}
+    </div>
+    <div style="margin-top:10px">
+      <button class="btn btn-primary btn-sm" onclick="askReportFollowup()">🤖 打开 AI 小助手自由追问 →</button>
+    </div>
+  </div>`;
+}
 /* ============================================================
  * v22 · 后端适配层（FastAPI 模型网关）
  *   - API Key 只存服务端环境变量，前端零接触
@@ -16056,6 +17062,265 @@ function refreshBackendUi() {
     reduced: RM,
   };
 })();
+/* ============================================================
+ * v36 · MBTI 职业性格测评
+ *   ① MBTI_DIMS / MBTI_SCALE / MBTI_QUESTIONS（4 维度 × 5 题 = 20 题）
+ *   ② MBTI_TYPES：16 型人格（昵称 / 特质 / 适配方向 / 面试提醒）
+ *   ③ 测评引擎：startMbti / answerMbti / computeMbtiResult / finishMbti
+ *   ④ 结果同步：syncMbtiToProfile（写入 fm_profile.mbti，个人中心可见）
+ *   ⑤ 页面渲染：renderMbtiPage / renderMbtiQuestion / renderMbtiResult
+ * ============================================================ */
+
+/* ---------- ① 量表定义 ---------- */
+const MBTI_DIMS = [
+  { key: "EI", a: "E", b: "I", name: "精力来源", aName: "外向 E", bName: "内向 I", q: "你从哪里获得能量？" },
+  { key: "SN", a: "S", b: "N", name: "信息获取", aName: "实感 S", bName: "直觉 N", q: "你如何获取与处理信息？" },
+  { key: "TF", a: "T", b: "F", name: "决策方式", aName: "思考 T", bName: "情感 F", q: "你如何做决定？" },
+  { key: "JP", a: "J", b: "P", name: "生活态度", aName: "判断 J", bName: "知觉 P", q: "你如何安排工作与生活？" },
+];
+
+/* dir = +1：越同意越偏向维度首选字母（a）；dir = -1：越同意越偏向次选字母（b） */
+const MBTI_SCALE = [
+  { label: "完全不同意", v: -2 },
+  { label: "不太同意", v: -1 },
+  { label: "中立 / 不确定", v: 0 },
+  { label: "比较同意", v: 1 },
+  { label: "完全同意", v: 2 },
+];
+
+const MBTI_QUESTIONS = [
+  { dim: "EI", dir: 1, q: "在团队讨论中，我通常是先开口、边说边理清思路的人。" },
+  { dim: "EI", dir: -1, q: "长时间独自编码或写作后，我会感到精力充沛而不是疲惫。" },
+  { dim: "EI", dir: 1, q: "推进事情时，我更愿意当面沟通，而不是发文档或邮件。" },
+  { dim: "EI", dir: 1, q: "假期我更倾向于参加多人聚会，而不是独自待在家里。" },
+  { dim: "EI", dir: -1, q: "到了陌生环境，我倾向于先观察一圈再参与进去。" },
+
+  { dim: "SN", dir: 1, q: "我更关注方案的实际细节与可落地性，而不是整体可能性。" },
+  { dim: "SN", dir: -1, q: "我常常先看到一件事的整体模式与未来可能性。" },
+  { dim: "SN", dir: 1, q: "解决问题时，我更依赖过往经验与具体数据。" },
+  { dim: "SN", dir: -1, q: "我喜欢尝试全新的方法，哪怕它还没有被验证过。" },
+  { dim: "SN", dir: 1, q: "写文档时我更看重准确的数据与步骤，而不是宏观愿景。" },
+
+  { dim: "TF", dir: 1, q: "做决定时，我优先看逻辑与客观标准，而不是他人感受。" },
+  { dim: "TF", dir: -1, q: "我会为了避免伤害别人感受，而调整自己的表达方式。" },
+  { dim: "TF", dir: -1, q: "评价方案时，我更在意它是否公平、对团队氛围有什么影响。" },
+  { dim: "TF", dir: 1, q: "我认为批评应当直接、对事不对人，哪怕会让人不舒服。" },
+  { dim: "TF", dir: 1, q: "我更容易被数据说服，而不是被故事打动。" },
+
+  { dim: "JP", dir: 1, q: "我喜欢提前制定计划，然后按计划一步步推进。" },
+  { dim: "JP", dir: -1, q: "我更倾向于保留灵活空间，临场随机应变。" },
+  { dim: "JP", dir: 1, q: "任务我会尽早完成，不喜欢拖到截止日期前。" },
+  { dim: "JP", dir: -1, q: "面对需求变化，我能快速切换优先级，不会因此焦虑。" },
+  { dim: "JP", dir: 1, q: "我的工作台与文件通常分类清晰、井井有条。" },
+];
+
+/* ---------- ② 16 型人格 ---------- */
+const MBTI_TYPES = {
+  INTJ: { nick: "建筑师", trait: "独立、战略、追求系统性与长期最优解。", fit: "系统架构 / 算法研究 / 技术规划", tip: "面试中多讲「为什么这样设计」，补一个权衡取舍的例子。" },
+  INTP: { nick: "逻辑学家", trait: "好奇、抽象、爱追究原理与边界条件。", fit: "算法研究 / 数据科学 / 后端架构", tip: "警惕过度展开原理，先给结论再补细节。" },
+  ENTJ: { nick: "指挥官", trait: "目标导向、果断、善于组织资源推进。", fit: "技术管理 / 项目负责人 / 产品负责人", tip: "展示你如何带团队拿到结果，而不只是自己做了什么。" },
+  ENTP: { nick: "辩论家", trait: "敏捷、爱挑战、擅长发现新可能。", fit: "创新孵化 / 解决方案 / 创业", tip: "把「想法多」收敛成「落地了哪一个」，用数据收尾。" },
+  INFJ: { nick: "提倡者", trait: "洞察力强、重视意义与长期价值。", fit: "用户研究 / 教育 / 内容策略", tip: "用具体案例证明你的洞察，而不是只谈理念。" },
+  INFP: { nick: "调停者", trait: "理想主义、共情强、重视价值一致。", fit: "内容创作 / UX 设计 / 品牌", tip: "准备「你如何把价值观落到具体产出」的例子。" },
+  ENFJ: { nick: "主人公", trait: "善表达、能凝聚他人、关注成长。", fit: "团队管理 / 培训 / 客户成功", tip: "讲清楚你如何帮助他人成长并带来业务结果。" },
+  ENFP: { nick: "竞选者", trait: "热情、创意多、连接力强。", fit: "市场增长 / 运营 / 社区", tip: "挑选一个做深的项目讲透，避免经历显得发散。" },
+  ISTJ: { nick: "物流师", trait: "严谨、可靠、重视流程与事实。", fit: "后端开发 / 测试 / 运维 / 财务", tip: "强调稳定性与质量结果，补一个主动改进的例子。" },
+  ISFJ: { nick: "守卫者", trait: "细致、尽责、关注他人实际需求。", fit: "技术支持 / 质量保障 / 行政", tip: "把「默默承担」讲成「可量化的交付」。" },
+  ESTJ: { nick: "总经理", trait: "务实、高效、擅长组织与执行。", fit: "项目管理 / 运营 / 交付", tip: "用里程碑与结果数据证明你的推进力。" },
+  ESFJ: { nick: "执政官", trait: "热心、协作、重视团队和谐。", fit: "客户成功 / 人力资源 / 运营", tip: "展示你如何协调多方并达成共识。" },
+  ISTP: { nick: "鉴赏家", trait: "冷静、动手能力强、擅长排查与优化。", fit: "嵌入式 / 硬件 / 性能优化", tip: "准备一个「定位根因 → 修复 → 指标变化」的完整故事。" },
+  ISFP: { nick: "探险家", trait: "审美敏感、务实、重视体验细节。", fit: "视觉设计 / 前端 / 交互", tip: "用作品集说话，并说明设计决策背后的取舍。" },
+  ESTP: { nick: "企业家", trait: "行动快、适应强、擅长现场应变。", fit: "销售 / 商务拓展 / 应急响应", tip: "讲一个高压下快速拿结果的真实案例。" },
+  ESFP: { nick: "表演者", trait: "外向、感染力强、享受当下。", fit: "活动策划 / 直播运营 / 用户体验", tip: "把热情转化为可复用的方法论与数据。" },
+};
+
+/* ---------- ③ 测评引擎 ---------- */
+let mbtiState = null;   // { i: 当前题序, answers: [{dim,dir,v}] }
+
+function getMbti() {
+  try { return store.get("fm_mbti", null); } catch (e) { return null; }
+}
+
+function saveMbti(result) {
+  try { store.set("fm_mbti", result, true); } catch (e) {}
+  return result;
+}
+
+/* 计算：每维 5 题，v∈[-2,2] → 原始分 ∈[-10,10] → 偏向 a 的百分比 */
+function computeMbtiResult(answers) {
+  const acc = {};
+  MBTI_DIMS.forEach((d) => { acc[d.key] = 0; });
+  (answers || []).forEach((a) => {
+    if (acc[a.dim] === undefined) return;
+    acc[a.dim] += a.v * a.dir;
+  });
+  const dims = MBTI_DIMS.map((d) => {
+    const raw = Math.max(-10, Math.min(10, acc[d.key] || 0));
+    const pctA = Math.round((raw + 10) / 20 * 100);   // 偏向 a 的百分比
+    const letter = pctA >= 50 ? d.a : d.b;
+    const strength = Math.abs(pctA - 50) * 2;         // 0-100，越大越典型
+    return {
+      key: d.key, name: d.name, a: d.a, b: d.b, aName: d.aName, bName: d.bName,
+      pctA, pctB: 100 - pctA, letter, strength,
+    };
+  });
+  const type = dims.map((d) => d.letter).join("");
+  const clarity = Math.round(dims.reduce((s, d) => s + d.strength, 0) / dims.length);
+  return { type, dims, clarity, at: Date.now() };
+}
+
+function startMbti() {
+  mbtiState = { i: 0, answers: [] };
+  const intro = $("mbti-intro");
+  const quiz = $("mbti-quiz");
+  const result = $("mbti-result");
+  if (intro) intro.hidden = true;
+  if (result) result.innerHTML = "";
+  if (quiz) quiz.hidden = false;
+  renderMbtiQuestion();
+}
+
+function renderMbtiQuestion() {
+  const quiz = $("mbti-quiz");
+  if (!quiz || !mbtiState) return;
+  const idx = mbtiState.i;
+  if (idx >= MBTI_QUESTIONS.length) { finishMbti(); return; }
+  const item = MBTI_QUESTIONS[idx];
+  const pct = Math.round(idx / MBTI_QUESTIONS.length * 100);
+  quiz.innerHTML = `
+    <div class="mbti-progress-wrap">
+      <div class="hint" style="margin-top:0">第 ${idx + 1} / ${MBTI_QUESTIONS.length} 题</div>
+      <div class="mbti-progress-bar"><div class="mbti-progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="mbti-q-card">
+      <div class="mbti-q-text">${escHtml(item.q)}</div>
+      <div class="mbti-opts">
+        ${MBTI_SCALE.map((s) => `<button class="mbti-opt" onclick="answerMbti(${s.v})">${escHtml(s.label)}</button>`).join("")}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="${idx > 0 ? "prevMbti()" : "cancelMbti()"}">${idx > 0 ? "← 上一题" : "取消测评"}</button>
+    </div>`;
+}
+
+function answerMbti(v) {
+  if (!mbtiState) return;
+  const item = MBTI_QUESTIONS[mbtiState.i];
+  mbtiState.answers[mbtiState.i] = { dim: item.dim, dir: item.dir, v };
+  mbtiState.i++;
+  renderMbtiQuestion();
+}
+
+function prevMbti() {
+  if (!mbtiState || mbtiState.i <= 0) return;
+  mbtiState.i--;
+  renderMbtiQuestion();
+}
+
+function cancelMbti() {
+  mbtiState = null;
+  const intro = $("mbti-intro");
+  if (intro) intro.hidden = false;
+  const quiz = $("mbti-quiz");
+  if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
+  renderMbtiPage();
+}
+
+function finishMbti() {
+  const answers = mbtiState ? mbtiState.answers : [];
+  const r = computeMbtiResult(answers);
+  r.count = MBTI_QUESTIONS.length;
+  saveMbti(r);
+  syncMbtiToProfile(r);
+  mbtiState = null;
+  const quiz = $("mbti-quiz");
+  if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
+  renderMbtiResult(r);
+  toast(`测评完成：${r.type}（已同步到个人中心）`);
+  try { logDev("info", `MBTI 测评完成：${r.type}`); } catch (e) {}
+}
+
+/* ---------- ④ 自动同步到个人信息 ---------- */
+function syncMbtiToProfile(result) {
+  if (!result || !result.type) return null;
+  if (typeof saveProfile !== "function") return null;
+  const p = saveProfile({ mbti: result.type, mbtiAt: result.at, mbtiClarity: result.clarity });
+  // 个人中心若已渲染则即时刷新，让 MBTI 标签立刻可见
+  try { if (typeof renderProfile === "function" && $("profile-tags")) renderProfile(); } catch (e) {}
+  return p;
+}
+
+/* ---------- ⑤ 页面渲染 ---------- */
+function renderMbtiResult(r) {
+  const box = $("mbti-result");
+  if (!box) return;
+  const t = MBTI_TYPES[r.type] || { nick: "", trait: "", fit: "", tip: "" };
+  box.innerHTML = `
+    <div class="card fade-up" style="padding:16px;margin-top:8px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <div>
+          <div class="mbti-type-big">${escHtml(r.type)}</div>
+          <div class="hint" style="margin-top:0">${escHtml(t.nick)}　·　清晰度 ${r.clarity}%</div>
+        </div>
+        <div style="flex:1;min-width:220px">
+          <p style="font-size:13px;color:var(--muted);line-height:1.8;margin:0">${escHtml(t.trait)}</p>
+        </div>
+      </div>
+
+      <div class="pane-title" style="font-size:14px;margin-top:14px">📊 四维倾向</div>
+      ${r.dims.map((d) => `
+        <div class="mbti-dim-row">
+          <span class="mbti-dim-name">${escHtml(d.name)}</span>
+          <div class="dim-bar"><div style="width:${d.pctA}%"></div></div>
+          <span class="mbti-dim-pct">${escHtml(d.aName)} ${d.pctA}% / ${escHtml(d.bName)} ${d.pctB}%</span>
+        </div>`).join("")}
+
+      <div class="report-grid" style="margin-top:14px">
+        <div>
+          <div class="pane-title" style="font-size:14px">🎯 适配方向</div>
+          <p style="font-size:13px;color:var(--muted);line-height:1.8">${escHtml(t.fit)}</p>
+        </div>
+        <div>
+          <div class="pane-title" style="font-size:14px">💬 面试提醒</div>
+          <p style="font-size:13px;color:var(--muted);line-height:1.8">${escHtml(t.tip)}</p>
+        </div>
+      </div>
+
+      <div class="notice notice-info" style="margin-top:14px">
+        结果已同步到「个人中心」（fm_profile.mbti）。岗位推荐与面试建议会参考该结果。
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="startMbti()">重新测评</button>
+        <button class="btn btn-primary btn-sm" onclick="switchTab('profile')">查看个人中心 →</button>
+        <button class="btn btn-outline btn-sm" onclick="switchTab('career')">看看适配岗位 →</button>
+      </div>
+    </div>`;
+}
+
+function renderMbtiPage() {
+  const intro = $("mbti-intro");
+  const quiz = $("mbti-quiz");
+  const result = $("mbti-result");
+  if (!intro) return;
+  const saved = getMbti();
+  if (saved && saved.type) {
+    intro.hidden = true;
+    if (quiz) quiz.hidden = true;
+    renderMbtiResult(saved);
+    return;
+  }
+  intro.hidden = false;
+  if (quiz) quiz.hidden = true;
+  if (result) {
+    result.innerHTML = `<div class="notice notice-info">还没有测评记录。点击上方「开始测评」，20 道题约需 2 分钟。</div>`;
+  }
+}
+
+/* 供其他模块读取当前 MBTI（岗位推荐 / 面试建议引用） */
+function currentMbti() {
+  const s = getMbti();
+  return s && s.type ? s : null;
+}
 </script>
 </body>
 </html>
