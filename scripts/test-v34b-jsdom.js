@@ -15,10 +15,16 @@ const html = fs.readFileSync(path.join(ROOT, "public", "futuremirror-demo.html")
 const srcReport = fs.readFileSync(path.join(ROOT, "frontend", "js", "features", "report.js"), "utf8");
 const srcInterview = fs.readFileSync(path.join(ROOT, "frontend", "js", "features", "interview.js"), "utf8");
 
-let pass = 0, fail = 0;
+let pass = 0,
+  fail = 0;
 function ok(cond, label) {
-  if (cond) { pass++; console.log("  ✅ " + label); }
-  else { fail++; console.log("  ❌ " + label); }
+  if (cond) {
+    pass++;
+    console.log("  ✅ " + label);
+  } else {
+    fail++;
+    console.log("  ❌ " + label);
+  }
 }
 
 function makeDom() {
@@ -75,13 +81,16 @@ async function runTests() {
   // 模拟 renderReport 的 camStatus 计算（源码同口径）
   const chosen = ev(
     "(function(){ var backendPayload = {status:{count:0, presence_rate:null, attentive_rate:null, latest:null}};" +
-    "  return (backendPayload && backendPayload.status && backendPayload.status.count)" +
-    "    ? backendPayload.status" +
-    "    : (typeof camLastSummary === 'object' && camLastSummary ? camLastSummary : null); })()"
+      "  return (backendPayload && backendPayload.status && backendPayload.status.count)" +
+      "    ? backendPayload.status" +
+      "    : (typeof camLastSummary === 'object' && camLastSummary ? camLastSummary : null); })()"
   );
   ok(chosen && chosen.count === 5, "后端零采样时 camStatus 回退到本地 camLastSummary（count=5）");
   const fromLocal = ev("reportStatusCard(camLastSummary)");
-  ok(/82%/.test(fromLocal) && /64%/.test(fromLocal) && /5 次/.test(fromLocal), "本地聚合正常渲染在场率/专注率/采样次数");
+  ok(
+    /82%/.test(fromLocal) && /64%/.test(fromLocal) && /5 次/.test(fromLocal),
+    "本地聚合正常渲染在场率/专注率/采样次数"
+  );
 
   /* ---------- ④ 源码接线：camWasActiveThisSession / camLastSummary 参与报告 ---------- */
   console.log("\n④ 源码接线确认");

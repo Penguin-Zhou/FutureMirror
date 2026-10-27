@@ -82,25 +82,112 @@ function analyze() {
   }));
 }
 
-/* 简历文件上传：.txt 读取，其余展示形态（后续规划解析 PDF/DOCX） */
-$("resume-upload").addEventListener("change", e => {
+/* 简历文件上传：.txt 直接读取；.pdf 端侧解析文本并填入；其余格式展示形态 */
+$("resume-upload").addEventListener("change", async (e) => {
   const f = e.target.files[0];
   if (!f) return;
   const box = $("resume-file");
   const size = (f.size / 1024).toFixed(1);
+  box.classList.add("has-file");
   if (/\.txt$/i.test(f.name)) {
     const reader = new FileReader();
     reader.onload = () => {
-      const text = String(reader.result).slice(0, 4000);
+      const text = String(reader.result).slice(0, 6000);
       $("resume").value = text;
       store.set("fm_resume", text);   // ⭐ 编程式赋值不触发 input 事件，需手动持久化，否则刷新丢失
+      box.textContent = `✅ 已读取 ${f.name}（${size} KB）——文本已填入左侧简历框`;
     };
+    reader.onerror = () => { box.textContent = `⚠️ ${f.name} 读取失败，请重试或手动粘贴文本`; };
     reader.readAsText(f);
-    box.classList.add("has-file");
-    box.textContent = `✅ 已读取 ${f.name}（${size} KB）——文本已填入左侧简历框`;
-  } else {
-    box.classList.add("has-file");
-    box.textContent = `✅ 已选择 ${f.name}（${size} KB）——后续规划解析 PDF/DOCX 并提取技能与项目经历，本演示版仅展示文件形态`;
+    return;
   }
+  if (/\.pdf$/i.test(f.name)) {
+    box.textContent = `⏳ 正在端侧解析 ${f.name}（${size} KB）的 PDF 文本……`;
+    try {
+      const { text, pages } = await parsePdfText(f);
+      if (!text.trim()) {
+        box.textContent = `⚠️ ${f.name} 未提取到文本（可能是扫描件 / 图片型 PDF）。可转存为 .txt 后上传，或手动粘贴文本到左侧简历框。`;
+        return;
+      }
+      const trimmed = text.slice(0, 6000);
+      $("resume").value = trimmed;
+      store.set("fm_resume", trimmed);
+      box.textContent = `✅ 已解析 ${f.name}（${size} KB，${pages} 页）——文本已填入左侧简历框，可点击「生成匹配报告」`;
+    } catch (err) {
+      box.textContent = `⚠️ PDF 解析失败：${err && err.message ? err.message : err}。可改用 .txt 上传，或手动粘贴文本。`;
+    }
+    return;
+  }
+  /* 其他格式（含 .docx）：演示版读取 .txt、解析 .pdf，其余仅展示文件形态 */
+  box.textContent = `✅ 已选择 ${f.name}（${size} KB）——演示版已支持 PDF 文本端侧解析；其余格式可转存为 .pdf 或 .txt 后再上传`;
 });
+
+/* ---------- PDF 端侧解析（同源自托管优先 + CDN 兜底，沿用面试模块 face-api 模式） ---------- */
+const PDFJS_VERSION = "3.11.174";
+const PDFJS_LIB_LOCAL = "models/pdfjs/pdf.min.js";
+const PDFJS_LIB_CDN = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/build/pdf.min.js`;
+const PDFJS_WORKER_LOCAL = "models/pdfjs/pdf.worker.min.js";
+const PDFJS_WORKER_CDN = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.min.js`;
+let _pdfjsLibSource = null;   // "local" | "cdn"，用于决定同源 worker 路径
+
+function loadScriptOncePdf(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[data-fm-src="${src}"]`);
+    if (existing) {
+      const tick = () => (window.pdfjsLib ? resolve(window.pdfjsLib) : setTimeout(tick, 30));
+      tick();
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = src;
+    s.dataset.fmSrc = src;
+    s.onload = () => (window.pdfjsLib ? resolve(window.pdfjsLib) : reject(new Error("pdfjs 未挂载：" + src)));
+    s.onerror = () => reject(new Error("pdfjs 加载失败：" + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensurePdfJs() {
+  if (window.pdfjsLib && _pdfjsLibSource) return window.pdfjsLib;
+  if (window.pdfjsLib && !_pdfjsLibSource) _pdfjsLibSource = "local"; // 已在别处注入
+  if (_pdfjsLibSource) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+      _pdfjsLibSource === "local" ? PDFJS_WORKER_LOCAL : PDFJS_WORKER_CDN;
+    return window.pdfjsLib;
+  }
+  try {
+    await loadScriptOncePdf(PDFJS_LIB_LOCAL);
+    _pdfjsLibSource = "local";
+  } catch (e) {
+    await loadScriptOncePdf(PDFJS_LIB_CDN);
+    _pdfjsLibSource = "cdn";
+  }
+  if (!window.pdfjsLib) throw new Error("PDF 解析库加载失败（同源与 CDN 均不可用）");
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+    _pdfjsLibSource === "local" ? PDFJS_WORKER_LOCAL : PDFJS_WORKER_CDN;
+  return window.pdfjsLib;
+}
+
+async function parsePdfText(file) {
+  const pdfjsLib = await ensurePdfJs();
+  const data = await (file.arrayBuffer
+    ? file.arrayBuffer()
+    : new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(new Uint8Array(r.result));
+        r.onerror = rej;
+        r.readAsArrayBuffer(file);
+      }));
+  const doc = await pdfjsLib.getDocument({ data }).promise;
+  let text = "";
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map((it) => it.str || "").join(" ") + "\n";
+  }
+  return {
+    text: text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(),
+    pages: doc.numPages,
+  };
+}
 

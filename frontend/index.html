@@ -745,7 +745,7 @@ try {
           <div>
             <div class="pane-title">📄 简历文本</div>
             <textarea id="resume" rows="7" placeholder="粘贴简历内容，或上传简历文件（.txt 自动读取）…" aria-label="简历文本"></textarea>
-            <div class="file-drop" id="resume-file">📎 上传简历文件（.pdf / .docx / .txt）——PDF/DOCX 解析为规划项，本演示版读取 .txt，其余仅展示文件形态</div>
+            <div class="file-drop" id="resume-file">📎 上传简历文件（.pdf / .docx / .txt）——支持 PDF 文本端侧解析，.txt 直接读取，其余格式展示形态</div>
             <input type="file" id="resume-upload" accept=".pdf,.docx,.txt" style="margin-top:8px;font-size:13px" aria-label="上传简历文件">
             <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <button class="btn btn-outline btn-sm" onclick="localPiiMask()" title="在浏览器内用正则脱敏手机号/邮箱/身份证，不发起任何网络请求">🔒 本地脱敏预览</button>
