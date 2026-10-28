@@ -1004,7 +1004,9 @@ try {
         填写求职信息，AI 结合目标岗位给出针对性优化建议；确认无误后一键导出 PDF（数据仅存本地，不上传）。
       </p>
 
-      <div class="grid2">
+      <div id="js-gauge"></div>
+
+      <div class="grid2" oninput="syncJobseekForm()">
         <div>
           <div class="pane-title" style="font-size:14px">👤 基本信息</div>
           <div class="js-form-grid">
@@ -1133,6 +1135,7 @@ try {
                style="flex:1;min-width:220px">
         <button class="btn btn-primary btn-sm" onclick="renderRealJobs()">🔍 筛选岗位</button>
       </div>
+      <div id="rj-charts"></div>
       <div id="real-jobs-list">
         <div class="notice notice-info">正在按你的简历计算匹配度…</div>
       </div>
@@ -1904,5 +1907,6 @@ try {
   <script src="js/core/skeleton.js"></script>
   <script src="js/core/media.js"></script>
   <script src="js/features/mbti.js"></script>
+  <script src="js/features/charts.js"></script>
 </body>
 </html>

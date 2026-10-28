@@ -393,8 +393,29 @@ function askReportFollowupPreset(i) {
   askReportFollowup(q);
 }
 
-/* 报告页「追问细节」区块 */
+/* 报告页「追问细节」区块（v37：维度条形图，点击直接追问该维度） */
 function reportFollowupCard() {
+  const r = (typeof lastReportData !== "undefined" && lastReportData) ? lastReportData : null;
+  const dims = (r && Array.isArray(r.dims)) ? r.dims : [];
+  let weakIdx = -1;
+  if (dims.length) {
+    weakIdx = dims.reduce((m, d, i) => ((dims[i].score || 0) < (dims[m].score || 0) ? i : m), 0);
+  }
+  const chart = dims.length ? `
+    <div class="rf-chart">
+      <div class="pane-title" style="font-size:12.5px">📊 维度得分（朱红为最弱项 · 点击条形直接追问）</div>
+      ${hbarSVG(dims.map((d, i) => {
+        const name = String(d.dimension || ("维度 " + (i + 1))).replace(/['"\\]/g, "");
+        return {
+          label: name,
+          value: d.score || 0,
+          text: String(d.score == null ? "—" : d.score),
+          hot: i === weakIdx,
+          tip: `${name} ${d.score} 分`,
+          onclick: `askReportFollowup('我的${name}维度得分偏低，怎么针对性提升？')`,
+        };
+      }), { aria: "报告维度得分", max: 100 })}
+    </div>` : "";
   return `<div class="card" style="padding:14px 16px;margin-top:14px">
     <div class="pane-title" style="margin-bottom:2px">🤖 对报告追问细节
       <span class="tag-demo">v36 · 报告数据已注入 AI 小助手</span>
@@ -405,6 +426,7 @@ function reportFollowupCard() {
     <div class="career-chips" style="margin-top:8px">
       ${REPORT_FOLLOWUP_QUESTIONS.map((q, i) => `<button class="chip-btn" onclick="askReportFollowupPreset(${i})">${escHtml(q)}</button>`).join("")}
     </div>
+    ${chart}
     <div style="margin-top:10px">
       <button class="btn btn-primary btn-sm" onclick="askReportFollowup()">🤖 打开 AI 小助手自由追问 →</button>
     </div>

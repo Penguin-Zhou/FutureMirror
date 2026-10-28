@@ -123,11 +123,13 @@ function renderMbtiQuestion() {
   const idx = mbtiState.i;
   if (idx >= MBTI_QUESTIONS.length) { finishMbti(); return; }
   const item = MBTI_QUESTIONS[idx];
-  const pct = Math.round(idx / MBTI_QUESTIONS.length * 100);
+  const total = MBTI_QUESTIONS.length;
+  const pct = Math.round(idx / total * 100);
+  const dimMeta = MBTI_DIMS.filter((d) => d.key === item.dim)[0];
   quiz.innerHTML = `
     <div class="mbti-progress-wrap">
-      <div class="hint" style="margin-top:0">第 ${idx + 1} / ${MBTI_QUESTIONS.length} 题</div>
-      <div class="mbti-progress-bar"><div class="mbti-progress-fill" style="width:${pct}%"></div></div>
+      <div class="hint" style="margin-top:0">第 ${idx + 1} / ${total} 题${dimMeta ? "　·　" + escHtml(dimMeta.name) : ""}　（${pct}%）</div>
+      ${progressDotsSVG(total, idx, { cell: 13, gap: 4 })}
     </div>
     <div class="mbti-q-card">
       <div class="mbti-q-text">${escHtml(item.q)}</div>
@@ -204,13 +206,22 @@ function renderMbtiResult(r) {
         </div>
       </div>
 
-      <div class="pane-title" style="font-size:14px;margin-top:14px">📊 四维倾向</div>
-      ${r.dims.map((d) => `
-        <div class="mbti-dim-row">
-          <span class="mbti-dim-name">${escHtml(d.name)}</span>
-          <div class="dim-bar"><div style="width:${d.pctA}%"></div></div>
-          <span class="mbti-dim-pct">${escHtml(d.aName)} ${d.pctA}% / ${escHtml(d.bName)} ${d.pctB}%</span>
-        </div>`).join("")}
+      <div class="pane-title" style="font-size:14px;margin-top:14px">📊 四维倾向（条形过半即偏向左侧字母）</div>
+      ${bipolarBarsSVG(r.dims, { aria: r.type + " 四维倾向" })}
+
+      <div class="mbti-radar-wrap">
+        <div>
+          <div class="pane-title" style="font-size:13px">🧭 人格轮廓</div>
+          ${radar4SVG(r.dims.map((d) => ({ name: d.aName + " / " + d.bName, value: d.pctA })), { aria: r.type + " 人格轮廓雷达" })}
+        </div>
+        <div>
+          <div class="pane-title" style="font-size:13px">📶 典型度（越靠外越典型）</div>
+          ${hbarSVG(r.dims.map((d) => ({
+            label: d.name, value: d.strength, text: d.strength + "%",
+            tip: d.name + "：偏向 " + d.letter + "，典型度 " + d.strength + "%",
+          })), { aria: "各维度典型度", max: 100 })}
+        </div>
+      </div>
 
       <div class="report-grid" style="margin-top:14px">
         <div>

@@ -261,6 +261,7 @@ function startMatchQa() {
     added: [],
     closed: [],
     quantified: 0,
+    scoreTrail: [{ label: "初始", v: matchResult.matchScore }],
   };
   const box = $("match-qa");
   if (box) box.hidden = false;
@@ -278,10 +279,18 @@ function renderMatchQa() {
   const box = $("match-qa-body");
   if (!box || !matchQaState) return;
   const done = matchQaState.i >= MATCH_QA_STEPS.length;
+  const trail = Array.isArray(matchQaState.scoreTrail) ? matchQaState.scoreTrail : [];
+  const chart = trail.length >= 2
+    ? `<div class="mqa-chart">
+         <div class="pane-title" style="font-size:12.5px">📈 匹配度演进（虚线为初始基线）</div>
+         ${trendSVG(trail, { aria: "对话式匹配度演进", height: 140 })}
+       </div>`
+    : "";
   box.innerHTML = `
     <div class="mqa-log">
       ${matchQaState.log.map((m) => `<div class="mqa-msg ${m.role}">${escHtml(m.text)}</div>`).join("")}
     </div>
+    ${chart}
     ${done ? "" : `
     <div class="mqa-input-row">
       <textarea id="mqa-input" rows="2" placeholder="输入你的回答…（可随时点「结束并应用」）" aria-label="匹配增强回答"></textarea>
@@ -301,6 +310,9 @@ function submitMatchQaAnswer() {
   if (input) input.value = "";
   appendMatchQaMsg("user", text);
   const r = applyQaEvidence(text);
+  if (matchQaState && Array.isArray(matchQaState.scoreTrail)) {
+    matchQaState.scoreTrail.push({ label: "第 " + (matchQaState.i + 1) + " 轮", v: r.score });
+  }
   matchQaState.added = matchQaState.added.concat(r.added);
   matchQaState.closed = matchQaState.closed.concat(r.closed);
   matchQaState.quantified += r.quantified;
@@ -343,6 +355,12 @@ function finishMatchQa() {
           <div class="metric"><span>补齐缺口</span><b>${s.closed.length}</b></div>
           <div class="metric"><span>量化证据</span><b>${s.quantified}</b></div>
         </div>
+        ${(s.scoreTrail && s.scoreTrail.length >= 2)
+          ? `<div class="mqa-chart" style="margin-top:10px">
+               <div class="pane-title" style="font-size:12.5px">📈 本轮对话带来的匹配度变化</div>
+               ${trendSVG(s.scoreTrail, { aria: "匹配度演进", height: 130 })}
+             </div>`
+          : ""}
         <p class="hint" style="margin-top:10px">
           ${s.added.length || s.closed.length
             ? `通过对话补充的证据已并入匹配结果：${[...new Set(s.added.concat(s.closed))].join("、")}。`

@@ -751,7 +751,7 @@ function filterRealJobs() {
       return `<span class="career-skill-tag ${has ? "have" : "need"}">${escHtml(t)}</span>`;
     }).join("");
     const scoreColor = j.score >= 75 ? "var(--green)" : j.score >= 50 ? "var(--brand)" : "var(--red)";
-    return `<div class="rj-card fade-up">
+    return `<div class="rj-card fade-up" id="rj-card-${escHtml(j.id)}">
       <div class="rj-head">
         <span class="rj-role">${escHtml(j.role)}</span>
         <span class="rj-company">${escHtml(j.company)}</span>
@@ -768,6 +768,55 @@ function filterRealJobs() {
       <div id="rj-advice-${escHtml(j.id)}" style="margin-top:10px"></div>
     </div>`;
   }).join("");
+  renderRealJobCharts(scored);
+}
+
+/* ---------- v37 · 真实岗位可视化：匹配度排行 + 城市分布 ----------
+ * 卡片列表解决「看细节」，图表解决「看全局」：
+ * 条形图点一下即可定位到对应岗位卡，避免 16 条里反复翻找。 */
+function renderRealJobCharts(scored) {
+  const box = $("rj-charts");
+  if (!box) return null;
+  const top = (scored || []).slice(0, 8);
+  if (!top.length) { box.innerHTML = ""; return null; }
+  const bars = top.map((j, i) => ({
+    label: j.company + " · " + j.role,
+    value: j.score,
+    text: j.score + "%",
+    hot: i === 0,
+    tip: `${j.company} · ${j.role}｜匹配 ${j.score}%｜${j.city}`,
+    onclick: `focusRealJob('${j.id}')`,
+  }));
+  const cities = {};
+  (scored || []).forEach((j) => {
+    String(j.city || "").split(/[/、]/).map((s) => s.trim()).filter(Boolean)
+      .forEach((c) => { cities[c] = (cities[c] || 0) + 1; });
+  });
+  const cityList = Object.keys(cities)
+    .map((k) => ({ label: k, value: cities[k] }))
+    .sort((a, b) => b.value - a.value).slice(0, 7);
+  box.innerHTML = `
+    <div class="rj-charts">
+      <div class="rj-chart-box">
+        <div class="pane-title" style="font-size:13px">📊 匹配度排行（点击条形定位岗位）</div>
+        ${hbarSVG(bars, { aria: "岗位匹配度排行", padL: 150, labelLen: 14 })}
+      </div>
+      <div class="rj-chart-box">
+        <div class="pane-title" style="font-size:13px">🏙 城市分布</div>
+        ${columnSVG(cityList, { aria: "岗位城市分布" })}
+      </div>
+    </div>`;
+  return { bars: bars.length, cities: cityList.length };
+}
+
+/* 点击条形 → 滚动到岗位卡并闪烁定位 */
+function focusRealJob(id) {
+  const el = document.getElementById("rj-card-" + id);
+  if (!el) return;
+  try { el.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+  el.classList.remove("rj-flash");
+  void el.offsetWidth;   // 强制重排，保证连续点击也能重放动画
+  el.classList.add("rj-flash");
 }
 
 function renderRealJobs() {

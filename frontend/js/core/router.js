@@ -182,6 +182,7 @@ function applyRoute() {
   if (page === "plan") { try { renderPlanPage(); } catch (e) {} }
   if (page === "mbti") { try { renderMbtiPage(); } catch (e) {} }
   if (page === "career") { try { renderRealJobs(); } catch (e) {} }
+  if (page === "resume") { try { renderJobseekForm(); } catch (e) {} }
 
   // 6) 顶栏状态胶囊同步（游客 / Mock / 真实）
   try { syncStatusPill(); } catch (e) {}

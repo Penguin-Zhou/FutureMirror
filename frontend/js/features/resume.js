@@ -423,3 +423,92 @@ function exportResumePdf() {
   }
 }
 
+
+/* ---------- ①b 求职档案可视化 v37：完整度环形 + 字段清单 ----------
+ * 目的：让用户一眼看出「还差什么」，而不是面对 11 个空输入框无从下手。
+ * 环形显示加权完整度，下方 chip 清单逐项标注已填 / 待填（核心项权重更高）。 */
+const JOBSEEK_FIELDS = [
+  { key: "name", label: "姓名", w: 1, core: true },
+  { key: "targetRole", label: "目标岗位", w: 2, core: true },
+  { key: "city", label: "期望城市", w: 1, core: false },
+  { key: "degree", label: "学历", w: 1, core: true },
+  { key: "years", label: "工作经验", w: 1, core: true },
+  { key: "email", label: "邮箱", w: 1, core: true },
+  { key: "phone", label: "电话", w: 1, core: false },
+  { key: "skills", label: "技能标签", w: 3, core: true },
+  { key: "education", label: "教育背景", w: 2, core: true },
+  { key: "projects", label: "项目经历", w: 3, core: true },
+  { key: "summary", label: "自我评价", w: 2, core: false },
+];
+
+/* 加权完整度：核心字段权重更高，避免「填了姓名就显示 30%」的误导 */
+function jobseekCompleteness(p) {
+  const d = p || getJobseek();
+  let got = 0, all = 0, coreGot = 0, coreAll = 0;
+  const missing = [];
+  JOBSEEK_FIELDS.forEach((f) => {
+    const has = !!(d[f.key] && String(d[f.key]).trim());
+    all += f.w;
+    if (has) got += f.w;
+    if (f.core) { coreAll += f.w; if (has) coreGot += f.w; }
+    if (!has) missing.push(f.label);
+  });
+  return {
+    pct: all ? Math.round((got / all) * 100) : 0,
+    corePct: coreAll ? Math.round((coreGot / coreAll) * 100) : 0,
+    missing: missing,
+    filled: JOBSEEK_FIELDS.length - missing.length,
+    total: JOBSEEK_FIELDS.length,
+  };
+}
+
+function renderJobseekGauge() {
+  const box = $("js-gauge");
+  if (!box) return null;
+  const p = getJobseek();
+  const c = jobseekCompleteness(p);
+  const chips = JOBSEEK_FIELDS.map((f) => {
+    const has = !!(p[f.key] && String(p[f.key]).trim());
+    return `<span class="js-chip ${has ? "ok" : "miss"}" title="${escHtml(f.label)}">${has ? "✓" : "○"} ${escHtml(f.label)}</span>`;
+  }).join("");
+  const verdict = c.pct >= 85 ? "信息齐全，可直接导出高质量简历"
+    : c.pct >= 55 ? "基本可用，补齐核心项后建议更准"
+    : "请先补齐核心信息，AI 建议会更贴合";
+  box.innerHTML = `
+    <div class="js-gauge">
+      <div class="js-gauge-ring">${donutSVG(c.pct, { label: "档案完整度", aria: "求职档案完整度 " + c.pct + "%" })}</div>
+      <div class="js-gauge-side">
+        <div class="js-gauge-meta">
+          <span>已填 <b>${c.filled}</b> / ${c.total} 项</span>
+          <span>核心项 <b>${c.corePct}%</b></span>
+          <span class="js-gauge-verdict">${escHtml(verdict)}</span>
+        </div>
+        <div class="js-chips">${chips}</div>
+        <p class="hint" style="margin-top:8px">${c.missing.length
+          ? "待补：" + escHtml(c.missing.join("、"))
+          : "全部字段已填写完成。"}</p>
+      </div>
+    </div>`;
+  return c;
+}
+
+/* 表单 → 本地存档 → 仪表实时刷新（input 事件冒泡到容器，无需逐项绑定） */
+function syncJobseekForm() {
+  readJobseekForm();
+  renderJobseekGauge();
+}
+
+/* 页面进入时回填已存档案，避免「切走再回来表单空了」 */
+function renderJobseekForm() {
+  const map = {
+    name: "js-name", targetRole: "js-role", city: "js-city", degree: "js-degree",
+    years: "js-years", email: "js-email", phone: "js-phone", skills: "js-skills",
+    education: "js-edu", projects: "js-projects", summary: "js-summary",
+  };
+  const p = getJobseek();
+  Object.keys(map).forEach((k) => {
+    const el = $(map[k]);
+    if (el && p[k]) el.value = String(p[k]);
+  });
+  renderJobseekGauge();
+}

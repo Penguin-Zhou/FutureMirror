@@ -127,6 +127,7 @@ const jsRules = [
   ["js/core/skeleton.js", "v30 骨架屏", ["Z1. 骨架屏 v30"]],
   ["js/core/media.js", "v30 媒体懒加载与预览", ["Z2. 媒体加载 v30"]],
   ["js/features/mbti.js", "v36 MBTI 职业性格测评", ["v36 · MBTI 职业性格测评"]],
+  ["js/features/charts.js", "v37 通用图表组件", ["v37 · 通用图表组件"]],
 ];
 
 /* 收集全部 JS 边界（标题行 → 起点），按出现位置排序 */
@@ -216,6 +217,7 @@ const LOAD_ORDER = [
   "js/core/skeleton.js",
   "js/core/media.js",
   "js/features/mbti.js",
+  "js/features/charts.js",
 ];
 if (
   LOAD_ORDER.length !== JS_SECTIONS.length ||

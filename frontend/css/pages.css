@@ -895,3 +895,65 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 .mqa-msg.user { border-left-color: var(--ink); }
 .mqa-input-row { display: flex; gap: 8px; }
 .mqa-input-row textarea { flex: 1; min-height: 44px; }
+
+/* ============================================================
+ * v37 · 通用图表与可视化容器（零第三方库，随主题反转）
+ * ============================================================ */
+.chart-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart-donut { max-width: 148px; margin: 0 auto; }
+.chart-empty { font-size: 12px; color: var(--faint); padding: 10px 2px; }
+.chart-row { transition: opacity .18s ease; }
+.chart-row:hover, .chart-row:focus { opacity: .78; outline: none; }
+.chart-row[onclick] { cursor: pointer; }
+
+/* ---- 简历 · 求职档案完整度 ---- */
+.js-gauge {
+  display: grid; grid-template-columns: 148px 1fr; gap: 16px; align-items: center;
+  border: 1px solid var(--line); padding: 14px; margin-bottom: 14px;
+}
+.js-gauge-meta {
+  display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted);
+  font-family: var(--mono); letter-spacing: .02em;
+}
+.js-gauge-meta b { color: var(--ink); }
+.js-gauge-verdict { color: var(--faint); }
+.js-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.js-chip {
+  font-size: 11.5px; padding: 3px 8px; border: 1px solid var(--line);
+  color: var(--muted); background: transparent;
+}
+.js-chip.ok { color: var(--ink); border-color: var(--ink); }
+.js-chip.miss { color: var(--brand); border-color: var(--brand); border-style: dashed; }
+@media (max-width: 860px) {
+  .js-gauge { grid-template-columns: 1fr; }
+  .js-gauge-ring { justify-self: center; }
+}
+
+/* ---- MBTI 结果 ---- */
+.mbti-radar-wrap {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 14px;
+}
+@media (max-width: 860px) { .mbti-radar-wrap { grid-template-columns: 1fr; } }
+
+/* ---- 真实岗位图表 ---- */
+.rj-charts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+  border: 1px solid var(--line); padding: 14px; margin-bottom: 14px;
+}
+@media (max-width: 900px) { .rj-charts { grid-template-columns: 1fr; } }
+.rj-chart-box { min-width: 0; }
+.rj-card.rj-flash { animation: rjFlash 1.1s ease-out 1; }
+@keyframes rjFlash {
+  0% { border-color: var(--brand); background: var(--bg-deep); }
+  100% { border-color: var(--line); background: transparent; }
+}
+
+/* ---- 对话式匹配 / 报告追问 ---- */
+.mqa-chart, .rf-chart {
+  border: 1px solid var(--line); padding: 12px; margin-top: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-row { transition: none; }
+  .rj-card.rj-flash { animation: none; border-color: var(--brand); }
+}
