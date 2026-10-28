@@ -178,6 +178,7 @@ async function optimizeWithLLM() {
 const JOBSEEK_DEFAULTS = {
   name: "", targetRole: "", city: "", degree: "", years: "",
   email: "", phone: "", skills: "", education: "", projects: "", summary: "",
+  sections: [], // v38 自定义板块：[{ id, title, items:[{ id, text }] }]
 };
 
 function getJobseek() {
@@ -210,6 +211,15 @@ const JOBSEEK_DEMO = {
   education: "2023—2027　某某大学　软件工程　本科",
   projects: "电商秒杀系统（Java + Redis + MySQL）：主导缓存与库存扣减设计，QPS 从 200 提升到 1200；技术社团部长，组织 3 场编程 workshop。",
   summary: "具备高并发后端项目经验，熟悉缓存与数据库优化，希望在上海从事后端开发工作。",
+  sections: [
+    { id: "demo-int", title: "实习经历", items: [
+      { id: "demo-int-1", text: "某某科技 · 后端开发实习生（2025.06—2025.09）\n主导订单服务的缓存重构，将接口 P99 延迟从 320ms 降至 90ms（-72%），日均支撑 80 万笔请求。" },
+    ]},
+    { id: "demo-cert", title: "证书", items: [
+      { id: "demo-cert-1", text: "全国计算机等级考试 三级 网络技术" },
+      { id: "demo-cert-2", text: "大学英语六级（CET-6）" },
+    ]},
+  ],
 };
 
 function fillJobseekDemo() {
@@ -226,6 +236,300 @@ function fillJobseekDemo() {
   toast("已填入示例求职信息");
 }
 
+/* ---------- ①c 自定义板块 + 模板库（v38） ----------
+ * 用户可自由增删简历板块（实习经历 / 志愿服务 / 证书 / 荣誉 …），
+ * 也可从模板库一键套用板块组合。数据持久化于 fm_jobseek.sections。 */
+const RESUME_SECTION_PRESETS = [
+  "实习经历", "校园经历", "项目经历", "志愿服务经历", "证书", "所得荣誉",
+  "技能特长", "获奖情况", "社团经历", "开源贡献", "语言能力", "自我评价补充",
+];
+
+const RESUME_TEMPLATES = [
+  { id: "fresh",  name: "校招应届", sections: ["实习经历", "校园经历", "志愿服务经历", "证书", "所得荣誉"] },
+  { id: "tech",   name: "技术岗位", sections: ["实习经历", "项目经历", "技术栈", "开源贡献", "证书"] },
+  { id: "intern", name: "实习兼职", sections: ["实习经历", "志愿服务经历", "技能特长", "所得荣誉"] },
+  { id: "gen",    name: "通用求职", sections: ["实习经历", "项目经历", "技能特长", "所得荣誉"] },
+];
+
+function jsSectionUid() {
+  return "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function getJobseekSections() {
+  const p = getJobseek();
+  return Array.isArray(p.sections) ? p.sections : [];
+}
+
+function saveJobseekSections(sections) {
+  return saveJobseek({ sections: sections });
+}
+
+function addResumeSection(title) {
+  const t = (title || "").trim() || "新板块";
+  const sections = getJobseekSections().slice();
+  sections.push({ id: jsSectionUid(), title: t, items: [{ id: jsSectionUid(), text: "" }] });
+  saveJobseekSections(sections);
+  renderResumeSectionsEditor();
+  renderJobseekGauge();
+  toast("已添加板块：" + t);
+}
+
+function removeResumeSection(secId) {
+  const sections = getJobseekSections().filter((s) => s.id !== secId);
+  saveJobseekSections(sections);
+  renderResumeSectionsEditor();
+  renderJobseekGauge();
+}
+
+function addSectionItem(secId) {
+  const sections = getJobseekSections().map((s) => {
+    if (s.id !== secId) return s;
+    const items = (s.items || []).slice();
+    items.push({ id: jsSectionUid(), text: "" });
+    return Object.assign({}, s, { items: items });
+  });
+  saveJobseekSections(sections);
+  renderResumeSectionsEditor();
+}
+
+function removeSectionItem(secId, itemId) {
+  const sections = getJobseekSections().map((s) => {
+    if (s.id !== secId) return s;
+    return Object.assign({}, s, { items: (s.items || []).filter((i) => i.id !== itemId) });
+  });
+  saveJobseekSections(sections);
+  renderResumeSectionsEditor();
+}
+
+function updateSectionTitle(secId, value) {
+  const sections = getJobseekSections().map((s) =>
+    (s.id === secId ? Object.assign({}, s, { title: value }) : s));
+  saveJobseekSections(sections);
+}
+
+function updateSectionItem(secId, itemId, value) {
+  const sections = getJobseekSections().map((s) => {
+    if (s.id !== secId) return s;
+    return Object.assign({}, s, { items: (s.items || []).map((i) =>
+      (i.id === itemId ? Object.assign({}, i, { text: value }) : i)) });
+  });
+  saveJobseekSections(sections);
+}
+
+function applyResumeTemplate(tplId) {
+  const tpl = RESUME_TEMPLATES.find((t) => t.id === tplId);
+  if (!tpl) return;
+  const cur = getJobseekSections();
+  const have = new Set(cur.map((s) => s.title));
+  const add = tpl.sections.filter((name) => !have.has(name));
+  let added = 0;
+  add.forEach((name) => {
+    cur.push({ id: jsSectionUid(), title: name, items: [{ id: jsSectionUid(), text: "" }] });
+    added++;
+  });
+  saveJobseekSections(cur);
+  renderResumeTemplates();
+  renderResumeSectionsEditor();
+  renderJobseekGauge();
+  toast(added ? `模板「${tpl.name}」已添加 ${added} 个板块` : `模板「${tpl.name}」板块已存在`);
+}
+
+function renderResumeTemplates() {
+  const box = $("js-templates");
+  if (!box) return;
+  box.innerHTML = RESUME_TEMPLATES.map((t) =>
+    `<button class="btn btn-outline btn-sm" onclick="applyResumeTemplate('${t.id}')">＋ ${escHtml(t.name)}</button>`).join("")
+    + `<button class="btn btn-primary btn-sm" onclick="addResumeSection('')">＋ 自定义板块</button>`
+    + `<div class="js-preset-chips">常用：${RESUME_SECTION_PRESETS.map((n) =>
+        `<button class="chip-btn" type="button" onclick="addResumeSection('${escHtml(n)}')">＋ ${escHtml(n)}</button>`).join("")}</div>`;
+}
+
+function renderResumeSectionsEditor() {
+  const box = $("js-sections");
+  if (!box) return;
+  const sections = getJobseekSections();
+  if (!sections.length) {
+    box.innerHTML = `<div class="notice notice-info" style="margin-top:4px">还没有自定义板块。从上方模板库一键套用，或点击「＋ 自定义板块」手动添加。</div>`;
+    return;
+  }
+  box.innerHTML = sections.map((s) => `
+    <div class="js-section" data-sec="${escHtml(s.id)}">
+      <div class="js-section-head">
+        <input class="js-section-title" value="${escHtml(s.title || "")}" placeholder="板块名称"
+               aria-label="板块名称" oninput="updateSectionTitle('${s.id}', this.value)">
+        <button class="btn btn-ghost btn-sm" type="button" onclick="removeResumeSection('${s.id}')" title="删除板块">🗑 删除</button>
+      </div>
+      <div class="js-section-items">
+        ${(s.items && s.items.length ? s.items : [{ id: "x", text: "" }]).map((i) => `
+          <div class="js-item">
+            <textarea class="js-item-text" rows="2"
+              placeholder="每条经历一行：公司 · 岗位（时间）\n做了什么、产出什么（建议补充量化数据）"
+              aria-label="板块内容" oninput="updateSectionItem('${s.id}', '${i.id}', this.value)">${escHtml(i.text || "")}</textarea>
+            <button class="btn btn-ghost btn-sm" type="button" onclick="removeSectionItem('${s.id}', '${i.id}')" title="删除该条">✕</button>
+          </div>`).join("")}
+        <button class="btn btn-outline btn-sm" type="button" onclick="addSectionItem('${s.id}')">＋ 添加一条</button>
+      </div>
+    </div>`).join("");
+}
+
+/* ---------- ①d 导入 PDF 简历 · 自动拆分（v38） ----------
+ * 端侧解析 PDF 文本 → 规则引擎按常见板块标题切分 → 自动填入核心字段与自定义板块。
+ * 若已接入模型，先让模型把文本整理为规范板块，再用同一解析器切分，提升结构准确率。 */
+const RESUME_SPLIT_HEADERS = [
+  { re: /教育背景|教育经历|教育/, title: "教育背景", core: "education" },
+  { re: /实习经历|实习经验|实习/, title: "实习经历", core: null },
+  { re: /工作经历|工作经验|工作/, title: "工作经历", core: null },
+  { re: /项目经历|项目经验|项目(?!\s*经)/, title: "项目经历", core: null },
+  { re: /校园经历|校园活动|校园/, title: "校园经历", core: null },
+  { re: /社团经历|社团|学生组织/, title: "社团经历", core: null },
+  { re: /志愿服务|志愿者|志愿/, title: "志愿服务经历", core: null },
+  { re: /技能|专业技能|掌握技能|技术栈/, title: "技能特长", core: "skills" },
+  { re: /证书|资格/, title: "证书", core: null },
+  { re: /荣誉|获奖|奖项/, title: "所得荣誉", core: null },
+  { re: /语言能力|语言/, title: "语言能力", core: null },
+  { re: /自我评价|个人评价|自我评述|个人总结/, title: "自我评价", core: "summary" },
+];
+
+function splitSegmentItems(block) {
+  const lines = String(block || "").split("\n").map((s) => s.trim()).filter(Boolean);
+  if (!lines.length) return [];
+  const bulletRe = /^([•·\-*▪]|[0-9]+[.、]|（[0-9]+）|\(?[0-9]+\))\s*/;
+  const bullets = lines.filter((l) => bulletRe.test(l));
+  if (bullets.length >= 2 || (bullets.length && bullets.length === lines.length)) {
+    return bullets.map((t) => ({ text: t.replace(bulletRe, "").trim() })).filter((x) => x.text);
+  }
+  const paras = String(block || "").split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+  if (paras.length >= 2) return paras.map((t) => ({ text: t }));
+  return [{ text: String(block || "").trim() }];
+}
+
+function splitResumeText(text) {
+  const raw = String(text || "");
+  const lines = raw.split("\n").map((s) => s.trim()).filter(Boolean);
+  const core = { name: "", email: "", phone: "", education: "", skills: "", summary: "" };
+  const sections = [];
+
+  // 联系信息
+  for (const l of lines) {
+    if (!core.email) { const m = l.match(/[\w.+-]+@[\w-]+\.[\w.-]+/); if (m) core.email = m[0]; }
+    if (!core.phone) {
+      const m = l.match(/(1[3-9]\d{9})|(\d{3,4}[-\s]?\d{7,8})|(\d{3,4}-\d{3,4}-\d{4})/);
+      if (m) core.phone = m[0].replace(/\s/g, "");
+    }
+  }
+  // 姓名：首个非标题、非联系方式的短行（2-12 字、不含数字）
+  for (const l of lines) {
+    if (/@|1[3-9]\d{9}/.test(l)) continue;
+    if (l.length >= 2 && l.length <= 12 && !/\d/.test(l) &&
+        !RESUME_SPLIT_HEADERS.some((h) => h.re.test(l))) {
+      core.name = l; break;
+    }
+  }
+
+  // 板块切分
+  const segs = [];
+  let cur = null;
+  lines.forEach((l) => {
+    // 板块标题通常是短行（如「教育背景」「实习经历」）；正文里偶然含「工作」「语言」等词
+    // 不应被误判为标题，故用「去掉空白与常见标点后的长度 ≤ 12」作为短行门槛。
+    const norm = l.replace(/[\s:：·•\-—（）()]/g, "");
+    const hit = RESUME_SPLIT_HEADERS.find((h) => h.re.test(l) && norm.length <= 12);
+    if (hit) { cur = { def: hit, buf: [] }; segs.push(cur); }
+    else if (cur) cur.buf.push(l);
+  });
+  segs.forEach((s) => {
+    const block = s.buf.join("\n").trim();
+    if (!block) return;
+    if (s.def.core === "skills") {
+      const toks = block.split(/[\n、，,；;]+/).map((t) => t.trim()).filter(Boolean);
+      core.skills = toks.join("、");
+    } else if (s.def.core === "education") {
+      core.education = block;
+    } else if (s.def.core === "summary") {
+      core.summary = block;
+    } else {
+      const items = splitSegmentItems(block);
+      if (items.length) sections.push({ id: jsSectionUid(), title: s.def.title, items: items });
+    }
+  });
+
+  // 未识别到任何板块时，把全文作为「简历正文」板块，避免信息丢失
+  if (!sections.length && raw.trim()) {
+    sections.push({ id: jsSectionUid(), title: "简历正文", items: splitSegmentItems(raw) });
+  }
+  return { core: core, sections: sections, raw: raw };
+}
+
+async function aiSplitResumeText(text, signal) {
+  const prompt = `请在不改变原意的前提下，把下面这份简历文本重新整理为规范板块，仅使用以下板块标题（按需选用，可增减，但不要发明新标题）：\n教育背景、实习经历、工作经历、项目经历、校园经历、社团经历、志愿服务经历、技能特长、证书、所得荣誉、语言能力、自我评价。\n每个板块另起一行写标题，标题下一行开始写内容，板块之间用空行分隔。直接输出整理后的文本，不要解释、不要使用代码块。`;
+  let out = "";
+  await streamChat([
+    { role: "system", content: prompt },
+    { role: "user", content: text },
+  ], (piece) => { out += piece; }, signal || new AbortController().signal);
+  return out && out.trim() ? out : text;
+}
+
+function applyImportedResume(r) {
+  const patch = { sections: r.sections };
+  if (r.core.name) patch.name = r.core.name;
+  if (r.core.email) patch.email = r.core.email;
+  if (r.core.phone) patch.phone = r.core.phone;
+  if (r.core.education) patch.education = r.core.education;
+  if (r.core.skills) patch.skills = r.core.skills;
+  if (r.core.summary) patch.summary = r.core.summary;
+  saveJobseek(patch);
+  renderJobseekForm();
+  const rawEl = $("resume-raw");
+  if (rawEl) rawEl.value = r.raw || "";
+}
+
+function importResumePdf() {
+  if (!requireLogin()) return;
+  const inp = $("resume-pdf-input");
+  if (inp) inp.click();
+}
+
+async function onResumePdfSelected(e) {
+  const file = e.target.files && e.target.files[0];
+  if (e.target) e.target.value = "";
+  if (!file) return;
+  if (!/\.pdf$/i.test(file.name)) { toast("请选择 PDF 文件"); return; }
+  const status = $("import-pdf-status");
+  if (status) status.textContent = "⏳ 解析 PDF 中…";
+  let parsed;
+  try {
+    parsed = await parsePdfText(file);
+  } catch (err) {
+    if (status) status.textContent = "";
+    toast("PDF 解析失败：" + ((err && err.message) ? err.message : err));
+    return;
+  }
+  const text = (parsed && parsed.text) ? parsed.text : "";
+  if (!text.trim()) {
+    if (status) status.textContent = "";
+    toast("未在 PDF 中识别到文本（可能是扫描件，请改用粘贴文本后拆分）");
+    return;
+  }
+  if (status) status.textContent = "⏳ AI 拆分中…";
+  let work = text;
+  const hasLLM = (typeof llm !== "undefined" && llm) ||
+    (typeof fmApi !== "undefined" && fmApi && fmApi.backendReady());
+  if (hasLLM) {
+    try {
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 45000);
+      work = await aiSplitResumeText(text, ctrl.signal);
+    } catch (_) { work = text; }
+  }
+  const result = splitResumeText(work);
+  applyImportedResume(result);
+  if (status) status.textContent = "";
+  toast("已自动拆分并填入：" + result.sections.length + " 个板块" +
+    (result.core.name ? "，识别姓名 " + result.core.name : "") +
+    (result.core.skills ? "，技能 " + result.core.skills : ""));
+}
+
 /* 求职信息 → 结构化纯文本（供 LLM 上下文与规则引擎复用） */
 function jobseekToText(p, raw) {
   const p2 = p || getJobseek();
@@ -239,6 +543,14 @@ function jobseekToText(p, raw) {
     `【项目与经历】${p2.projects || "未填写"}`,
     `【自我评价】${p2.summary || "未填写"}`,
   ];
+  const secs = Array.isArray(p2.sections) ? p2.sections.filter((s) => (s.items || []).some((i) => (i.text || "").trim())) : [];
+  if (secs.length) {
+    lines.push("【自定义板块】");
+    secs.forEach((s) => {
+      const items = (s.items || []).filter((i) => (i.text || "").trim());
+      if (items.length) lines.push(`● ${s.title || "板块"}：\n` + items.map((i) => "  - " + i.text.trim()).join("\n"));
+    });
+  }
   if (raw2) lines.push(`【简历原文】\n${raw2}`);
   if (typeof matchResult !== "undefined" && matchResult && matchResult.gaps && matchResult.gaps.length) {
     lines.push(`【已知能力缺口】${matchResult.gaps.join("、")}`);
@@ -255,7 +567,32 @@ const RESUME_ADVICE_SYSTEM = `你是资深招聘顾问与简历优化专家。�
 ## 五、7 天提升清单（按天给出可执行的补强动作）
 要求：结合中国校招/社招语境，语言具体、可落地，避免空泛套话。`;
 
-/* 规则引擎兜底建议（未接入模型或调用失败时使用，保证功能不空转） */
+/* 规则引擎兜底建议 + 可视化总览（未接入模型或调用失败时使用，保证功能不空转且同样可视化） */
+function resumeAdviceVisual(r) {
+  if (!r) return "";
+  const dims = r.dims.map((d) => ({ label: d.name, value: d.score, text: d.score + "分", tip: d.tip }));
+  return `<div class="ra-overview">
+    <div class="ra-donut">${donutSVG(r.total, { label: "简历健康度", aria: "简历健康度 " + r.total })}</div>
+    <div class="ra-bars">${hbarSVG(dims, { max: 100, showValue: true })}</div>
+  </div>`;
+}
+function resumeKeywordChips(r) {
+  if (!r || !r.skills || !r.skills.length) return "";
+  return `<div class="ra-chips"><span class="ra-chips-label">识别技能</span>${r.skills.map((s) =>
+    `<span class="js-chip ok">${escHtml(s)}</span>`).join("")}</div>`;
+}
+function chunkMarkdown(md) {
+  const lines = String(md || "").split("\n");
+  const out = []; let cur = null;
+  lines.forEach((l) => {
+    const m = l.match(/^#{1,3}\s+(.*)$/);
+    if (m) { cur = { title: m[1].trim(), body: [] }; out.push(cur); }
+    else if (cur) cur.body.push(l);
+    else { if (!out.length) out.push({ title: "建议", body: [] }); out[out.length - 1].body.push(l); }
+  });
+  return out.map((c) => ({ title: c.title, body: c.body.join("\n").trim() }))
+    .filter((c) => c.body || c.title);
+}
 function ruleResumeAdvice(p, raw) {
   const p2 = p || getJobseek();
   const text = raw || (($("resume-raw") && $("resume-raw").value.trim()) || "");
@@ -264,19 +601,27 @@ function ruleResumeAdvice(p, raw) {
   const jdSkills = (p2.skills || "").split(/[,，、]/).map((s) => s.trim()).filter(Boolean);
   const hit = jdSkills.filter((s) => SKILL_DICT.includes(s));
   const miss = jdSkills.filter((s) => !SKILL_DICT.includes(s));
-  const items = [];
-  items.push(`<div class="evidence"><span class="badge badge-green">岗位匹配</span><p>目标岗位「${escHtml(p2.targetRole || "未填写")}」：已识别技能 ${hit.length} 项${hit.length ? "（" + escHtml(hit.join("、")) + "）" : ""}${miss.length ? "；未被技能词典收录 " + miss.length + " 项，建议改写为行业通用写法" : ""}。</p></div>`);
+  const out = [];
+  out.push(resumeAdviceVisual(r));
+  out.push(resumeKeywordChips(r));
+  out.push(`<div class="evidence"><span class="badge badge-green">岗位匹配</span><p>目标岗位「${escHtml(p2.targetRole || "未填写")}」：已识别技能 ${hit.length} 项${hit.length ? "（" + escHtml(hit.join("、")) + "）" : ""}${miss.length ? "；未被技能词典收录 " + miss.length + " 项，建议改写为行业通用写法" : ""}。</p></div>`);
   if (r) {
     const weak = r.dims.filter((d) => d.score < 60);
-    items.push(`<div class="evidence"><span class="badge ${weak.length ? "badge-red" : "badge-green"}">六维诊断</span><p>健康度 ${r.total}/100${weak.length ? "，薄弱维度：" + escHtml(weak.map((d) => d.name).join("、")) : "，各维度均达标"}。</p></div>`);
+    out.push(`<div class="evidence"><span class="badge ${weak.length ? "badge-red" : "badge-green"}">六维诊断</span><p>健康度 ${r.total}/100${weak.length ? "，薄弱维度：" + escHtml(weak.map((d) => d.name).join("、")) : "，各维度均达标"}。</p></div>`);
     if (r.rewrites.length) {
-      items.push(`<div class="evidence"><span class="badge badge-red">改写建议</span>${r.rewrites.slice(0, 3).map((w) => `<p style="margin-top:6px"><b>原文：</b><q>${escHtml(w.original)}</q><br><b>改写：</b>${escHtml(w.suggestion)}</p>`).join("")}</div>`);
+      out.push(`<div class="pane-title" style="font-size:13px;margin-top:14px">✍️ 逐条改写建议</div>`);
+      out.push(r.rewrites.slice(0, 5).map((w) => `
+        <div class="evidence">
+          <span class="badge badge-red">${escHtml(w.issue)}</span>
+          <p style="margin-top:6px"><b>原文：</b><q>${escHtml(w.original)}</q></p>
+          <p><b>改写：</b>${escHtml(w.suggestion)}</p>
+        </div>`).join(""));
     }
   } else {
-    items.push(`<div class="evidence"><span class="badge badge-red">内容缺失</span><p>尚未填写简历原文或项目经历，建议先粘贴简历或填写「项目与经历」。</p></div>`);
+    out.push(`<div class="evidence"><span class="badge badge-red">内容缺失</span><p>尚未填写简历原文或项目经历，建议先粘贴简历或填写「项目与经历」。</p></div>`);
   }
-  items.push(`<div class="evidence"><span class="badge">面试风险</span><p>面试官通常围绕「量化数据真实性」「技术选型理由」「难点与权衡」三点追问，请为每段经历准备这三类应答。</p></div>`);
-  return `<div class="report-grid"><div>${items.join("")}</div><div><div class="pane-title">说明</div><p class="hint">当前为规则引擎建议（未接入模型或调用失败时的兜底）。接入 API Key 或连接后端后将由真实模型生成个性化建议。</p></div></div>`;
+  out.push(`<div class="evidence"><span class="badge">面试风险</span><p>面试官通常围绕「量化数据真实性」「技术选型理由」「难点与权衡」三点追问，请为每段经历准备这三类应答。</p></div>`);
+  return `<div class="report-grid"><div>${out.join("")}</div><div><div class="pane-title">说明</div><p class="hint">当前为规则引擎建议（未接入模型或调用失败时的兜底），已附带可视化总览。接入 API Key 或连接后端后，将由真实模型生成个性化建议并叠加在下方。</p></div></div>`;
 }
 
 async function aiResumeAdvice() {
@@ -294,6 +639,10 @@ async function aiResumeAdvice() {
     (typeof fmApi !== "undefined" && fmApi && fmApi.backendReady());
   if (btn) { btn.disabled = true; btn.textContent = "⏳ AI 分析中…"; }
 
+  // 即时可视化总览（确定性，端侧规则，不依赖网络）
+  const body = raw || p.projects || "";
+  const r = body ? analyzeResumeText(body) : null;
+
   if (!hasLLM) {
     box.innerHTML = ruleResumeAdvice(p, raw);
     if (btn) { btn.disabled = false; btn.textContent = "🤖 AI 优化建议"; }
@@ -304,8 +653,16 @@ async function aiResumeAdvice() {
   const modelLabel = (typeof fmApi !== "undefined" && fmApi && fmApi.backendReady())
     ? `后端 ${fmApi.backendModel()}`
     : (typeof llm !== "undefined" && llm ? llm.model : "模型");
-  box.innerHTML = `<div class="evidence fade-up"><b>（真实模型 · ${escHtml(modelLabel)}）</b>正在生成优化建议…<div id="js-advice-stream" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div></div>`;
+  // 先渲染可视化总览，再叠加流式输出；模型结果按标题切分为「分块建议」，避免一次性大段文字
+  box.innerHTML = `
+    ${resumeAdviceVisual(r)}
+    ${resumeKeywordChips(r)}
+    <div class="evidence fade-up"><b>（真实模型 · ${escHtml(modelLabel)}）</b>正在生成分块建议…
+      <div id="js-advice-stream" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div>
+    </div>
+    <div class="js-chunk-list"></div>`;
   const stream = $("js-advice-stream");
+  const chunksBox = box.querySelector(".js-chunk-list");
   const ctrl = new AbortController();
   setTimeout(() => ctrl.abort(), 60000);
   let full = "";
@@ -315,6 +672,14 @@ async function aiResumeAdvice() {
       { role: "user", content: jobseekToText(p, raw) },
     ], (piece) => { full += piece; if (stream) stream.textContent = full; }, ctrl.signal);
     if (stream) stream.textContent = full;
+    const chunks = chunkMarkdown(full);
+    if (chunksBox) {
+      chunksBox.innerHTML = `<div class="pane-title" style="font-size:13px;margin-top:14px">🧩 分块建议</div>` + chunks.map((c) => `
+        <div class="evidence">
+          <span class="badge">${escHtml(c.title || "建议")}</span>
+          <p style="margin-top:6px;white-space:pre-wrap">${escHtml(c.body)}</p>
+        </div>`).join("");
+    }
     toast("AI 优化建议已生成");
   } catch (e) {
     const msg = (e && e.message) ? e.message : String(e);
@@ -327,6 +692,18 @@ async function aiResumeAdvice() {
 }
 
 /* ---------- ③ 一键导出 PDF（构建打印视图 + window.print，零依赖） ---------- */
+function resumeSectionsPdf(p2) {
+  const esc2 = (s) => escHtml(String(s == null ? "" : s));
+  const secs = Array.isArray(p2.sections) ? p2.sections : [];
+  return secs.map((s) => {
+    const items = (s.items || []).filter((i) => (i.text || "").trim());
+    if (!items.length) return "";
+    return `<section class="sec"><h2>${esc2(s.title || "板块")}</h2><div class="body">${
+      items.map((i) => `<p style="margin:0 0 8px">${esc2(i.text.trim()).replace(/\n/g, "<br>")}</p>`).join("")
+    }</div></section>`;
+  }).join("");
+}
+
 function buildResumeHtml(p) {
   const p2 = p || getJobseek();
   const raw = ($("resume-raw") && $("resume-raw").value.trim()) || "";
@@ -368,6 +745,7 @@ function buildResumeHtml(p) {
   ${block("教育背景", p2.education)}
   ${block("项目与经历", p2.projects)}
   ${block("自我评价", p2.summary)}
+  ${resumeSectionsPdf(p2)}
   ${raw ? block("简历原文", raw) : ""}
   <footer>由 面镜 FutureMirror 生成 · 内容由本人填写，导出前请核对真实性</footer>
 </div></body></html>`;
@@ -510,5 +888,7 @@ function renderJobseekForm() {
     const el = $(map[k]);
     if (el && p[k]) el.value = String(p[k]);
   });
+  renderResumeTemplates();
+  renderResumeSectionsEditor();
   renderJobseekGauge();
 }

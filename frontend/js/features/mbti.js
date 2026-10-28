@@ -194,54 +194,66 @@ function renderMbtiResult(r) {
   const box = $("mbti-result");
   if (!box) return;
   const t = MBTI_TYPES[r.type] || { nick: "", trait: "", fit: "", tip: "" };
+  const dimCards = r.dims.map((d) => `
+    <div class="mbti-dim-card">
+      <div class="mbti-dim-name">${escHtml(d.name)}</div>
+      <div class="mbti-dim-axis">
+        <span class="${d.letter === d.a ? "on" : ""}">${escHtml(d.aName)}</span>
+        <span class="mbti-dim-bar"><i style="width:${d.pctA}%"></i></span>
+        <span class="${d.letter === d.b ? "on" : ""}">${escHtml(d.bName)}</span>
+      </div>
+      <div class="mbti-dim-pct">偏 ${escHtml(d.letter)}　·　典型度 ${d.strength}%</div>
+    </div>`).join("");
   box.innerHTML = `
-    <div class="card fade-up" style="padding:16px;margin-top:8px">
-      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
-        <div>
-          <div class="mbti-type-big">${escHtml(r.type)}</div>
-          <div class="hint" style="margin-top:0">${escHtml(t.nick)}　·　清晰度 ${r.clarity}%</div>
-        </div>
-        <div style="flex:1;min-width:220px">
-          <p style="font-size:13px;color:var(--muted);line-height:1.8;margin:0">${escHtml(t.trait)}</p>
-        </div>
+    <div class="mbti-hero fade-up">
+      <div class="mbti-hero-left">
+        <div class="mbti-type-big">${escHtml(r.type)}</div>
+        <div class="mbti-hero-nick">${escHtml(t.nick)}</div>
+        <div class="hint" style="margin-top:4px">清晰度 ${r.clarity}%</div>
       </div>
+      <div class="mbti-hero-right">
+        <p class="mbti-hero-trait">${escHtml(t.trait)}</p>
+        <div class="mbti-hero-tags"><span class="tag-demo">🎯 ${escHtml(t.fit)}</span></div>
+      </div>
+    </div>
 
-      <div class="pane-title" style="font-size:14px;margin-top:14px">📊 四维倾向（条形过半即偏向左侧字母）</div>
-      ${bipolarBarsSVG(r.dims, { aria: r.type + " 四维倾向" })}
+    <div class="mbti-dim-grid">${dimCards}</div>
 
-      <div class="mbti-radar-wrap">
-        <div>
-          <div class="pane-title" style="font-size:13px">🧭 人格轮廓</div>
-          ${radar4SVG(r.dims.map((d) => ({ name: d.aName + " / " + d.bName, value: d.pctA })), { aria: r.type + " 人格轮廓雷达" })}
-        </div>
-        <div>
-          <div class="pane-title" style="font-size:13px">📶 典型度（越靠外越典型）</div>
-          ${hbarSVG(r.dims.map((d) => ({
-            label: d.name, value: d.strength, text: d.strength + "%",
-            tip: d.name + "：偏向 " + d.letter + "，典型度 " + d.strength + "%",
-          })), { aria: "各维度典型度", max: 100 })}
-        </div>
-      </div>
+    <div class="pane-title" style="font-size:14px;margin-top:16px">📊 四维倾向（条形过半即偏向左侧字母）</div>
+    ${bipolarBarsSVG(r.dims, { aria: r.type + " 四维倾向" })}
 
-      <div class="report-grid" style="margin-top:14px">
-        <div>
-          <div class="pane-title" style="font-size:14px">🎯 适配方向</div>
-          <p style="font-size:13px;color:var(--muted);line-height:1.8">${escHtml(t.fit)}</p>
-        </div>
-        <div>
-          <div class="pane-title" style="font-size:14px">💬 面试提醒</div>
-          <p style="font-size:13px;color:var(--muted);line-height:1.8">${escHtml(t.tip)}</p>
-        </div>
+    <div class="mbti-radar-wrap">
+      <div>
+        <div class="pane-title" style="font-size:13px">🧭 人格轮廓</div>
+        ${radar4SVG(r.dims.map((d) => ({ name: d.aName + " / " + d.bName, value: d.pctA })), { aria: r.type + " 人格轮廓雷达" })}
       </div>
+      <div>
+        <div class="pane-title" style="font-size:13px">📶 典型度（越靠外越典型）</div>
+        ${hbarSVG(r.dims.map((d) => ({
+          label: d.name, value: d.strength, text: d.strength + "%",
+          tip: d.name + "：偏向 " + d.letter + "，典型度 " + d.strength + "%",
+        })), { aria: "各维度典型度", max: 100 })}
+      </div>
+    </div>
 
-      <div class="notice notice-info" style="margin-top:14px">
-        结果已同步到「个人中心」（fm_profile.mbti）。岗位推荐与面试建议会参考该结果。
+    <div class="report-grid" style="margin-top:14px">
+      <div>
+        <div class="pane-title" style="font-size:14px">💬 面试提醒</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.8">${escHtml(t.tip)}</p>
       </div>
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" onclick="startMbti()">重新测评</button>
-        <button class="btn btn-primary btn-sm" onclick="switchTab('profile')">查看个人中心 →</button>
-        <button class="btn btn-outline btn-sm" onclick="switchTab('career')">看看适配岗位 →</button>
+      <div>
+        <div class="pane-title" style="font-size:14px">🚀 下一步</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.8">去「职业探索」查看与 ${escHtml(r.type)} 契合的真实岗位，或直接开始一场针对性模拟面试。</p>
       </div>
+    </div>
+
+    <div class="notice notice-info" style="margin-top:14px">
+      结果已同步到「个人中心」（fm_profile.mbti）。岗位推荐与面试建议会参考该结果。
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="startMbti()">重新测评</button>
+      <button class="btn btn-primary btn-sm" onclick="switchTab('profile')">查看个人中心 →</button>
+      <button class="btn btn-outline btn-sm" onclick="switchTab('career')">看看适配岗位 →</button>
     </div>`;
 }
 

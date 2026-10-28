@@ -636,9 +636,9 @@ try {
     <div class="today-head">
       <div>
         <h2 class="today-title">🎯 今日推荐岗位</h2>
-        <p class="today-sub">从 24 个热门岗位随机挑选，点击直接开始模拟面试</p>
+        <p class="today-sub">企业真实在招岗位，每日刷新，可一键添加到投递看板</p>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="renderTodayPicks()">🔄 换一批</button>
+      <button class="btn btn-outline btn-sm" onclick="rotateTodayPicks()">🔄 换一批</button>
     </div>
     <div class="today-picks" id="today-picks"></div>
   </section>
@@ -1004,6 +1004,13 @@ try {
         填写求职信息，AI 结合目标岗位给出针对性优化建议；确认无误后一键导出 PDF（数据仅存本地，不上传）。
       </p>
 
+      <div class="js-import-bar">
+        <button class="btn btn-outline btn-sm" type="button" id="import-pdf-btn" onclick="importResumePdf()">📥 导入 PDF 简历（自动拆分）</button>
+        <span id="import-pdf-status" class="hint" style="margin:0"></span>
+        <span class="hint" style="margin:0">PDF 在浏览器本地解析，原始文件不出本机</span>
+        <input id="resume-pdf-input" type="file" accept="application/pdf,.pdf" hidden onchange="onResumePdfSelected(event)">
+      </div>
+
       <div id="js-gauge"></div>
 
       <div class="grid2" oninput="syncJobseekForm()">
@@ -1048,6 +1055,16 @@ try {
           <textarea id="js-summary" rows="2" placeholder="具备高并发后端项目经验，熟悉缓存与数据库优化…" aria-label="自我评价"></textarea>
         </div>
       </div>
+
+      <!-- v38 · 自定义板块 + 模板库 -->
+      <div class="pane-title" style="font-size:14px;margin-top:18px">🗂 自定义板块
+        <span class="tag-demo">自由增删：实习经历 / 志愿服务 / 证书 / 荣誉…</span>
+      </div>
+      <p class="hint" style="margin-top:0;margin-bottom:10px">
+        从模板库一键套用板块组合，或手动新增任意板块；每个板块可添加多条经历，导出 PDF 时自动排版。
+      </p>
+      <div id="js-templates" class="js-templates"></div>
+      <div id="js-sections"></div>
 
       <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-outline btn-sm" onclick="fillJobseekDemo()">填入示例</button>

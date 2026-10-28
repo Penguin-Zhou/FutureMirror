@@ -58,12 +58,12 @@ function runTests() {
   ok(picks.length === 4, `今日推荐渲染 4 个岗位卡片（实际 ${picks.length}）`);
   const first = picks[0];
   ok(!!first.querySelector(".today-pick-name"), "推荐卡片含岗位名称");
-  ok(!!first.querySelector(".today-pick-salary"), "推荐卡片含薪资");
+  ok(!!first.querySelector(".today-pick-company"), "推荐卡片含公司名称");
   ok(!!first.querySelector(".today-pick-desc"), "推荐卡片含简介");
   ok(!!first.querySelector(".today-pick-cta"), "推荐卡片含 CTA");
   ok(
-    !!first.getAttribute("onclick") && first.getAttribute("onclick").includes("startInterviewFor"),
-    "推荐卡片 onclick 调用 startInterviewFor"
+    [...first.querySelectorAll("button")].some((b) => (b.getAttribute("onclick") || "").includes("addRealJobToBoard")),
+    "推荐卡片含「添加到看板」按钮"
   );
 
   /* 4. 换一批：重新渲染仍为 4 个，且日志有记录 */
@@ -73,16 +73,23 @@ function runTests() {
   const devLog = document.getElementById("dev-log");
   ok(!!devLog && devLog.textContent.includes("今日推荐岗位已刷新"), "刷新后诊断日志有记录");
 
-  /* 5. 点击推荐卡片 → 跳转面试页 + 目标岗位自动选中（hashchange 异步，稍后断言） */
+  /* 5. 真实岗位一键添加到投递看板（v38：今日推荐改为企业真实在招岗位） */
   const nameOf = (el) => el.querySelector(".today-pick-name").textContent.trim();
   const target = picks[0];
   const targetName = nameOf(target);
   const jdSel = document.getElementById("jd-select");
   ok(jdSel.options.length > 1, `jd-select 选项已填充（${jdSel.options.length} 项）`);
-  target.click();
-  const career = window.eval(`CAREER_DB.find(c => c.name === ${JSON.stringify(targetName)})`);
-  ok(jdSel.value === career.id, `目标岗位自动选中：${targetName}（select=${jdSel.value}）`);
-  ok(document.getElementById("jd-preview") && !document.getElementById("jd-preview").hidden, "JD 预览已渲染");
+  const beforeApps = window.eval("getApplications().length");
+  const addBtn = [...target.querySelectorAll("button")].find((b) =>
+    (b.getAttribute("onclick") || "").includes("addRealJobToBoard")
+  );
+  addBtn.click();
+  const afterApps = window.eval("getApplications().length");
+  ok(afterApps === beforeApps + 1, `点击后投递看板新增 1 条（${beforeApps} → ${afterApps}）`);
+  const topApp = window.eval("getApplications()[0]");
+  ok(topApp && topApp.role === targetName, `看板记录岗位名正确（${targetName}）`);
+  ok(topApp && !!topApp.url, "看板记录携带企业官网链接");
+  ok(/真实岗位/.test(window.eval("REAL_JOBS.length ? '真实岗位' : ''")), "今日推荐取自真实岗位库 REAL_JOBS");
 
   /* 6. 快速入口：6 张卡片 + 箭头 */
   const qe = document.querySelectorAll(".quick-entries-hero .quick-entry");
@@ -154,10 +161,11 @@ function runTests() {
   ok(cssOk, "v15 新增 hover 动效 CSS 全部就位");
 
   /* 13. 等待 hashchange 落地：先断言面试页，再点教练断言报告页 */
+  window.eval("switchTab('interview')");
   setTimeout(() => {
     ok(
       document.querySelector('.app-page[data-page="interview"]').classList.contains("active"),
-      "点击推荐卡片后面试页激活"
+      "切到面试页后面试页激活"
     );
     coach.click();
     setTimeout(() => {

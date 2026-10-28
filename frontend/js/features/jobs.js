@@ -143,7 +143,7 @@ function renderBoard() {
         <div class="board-card">
           <div class="board-card-title">${esc(a.company)}</div>
           <div class="board-card-role">${esc(a.role)}</div>
-          <div class="board-card-meta">${esc(a.date || "")}${a.note ? " · " + esc(a.note) : ""}</div>
+          <div class="board-card-meta">${esc(a.date || "")}${a.note ? " · " + esc(a.note) : ""}${(a.url || "") ? ` · <a class="board-link" href="${String(a.url).replace(/"/g, "&quot;").replace(/</g, "&lt;")}" target="_blank" rel="noopener">官网</a>` : ""}</div>
           <div class="board-card-actions">
             <button onclick="moveApplication('${a.id}', -1)" title="上一阶段" ${si === 0 ? "disabled" : ""}>←</button>
             <button onclick="moveApplication('${a.id}', 1)" title="下一阶段" ${si === BOARD_STATUSES.length - 1 ? "disabled" : ""}>→</button>
@@ -191,6 +191,29 @@ function removeApplication(id) {
   saveApplications(getApplications().filter(a => a.id !== id));
   renderBoard();
   toast("已删除投递记录");
+}
+
+/* v38 · 真实岗位一键添加到投递看板（携带官网链接，支持查重） */
+function addRealJobToBoard(jobId) {
+  if (typeof REAL_JOBS === "undefined" || !REAL_JOBS.find) { toast("岗位数据未加载"); return; }
+  const job = REAL_JOBS.find((j) => j.id === jobId);
+  if (!job) { toast("岗位不存在"); return; }
+  const apps = getApplications();
+  if (apps.some((a) => a.sourceId && a.sourceId === jobId)) { toast("该岗位已在看板中"); return; }
+  apps.unshift({
+    id: "a" + Date.now(),
+    company: job.company, role: job.role,
+    status: "applied",
+    date: new Date().toLocaleDateString("zh-CN"),
+    note: `${job.city || ""} · ${job.salary || ""}`.trim(),
+    url: job.url || "",
+    sourceId: jobId,
+    createdAt: Date.now(),
+  });
+  saveApplications(apps);
+  renderBoard();
+  toast(`已添加到投递看板：${job.company} · ${job.role}`);
+  try { if (typeof logDev === "function") logDev("info", `投递看板新增真实岗位：${job.company} · ${job.role}`); } catch (e) {}
 }
 
 /* ---------- 6) 面试复盘（6 轮对话补全 → 结构化结论，localStorage 持久化） ---------- */
