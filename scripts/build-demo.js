@@ -34,6 +34,8 @@ const DEMO = OUT_ARG
 
 const manifest = JSON.parse(fs.readFileSync(path.join(FE, "build-manifest.json"), "utf8"));
 let html = fs.readFileSync(path.join(FE, "index.html"), "utf8");
+// 兼容 Windows 检出的 CRLF：统一为 LF 再匹配 link/script 序列，避免「未找到 CSS link 序列」
+html = html.replace(/\r\n/g, "\n");
 
 /* ---------- 0) 可选：构建时注入后端地址 ----------
  * 设置环境变量 FM_API_BASE=https://your-backend.example.com 后，

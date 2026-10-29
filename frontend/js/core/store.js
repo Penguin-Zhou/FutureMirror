@@ -67,6 +67,65 @@ function toast(msg, undo) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove("show"), undo ? 5200 : 2600);
 }
+/* ---------- v39 · 统一输入校验（可读错误 + 内联提示，避免空提交产出无效结果） ---------- */
+/**
+ * 校验一段文本是否满足最小长度。
+ * @param {unknown} value 待校验值
+ * @param {number} minLen 最小字符数
+ * @param {string} label 字段名称，用于拼错误文案
+ * @returns {string} 错误文案；空串表示通过
+ */
+function checkText(value, minLen, label) {
+  const v = String(value == null ? "" : value).trim();
+  if (!v) return `请先填写${label}`;
+  if (minLen && v.length < minLen) return `${label}过短（至少 ${minLen} 字），请补充具体内容后再提交`;
+  return "";
+}
+/**
+ * 校验并把错误挂到输入框旁（内联提示 + aria-invalid），失败时弹出 toast 并聚焦。
+ * @param {HTMLInputElement|HTMLTextAreaElement|null} el 输入元素
+ * @param {number} minLen 最小字符数
+ * @param {string} label 字段名称
+ * @returns {boolean} true 表示通过
+ */
+function guardField(el, minLen, label) {
+  if (!el) return true;
+  const err = checkText(el.value, minLen, label || "内容");
+  let tip = el.parentNode ? el.parentNode.querySelector(".field-error") : null;
+  if (err) {
+    el.classList.add("invalid");
+    el.setAttribute("aria-invalid", "true");
+    if (el.parentNode) {
+      if (!tip) {
+        tip = document.createElement("div");
+        tip.className = "field-error";
+        tip.setAttribute("role", "alert");
+        el.parentNode.appendChild(tip);
+      }
+      tip.textContent = err;
+    }
+    toast(err);
+    try { el.focus(); } catch { /* 元素不可聚焦时忽略 */ }
+    return false;
+  }
+  el.classList.remove("invalid");
+  el.removeAttribute("aria-invalid");
+  if (tip && tip.parentNode) tip.parentNode.removeChild(tip);
+  return true;
+}
+/**
+ * 清除某输入元素上的错误态（内容变化时调用）。
+ * @param {HTMLElement|null} el 输入元素
+ * @returns {void}
+ */
+function clearFieldError(el) {
+  if (!el) return;
+  el.classList.remove("invalid");
+  el.removeAttribute("aria-invalid");
+  const tip = el.parentNode ? el.parentNode.querySelector(".field-error") : null;
+  if (tip && tip.parentNode) tip.parentNode.removeChild(tip);
+}
+
 function openMaterial(key) {
   if (key === "account") {
     if (navigator.clipboard) navigator.clipboard.writeText(CONFIG.testAccount);

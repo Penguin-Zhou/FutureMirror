@@ -329,11 +329,24 @@ function refreshStorage() {
 function exportUserData() {
   if (!currentUser) { toast("请先登录"); return; }
   try {
+    // v39：导出当前账号的全部个人数据（localStorage 快照），便于换设备或浏览器前做备份
+    const raw = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        // 仅导出与当前账号 / 全局偏好相关的键，跳过内部临时键
+        if (k.startsWith("fm_") || k.startsWith("g_") || (currentUser && k.indexOf(String(currentUser.id)) !== -1)) {
+          try { raw[k] = localStorage.getItem(k); } catch (e) { raw[k] = null; }
+        }
+      }
+    } catch (e) {}
     const data = {
       app: "面镜 FutureMirror · 在线演示版",
       exportedAt: new Date().toISOString(),
       user: { id: currentUser.id, email: currentUser.email, name: currentUser.name },
       profile: getProfile(),
+      storageSnapshot: raw,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
@@ -343,7 +356,7 @@ function exportUserData() {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    toast("数据已导出为 JSON");
+    toast(`数据已导出为 JSON（${Object.keys(raw).length} 项）`);
     try { if (typeof logDev === "function") logDev("info", "已导出个人数据 JSON"); } catch (e) {}
   } catch (e) { toast("导出失败：" + e.message); }
 }

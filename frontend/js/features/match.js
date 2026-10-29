@@ -52,14 +52,22 @@ function ringSVG(score) {
 
 function analyze() {
   if (!requireLogin()) return;
-  const resume = $("resume").value, jd = $("jd").value;
   const err = $("match-error");
-  if (!resume.trim() || !jd.trim()) {
-    err.textContent = "请先填写简历与 JD（或点击「填入示例数据」）再生成匹配报告。";
+  // v39：非空之外再加最小长度门槛，避免「一个字」也算出一份无效报告
+  const badResume = checkText($("resume").value, 30, "简历内容");
+  const badJd = checkText($("jd").value, 20, "岗位 JD");
+  if (badResume || badJd) {
+    // 只 toast 第一个不合格的字段（避免两条 toast 互相覆盖），但两个字段都标记出来
+    if (badResume) guardField($("resume"), 30, "简历内容");
+    else guardField($("jd"), 20, "岗位 JD");
+    err.textContent = (badResume || badJd) + "（或点击「填入示例数据」体验）";
     err.classList.add("show");
     return;
   }
   err.classList.remove("show");
+  clearFieldError($("resume"));
+  clearFieldError($("jd"));
+  const resume = $("resume").value, jd = $("jd").value;
   const p = heuristicParse(resume, jd);
   matchResult = p;
   store.set("fm_match", p);
@@ -102,7 +110,15 @@ $("resume-upload").addEventListener("change", async (e) => {
     return;
   }
   if (/\.pdf$/i.test(f.name)) {
-    box.textContent = `⏳ 正在端侧解析 ${f.name}（${size} KB）的 PDF 文本……`;
+    // v39：解析期用骨架块占位（大文件 / 多页 PDF 可能要几秒），避免「点了没反应」
+    box.innerHTML = `<div class="mp-parsing">⏳ 正在端侧解析 ${escHtml(f.name)}（${size} KB）的 PDF 文本……
+      <div class="bp-skel" aria-hidden="true" style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+        <div class="skeleton" style="height:10px"></div>
+        <div class="skeleton" style="height:10px;width:86%"></div>
+        <div class="skeleton" style="height:10px;width:58%"></div>
+      </div>
+      <div class="hint" style="margin-top:6px">文件仅在本机浏览器内解析，不会上传</div>
+    </div>`;
     try {
       const { text, pages } = await parsePdfText(f);
       if (!text.trim()) {

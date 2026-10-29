@@ -231,6 +231,14 @@ function renderPlanPage() {
   try { if (window.__bpApp && window.__bpApp.choreograph) window.__bpApp.choreograph("app", "plan"); } catch (e) {}
 }
 
+/* v39：用户主动选择查看通用基线示例（明确标注非定制） */
+function lpUseBaseline() {
+  const p = lpCreate("baseline");
+  lpSave(p);
+  renderPlanPage();
+  toast("已载入通用 7 天示例（非个人定制）；完成面试后可同步为个人版");
+}
+
 /* ---------- 交互 ---------- */
 function setPlanBudget(id) {
   const p = lpGet();

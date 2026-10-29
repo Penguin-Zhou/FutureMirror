@@ -3,14 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.1.2 演示版）</title>
-<meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台（在线演示版）">
+<title>面镜 FutureMirror · AI 模拟面试与能力成长平台（Beta 1.1.2 演示版）</title>
+<meta name="description" content="面镜 FutureMirror · AI 驱动的模拟面试与能力成长平台：简历匹配、多轮面试、可解释评分报告与个性化学习路径（在线演示版）。">
 <meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1C1913" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
-<meta property="og:title" content="面镜 FutureMirror · 多 Agent 模拟面试平台">
-<meta property="og:description" content="五个 Agent 协作完成一场可解释的模拟面试：规划、技术深挖、代码沙盒验证、证据记录、可解释评分与成长路径。">
-<meta name="twitter:card" content="summary">
+<meta property="og:title" content="面镜 FutureMirror · AI 模拟面试与能力成长平台">
+<meta property="og:description" content="一场可解释的模拟面试：规划提问、技术深挖、代码验证、证据记录，最终给出可量化评分与改进路径。">
+<meta property="og:url" content="https://penguin-zhou.github.io/FutureMirror/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://penguin-zhou.github.io/FutureMirror/">
+<meta name="keywords" content="模拟面试,AI面试,求职,能力评估,面试报告,MBTI,职业规划">
 <!-- 站点图标：内联 SVG（蓝图取景器 · 墨板 + 纸色括线 + 朱红瞳点），零额外请求 -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect width='26' height='26' fill='%231C1913'/%3E%3Cpath d='M4 8V4h4M18 4h4v4M22 18v4h-4M8 22H4v-4' fill='none' stroke='%23F4F1E8' stroke-width='1.6'/%3E%3Ccircle cx='13' cy='13' r='5.4' fill='none' stroke='%23F4F1E8' stroke-width='1.2'/%3E%3Ccircle cx='13' cy='13' r='2.1' fill='%23BE3A1E'/%3E%3C/svg%3E">
 <script>
@@ -3931,11 +3934,17 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   .onboarding-card { border-radius: 0; padding: 18px 16px; }
   .daily-card, .quiz-entry-row { border-radius: 0; }
 
-  /* 触控友好：按钮 ≥42px 高、按压反馈 */
-  .btn { min-height: 42px; border-radius: 0; }
-  .btn-sm { min-height: 36px; }
-  .tabbar-item { transition: transform .12s ease, color .15s; }
+  /* 触控友好：按钮 ≥44px 高（WCAG 目标尺寸）、按压反馈 */
+  .btn { min-height: 44px; border-radius: 0; }
+  .btn-sm { min-height: 44px; padding-left: 12px; padding-right: 12px; }
+  /* 图标型小按钮不强行拉高，但补足横向触控区域 */
+  .btn-icon { min-width: 44px; min-height: 44px; }
+  .tabbar-item { min-height: 44px; padding-top: 8px; padding-bottom: 8px; transition: transform .12s ease, color .15s; }
   .tabbar-item:active { transform: scale(.94); }
+  .sb-item { min-height: 44px; }
+  /* 复选框 / 标签 / chip 类小控件补足点击区域 */
+  .chip, .js-chip, .board-card-meta a { min-height: 44px; }
+  [role="switch"] { min-height: 44px; }
   .quiz-opt { padding: 14px; font-size: 14px; border-radius: 0; }
   .quiz-opt:active { transform: scale(.99); }
   .quiz-opt-key { width: 24px; height: 24px; }
@@ -4345,6 +4354,95 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   .chart-row { transition: none; }
   .rj-card.rj-flash { animation: none; border-color: var(--brand); }
 }
+
+/* ============================================================
+ * v39 · 可用性收口（校验反馈 / 免责提示 / 技术细节折叠 / 长文本兜底）
+ * 印刷风纪律：全部走 CSS 变量 + 发丝线，无投影、无圆角、无位移动画。
+ * ============================================================ */
+
+/* ① 长文本 / 长 URL 防横向溢出：给文本容器统一兜底，窄屏不再出现横向滚动条 */
+.msg, .review-msg, .rag-answer, .evidence, .notice, .hint,
+.board-card-meta, .tl-item, .match-body, .today-pick-desc,
+.mbti-dim-card, .dim-comment, .js-chunk-list p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ② 表单校验内联错误（与 guardField() 配套） */
+input.invalid, textarea.invalid, select.invalid {
+  border-color: var(--brand) !important;
+  border-width: 2px;
+}
+.field-error {
+  margin-top: 5px; font-size: 12px; line-height: 1.6;
+  color: var(--brand); border-left: 2px solid var(--brand); padding-left: 8px;
+}
+
+/* ③ AI 内容免责提示（RAG 回答区） */
+.rag-disclaimer {
+  margin-top: 10px; padding: 8px 10px;
+  border: 1px dashed var(--line-2); font-size: 12px; line-height: 1.75;
+  color: var(--muted);
+}
+
+/* ④ 技术细节折叠区（把工程参数收起来，不打扰普通用户） */
+.tech-details { margin-bottom: 10px; }
+.tech-details > summary {
+  cursor: pointer; font-size: 12.5px; color: var(--faint);
+  list-style: none; user-select: none; padding: 4px 0;
+  display: flex; align-items: center; gap: 6px;
+}
+.tech-details > summary::-webkit-details-marker { display: none; }
+.tech-details > summary::before {
+  content: "▸"; font-size: 10px; color: var(--faint); transition: none;
+}
+.tech-details[open] > summary::before { content: "▾"; }
+.tech-details > summary:hover { color: var(--ink); }
+.tech-details .hint { margin-top: 6px; }
+
+/* ⑤ PDF 解析中的占位卡片 */
+.mp-parsing { font-size: 13px; line-height: 1.7; color: var(--muted); }
+
+/* ============================================================
+   v39 · 无障碍 / 反馈 / 模式状态 样式增量
+   ============================================================ */
+
+/* 屏幕阅读器专用（雷达数值表等，视觉可隐藏但语义保留） */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* 登录安全警告：朱红描边 + 纸纹底，强提示「勿用真实密码」 */
+.auth-warn {
+  border: 1px solid var(--brand);
+  background: color-mix(in srgb, var(--brand) 8%, var(--card));
+  padding: 10px 12px; margin-bottom: 14px; border-radius: 0;
+  font-size: 12.5px; line-height: 1.7; color: var(--ink);
+}
+.auth-warn b { color: var(--brand); }
+.auth-warn p { margin: 4px 0 0; color: var(--muted); }
+.auth-warn code { font-family: var(--mono); background: var(--bg-deep); padding: 0 4px; }
+
+/* 离线状态：状态胶囊变朱红 + 实心点，明确「已降级」 */
+.status-pill.offline { border-color: var(--brand); color: var(--brand); }
+.status-pill.offline .dot { background: var(--brand); animation: none; }
+
+/* 顶栏 ⌘K 命令面板入口 */
+.kbd-hint {
+  font-family: var(--mono); font-size: 11px !important;
+  letter-spacing: .04em; color: var(--muted); border-color: var(--line);
+}
+.kbd-hint:hover { border-color: var(--ink); color: var(--ink); }
+
+/* 投递看板空态（复用 es-* 子元素样式，故加 empty-state 类保持外观一致） */
+.board-empty-wide {
+  grid-column: 1 / -1;
+  border: 1px dashed var(--line-2);
+  padding: 22px; border-radius: 0; background: var(--card);
+}
+
 </style>
 </head>
 <body>
@@ -4664,6 +4762,11 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册</button>
       </div>
 
+      <div class="auth-warn" role="alert">
+        <b>🔒 请勿使用真实密码</b>
+        <p>这是<b>演示级</b>登录系统：密码仅做本地简单混淆存储、不具备生产安全性。请使用<b>专用演示密码</b>（如 <code>demo1234</code>），<b>不要填写你在其他网站的账号密码</b>。账号与面试记录仅保存在当前浏览器，清除浏览器数据即丢失。</p>
+      </div>
+
       <!-- 登录表单 -->
       <form class="auth-form" id="form-login" onsubmit="event.preventDefault();doLogin();">
         <div class="auth-field">
@@ -4757,6 +4860,9 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 
       <button class="btn btn-ghost btn-sm" onclick="openEvaluatorGate()" title="仅访客与技术验证使用" style="font-size:12px">
         🎛 开发者模式
+      </button>
+      <button class="btn btn-ghost btn-sm kbd-hint" onclick="if(window.__openCommandPalette)window.__openCommandPalette()" title="打开命令面板：快速跳转页面、开始面试、看真实岗位等">
+        ⌘K 命令面板
       </button>
     </div>
   </div>
@@ -5083,7 +5189,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
               没有合适的岗位？<button type="button" onclick="toggleManualJd()" id="jd-manual-btn">✏️ 手动输入 JD</button>
             </div>
             <textarea id="jd" rows="7" placeholder="粘贴目标岗位职位描述…" aria-label="目标岗位 JD" hidden></textarea>
-            <div class="file-drop" id="jd-file" hidden>📎 JD 链接抓取为规划项；岗位数据库匹配已内置（MCP 工具 search_job_db）</div>
+            <div class="file-drop" id="jd-file" hidden>📎 JD 链接抓取为规划项；岗位数据库匹配已内置（24 个岗位方向，本地检索）</div>
           </div>
         </div>
         <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
@@ -5190,7 +5296,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <div class="chat">
           <div class="chat-main">
             <div class="chat-head">
-              <span class="badge badge-green" id="chat-agent">规划 Agent</span>
+              <span class="badge badge-green" id="chat-agent">提问规划</span>
               <span id="chat-mode-label">综合面 · 动态追问模式 · 题库 6 题</span>
               <div class="progress-wrap" title="面试进度（5 轮）"><div class="progress-bar" id="progress-bar"></div></div>
               <span class="answer-timer" id="answer-timer" title="本题答题倒计时（90 秒）——超时将记入「抗压表现」维度">⏱ 90s</span>
@@ -5220,7 +5326,7 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
             </div>
           </div>
           <details class="chat-aside" id="timeline-box" open>
-            <summary>查看思考过程（Agent 圆桌）</summary>
+            <summary>查看思考过程（面试官团队）</summary>
             <!-- 实时能力追踪器：面试过程中动态更新 -->
             <div class="live-tracker">
               <div class="aside-title">实时能力追踪</div>
@@ -5233,9 +5339,9 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
               </div>
               <div class="live-hint" id="live-hint">发送第一条回答后开始追踪</div>
             </div>
-            <div class="aside-title">Agent 圆桌时间线</div>
+            <div class="aside-title">面试官团队时间线</div>
             <div id="timeline">
-              <div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示 Agent 规划、工具调用与证据记录。</div>
+              <div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示提问规划、资料检索与证据记录。</div>
             </div>
           </details>
         </div>
@@ -5258,9 +5364,13 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
         <div class="vec-bar" id="vec-bar">
           <span class="vec-dot" id="vec-dot"></span>
           <span class="vec-status" id="vec-status">向量索引未初始化</span>
-          <button class="btn btn-outline btn-sm" id="vec-build-btn" onclick="loadVecModel()" title="在浏览器内计算 384 维句向量（Transformers.js · all-MiniLM-L6-v2），零后端、零 API；权重随站点自托管（models/），同源读取，不再依赖 huggingface">⚡ 加载端侧模型 MiniLM</button>
+          <button class="btn btn-outline btn-sm" id="vec-build-btn" onclick="loadVecModel()" title="在浏览器本地计算语义向量（约 23MB），不上传任何数据；加载后语义召回更准">⚡ 加载语义模型（可选）</button>
         </div>
-        <p class="hint" style="margin-top:0;margin-bottom:10px">检索层为 <b>BM25 + 端侧向量混合检索</b>：BM25（k1=1.5 / b=0.75，中文 bigram 切分，标题字段加权）× <b>0.4</b> + 余弦相似度 × <b>0.6</b>，两路各自归一分后融合。<br>向量由 <b>Transformers.js</b> 在浏览器内计算（all-MiniLM-L6-v2，384 维，40 条面经向量预计算后写入 localStorage），<b>不需要后端、不需要 API、离线可跑</b>；无模型文件时自动降级为 n-gram hashing 向量（256 维），检索链路不中断。后续规划升级为 pgvector + RRF + Rerank。</p>
+        <div class="notice notice-info" style="margin:8px 0">⚠️ <b>答案由 AI 生成，仅供面试练习参考</b>：本地资料库仅 40 条演示面经，不保证准确、完整或时效；就业决策请以企业官方信息为准。</div>
+        <details class="tech-details">
+          <summary>检索原理（技术细节，可折叠）</summary>
+          <p class="hint">检索层为 <b>BM25 + 端侧向量混合检索</b>：BM25（k1=1.5 / b=0.75，中文 bigram 切分，标题字段加权）× <b>0.4</b> + 余弦相似度 × <b>0.6</b>，两路各自归一分后融合。<br>向量由 <b>Transformers.js</b> 在浏览器内计算（all-MiniLM-L6-v2，384 维，40 条面经向量预计算后写入 localStorage），<b>不需要后端、不需要 API、离线可跑</b>；无模型文件时自动降级为 n-gram hashing 向量（256 维），检索链路不中断。后续规划升级为 pgvector + RRF + Rerank。</p>
+        </details>
         <div style="display:flex;gap:8px">
           <input type="text" id="rag-input" placeholder="试试：字节后端二面一般问什么？" onkeydown="if(event.key==='Enter')askRag()" aria-label="RAG 查询输入框">
           <button class="btn btn-primary btn-sm" onclick="askRag()">提问</button>
@@ -5487,11 +5597,12 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
     </div>
     <div class="page-card">
       <div class="pane-title">🧠 MBTI 职业性格测评
-        <span class="tag-demo">v36 · 端侧计算 · 结果仅存本地</span>
+        <span class="tag-demo">v36 · 本地计算 · 结果仅存本地</span>
       </div>
       <p class="hint" style="margin-top:0;margin-bottom:12px">
         答题约需 2 分钟。结果用于校准岗位推荐与面试建议，不会上传服务器。
       </p>
+      <div class="notice notice-info" style="margin-bottom:12px">⚠️ <b>本测评为端侧简易量表，不是专业心理测评</b>：结果仅作求职参考，不能作为心理诊断、职业决策或能力评价的依据。</div>
 
       <div id="mbti-intro">
         <div class="grid2">
@@ -6391,7 +6502,10 @@ function applyRoute() {
 
   // 2) 左侧栏 + 底部 Tab 栏同步激活态（v10：合并为一处，避免三段式冗余）
   document.querySelectorAll(".sb-item, .tabbar-item").forEach(a => {
-    a.classList.toggle("active", a.dataset.nav === page);
+    const on = a.dataset.nav === page;
+    a.classList.toggle("active", on);
+    if (on) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
   });
 
   // 3) 面包屑
@@ -6402,7 +6516,7 @@ function applyRoute() {
   const title = APP_PAGE_TITLES[page] || "首页";
   document.title = `面镜 FutureMirror · ${title}`;
   const metaDesc = document.querySelector('meta[name="description"]');
-  if (metaDesc) metaDesc.content = `面镜 FutureMirror · ${title} · 多 Agent 驱动的 AI 模拟面试与能力成长平台`;
+  if (metaDesc) metaDesc.content = `面镜 FutureMirror · ${title} · AI 模拟面试与能力成长平台（在线演示版）`;
 
   // 5) 按需渲染
   if (page === "report") { try { renderReport(); } catch (e) {} }
@@ -6556,6 +6670,65 @@ function toast(msg, undo) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove("show"), undo ? 5200 : 2600);
 }
+/* ---------- v39 · 统一输入校验（可读错误 + 内联提示，避免空提交产出无效结果） ---------- */
+/**
+ * 校验一段文本是否满足最小长度。
+ * @param {unknown} value 待校验值
+ * @param {number} minLen 最小字符数
+ * @param {string} label 字段名称，用于拼错误文案
+ * @returns {string} 错误文案；空串表示通过
+ */
+function checkText(value, minLen, label) {
+  const v = String(value == null ? "" : value).trim();
+  if (!v) return `请先填写${label}`;
+  if (minLen && v.length < minLen) return `${label}过短（至少 ${minLen} 字），请补充具体内容后再提交`;
+  return "";
+}
+/**
+ * 校验并把错误挂到输入框旁（内联提示 + aria-invalid），失败时弹出 toast 并聚焦。
+ * @param {HTMLInputElement|HTMLTextAreaElement|null} el 输入元素
+ * @param {number} minLen 最小字符数
+ * @param {string} label 字段名称
+ * @returns {boolean} true 表示通过
+ */
+function guardField(el, minLen, label) {
+  if (!el) return true;
+  const err = checkText(el.value, minLen, label || "内容");
+  let tip = el.parentNode ? el.parentNode.querySelector(".field-error") : null;
+  if (err) {
+    el.classList.add("invalid");
+    el.setAttribute("aria-invalid", "true");
+    if (el.parentNode) {
+      if (!tip) {
+        tip = document.createElement("div");
+        tip.className = "field-error";
+        tip.setAttribute("role", "alert");
+        el.parentNode.appendChild(tip);
+      }
+      tip.textContent = err;
+    }
+    toast(err);
+    try { el.focus(); } catch { /* 元素不可聚焦时忽略 */ }
+    return false;
+  }
+  el.classList.remove("invalid");
+  el.removeAttribute("aria-invalid");
+  if (tip && tip.parentNode) tip.parentNode.removeChild(tip);
+  return true;
+}
+/**
+ * 清除某输入元素上的错误态（内容变化时调用）。
+ * @param {HTMLElement|null} el 输入元素
+ * @returns {void}
+ */
+function clearFieldError(el) {
+  if (!el) return;
+  el.classList.remove("invalid");
+  el.removeAttribute("aria-invalid");
+  const tip = el.parentNode ? el.parentNode.querySelector(".field-error") : null;
+  if (tip && tip.parentNode) tip.parentNode.removeChild(tip);
+}
+
 function openMaterial(key) {
   if (key === "account") {
     if (navigator.clipboard) navigator.clipboard.writeText(CONFIG.testAccount);
@@ -6958,14 +7131,22 @@ function ringSVG(score) {
 
 function analyze() {
   if (!requireLogin()) return;
-  const resume = $("resume").value, jd = $("jd").value;
   const err = $("match-error");
-  if (!resume.trim() || !jd.trim()) {
-    err.textContent = "请先填写简历与 JD（或点击「填入示例数据」）再生成匹配报告。";
+  // v39：非空之外再加最小长度门槛，避免「一个字」也算出一份无效报告
+  const badResume = checkText($("resume").value, 30, "简历内容");
+  const badJd = checkText($("jd").value, 20, "岗位 JD");
+  if (badResume || badJd) {
+    // 只 toast 第一个不合格的字段（避免两条 toast 互相覆盖），但两个字段都标记出来
+    if (badResume) guardField($("resume"), 30, "简历内容");
+    else guardField($("jd"), 20, "岗位 JD");
+    err.textContent = (badResume || badJd) + "（或点击「填入示例数据」体验）";
     err.classList.add("show");
     return;
   }
   err.classList.remove("show");
+  clearFieldError($("resume"));
+  clearFieldError($("jd"));
+  const resume = $("resume").value, jd = $("jd").value;
   const p = heuristicParse(resume, jd);
   matchResult = p;
   store.set("fm_match", p);
@@ -7008,7 +7189,15 @@ $("resume-upload").addEventListener("change", async (e) => {
     return;
   }
   if (/\.pdf$/i.test(f.name)) {
-    box.textContent = `⏳ 正在端侧解析 ${f.name}（${size} KB）的 PDF 文本……`;
+    // v39：解析期用骨架块占位（大文件 / 多页 PDF 可能要几秒），避免「点了没反应」
+    box.innerHTML = `<div class="mp-parsing">⏳ 正在端侧解析 ${escHtml(f.name)}（${size} KB）的 PDF 文本……
+      <div class="bp-skel" aria-hidden="true" style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+        <div class="skeleton" style="height:10px"></div>
+        <div class="skeleton" style="height:10px;width:86%"></div>
+        <div class="skeleton" style="height:10px;width:58%"></div>
+      </div>
+      <div class="hint" style="margin-top:6px">文件仅在本机浏览器内解析，不会上传</div>
+    </div>`;
     try {
       const { text, pages } = await parsePdfText(f);
       if (!text.trim()) {
@@ -7285,6 +7474,7 @@ function finishMatchQa() {
   toast(`匹配度已更新：${matchResult.matchScore}%`);
   try { logDev("info", `对话式匹配增强完成：${s.baseScore}% → ${matchResult.matchScore}%`); } catch (e) {}
 }
+"use strict";
 /* ============================================================
  * 5. 模拟面试（多 Agent + 规划/工具调用/证据时间线 + 语音 + 真实 LLM）
  * ============================================================ */
@@ -7359,7 +7549,7 @@ function finishByInterviewer() {
     `面试到此结束。观察员已汇总全部证据，正在生成你的可解释评估报告…`;
   body.appendChild(notice);
   body.scrollTop = body.scrollHeight;
-  addTimeline("规划 Agent", `🏁 已收集 ${MAX_TURNS} 轮证据 → 面试官发送结束通知，自动收尾并生成报告`, false);
+  addTimeline("提问规划", `🏁 已收集 ${MAX_TURNS} 轮证据 → 面试官发送结束通知，自动收尾并生成报告`, false);
   stopAnswerTimer();
   lockInput(true);
   const hint = $("live-hint");
@@ -7619,7 +7809,7 @@ function setMode(m) {
   session.mode = m;
   document.querySelectorAll(".mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === m));
   $("chat-mode-label").textContent = modeLabelWithCount(m);
-  addTimeline("规划 Agent", `模式切换为「${MODE_SHORT[m] || m}」→ 加载题库 ${(QUESTION_BANK[m] || []).length} 题，已更新提问策略`, false);
+  addTimeline("提问规划", `模式切换为「${MODE_SHORT[m] || m}」→ 加载题库 ${(QUESTION_BANK[m] || []).length} 题，已更新提问策略`, false);
   persistSession();
 }
 
@@ -7673,9 +7863,10 @@ function sendMsg() {
     return;
   }
   const input = $("chat-input");
+  if (!guardField(input, 2, "回答内容")) return;
   const text = input.value.trim();
-  if (!text) return;
   input.value = "";
+  clearFieldError(input);
   stopAnswerTimer();
   const body = $("chat-body");
   const userDiv = document.createElement("div");
@@ -7702,12 +7893,12 @@ function sendMsgMock(text, speaker, keyword, notes) {
   // v18：连环追问概率——检测到技术关键词时，有机会连续 2 轮深挖同一点（而非固定轮转）
   const dive = maybeStartDeepDive(keyword, mode);
   if (dive.started) {
-    addTimeline("规划 Agent", `🔍 检测到技术关键词「${keyword.slice(0, 12)}」→ 触发连环追问（连续 ${dive.left} 轮深挖同一点）`, false);
+    addTimeline("提问规划", `🔍 检测到技术关键词「${keyword.slice(0, 12)}」→ 触发连环追问（连续 ${dive.left} 轮深挖同一点）`, false);
   }
 
-  addTimeline("规划 Agent", `🧠 分析回答要点「${keyword.slice(0, 14)}」…`, false);
+  addTimeline("提问规划", `🧠 分析回答要点「${keyword.slice(0, 14)}」…`, false);
   setTimeout(() => {
-    addTimeline("规划 Agent", `📋 决策：${planReason(speaker, keyword, notes, mode)}（置信度 ${Math.min(95, 60 + turn * 6)}%）`, false);
+    addTimeline("提问规划", `📋 决策：${planReason(speaker, keyword, notes, mode)}（置信度 ${Math.min(95, 60 + turn * 6)}%）`, false);
   }, 320);
 
   setTimeout(() => {
@@ -7751,11 +7942,11 @@ function sendMsgMock(text, speaker, keyword, notes) {
         v16MaybeAutoSpeak();
         addTimeline(speaker.name, "📮 已发送提问（流式输出完成）", false);
         startAnswerTimer();
-        addTimeline("观察员 Agent", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
+        addTimeline("观察员", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
         session.turns.push({ agent: speaker.name, question, answer: text, notes, mode });
         persistSession();
         updateLiveTracker();
-        if (turn === MAX_TURNS) addTimeline("规划 Agent", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
+        if (turn === MAX_TURNS) addTimeline("提问规划", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
         $("chat-send").disabled = false;
         body.scrollTop = body.scrollHeight;
         // v32：第 5 题答完 → 面试官发送结束通知并自动收尾
@@ -7770,8 +7961,8 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   const body = $("chat-body");
   $("chat-send").disabled = true;
 
-  addTimeline("规划 Agent", `🧠 分析回答要点「${keyword.slice(0, 14)}」…`, false);
-  setTimeout(() => addTimeline("规划 Agent", `📋 决策：${planReason(speaker, keyword, notes, session.mode)}（置信度 ${Math.min(95, 60 + turn * 6)}%）`, false), 320);
+  addTimeline("提问规划", `🧠 分析回答要点「${keyword.slice(0, 14)}」…`, false);
+  setTimeout(() => addTimeline("提问规划", `📋 决策：${planReason(speaker, keyword, notes, session.mode)}（置信度 ${Math.min(95, 60 + turn * 6)}%）`, false), 320);
   addTimeline("模型调用", `🌐 ${llmLabel()} · stream=true`, "tool");
 
   showTyping("模型生成中");     // v24：首字到达前的等待反馈
@@ -7810,12 +8001,12 @@ async function sendMsgReal(text, speaker, keyword, notes) {
     return;
   }
   clearTimeout(killTimer);
-  addTimeline("观察员 Agent", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
+  addTimeline("观察员", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
   startAnswerTimer();
   session.turns.push({ agent: speaker.name, question: full, answer: text, notes, mode: session.mode });
   persistSession();
   updateLiveTracker();
-  if (turn === MAX_TURNS) addTimeline("规划 Agent", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
+  if (turn === MAX_TURNS) addTimeline("提问规划", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
   $("chat-send").disabled = false;
   // v32：第 5 题答完 → 面试官发送结束通知并自动收尾
   maybeFinishAtTurnLimit();
@@ -7826,7 +8017,7 @@ function finishInterview() {
   if (!session.turns.length) { toast("请先完成至少一轮问答，再结束面试生成报告"); return; }
   stopAnswerTimer();
   try { stopCamera(); } catch (e) {}   // 面试结束即收掉摄像头，状态检测随之停止
-  addTimeline("教练 Agent", `汇总 ${session.turns.length} 轮对话 → 正在生成可解释评分报告与学习路径…`, false);
+  addTimeline("面试教练", `汇总 ${session.turns.length} 轮对话 → 正在生成可解释评分报告与学习路径…`, false);
   switchTab("report");
 }
 
@@ -7849,8 +8040,8 @@ function restartInterview() {
   resetAnswerTimer();
   deepDive = { topic: null, left: 0 };
   $("chat-body").innerHTML = '<div class="msg msg-system">面试开始：选择模式并发送第一条消息，AI 面试官团队将依次提问</div>';
-  $("timeline").innerHTML = '<div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示 Agent 规划、工具调用与证据记录。</div>';
-  setCurrentSpeaker("规划 Agent");
+  $("timeline").innerHTML = '<div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示提问规划、资料检索与证据记录。</div>';
+  setCurrentSpeaker("提问规划");
   // 重置实时能力追踪器与进度条
   $("live-radar").innerHTML = "";
   $("live-turn").textContent = `0/${MAX_TURNS}`;
@@ -7936,7 +8127,7 @@ function restoreSession() {
     div.textContent = t.question;
     $("chat-body").appendChild(div);
     addTimeline(t.agent, `（恢复）提问：${t.question.slice(0, 30)}…`, false);
-    addTimeline("观察员 Agent", `（恢复）证据 #${i + 1}：${t.notes}`, "note");
+    addTimeline("观察员", `（恢复）证据 #${i + 1}：${t.notes}`, "note");
   });
   turn = session.turns.length;
   if (turn > 0) {
@@ -8815,14 +9006,30 @@ function askRagPreset(q) {
   askRag();
 }
 
+/* v39：AI 生成内容的免责说明（合规底线——答案来自本地演示面经库，不得当作权威信息） */
+const RAG_DISCLAIMER = `<div class="rag-disclaimer" role="note">⚠️ 本回答由 AI 基于本地面经资料生成，<b>仅供面试练习参考</b>：资料库仅 40 条演示面经，不保证内容准确、完整或时效，求职决策请以企业官方信息为准。</div>`;
+
 async function askRag(skipLlm) {
   if (!requireLogin()) return;
-  const q = $("rag-input").value.trim();
-  if (!q) { toast("请输入问题后再检索"); return; }
-  // beta1.0：混合检索——BM25 词面召回 + 端侧向量余弦语义召回，归一后加权融合
-  const ranked = await hybridRetrieveAsync(q, 3);
-  const hits = ranked.map(r => r.entry);
+  const qEl = $("rag-input");
+  if (!guardField(qEl, 4, "问题")) return;
+  const q = qEl.value.trim();
   const box = $("rag-result");
+  // v39：检索阶段先上骨架屏（向量模型冷启动 / 大库排序都需要时间），避免「点了没反应」
+  const skel = box && window.bpSkeleton
+    ? window.bpSkeleton(box, { rows: 3, cols: 1, height: 14, minDwell: 240 })
+    : null;
+  // beta1.0：混合检索——BM25 词面召回 + 端侧向量余弦语义召回，归一后加权融合
+  let ranked;
+  try {
+    ranked = await hybridRetrieveAsync(q, 3);
+  } catch (e) {
+    if (skel) skel.clear(true);
+    box.innerHTML = `<div class="rag-answer weak fade-up">检索失败：${escHtml(e && e.message ? e.message : String(e))}。请稍后重试，或改用更短的关键词。</div>`;
+    return;
+  }
+  if (skel) skel.clear(true);
+  const hits = ranked.map(r => r.entry);
   if (!hits.length) {
     box.innerHTML = `<div class="rag-answer weak fade-up">知识库中暂未检索到相关资料，请更换关键词，例如「STAR 法则」「MySQL 索引」「字节 二面」。</div>`;
     return;
@@ -8849,7 +9056,7 @@ async function askRag(skipLlm) {
         { role: "user", content: `问题：${q}\n\n资料：\n${ctx}` },
       ], piece => { full += piece; target.textContent = full; }, ctrl.signal);
       target.textContent = full;
-      box.querySelector(".rag-answer").insertAdjacentHTML("beforeend", citeBlock + `<div class="rag-score">retriever=${retrieverTag} · llm=${modelLabel} · hits=${hits.length}</div>`);
+      box.querySelector(".rag-answer").insertAdjacentHTML("beforeend", RAG_DISCLAIMER + citeBlock + `<div class="rag-score">retriever=${retrieverTag} · llm=${modelLabel} · hits=${hits.length}</div>`);
     } catch (e) {
       toast("真实模型调用失败，已降级为关键词检索结果");
       askRag(true);
@@ -8859,7 +9066,7 @@ async function askRag(skipLlm) {
 
   box.innerHTML = `<div class="rag-answer fade-up">
     <b>（Mock 模式）</b>混合检索命中 ${hits.length} 条相关资料，最相关的是「${hits[0].source}」；接入模型后，这里将由真实模型基于以下资料生成带引用的完整回答：
-    ${citeBlock}
+    ${RAG_DISCLAIMER}${citeBlock}
     <div class="rag-score">retriever=${retrieverTag} · tokens=${tokenize(q).length} · hits=${hits.length}</div>
   </div>`;
 }
@@ -9103,6 +9310,7 @@ async function renderReport(force) {
       <div style="text-align:right;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;justify-content:flex-end">
         <div class="report-actions" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
           <button class="btn btn-outline btn-sm" onclick="copyReportMarkdown()">📋 复制 Markdown</button>
+          <button class="btn btn-outline btn-sm" onclick="exportReportCsv()">📊 导出 CSV</button>
           <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 导出 PDF</button>
           <button class="btn btn-outline btn-sm" onclick="shareReport()">🔗 分享报告</button>
           <button class="btn btn-outline btn-sm" onclick="restartInterview()">🔄 再来一次</button>
@@ -9119,7 +9327,9 @@ async function renderReport(force) {
       ? `本报告由<b>服务端确定性评分引擎</b>生成（每条证据引用真实回答，问答记录已写入 SQLite 可跨设备恢复）。${scoring.llm_enriched ? "<b>已接入 LLM</b>：在确定性分数之外额外生成逐维质性点评（分数始终由确定性引擎给出，可解释、不幻觉）。" : "当前服务端未配置 LLM，点评由规则引擎生成；配置后可在确定性分数之外叠加 LLM 质性点评。"}`
       : "本报告由<b>无 API Key 时的兜底规则引擎</b>生成，用于演示「可解释评分」的结构与证据链（每条证据引用真实回答、学习路径按最弱维度动态生成）。"}</div>
     <div class="report-grid" style="margin-top:16px">
-      <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims)}</div></div>
+      <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims)}</div>
+        <table class="sr-only"><caption>各维度得分（满分 100）</caption><thead><tr><th>维度</th><th>得分</th></tr></thead><tbody>${dims.map((d) => `<tr><td>${d.dimension}</td><td>${d.score}</td></tr>`).join("")}</tbody></table>
+      </div>
       <div><div class="pane-title">维度得分</div><div id="dims">${dims.map((d, i) => `
         <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}">
           <div class="dim-head"><b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b><span style="color:var(--muted)">${d.score}</span></div>
@@ -9314,7 +9524,43 @@ function shareReport() {
     copyReportMarkdown();
   }
 }
+/* v39：导出报告为 CSV（Excel 友好，含 UTF-8 BOM，维度得分 + 面试状态） */
+function exportReportCsv() {
+  if (!session.turns.length) { toast("请先完成一次模拟面试再导出 CSV"); return; }
+  try {
+    const dims = scoreSession();
+    const total = Math.round(dims.reduce((s, d) => s + d.score, 0) / dims.length);
+    const st = (typeof lastReportStatus === "object" && lastReportStatus) ? lastReportStatus : null;
+    const rows = [];
+    rows.push(["指标", "值"]);
+    rows.push(["综合得分", total]);
+    dims.forEach(d => rows.push([d.dimension, d.score, d.comment || ""]));
+    rows.push([]);
+    rows.push(["面试状态（摄像头在场检测）", ""]);
+    if (st && st.count) {
+      rows.push(["在场率", st.presence_rate == null ? "—" : st.presence_rate + "%"]);
+      rows.push(["专注率", st.attentive_rate == null ? "—" : st.attentive_rate + "%"]);
+      rows.push(["采样次数", st.count + " 次" + (st.latest ? "（最近：" + st.latest + "）" : "")]);
+    } else {
+      rows.push(["在场数据", "本次面试未开启摄像头，无在场数据"]);
+    }
+    const csv = "﻿" + rows.map(r => r.map(c => {
+      const s = String(c == null ? "" : c).replace(/"/g, '""');
+      return /[",\n]/.test(s) ? '"' + s + '"' : s;
+    }).join(",")).join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `futuremirror-report-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast("报告已导出为 CSV");
+  } catch (e) { toast("导出失败：" + e.message); }
+}
 
+"use strict";
 /* ============================================================
  * 9. 启动流程：先判断登录，再进入应用
  * ============================================================ */
@@ -9350,7 +9596,7 @@ function bootApp() {
     $("chat-body").innerHTML = `<div class="empty-state">
     <span class="es-eyebrow">READY · 面试待开始</span>
     <div class="es-title">向 AI 面试官团队发出第一条消息</div>
-    <div class="es-desc">规划 / 技术 / 观察员多 Agent 将依次提问、检索知识库并记录证据，5 轮后可生成可解释评分报告。</div>
+    <div class="es-desc">规划 / 技术 / 观察员三位面试官将依次提问、检索知识库并记录证据，5 轮后可生成可解释评分报告。</div>
     <div class="es-actions">
       <button class="es-chip" onclick="fillChatSuggestion('我是计算机专业应届生，想应聘 Java 后端开发，请面试我')">Java 后端 · 校招</button>
       <button class="es-chip" onclick="fillChatSuggestion('我有两年前端经验，想挑战大厂 P6，请模拟一场技术面试')">前端 · 社招进阶</button>
@@ -9361,9 +9607,9 @@ function bootApp() {
   } else {
     $("chat-body").innerHTML = "";
   }
-  $("timeline").innerHTML = '<div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示 Agent 规划、工具调用与证据记录。</div>';
+  $("timeline").innerHTML = '<div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示提问规划、资料检索与证据记录。</div>';
   if (session.turns.length) restoreSession();
-  else { setCurrentSpeaker("规划 Agent"); $("progress-bar").style.width = "0"; }
+  else { setCurrentSpeaker("提问规划"); $("progress-bar").style.width = "0"; }
   // 窄屏默认折叠时间线，避免占满屏幕（matchMedia 在个别环境缺失，防御性跳过）
   try { if (window.matchMedia && window.matchMedia("(max-width: 860px)").matches) $("timeline-box").removeAttribute("open"); } catch (e) {}
   // 重置报告缓存，避免跨用户复用
@@ -9376,10 +9622,45 @@ function bootApp() {
   syncCareerCounts();
   syncSidebarBadge();
   syncStatusPill();
+  // v39：网络在线/离线监听——断网时明确告知用户已降级本地模式
+  initNetworkMonitor();
   // 应用当前 hash 子路由
   try { applyRoute(); } catch (e) {}
   // v17：滚动渐入（应用静态卡片）
   revealScan();
+}
+
+/* v39：网络在线/离线监听。
+ * 断网 → 提示已降级本地 Mock；恢复 → 提示已回到在线模式。
+ * 同时把离线态写进状态胶囊，避免用户误以为仍在真实后端。 */
+function initNetworkMonitor() {
+  const apply = (online) => {
+    try {
+      const pill = $("status-pill");
+      const txt = $("status-text");
+      if (pill) pill.classList.toggle("offline", !online);
+      if (txt && !txt.dataset.base) txt.dataset.base = txt.textContent;
+      if (txt) txt.textContent = online
+        ? (txt.dataset.base || "Mock 模式")
+        : "离线 · 本地 Mock";
+    } catch (e) {}
+    if (typeof syncStatusPill === "function") {
+      try { syncStatusPill(); } catch (e) {}
+    }
+  };
+  if (typeof window.addEventListener !== "function") return;
+  if (!navigator.onLine) {
+    apply(false);
+    toast("⚠️ 当前处于离线状态，已切换为本地 Mock 模式（功能流程不中断）");
+  }
+  window.addEventListener("offline", () => {
+    apply(false);
+    toast("⚠️ 网络已断开，已自动降级为本地 Mock 模式（流程不中断）");
+  });
+  window.addEventListener("online", () => {
+    apply(true);
+    toast("✅ 网络已恢复，正在重新连接后端…");
+  });
 }
 
 /* ---- v10 · 首访引导卡 ---- */
@@ -10271,6 +10552,9 @@ function revealScan() {
     else if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }
     else if (e.key === "Enter") { e.preventDefault(); exec(); }
   });
+
+  // v39：暴露给顶栏「⌘K」入口按钮（无障碍 / 触屏也可达）
+  window.__openCommandPalette = open;
 })();
 /* ============================================================
  * v27 · 全站交互层（Blueprint App Kit）
@@ -10859,8 +11143,8 @@ function resumeRingSVG(score) {
 
 function analyzeResume() {
   if (!requireLogin()) return;
+  if (!guardField($("resume-raw"), 30, "简历内容")) return;
   const text = $("resume-raw").value.trim();
-  if (!text) { toast("请先粘贴简历内容，或点「填入示例」体验"); return; }
   const r = analyzeResumeText(text);
 
   $("resume-score-panel").innerHTML = `
@@ -10909,14 +11193,23 @@ async function optimizeWithLLM() {
   if (!requireLogin()) return;
   // v22.1：后端在线时同样可以深度改写（Key 在服务端）
   if (!llm && !fmApi.backendReady()) { toast("请先连接后端或接入 API Key"); return; }
+  if (!guardField($("resume-raw"), 30, "简历内容")) return;
   const text = $("resume-raw").value.trim();
-  if (!text) { toast("请先粘贴简历内容"); return; }
   const modelLabel = fmApi.backendReady() ? `后端 ${fmApi.backendModel()}` : (llm ? llm.model : "模型");
   const btn = $("llm-optimize-btn");
   btn.disabled = true; btn.textContent = "⏳ 改写中…";
   const target = $("resume-result");
-  target.innerHTML = `<div class="evidence fade-up"><b>（真实模型 · ${modelLabel}）</b>正在分析并改写…<div id="resume-stream" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div></div>`;
+  // v39：首字到达前用骨架块占位（避免「点了没反应」的体感）
+  target.innerHTML = `<div class="evidence fade-up"><b>（真实模型 · ${modelLabel}）</b>正在分析并改写…
+    <div class="bp-skel" aria-hidden="true" style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+      <div class="skeleton" style="height:12px"></div>
+      <div class="skeleton" style="height:12px;width:88%"></div>
+      <div class="skeleton" style="height:12px;width:64%"></div>
+    </div>
+    <div id="resume-stream" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div></div>`;
   const stream = $("resume-stream");
+  const skelEl = target.querySelector(".bp-skel");
+  const dropSkel = () => { if (skelEl && skelEl.parentNode) skelEl.parentNode.removeChild(skelEl); };
   const ctrl = new AbortController();
   setTimeout(() => ctrl.abort(), 60000);
   let full = "";
@@ -10928,7 +11221,8 @@ async function optimizeWithLLM() {
 ## 缺失的关键要素
 ## 针对目标岗位的建议（如果有 JD 则结合）` },
       { role: "user", content: `简历原文：\n${text}\n\n${matchResult ? "目标岗位缺口：" + matchResult.gaps.join("、") : ""}` },
-    ], piece => { full += piece; stream.textContent = full; }, ctrl.signal);
+    ], piece => { if (!full) dropSkel(); full += piece; stream.textContent = full; }, ctrl.signal);
+    dropSkel();
     stream.textContent = full;
     toast("深度改写完成");
   } catch (e) {
@@ -11432,11 +11726,18 @@ async function aiResumeAdvice() {
     ${resumeAdviceVisual(r)}
     ${resumeKeywordChips(r)}
     <div class="evidence fade-up"><b>（真实模型 · ${escHtml(modelLabel)}）</b>正在生成分块建议…
+      <div class="bp-skel" aria-hidden="true" style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+        <div class="skeleton" style="height:12px"></div>
+        <div class="skeleton" style="height:12px;width:92%"></div>
+        <div class="skeleton" style="height:12px;width:70%"></div>
+      </div>
       <div id="js-advice-stream" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div>
     </div>
     <div class="js-chunk-list"></div>`;
   const stream = $("js-advice-stream");
   const chunksBox = box.querySelector(".js-chunk-list");
+  const adviceSkel = box.querySelector(".bp-skel");
+  const dropAdviceSkel = () => { if (adviceSkel && adviceSkel.parentNode) adviceSkel.parentNode.removeChild(adviceSkel); };
   const ctrl = new AbortController();
   setTimeout(() => ctrl.abort(), 60000);
   let full = "";
@@ -11444,7 +11745,8 @@ async function aiResumeAdvice() {
     await streamChat([
       { role: "system", content: RESUME_ADVICE_SYSTEM },
       { role: "user", content: jobseekToText(p, raw) },
-    ], (piece) => { full += piece; if (stream) stream.textContent = full; }, ctrl.signal);
+    ], (piece) => { if (!full) dropAdviceSkel(); full += piece; if (stream) stream.textContent = full; }, ctrl.signal);
+    dropAdviceSkel();
     if (stream) stream.textContent = full;
     const chunks = chunkMarkdown(full);
     if (chunksBox) {
@@ -13798,11 +14100,24 @@ function refreshStorage() {
 function exportUserData() {
   if (!currentUser) { toast("请先登录"); return; }
   try {
+    // v39：导出当前账号的全部个人数据（localStorage 快照），便于换设备或浏览器前做备份
+    const raw = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        // 仅导出与当前账号 / 全局偏好相关的键，跳过内部临时键
+        if (k.startsWith("fm_") || k.startsWith("g_") || (currentUser && k.indexOf(String(currentUser.id)) !== -1)) {
+          try { raw[k] = localStorage.getItem(k); } catch (e) { raw[k] = null; }
+        }
+      }
+    } catch (e) {}
     const data = {
       app: "面镜 FutureMirror · 在线演示版",
       exportedAt: new Date().toISOString(),
       user: { id: currentUser.id, email: currentUser.email, name: currentUser.name },
       profile: getProfile(),
+      storageSnapshot: raw,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
@@ -13812,7 +14127,7 @@ function exportUserData() {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    toast("数据已导出为 JSON");
+    toast(`数据已导出为 JSON（${Object.keys(raw).length} 项）`);
     try { if (typeof logDev === "function") logDev("info", "已导出个人数据 JSON"); } catch (e) {}
   } catch (e) { toast("导出失败：" + e.message); }
 }
@@ -14013,6 +14328,18 @@ function renderBoard() {
   }
   const cols = $("board-columns");
   if (!cols) return;
+  if (!apps.length) {
+    cols.innerHTML = `<div class="empty-state board-empty-wide">
+      <div class="es-eyebrow">KANBAN · 投递看板还是空的</div>
+      <div class="es-title">把心仪的岗位放进看板，跟踪每段求职进展</div>
+      <div class="es-desc">在「岗位推荐」里点任一真实岗位的「＋ 添加到看板」，或在上方表单手动添加；每一条都能在各阶段间拖动流转。</div>
+      <div class="es-actions">
+        <button class="es-chip" onclick="navTo('career')">去真实岗位页添加 →</button>
+        <button class="es-chip" onclick="document.getElementById('app-company').focus()">手动添加一条</button>
+      </div>
+    </div>`;
+    return;
+  }
   cols.innerHTML = BOARD_STATUSES.map((s, si) => {
     const items = apps.filter(a => a.status === s.id);
     return `<div class="board-col">
@@ -15608,6 +15935,14 @@ function renderPlanPage() {
   grid.innerHTML = p.days.map((d, i) => lpRenderDay(d, i, p)).join("");
   if (al) al.innerHTML = lpRenderAlloc(p);
   try { if (window.__bpApp && window.__bpApp.choreograph) window.__bpApp.choreograph("app", "plan"); } catch (e) {}
+}
+
+/* v39：用户主动选择查看通用基线示例（明确标注非定制） */
+function lpUseBaseline() {
+  const p = lpCreate("baseline");
+  lpSave(p);
+  renderPlanPage();
+  toast("已载入通用 7 天示例（非个人定制）；完成面试后可同步为个人版");
 }
 
 /* ---------- 交互 ---------- */
@@ -18068,6 +18403,7 @@ function renderMbtiResult(r) {
     <div class="notice notice-info" style="margin-top:14px">
       结果已同步到「个人中心」（fm_profile.mbti）。岗位推荐与面试建议会参考该结果。
     </div>
+    <div class="notice notice-info" style="margin-top:8px">⚠️ 本测评为端侧简易量表，<b>非专业心理测评</b>；结果仅供参考，不作为心理诊断或职业决策依据。</div>
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-outline btn-sm" onclick="startMbti()">重新测评</button>
       <button class="btn btn-primary btn-sm" onclick="switchTab('profile')">查看个人中心 →</button>

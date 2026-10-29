@@ -85,8 +85,8 @@ function resumeRingSVG(score) {
 
 function analyzeResume() {
   if (!requireLogin()) return;
+  if (!guardField($("resume-raw"), 30, "简历内容")) return;
   const text = $("resume-raw").value.trim();
-  if (!text) { toast("请先粘贴简历内容，或点「填入示例」体验"); return; }
   const r = analyzeResumeText(text);
 
   $("resume-score-panel").innerHTML = `
@@ -135,14 +135,23 @@ async function optimizeWithLLM() {
   if (!requireLogin()) return;
   // v22.1：后端在线时同样可以深度改写（Key 在服务端）
   if (!llm && !fmApi.backendReady()) { toast("请先连接后端或接入 API Key"); return; }
+  if (!guardField($("resume-raw"), 30, "简历内容")) return;
   const text = $("resume-raw").value.trim();
-  if (!text) { toast("请先粘贴简历内容"); return; }
   const modelLabel = fmApi.backendReady() ? `后端 ${fmApi.backendModel()}` : (llm ? llm.model : "模型");
   const btn = $("llm-optimize-btn");
   btn.disabled = true; btn.textContent = "⏳ 改写中…";
   const target = $("resume-result");
-  target.innerHTML = `<div class="evidence fade-up"><b>（真实模型 · ${modelLabel}）</b>正在分析并改写…<div id="resume-stream" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div></div>`;
+  // v39：首字到达前用骨架块占位（避免「点了没反应」的体感）
+  target.innerHTML = `<div class="evidence fade-up"><b>（真实模型 · ${modelLabel}）</b>正在分析并改写…
+    <div class="bp-skel" aria-hidden="true" style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+      <div class="skeleton" style="height:12px"></div>
+      <div class="skeleton" style="height:12px;width:88%"></div>
+      <div class="skeleton" style="height:12px;width:64%"></div>
+    </div>
+    <div id="resume-stream" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div></div>`;
   const stream = $("resume-stream");
+  const skelEl = target.querySelector(".bp-skel");
+  const dropSkel = () => { if (skelEl && skelEl.parentNode) skelEl.parentNode.removeChild(skelEl); };
   const ctrl = new AbortController();
   setTimeout(() => ctrl.abort(), 60000);
   let full = "";
@@ -154,7 +163,8 @@ async function optimizeWithLLM() {
 ## 缺失的关键要素
 ## 针对目标岗位的建议（如果有 JD 则结合）` },
       { role: "user", content: `简历原文：\n${text}\n\n${matchResult ? "目标岗位缺口：" + matchResult.gaps.join("、") : ""}` },
-    ], piece => { full += piece; stream.textContent = full; }, ctrl.signal);
+    ], piece => { if (!full) dropSkel(); full += piece; stream.textContent = full; }, ctrl.signal);
+    dropSkel();
     stream.textContent = full;
     toast("深度改写完成");
   } catch (e) {
@@ -658,11 +668,18 @@ async function aiResumeAdvice() {
     ${resumeAdviceVisual(r)}
     ${resumeKeywordChips(r)}
     <div class="evidence fade-up"><b>（真实模型 · ${escHtml(modelLabel)}）</b>正在生成分块建议…
+      <div class="bp-skel" aria-hidden="true" style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+        <div class="skeleton" style="height:12px"></div>
+        <div class="skeleton" style="height:12px;width:92%"></div>
+        <div class="skeleton" style="height:12px;width:70%"></div>
+      </div>
       <div id="js-advice-stream" style="white-space:pre-wrap;margin-top:8px;font-size:13px;line-height:1.7"></div>
     </div>
     <div class="js-chunk-list"></div>`;
   const stream = $("js-advice-stream");
   const chunksBox = box.querySelector(".js-chunk-list");
+  const adviceSkel = box.querySelector(".bp-skel");
+  const dropAdviceSkel = () => { if (adviceSkel && adviceSkel.parentNode) adviceSkel.parentNode.removeChild(adviceSkel); };
   const ctrl = new AbortController();
   setTimeout(() => ctrl.abort(), 60000);
   let full = "";
@@ -670,7 +687,8 @@ async function aiResumeAdvice() {
     await streamChat([
       { role: "system", content: RESUME_ADVICE_SYSTEM },
       { role: "user", content: jobseekToText(p, raw) },
-    ], (piece) => { full += piece; if (stream) stream.textContent = full; }, ctrl.signal);
+    ], (piece) => { if (!full) dropAdviceSkel(); full += piece; if (stream) stream.textContent = full; }, ctrl.signal);
+    dropAdviceSkel();
     if (stream) stream.textContent = full;
     const chunks = chunkMarkdown(full);
     if (chunksBox) {

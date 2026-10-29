@@ -250,6 +250,7 @@ function renderMbtiResult(r) {
     <div class="notice notice-info" style="margin-top:14px">
       结果已同步到「个人中心」（fm_profile.mbti）。岗位推荐与面试建议会参考该结果。
     </div>
+    <div class="notice notice-info" style="margin-top:8px">⚠️ 本测评为端侧简易量表，<b>非专业心理测评</b>；结果仅供参考，不作为心理诊断或职业决策依据。</div>
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-outline btn-sm" onclick="startMbti()">重新测评</button>
       <button class="btn btn-primary btn-sm" onclick="switchTab('profile')">查看个人中心 →</button>

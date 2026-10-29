@@ -34,7 +34,7 @@ function bootApp() {
     $("chat-body").innerHTML = `<div class="empty-state">
     <span class="es-eyebrow">READY · 面试待开始</span>
     <div class="es-title">向 AI 面试官团队发出第一条消息</div>
-    <div class="es-desc">规划 / 技术 / 观察员多 Agent 将依次提问、检索知识库并记录证据，5 轮后可生成可解释评分报告。</div>
+    <div class="es-desc">规划 / 技术 / 观察员三位面试官将依次提问、检索知识库并记录证据，5 轮后可生成可解释评分报告。</div>
     <div class="es-actions">
       <button class="es-chip" onclick="fillChatSuggestion('我是计算机专业应届生，想应聘 Java 后端开发，请面试我')">Java 后端 · 校招</button>
       <button class="es-chip" onclick="fillChatSuggestion('我有两年前端经验，想挑战大厂 P6，请模拟一场技术面试')">前端 · 社招进阶</button>
@@ -45,9 +45,9 @@ function bootApp() {
   } else {
     $("chat-body").innerHTML = "";
   }
-  $("timeline").innerHTML = '<div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示 Agent 规划、工具调用与证据记录。</div>';
+  $("timeline").innerHTML = '<div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示提问规划、资料检索与证据记录。</div>';
   if (session.turns.length) restoreSession();
-  else { setCurrentSpeaker("规划 Agent"); $("progress-bar").style.width = "0"; }
+  else { setCurrentSpeaker("提问规划"); $("progress-bar").style.width = "0"; }
   // 窄屏默认折叠时间线，避免占满屏幕（matchMedia 在个别环境缺失，防御性跳过）
   try { if (window.matchMedia && window.matchMedia("(max-width: 860px)").matches) $("timeline-box").removeAttribute("open"); } catch (e) {}
   // 重置报告缓存，避免跨用户复用
@@ -60,10 +60,45 @@ function bootApp() {
   syncCareerCounts();
   syncSidebarBadge();
   syncStatusPill();
+  // v39：网络在线/离线监听——断网时明确告知用户已降级本地模式
+  initNetworkMonitor();
   // 应用当前 hash 子路由
   try { applyRoute(); } catch (e) {}
   // v17：滚动渐入（应用静态卡片）
   revealScan();
+}
+
+/* v39：网络在线/离线监听。
+ * 断网 → 提示已降级本地 Mock；恢复 → 提示已回到在线模式。
+ * 同时把离线态写进状态胶囊，避免用户误以为仍在真实后端。 */
+function initNetworkMonitor() {
+  const apply = (online) => {
+    try {
+      const pill = $("status-pill");
+      const txt = $("status-text");
+      if (pill) pill.classList.toggle("offline", !online);
+      if (txt && !txt.dataset.base) txt.dataset.base = txt.textContent;
+      if (txt) txt.textContent = online
+        ? (txt.dataset.base || "Mock 模式")
+        : "离线 · 本地 Mock";
+    } catch (e) {}
+    if (typeof syncStatusPill === "function") {
+      try { syncStatusPill(); } catch (e) {}
+    }
+  };
+  if (typeof window.addEventListener !== "function") return;
+  if (!navigator.onLine) {
+    apply(false);
+    toast("⚠️ 当前处于离线状态，已切换为本地 Mock 模式（功能流程不中断）");
+  }
+  window.addEventListener("offline", () => {
+    apply(false);
+    toast("⚠️ 网络已断开，已自动降级为本地 Mock 模式（流程不中断）");
+  });
+  window.addEventListener("online", () => {
+    apply(true);
+    toast("✅ 网络已恢复，正在重新连接后端…");
+  });
 }
 
 /* ---- v10 · 首访引导卡 ---- */

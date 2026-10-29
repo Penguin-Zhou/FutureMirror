@@ -161,7 +161,10 @@ function applyRoute() {
 
   // 2) 左侧栏 + 底部 Tab 栏同步激活态（v10：合并为一处，避免三段式冗余）
   document.querySelectorAll(".sb-item, .tabbar-item").forEach(a => {
-    a.classList.toggle("active", a.dataset.nav === page);
+    const on = a.dataset.nav === page;
+    a.classList.toggle("active", on);
+    if (on) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
   });
 
   // 3) 面包屑
@@ -172,7 +175,7 @@ function applyRoute() {
   const title = APP_PAGE_TITLES[page] || "首页";
   document.title = `面镜 FutureMirror · ${title}`;
   const metaDesc = document.querySelector('meta[name="description"]');
-  if (metaDesc) metaDesc.content = `面镜 FutureMirror · ${title} · 多 Agent 驱动的 AI 模拟面试与能力成长平台`;
+  if (metaDesc) metaDesc.content = `面镜 FutureMirror · ${title} · AI 模拟面试与能力成长平台（在线演示版）`;
 
   // 5) 按需渲染
   if (page === "report") { try { renderReport(); } catch (e) {} }

@@ -606,11 +606,17 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   .onboarding-card { border-radius: 0; padding: 18px 16px; }
   .daily-card, .quiz-entry-row { border-radius: 0; }
 
-  /* 触控友好：按钮 ≥42px 高、按压反馈 */
-  .btn { min-height: 42px; border-radius: 0; }
-  .btn-sm { min-height: 36px; }
-  .tabbar-item { transition: transform .12s ease, color .15s; }
+  /* 触控友好：按钮 ≥44px 高（WCAG 目标尺寸）、按压反馈 */
+  .btn { min-height: 44px; border-radius: 0; }
+  .btn-sm { min-height: 44px; padding-left: 12px; padding-right: 12px; }
+  /* 图标型小按钮不强行拉高，但补足横向触控区域 */
+  .btn-icon { min-width: 44px; min-height: 44px; }
+  .tabbar-item { min-height: 44px; padding-top: 8px; padding-bottom: 8px; transition: transform .12s ease, color .15s; }
   .tabbar-item:active { transform: scale(.94); }
+  .sb-item { min-height: 44px; }
+  /* 复选框 / 标签 / chip 类小控件补足点击区域 */
+  .chip, .js-chip, .board-card-meta a { min-height: 44px; }
+  [role="switch"] { min-height: 44px; }
   .quiz-opt { padding: 14px; font-size: 14px; border-radius: 0; }
   .quiz-opt:active { transform: scale(.99); }
   .quiz-opt-key { width: 24px; height: 24px; }
@@ -1020,3 +1026,92 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   .chart-row { transition: none; }
   .rj-card.rj-flash { animation: none; border-color: var(--brand); }
 }
+
+/* ============================================================
+ * v39 · 可用性收口（校验反馈 / 免责提示 / 技术细节折叠 / 长文本兜底）
+ * 印刷风纪律：全部走 CSS 变量 + 发丝线，无投影、无圆角、无位移动画。
+ * ============================================================ */
+
+/* ① 长文本 / 长 URL 防横向溢出：给文本容器统一兜底，窄屏不再出现横向滚动条 */
+.msg, .review-msg, .rag-answer, .evidence, .notice, .hint,
+.board-card-meta, .tl-item, .match-body, .today-pick-desc,
+.mbti-dim-card, .dim-comment, .js-chunk-list p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ② 表单校验内联错误（与 guardField() 配套） */
+input.invalid, textarea.invalid, select.invalid {
+  border-color: var(--brand) !important;
+  border-width: 2px;
+}
+.field-error {
+  margin-top: 5px; font-size: 12px; line-height: 1.6;
+  color: var(--brand); border-left: 2px solid var(--brand); padding-left: 8px;
+}
+
+/* ③ AI 内容免责提示（RAG 回答区） */
+.rag-disclaimer {
+  margin-top: 10px; padding: 8px 10px;
+  border: 1px dashed var(--line-2); font-size: 12px; line-height: 1.75;
+  color: var(--muted);
+}
+
+/* ④ 技术细节折叠区（把工程参数收起来，不打扰普通用户） */
+.tech-details { margin-bottom: 10px; }
+.tech-details > summary {
+  cursor: pointer; font-size: 12.5px; color: var(--faint);
+  list-style: none; user-select: none; padding: 4px 0;
+  display: flex; align-items: center; gap: 6px;
+}
+.tech-details > summary::-webkit-details-marker { display: none; }
+.tech-details > summary::before {
+  content: "▸"; font-size: 10px; color: var(--faint); transition: none;
+}
+.tech-details[open] > summary::before { content: "▾"; }
+.tech-details > summary:hover { color: var(--ink); }
+.tech-details .hint { margin-top: 6px; }
+
+/* ⑤ PDF 解析中的占位卡片 */
+.mp-parsing { font-size: 13px; line-height: 1.7; color: var(--muted); }
+
+/* ============================================================
+   v39 · 无障碍 / 反馈 / 模式状态 样式增量
+   ============================================================ */
+
+/* 屏幕阅读器专用（雷达数值表等，视觉可隐藏但语义保留） */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* 登录安全警告：朱红描边 + 纸纹底，强提示「勿用真实密码」 */
+.auth-warn {
+  border: 1px solid var(--brand);
+  background: color-mix(in srgb, var(--brand) 8%, var(--card));
+  padding: 10px 12px; margin-bottom: 14px; border-radius: 0;
+  font-size: 12.5px; line-height: 1.7; color: var(--ink);
+}
+.auth-warn b { color: var(--brand); }
+.auth-warn p { margin: 4px 0 0; color: var(--muted); }
+.auth-warn code { font-family: var(--mono); background: var(--bg-deep); padding: 0 4px; }
+
+/* 离线状态：状态胶囊变朱红 + 实心点，明确「已降级」 */
+.status-pill.offline { border-color: var(--brand); color: var(--brand); }
+.status-pill.offline .dot { background: var(--brand); animation: none; }
+
+/* 顶栏 ⌘K 命令面板入口 */
+.kbd-hint {
+  font-family: var(--mono); font-size: 11px !important;
+  letter-spacing: .04em; color: var(--muted); border-color: var(--line);
+}
+.kbd-hint:hover { border-color: var(--ink); color: var(--ink); }
+
+/* 投递看板空态（复用 es-* 子元素样式，故加 empty-state 类保持外观一致） */
+.board-empty-wide {
+  grid-column: 1 / -1;
+  border: 1px dashed var(--line-2);
+  padding: 22px; border-radius: 0; background: var(--card);
+}
+

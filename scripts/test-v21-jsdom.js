@@ -202,7 +202,7 @@ function runTests() {
         /\.page-card \{[^}]*border-radius:\s*0/.test(cssMedia("(max-width: 640px)")),
       "卡片直角 + 文档式墨色顶规（去圆角去投影）"
     );
-    ok(/\.btn \{[^}]*min-height:\s*42px/.test(m900), "按钮触控高度 ≥42px");
+    ok(/\.btn \{[^}]*min-height:\s*44px/.test(m900), "按钮触控高度 ≥44px（移动端可点性）");
     ok(/\.tabbar-item:active \{[^}]*transform:\s*scale\(\.94\)/.test(m900), "导航项按压反馈");
     ok(/input\[type="text"\][^}]*font-size:\s*16px/.test(m900), "输入框 16px 防 iOS 聚焦放大");
     ok(/#toast \{[^}]*bottom:\s*calc\(20px \+ env\(safe-area-inset-bottom\)\)/.test(m900), "Toast 贴底含安全区");

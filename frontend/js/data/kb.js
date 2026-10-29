@@ -609,14 +609,30 @@ function askRagPreset(q) {
   askRag();
 }
 
+/* v39：AI 生成内容的免责说明（合规底线——答案来自本地演示面经库，不得当作权威信息） */
+const RAG_DISCLAIMER = `<div class="rag-disclaimer" role="note">⚠️ 本回答由 AI 基于本地面经资料生成，<b>仅供面试练习参考</b>：资料库仅 40 条演示面经，不保证内容准确、完整或时效，求职决策请以企业官方信息为准。</div>`;
+
 async function askRag(skipLlm) {
   if (!requireLogin()) return;
-  const q = $("rag-input").value.trim();
-  if (!q) { toast("请输入问题后再检索"); return; }
-  // beta1.0：混合检索——BM25 词面召回 + 端侧向量余弦语义召回，归一后加权融合
-  const ranked = await hybridRetrieveAsync(q, 3);
-  const hits = ranked.map(r => r.entry);
+  const qEl = $("rag-input");
+  if (!guardField(qEl, 4, "问题")) return;
+  const q = qEl.value.trim();
   const box = $("rag-result");
+  // v39：检索阶段先上骨架屏（向量模型冷启动 / 大库排序都需要时间），避免「点了没反应」
+  const skel = box && window.bpSkeleton
+    ? window.bpSkeleton(box, { rows: 3, cols: 1, height: 14, minDwell: 240 })
+    : null;
+  // beta1.0：混合检索——BM25 词面召回 + 端侧向量余弦语义召回，归一后加权融合
+  let ranked;
+  try {
+    ranked = await hybridRetrieveAsync(q, 3);
+  } catch (e) {
+    if (skel) skel.clear(true);
+    box.innerHTML = `<div class="rag-answer weak fade-up">检索失败：${escHtml(e && e.message ? e.message : String(e))}。请稍后重试，或改用更短的关键词。</div>`;
+    return;
+  }
+  if (skel) skel.clear(true);
+  const hits = ranked.map(r => r.entry);
   if (!hits.length) {
     box.innerHTML = `<div class="rag-answer weak fade-up">知识库中暂未检索到相关资料，请更换关键词，例如「STAR 法则」「MySQL 索引」「字节 二面」。</div>`;
     return;
@@ -643,7 +659,7 @@ async function askRag(skipLlm) {
         { role: "user", content: `问题：${q}\n\n资料：\n${ctx}` },
       ], piece => { full += piece; target.textContent = full; }, ctrl.signal);
       target.textContent = full;
-      box.querySelector(".rag-answer").insertAdjacentHTML("beforeend", citeBlock + `<div class="rag-score">retriever=${retrieverTag} · llm=${modelLabel} · hits=${hits.length}</div>`);
+      box.querySelector(".rag-answer").insertAdjacentHTML("beforeend", RAG_DISCLAIMER + citeBlock + `<div class="rag-score">retriever=${retrieverTag} · llm=${modelLabel} · hits=${hits.length}</div>`);
     } catch (e) {
       toast("真实模型调用失败，已降级为关键词检索结果");
       askRag(true);
@@ -653,7 +669,7 @@ async function askRag(skipLlm) {
 
   box.innerHTML = `<div class="rag-answer fade-up">
     <b>（Mock 模式）</b>混合检索命中 ${hits.length} 条相关资料，最相关的是「${hits[0].source}」；接入模型后，这里将由真实模型基于以下资料生成带引用的完整回答：
-    ${citeBlock}
+    ${RAG_DISCLAIMER}${citeBlock}
     <div class="rag-score">retriever=${retrieverTag} · tokens=${tokenize(q).length} · hits=${hits.length}</div>
   </div>`;
 }

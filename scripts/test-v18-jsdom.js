@@ -63,7 +63,11 @@ function runTests() {
   setTimeout(() => {
     ok(document.querySelector('.app-page[data-page="jobs"]').classList.contains("active"), "jobs 页激活");
     ok(document.getElementById("bc-current").textContent === "求职管理", "面包屑显示求职管理");
-    ok(document.querySelector("#board-columns .board-empty"), "空看板显示占位");
+    ok(
+      document.querySelector("#board-columns .board-empty-wide") ||
+        /投递看板还是空的/.test(document.getElementById("board-columns").textContent),
+      "空看板显示占位引导"
+    );
     ok(document.getElementById("review-list").textContent.includes("还没有复盘记录"), "复盘列表空态");
 
     /* 添加投递记录 */
@@ -90,7 +94,11 @@ function runTests() {
     /* 删除 */
     window.eval(`removeApplication("${appId}")`);
     ok(window.eval("getApplications().length") === 0, "删除后看板清空");
-    ok(document.querySelector("#board-columns .board-empty"), "清空后恢复占位");
+    ok(
+      document.querySelector("#board-columns .board-empty-wide") ||
+        /投递看板还是空的/.test(document.getElementById("board-columns").textContent),
+      "清空后恢复占位引导"
+    );
 
     /* ============ C. 面试复盘 ============ */
     console.log("\n-- C. 面试复盘（6 轮对话 → 结论） --");
@@ -226,7 +234,11 @@ function runTests() {
       window.location.hash = "#/jobs";
       setTimeout(() => {
         ok(document.querySelector('.app-page[data-page="jobs"]').classList.contains("active"), "游客态可进入求职管理");
-        ok(!!document.querySelector("#board-columns .board-empty"), "游客态看板为空且无报错");
+        ok(
+          !!document.querySelector("#board-columns .board-empty-wide") ||
+            /投递看板还是空的/.test(document.getElementById("board-columns").textContent),
+          "游客态看板为空且无报错"
+        );
         ok(errors.length === 0, "全程无脚本错误" + (errors.length ? " → " + errors.slice(0, 3).join(" | ") : ""));
 
         console.log(`\n结果：${pass} 通过，${fail} 失败`);

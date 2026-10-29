@@ -135,6 +135,18 @@ function renderBoard() {
   }
   const cols = $("board-columns");
   if (!cols) return;
+  if (!apps.length) {
+    cols.innerHTML = `<div class="empty-state board-empty-wide">
+      <div class="es-eyebrow">KANBAN · 投递看板还是空的</div>
+      <div class="es-title">把心仪的岗位放进看板，跟踪每段求职进展</div>
+      <div class="es-desc">在「岗位推荐」里点任一真实岗位的「＋ 添加到看板」，或在上方表单手动添加；每一条都能在各阶段间拖动流转。</div>
+      <div class="es-actions">
+        <button class="es-chip" onclick="navTo('career')">去真实岗位页添加 →</button>
+        <button class="es-chip" onclick="document.getElementById('app-company').focus()">手动添加一条</button>
+      </div>
+    </div>`;
+    return;
+  }
   cols.innerHTML = BOARD_STATUSES.map((s, si) => {
     const items = apps.filter(a => a.status === s.id);
     return `<div class="board-col">

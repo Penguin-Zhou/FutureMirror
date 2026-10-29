@@ -117,4 +117,39 @@ function shareReport() {
     copyReportMarkdown();
   }
 }
+/* v39：导出报告为 CSV（Excel 友好，含 UTF-8 BOM，维度得分 + 面试状态） */
+function exportReportCsv() {
+  if (!session.turns.length) { toast("请先完成一次模拟面试再导出 CSV"); return; }
+  try {
+    const dims = scoreSession();
+    const total = Math.round(dims.reduce((s, d) => s + d.score, 0) / dims.length);
+    const st = (typeof lastReportStatus === "object" && lastReportStatus) ? lastReportStatus : null;
+    const rows = [];
+    rows.push(["指标", "值"]);
+    rows.push(["综合得分", total]);
+    dims.forEach(d => rows.push([d.dimension, d.score, d.comment || ""]));
+    rows.push([]);
+    rows.push(["面试状态（摄像头在场检测）", ""]);
+    if (st && st.count) {
+      rows.push(["在场率", st.presence_rate == null ? "—" : st.presence_rate + "%"]);
+      rows.push(["专注率", st.attentive_rate == null ? "—" : st.attentive_rate + "%"]);
+      rows.push(["采样次数", st.count + " 次" + (st.latest ? "（最近：" + st.latest + "）" : "")]);
+    } else {
+      rows.push(["在场数据", "本次面试未开启摄像头，无在场数据"]);
+    }
+    const csv = "﻿" + rows.map(r => r.map(c => {
+      const s = String(c == null ? "" : c).replace(/"/g, '""');
+      return /[",\n]/.test(s) ? '"' + s + '"' : s;
+    }).join(",")).join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `futuremirror-report-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast("报告已导出为 CSV");
+  } catch (e) { toast("导出失败：" + e.message); }
+}
 

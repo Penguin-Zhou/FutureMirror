@@ -238,6 +238,7 @@ async function renderReport(force) {
       <div style="text-align:right;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;justify-content:flex-end">
         <div class="report-actions" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
           <button class="btn btn-outline btn-sm" onclick="copyReportMarkdown()">📋 复制 Markdown</button>
+          <button class="btn btn-outline btn-sm" onclick="exportReportCsv()">📊 导出 CSV</button>
           <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 导出 PDF</button>
           <button class="btn btn-outline btn-sm" onclick="shareReport()">🔗 分享报告</button>
           <button class="btn btn-outline btn-sm" onclick="restartInterview()">🔄 再来一次</button>
@@ -254,7 +255,9 @@ async function renderReport(force) {
       ? `本报告由<b>服务端确定性评分引擎</b>生成（每条证据引用真实回答，问答记录已写入 SQLite 可跨设备恢复）。${scoring.llm_enriched ? "<b>已接入 LLM</b>：在确定性分数之外额外生成逐维质性点评（分数始终由确定性引擎给出，可解释、不幻觉）。" : "当前服务端未配置 LLM，点评由规则引擎生成；配置后可在确定性分数之外叠加 LLM 质性点评。"}`
       : "本报告由<b>无 API Key 时的兜底规则引擎</b>生成，用于演示「可解释评分」的结构与证据链（每条证据引用真实回答、学习路径按最弱维度动态生成）。"}</div>
     <div class="report-grid" style="margin-top:16px">
-      <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims)}</div></div>
+      <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims)}</div>
+        <table class="sr-only"><caption>各维度得分（满分 100）</caption><thead><tr><th>维度</th><th>得分</th></tr></thead><tbody>${dims.map((d) => `<tr><td>${d.dimension}</td><td>${d.score}</td></tr>`).join("")}</tbody></table>
+      </div>
       <div><div class="pane-title">维度得分</div><div id="dims">${dims.map((d, i) => `
         <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}">
           <div class="dim-head"><b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b><span style="color:var(--muted)">${d.score}</span></div>

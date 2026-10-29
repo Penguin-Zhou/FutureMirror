@@ -3,14 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>面镜 FutureMirror · 多 Agent 模拟面试平台（Beta 1.1.2 演示版）</title>
-<meta name="description" content="面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台（在线演示版）">
+<title>面镜 FutureMirror · AI 模拟面试与能力成长平台（Beta 1.1.2 演示版）</title>
+<meta name="description" content="面镜 FutureMirror · AI 驱动的模拟面试与能力成长平台：简历匹配、多轮面试、可解释评分报告与个性化学习路径（在线演示版）。">
 <meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1C1913" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
-<meta property="og:title" content="面镜 FutureMirror · 多 Agent 模拟面试平台">
-<meta property="og:description" content="五个 Agent 协作完成一场可解释的模拟面试：规划、技术深挖、代码沙盒验证、证据记录、可解释评分与成长路径。">
-<meta name="twitter:card" content="summary">
+<meta property="og:title" content="面镜 FutureMirror · AI 模拟面试与能力成长平台">
+<meta property="og:description" content="一场可解释的模拟面试：规划提问、技术深挖、代码验证、证据记录，最终给出可量化评分与改进路径。">
+<meta property="og:url" content="https://penguin-zhou.github.io/FutureMirror/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://penguin-zhou.github.io/FutureMirror/">
+<meta name="keywords" content="模拟面试,AI面试,求职,能力评估,面试报告,MBTI,职业规划">
 <!-- 站点图标：内联 SVG（蓝图取景器 · 墨板 + 纸色括线 + 朱红瞳点），零额外请求 -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect width='26' height='26' fill='%231C1913'/%3E%3Cpath d='M4 8V4h4M18 4h4v4M22 18v4h-4M8 22H4v-4' fill='none' stroke='%23F4F1E8' stroke-width='1.6'/%3E%3Ccircle cx='13' cy='13' r='5.4' fill='none' stroke='%23F4F1E8' stroke-width='1.2'/%3E%3Ccircle cx='13' cy='13' r='2.1' fill='%23BE3A1E'/%3E%3C/svg%3E">
 <script>
@@ -346,6 +349,11 @@ try {
         <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册</button>
       </div>
 
+      <div class="auth-warn" role="alert">
+        <b>🔒 请勿使用真实密码</b>
+        <p>这是<b>演示级</b>登录系统：密码仅做本地简单混淆存储、不具备生产安全性。请使用<b>专用演示密码</b>（如 <code>demo1234</code>），<b>不要填写你在其他网站的账号密码</b>。账号与面试记录仅保存在当前浏览器，清除浏览器数据即丢失。</p>
+      </div>
+
       <!-- 登录表单 -->
       <form class="auth-form" id="form-login" onsubmit="event.preventDefault();doLogin();">
         <div class="auth-field">
@@ -439,6 +447,9 @@ try {
 
       <button class="btn btn-ghost btn-sm" onclick="openEvaluatorGate()" title="仅访客与技术验证使用" style="font-size:12px">
         🎛 开发者模式
+      </button>
+      <button class="btn btn-ghost btn-sm kbd-hint" onclick="if(window.__openCommandPalette)window.__openCommandPalette()" title="打开命令面板：快速跳转页面、开始面试、看真实岗位等">
+        ⌘K 命令面板
       </button>
     </div>
   </div>
@@ -765,7 +776,7 @@ try {
               没有合适的岗位？<button type="button" onclick="toggleManualJd()" id="jd-manual-btn">✏️ 手动输入 JD</button>
             </div>
             <textarea id="jd" rows="7" placeholder="粘贴目标岗位职位描述…" aria-label="目标岗位 JD" hidden></textarea>
-            <div class="file-drop" id="jd-file" hidden>📎 JD 链接抓取为规划项；岗位数据库匹配已内置（MCP 工具 search_job_db）</div>
+            <div class="file-drop" id="jd-file" hidden>📎 JD 链接抓取为规划项；岗位数据库匹配已内置（24 个岗位方向，本地检索）</div>
           </div>
         </div>
         <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
@@ -872,7 +883,7 @@ try {
         <div class="chat">
           <div class="chat-main">
             <div class="chat-head">
-              <span class="badge badge-green" id="chat-agent">规划 Agent</span>
+              <span class="badge badge-green" id="chat-agent">提问规划</span>
               <span id="chat-mode-label">综合面 · 动态追问模式 · 题库 6 题</span>
               <div class="progress-wrap" title="面试进度（5 轮）"><div class="progress-bar" id="progress-bar"></div></div>
               <span class="answer-timer" id="answer-timer" title="本题答题倒计时（90 秒）——超时将记入「抗压表现」维度">⏱ 90s</span>
@@ -902,7 +913,7 @@ try {
             </div>
           </div>
           <details class="chat-aside" id="timeline-box" open>
-            <summary>查看思考过程（Agent 圆桌）</summary>
+            <summary>查看思考过程（面试官团队）</summary>
             <!-- 实时能力追踪器：面试过程中动态更新 -->
             <div class="live-tracker">
               <div class="aside-title">实时能力追踪</div>
@@ -915,9 +926,9 @@ try {
               </div>
               <div class="live-hint" id="live-hint">发送第一条回答后开始追踪</div>
             </div>
-            <div class="aside-title">Agent 圆桌时间线</div>
+            <div class="aside-title">面试官团队时间线</div>
             <div id="timeline">
-              <div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示 Agent 规划、工具调用与证据记录。</div>
+              <div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示提问规划、资料检索与证据记录。</div>
             </div>
           </details>
         </div>
@@ -940,9 +951,13 @@ try {
         <div class="vec-bar" id="vec-bar">
           <span class="vec-dot" id="vec-dot"></span>
           <span class="vec-status" id="vec-status">向量索引未初始化</span>
-          <button class="btn btn-outline btn-sm" id="vec-build-btn" onclick="loadVecModel()" title="在浏览器内计算 384 维句向量（Transformers.js · all-MiniLM-L6-v2），零后端、零 API；权重随站点自托管（models/），同源读取，不再依赖 huggingface">⚡ 加载端侧模型 MiniLM</button>
+          <button class="btn btn-outline btn-sm" id="vec-build-btn" onclick="loadVecModel()" title="在浏览器本地计算语义向量（约 23MB），不上传任何数据；加载后语义召回更准">⚡ 加载语义模型（可选）</button>
         </div>
-        <p class="hint" style="margin-top:0;margin-bottom:10px">检索层为 <b>BM25 + 端侧向量混合检索</b>：BM25（k1=1.5 / b=0.75，中文 bigram 切分，标题字段加权）× <b>0.4</b> + 余弦相似度 × <b>0.6</b>，两路各自归一分后融合。<br>向量由 <b>Transformers.js</b> 在浏览器内计算（all-MiniLM-L6-v2，384 维，40 条面经向量预计算后写入 localStorage），<b>不需要后端、不需要 API、离线可跑</b>；无模型文件时自动降级为 n-gram hashing 向量（256 维），检索链路不中断。后续规划升级为 pgvector + RRF + Rerank。</p>
+        <div class="notice notice-info" style="margin:8px 0">⚠️ <b>答案由 AI 生成，仅供面试练习参考</b>：本地资料库仅 40 条演示面经，不保证准确、完整或时效；就业决策请以企业官方信息为准。</div>
+        <details class="tech-details">
+          <summary>检索原理（技术细节，可折叠）</summary>
+          <p class="hint">检索层为 <b>BM25 + 端侧向量混合检索</b>：BM25（k1=1.5 / b=0.75，中文 bigram 切分，标题字段加权）× <b>0.4</b> + 余弦相似度 × <b>0.6</b>，两路各自归一分后融合。<br>向量由 <b>Transformers.js</b> 在浏览器内计算（all-MiniLM-L6-v2，384 维，40 条面经向量预计算后写入 localStorage），<b>不需要后端、不需要 API、离线可跑</b>；无模型文件时自动降级为 n-gram hashing 向量（256 维），检索链路不中断。后续规划升级为 pgvector + RRF + Rerank。</p>
+        </details>
         <div style="display:flex;gap:8px">
           <input type="text" id="rag-input" placeholder="试试：字节后端二面一般问什么？" onkeydown="if(event.key==='Enter')askRag()" aria-label="RAG 查询输入框">
           <button class="btn btn-primary btn-sm" onclick="askRag()">提问</button>
@@ -1169,11 +1184,12 @@ try {
     </div>
     <div class="page-card">
       <div class="pane-title">🧠 MBTI 职业性格测评
-        <span class="tag-demo">v36 · 端侧计算 · 结果仅存本地</span>
+        <span class="tag-demo">v36 · 本地计算 · 结果仅存本地</span>
       </div>
       <p class="hint" style="margin-top:0;margin-bottom:12px">
         答题约需 2 分钟。结果用于校准岗位推荐与面试建议，不会上传服务器。
       </p>
+      <div class="notice notice-info" style="margin-bottom:12px">⚠️ <b>本测评为端侧简易量表，不是专业心理测评</b>：结果仅作求职参考，不能作为心理诊断、职业决策或能力评价的依据。</div>
 
       <div id="mbti-intro">
         <div class="grid2">

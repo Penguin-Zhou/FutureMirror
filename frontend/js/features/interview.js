@@ -73,7 +73,7 @@ function finishByInterviewer() {
     `面试到此结束。观察员已汇总全部证据，正在生成你的可解释评估报告…`;
   body.appendChild(notice);
   body.scrollTop = body.scrollHeight;
-  addTimeline("规划 Agent", `🏁 已收集 ${MAX_TURNS} 轮证据 → 面试官发送结束通知，自动收尾并生成报告`, false);
+  addTimeline("提问规划", `🏁 已收集 ${MAX_TURNS} 轮证据 → 面试官发送结束通知，自动收尾并生成报告`, false);
   stopAnswerTimer();
   lockInput(true);
   const hint = $("live-hint");
@@ -333,7 +333,7 @@ function setMode(m) {
   session.mode = m;
   document.querySelectorAll(".mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === m));
   $("chat-mode-label").textContent = modeLabelWithCount(m);
-  addTimeline("规划 Agent", `模式切换为「${MODE_SHORT[m] || m}」→ 加载题库 ${(QUESTION_BANK[m] || []).length} 题，已更新提问策略`, false);
+  addTimeline("提问规划", `模式切换为「${MODE_SHORT[m] || m}」→ 加载题库 ${(QUESTION_BANK[m] || []).length} 题，已更新提问策略`, false);
   persistSession();
 }
 
@@ -387,9 +387,10 @@ function sendMsg() {
     return;
   }
   const input = $("chat-input");
+  if (!guardField(input, 2, "回答内容")) return;
   const text = input.value.trim();
-  if (!text) return;
   input.value = "";
+  clearFieldError(input);
   stopAnswerTimer();
   const body = $("chat-body");
   const userDiv = document.createElement("div");
@@ -416,12 +417,12 @@ function sendMsgMock(text, speaker, keyword, notes) {
   // v18：连环追问概率——检测到技术关键词时，有机会连续 2 轮深挖同一点（而非固定轮转）
   const dive = maybeStartDeepDive(keyword, mode);
   if (dive.started) {
-    addTimeline("规划 Agent", `🔍 检测到技术关键词「${keyword.slice(0, 12)}」→ 触发连环追问（连续 ${dive.left} 轮深挖同一点）`, false);
+    addTimeline("提问规划", `🔍 检测到技术关键词「${keyword.slice(0, 12)}」→ 触发连环追问（连续 ${dive.left} 轮深挖同一点）`, false);
   }
 
-  addTimeline("规划 Agent", `🧠 分析回答要点「${keyword.slice(0, 14)}」…`, false);
+  addTimeline("提问规划", `🧠 分析回答要点「${keyword.slice(0, 14)}」…`, false);
   setTimeout(() => {
-    addTimeline("规划 Agent", `📋 决策：${planReason(speaker, keyword, notes, mode)}（置信度 ${Math.min(95, 60 + turn * 6)}%）`, false);
+    addTimeline("提问规划", `📋 决策：${planReason(speaker, keyword, notes, mode)}（置信度 ${Math.min(95, 60 + turn * 6)}%）`, false);
   }, 320);
 
   setTimeout(() => {
@@ -465,11 +466,11 @@ function sendMsgMock(text, speaker, keyword, notes) {
         v16MaybeAutoSpeak();
         addTimeline(speaker.name, "📮 已发送提问（流式输出完成）", false);
         startAnswerTimer();
-        addTimeline("观察员 Agent", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
+        addTimeline("观察员", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
         session.turns.push({ agent: speaker.name, question, answer: text, notes, mode });
         persistSession();
         updateLiveTracker();
-        if (turn === MAX_TURNS) addTimeline("规划 Agent", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
+        if (turn === MAX_TURNS) addTimeline("提问规划", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
         $("chat-send").disabled = false;
         body.scrollTop = body.scrollHeight;
         // v32：第 5 题答完 → 面试官发送结束通知并自动收尾
@@ -484,8 +485,8 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   const body = $("chat-body");
   $("chat-send").disabled = true;
 
-  addTimeline("规划 Agent", `🧠 分析回答要点「${keyword.slice(0, 14)}」…`, false);
-  setTimeout(() => addTimeline("规划 Agent", `📋 决策：${planReason(speaker, keyword, notes, session.mode)}（置信度 ${Math.min(95, 60 + turn * 6)}%）`, false), 320);
+  addTimeline("提问规划", `🧠 分析回答要点「${keyword.slice(0, 14)}」…`, false);
+  setTimeout(() => addTimeline("提问规划", `📋 决策：${planReason(speaker, keyword, notes, session.mode)}（置信度 ${Math.min(95, 60 + turn * 6)}%）`, false), 320);
   addTimeline("模型调用", `🌐 ${llmLabel()} · stream=true`, "tool");
 
   showTyping("模型生成中");     // v24：首字到达前的等待反馈
@@ -524,12 +525,12 @@ async function sendMsgReal(text, speaker, keyword, notes) {
     return;
   }
   clearTimeout(killTimer);
-  addTimeline("观察员 Agent", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
+  addTimeline("观察员", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
   startAnswerTimer();
   session.turns.push({ agent: speaker.name, question: full, answer: text, notes, mode: session.mode });
   persistSession();
   updateLiveTracker();
-  if (turn === MAX_TURNS) addTimeline("规划 Agent", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
+  if (turn === MAX_TURNS) addTimeline("提问规划", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
   $("chat-send").disabled = false;
   // v32：第 5 题答完 → 面试官发送结束通知并自动收尾
   maybeFinishAtTurnLimit();
@@ -540,7 +541,7 @@ function finishInterview() {
   if (!session.turns.length) { toast("请先完成至少一轮问答，再结束面试生成报告"); return; }
   stopAnswerTimer();
   try { stopCamera(); } catch (e) {}   // 面试结束即收掉摄像头，状态检测随之停止
-  addTimeline("教练 Agent", `汇总 ${session.turns.length} 轮对话 → 正在生成可解释评分报告与学习路径…`, false);
+  addTimeline("面试教练", `汇总 ${session.turns.length} 轮对话 → 正在生成可解释评分报告与学习路径…`, false);
   switchTab("report");
 }
 
@@ -563,8 +564,8 @@ function restartInterview() {
   resetAnswerTimer();
   deepDive = { topic: null, left: 0 };
   $("chat-body").innerHTML = '<div class="msg msg-system">面试开始：选择模式并发送第一条消息，AI 面试官团队将依次提问</div>';
-  $("timeline").innerHTML = '<div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示 Agent 规划、工具调用与证据记录。</div>';
-  setCurrentSpeaker("规划 Agent");
+  $("timeline").innerHTML = '<div class="tl-item" style="color:var(--faint)">面试开始后，这里实时展示提问规划、资料检索与证据记录。</div>';
+  setCurrentSpeaker("提问规划");
   // 重置实时能力追踪器与进度条
   $("live-radar").innerHTML = "";
   $("live-turn").textContent = `0/${MAX_TURNS}`;
@@ -650,7 +651,7 @@ function restoreSession() {
     div.textContent = t.question;
     $("chat-body").appendChild(div);
     addTimeline(t.agent, `（恢复）提问：${t.question.slice(0, 30)}…`, false);
-    addTimeline("观察员 Agent", `（恢复）证据 #${i + 1}：${t.notes}`, "note");
+    addTimeline("观察员", `（恢复）证据 #${i + 1}：${t.notes}`, "note");
   });
   turn = session.turns.length;
   if (turn > 0) {

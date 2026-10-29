@@ -244,4 +244,7 @@
     else if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }
     else if (e.key === "Enter") { e.preventDefault(); exec(); }
   });
+
+  // v39：暴露给顶栏「⌘K」入口按钮（无障碍 / 触屏也可达）
+  window.__openCommandPalette = open;
 })();
