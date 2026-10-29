@@ -3554,6 +3554,44 @@ try {
   .anchor-hl.pulse { animation: none; }
   .vl-dot { animation: none; }
 }
+
+/* ============================================================
+ * v42 · 可解释性前移：追问气泡「上方」的锚定标签
+ *   目的不是多一行 UI，而是让使用者看到「AI 判断的那一刻就有据可依」——
+ *   追问因何而起、锚定的是哪句原话，在问题出现的同时就摆在眼前。
+ * ============================================================ */
+.anchor-ref-host { align-self: flex-start; max-width: 92%; }
+.anchor-ref-tag {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  margin: 2px 0 6px; padding: 4px 9px;
+  border: 1px dashed var(--line-2); background: var(--chip-bg);
+  font-size: 11.5px; line-height: 1.5; color: var(--muted);
+}
+.anchor-ref-tag .art-lead { color: var(--brand); font-size: 11px; }
+.anchor-ref-tag .art-text b { font-style: normal; }
+.anchor-ref-tag.pending { opacity: .78; }
+@media (max-width: 640px) {
+  .anchor-ref-tag { font-size: 11px; padding: 4px 8px; }
+  .anchor-ref-tag .art-text {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+}
+
+/* 「定位到对话」后目标气泡脉冲一次，视觉上指回去 */
+.msg.pulse { animation: bubblePulse 1s ease-out 1; }
+@keyframes bubblePulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 45%, transparent); }
+  100% { box-shadow: 0 0 0 10px transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .msg.pulse { animation: none; }
+}
+
+/* ============ v42b · 降级演练面板（开发者模式） ============ */
+.eval-actions {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+}
+.eval-actions .btn { min-height: 32px; }
   /* ============ v18 · 求职管理 / 答题计时 / 语音反馈 / 玻璃拟态可读性修正 / Bento Grid ============ */
 
   /* 1) 玻璃拟态可读性修正：亮色下更明确的玻璃边界 + 更深的层级阴影（解决白卡+白边层次不足） */
@@ -4770,6 +4808,20 @@ img, svg, video, canvas { max-width: 100%; }
 }
 
 /* ---------- 7) 慢网 / 降级横幅：非阻塞，贴顶不遮内容 ---------- */
+/* v42b：横幅在所有断点都贴顶常驻——降级这件事必须「看得见」，
+ * 但不能弹窗、不能锁输入，用户忽略它也能把面试做完。 */
+.fallback-banner { position: sticky; top: calc(var(--hdr-h, 58px) + 4px); z-index: 48; }
+.fallback-banner[hidden] { display: none; }
+.fb-dot {
+  width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%;
+  background: var(--red); animation: fbPulse 1.6s ease-in-out infinite;
+}
+.fb-text { flex: 1 1 auto; min-width: 0; }
+.fb-text b { font-weight: 700; }
+@keyframes fbPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) {
+  .fb-dot { animation: none; }
+}
 @media (max-width: 640px) {
   .fallback-banner { font-size: 12px; padding: 7px 10px; gap: 6px; }
   .offline-banner, .net-banner { position: sticky; top: 0; z-index: 48; }
@@ -4828,10 +4880,11 @@ img, svg, video, canvas { max-width: 100%; }
 @media (max-width: 640px) {
   /* ⌘K 在手机上无意义（没有 ⌘ 键），其入口由底栏「更多」承担 */
   .kbd-hint { display: none !important; }
-  header .nav { gap: 6px; flex-wrap: nowrap; }
-  .logo { font-size: 14.5px; white-space: nowrap; gap: 6px; flex: 0 1 auto; min-width: 0; }
-  .logo svg { width: 22px; height: 22px; flex: none; }
-  .nav-right { gap: 4px; flex-wrap: nowrap; }
+  /* v42：顶栏允许换行并让标题可收缩——之前 nowrap 会把 Logo 文案裁掉 */
+  header .nav { gap: 8px; flex-wrap: wrap; row-gap: 6px; }
+  .logo { font-size: 15px; gap: 6px; flex: 0 1 auto; min-width: 0; }
+  .logo svg { width: 24px; height: 24px; flex: none; }
+  .nav-right { gap: 6px; flex-wrap: wrap; row-gap: 6px; justify-content: flex-end; }
   .nav-right .btn-icon { min-width: 34px; min-height: 34px; padding: 4px; }
   .nav-right .btn { white-space: nowrap; font-size: 11.5px; padding-left: 8px; padding-right: 8px; }
   /* 状态胶囊只留圆点，颜色语义（真实=绿 / Mock=黄 / 离线=朱红）仍在 title 中可读 */
@@ -4896,6 +4949,198 @@ img, svg, video, canvas { max-width: 100%; }
     justify-content: center; white-space: nowrap;
   }
 }
+
+/* ============================================================
+ * v42 · 移动端「信息优先级裁剪」
+ *   原则：手机上不做「缩小版桌面」，只做「单栏任务流」。
+ *   ① 落地页首屏 = 一句话价值主张 + 一个主 CTA，密集模块收成折叠条
+ *   ② Agent 圆桌从「并排 5 张卡」改为「横向角色 chips」
+ *   ③ 报告卡片渐进披露，点开底部半屏面板才给完整原话
+ *   ④ 输入栏以 visualViewport 为唯一事实来源，键盘弹起不遮挡
+ *   所有规则都锁在 ≤640/≤900 断点内，桌面端像素零变化。
+ * ============================================================ */
+
+/* ---------- 13) 落地页折叠条（宽屏不渲染） ---------- */
+.fold-toggle { display: none; }
+@media (max-width: 640px) {
+  .fold-toggle {
+    display: flex; align-items: baseline; gap: 8px; width: 100%;
+    min-height: 46px; padding: 12px 2px; margin: 0 0 8px;
+    border: 0; border-top: 2px solid var(--ink); background: transparent;
+    color: var(--ink); font-family: inherit; font-size: 13px; font-weight: 700;
+    line-height: 1.4; text-align: left; cursor: pointer; touch-action: manipulation;
+  }
+  .fold-toggle .ft-chev {
+    display: inline-block; flex: none; color: var(--brand); font-size: 11px;
+    transition: transform .18s ease;
+  }
+  .fold-toggle[aria-expanded="true"] .ft-chev { transform: rotate(90deg); }
+  .fold-toggle .ft-title { flex: none; letter-spacing: .02em; }
+  .fold-toggle .ft-hint {
+    flex: 1 1 auto; min-width: 0; font-weight: 400; font-size: 11.5px;
+    color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .fold-hidden { display: none !important; }
+  /* 首屏只留价值主张 + 一个主 CTA：⌘K 提示、数字条、次按钮在手机上是噪音 */
+  .hero-kbd-hint, .hero-meta-row { display: none !important; }
+  .hero-cta .btn-outline { display: none !important; }
+  .hero-cta .btn-primary { width: 100%; justify-content: center; }
+  .cta-wide { display: none !important; }
+  .cta-narrow { display: inline !important; }
+  .landing-hero { padding-bottom: 8px !important; }
+  .hero-main { padding-right: 0 !important; }
+}
+/* 宽屏：保留原文案，移动端专属文案隐藏 */
+.cta-narrow { display: none; }
+
+/* ---------- 14) Agent 圆桌：窄屏改为横向角色 chips ---------- */
+@media (max-width: 640px) {
+  .agents {
+    display: flex !important; gap: 8px; overflow-x: auto;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    padding: 2px 2px 6px; margin: 0 -2px;
+  }
+  .agents::-webkit-scrollbar { display: none; }
+  .agents .agent {
+    flex: 0 0 auto; width: auto; min-width: 150px; max-width: 220px;
+    padding: 9px 12px; gap: 3px; text-align: left;
+  }
+  .agents .agent .agent-avatar { width: 30px; height: 30px; font-size: 12px; }
+  .agents .agent .agent-name { font-size: 12.5px; }
+  .agents .agent .agent-title {
+    font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+}
+
+/* ---------- 15) 报告卡片：默认只给「维度 + 分数 + 一句证据摘要」 ---------- */
+@media (max-width: 900px) {
+  .dim-row { cursor: pointer; }
+  .dim-row .dim-summary { font-size: 12px; color: var(--muted); margin-top: 5px; }
+  .dim-row .dim-summary q { color: var(--ink); font-style: italic; }
+  .dim-row .dim-more {
+    margin-top: 6px; font-size: 11.5px; color: var(--brand); font-weight: 600;
+  }
+  .dim-row:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+}
+@media (max-width: 640px) {
+  /* 完整评语与引用原话收进面板，卡片本身保持一行可读 */
+  .dim-row .dim-full { display: none; }
+  .dim-row.expanded .dim-full { display: block; }
+  .dim-row .dim-summary q {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+}
+
+/* ---------- 16) 底部半屏面板（报告渐进披露） ---------- */
+.sheet { position: fixed; inset: 0; z-index: 60; }
+.sheet[hidden] { display: none; }
+.sheet-mask { position: absolute; inset: 0; background: color-mix(in srgb, var(--ink) 34%, transparent); }
+.sheet-panel {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-height: 62vh; display: flex; flex-direction: column;
+  background: var(--paper); border-top: 2px solid var(--ink);
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  box-shadow: none; animation: sheet-up .22s ease;
+}
+@keyframes sheet-up { from { transform: translateY(18px); opacity: .4; } to { transform: none; opacity: 1; } }
+.sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.sheet-dim { font-size: 16px; font-weight: 800; color: var(--ink); }
+.sheet-sub { font-size: 11.5px; color: var(--faint); margin-top: 2px; }
+.sh-lv { font-weight: 700; }
+.sh-lv.g-high { color: var(--red); }
+.sh-lv.g-mid { color: var(--amber); }
+.sh-lv.g-low { color: var(--green); }
+.sheet-close {
+  flex: none; width: 34px; height: 34px; border: 1px solid var(--line);
+  background: transparent; color: var(--muted); font-size: 18px; line-height: 1;
+  cursor: pointer; touch-action: manipulation;
+}
+.sheet-quote {
+  margin-top: 10px; padding: 10px 12px; background: var(--chip-bg);
+  border-left: 2px solid var(--brand); font-size: 13px;
+}
+.sq-lead { font-size: 11px; color: var(--faint); letter-spacing: .04em; }
+.sheet-quote q { display: block; margin-top: 4px; color: var(--ink); font-style: italic; }
+.sheet-body { flex: 1 1 auto; overflow-y: auto; margin-top: 12px; }
+.sh-label {
+  font-size: 10.5px; letter-spacing: .08em; color: var(--faint);
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.sh-reason { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+.sh-lens-row {
+  display: flex; align-items: baseline; gap: 8px; padding: 6px 0;
+  border-top: 1px solid var(--line); font-size: 12.5px;
+}
+.sl-who { flex: none; color: var(--ink); font-weight: 600; }
+.sh-lens-row b { flex: none; color: var(--brand); }
+.sl-why { flex: 1 1 auto; min-width: 0; color: var(--muted); }
+.sh-signals { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.sh-signals span {
+  font-size: 11px; padding: 3px 7px; background: var(--chip-bg); color: var(--muted);
+}
+.sheet-actions {
+  display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 12px;
+}
+.sheet-actions .btn { min-height: 44px; }
+/* 面板打开时锁住背景滚动（iOS 上不锁会连带滚动底层） */
+html.sheet-open, html.sheet-open body { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .sheet-panel { animation: none; }
+  .fold-toggle .ft-chev { transition: none; }
+}
+
+/* ---------- 17) 输入栏：sticky 贴底 + 键盘态安全区 ---------- */
+@media (max-width: 900px) {
+  .chat-input {
+    position: sticky; bottom: 0; z-index: 6;
+    background: var(--card); border-top: 1px solid var(--line);
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+  .chat-input input { font-size: 16px; }   /* ≥16px 可绕过 iOS 聚焦自动放大 */
+  /* 键盘弹起且焦点在「回答输入框」时进入输入态：
+   * 让上方辅助 chrome（页面头 / 模式条 / 时间线）暂时让位，
+   * 保证「发送按钮 + 最近 2–3 条对话」同时可见。
+   * 代码沙盒刻意不隐藏——代码题需要在键盘上敲代码。 */
+  html.kb-chat .app-main { padding-top: calc(var(--hdr-h, 58px) + 6px); }
+  html.kb-chat body[data-page="interview"] .page-header,
+  html.kb-chat body[data-page="interview"] .mode-bar,
+  html.kb-chat body[data-page="interview"] .chat-aside,
+  html.kb-chat body[data-page="interview"] .page-card > .hint { display: none !important; }
+  /* 对话头压缩为两行：徽标 + 模式 / 按钮组，进度条降为发丝线 */
+  html.kb-chat .chat-head { flex-wrap: wrap; row-gap: 4px; padding: 7px 9px; font-size: 11.5px; }
+  html.kb-chat .chat-head .progress-wrap { flex: 1 1 100%; height: 3px; }
+  /* 键盘态：对话卡片固定进可视区，输入栏与最近几条对话同时可见 */
+  .chat-main.kb-pinned {
+    position: fixed !important;
+    left: 8px; right: 8px;
+    top: calc(var(--hdr-h, 58px) + 6px);
+    bottom: calc(var(--kb-h, 0px) + 8px);
+    height: auto !important;
+    z-index: 55;
+  }
+  .chat-main.kb-pinned .chat-input { position: sticky; bottom: 0; }
+  /* 键盘态下对话头压到两行：进度条缩短与按钮组同行，给对话区腾出可读空间 */
+  html.kb-chat .chat-main.kb-pinned .chat-head {
+    padding: 5px 8px; row-gap: 3px; font-size: 11px;
+  }
+  html.kb-chat .chat-main.kb-pinned .chat-head .progress-wrap { flex: 0 0 56px; }
+  html.kb-chat .chat-main.kb-pinned .chat-head #chat-mode-label { display: none !important; }
+  html.kb-chat .chat-main.kb-pinned .chat-head .btn-sm {
+    min-height: 32px; padding: 4px 7px; font-size: 11px;
+  }
+  html.kb-chat .chat-main.kb-pinned .chat-head > span:last-child {
+    flex: 1 1 100%; max-width: 100%;
+  }
+  html.kb-chat .chat-main.kb-pinned .chat-input { padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); }
+}
+
+/* ---------- 18) 对话头窄屏压缩（常态，不只键盘态） ---------- */
+@media (max-width: 640px) {
+  .chat-head { row-gap: 5px; padding: 8px 10px; }
+  .chat-head .progress-wrap { flex: 1 1 100%; height: 3px; margin: 2px 0 0; }
+  .chat-head .answer-timer { margin-left: 0; }
+  .chat-head > span:last-child { flex: 1 1 100%; }
+}
 </style>
 </head>
 <body>
@@ -4949,15 +5194,15 @@ img, svg, video, canvas { max-width: 100%; }
             生成可解释的评分报告、能力雷达图与个性化学习路径。
           </p>
           <div class="hero-cta">
-            <button class="btn btn-primary" onclick="enterAppOrAuth()">立即体验 →</button>
+            <button class="btn btn-primary" onclick="enterAppOrAuth()"><span class="cta-wide">立即体验 →</span><span class="cta-narrow">上传简历，开始一场可溯源的模拟面试 →</span></button>
             <button class="btn btn-outline" onclick="showView('app')">先看看界面</button>
           </div>
           <div class="hero-kbd-hint">按 <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> 打开命令面板 · 直达任意功能页</div>
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>1513</b> 项自动化断言</span><span class="dot-sep">/</span>
-            <span><b>29</b> 页技术文档</span>
+            <span><b>1815</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>30</b> 页技术文档</span>
           </div>
         </div>
         <aside class="hero-spec bp-crop">
@@ -4967,7 +5212,7 @@ img, svg, video, canvas { max-width: 100%; }
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 1513 ／ pytest 37</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 1815 ／ pytest 44</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -5013,7 +5258,7 @@ img, svg, video, canvas { max-width: 100%; }
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">1513 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1815 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -5023,7 +5268,7 @@ img, svg, video, canvas { max-width: 100%; }
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">1513 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1815 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -5312,7 +5557,7 @@ img, svg, video, canvas { max-width: 100%; }
       </div>
 
       <button class="btn btn-ghost btn-sm" onclick="openEvaluatorGate()" title="仅访客与技术验证使用" style="font-size:12px">
-        🎛 开发者模式
+        🎛 <span class="devmode-text">开发者模式</span>
       </button>
       <button class="btn btn-ghost btn-sm kbd-hint" onclick="if(window.__openCommandPalette)window.__openCommandPalette()" title="打开命令面板：快速跳转页面、开始面试、看真实岗位等">
         ⌘K 命令面板
@@ -5709,9 +5954,12 @@ img, svg, video, canvas { max-width: 100%; }
           <div id="code-result" style="margin-top:12px;font-size:13px"></div>
         </div>
 
-        <!-- 降级提示横幅（真实模型失败时出现） -->
-        <div id="fallback-banner" class="fallback-banner" hidden role="alert">
-          ⚠️ 真实模型调用失败（<span id="fallback-reason"></span>），已自动降级为 Mock 输出，演示不中断。
+        <!-- 降级提示横幅（真实模型失败时出现）· v42b：角色化文案 + 非阻塞置顶 -->
+        <div id="fallback-banner" class="fallback-banner" hidden role="status" aria-live="polite">
+          <span class="fb-dot" aria-hidden="true"></span>
+          <span class="fb-text">
+            <b id="fallback-who">技术面</b> Agent 已降级至本地推理模式（<span id="fallback-reason"></span>）· 面试不中断，评分口径与在线一致
+          </span>
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fallback-banner').hidden=true">知道了</button>
         </div>
 
@@ -6481,7 +6729,7 @@ img, svg, video, canvas { max-width: 100%; }
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、1513 项前端断言 + 37 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、1815 项前端断言 + 44 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -6557,6 +6805,18 @@ img, svg, video, canvas { max-width: 100%; }
           <div style="color:var(--faint)">等待调用…</div>
         </div>
       </div>
+    </section>
+
+    <!-- 5.5 降级演练：把「三级降级」变成可当场复现的动作 -->
+    <section class="eval-section" id="eval-degrade">
+      <h2 class="eval-section-title">🛡️ 降级演练（主动失效）</h2>
+      <p class="eval-section-sub">无需真的断网。开启后，<b>下一次</b>面试官提问会强制失败一次，用于现场验证降级链路：顶部出现非阻塞横幅、对话继续、评分口径不变。演练用完即自动解除。</p>
+      <div class="eval-actions">
+        <button class="btn btn-outline btn-sm" id="degrade-arm-btn" onclick="armDegradeDemo()">⚡ 让下一次提问失效</button>
+        <button class="btn btn-ghost btn-sm" onclick="disarmDegradeDemo()">解除演练</button>
+        <span class="badge" id="degrade-arm-state">未开启</span>
+      </div>
+      <p class="hint" id="degrade-arm-hint">演练只影响一次提问；失败是真实失败，兜底输出走的是与在线同构的本地引擎，不会伪造结果。</p>
     </section>
 
     <!-- 6. 端侧能力证据 -->
@@ -6638,7 +6898,7 @@ img, svg, video, canvas { max-width: 100%; }
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（38 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、1513 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（41 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、1815 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -6994,6 +7254,10 @@ function applyRoute() {
   });
   syncMobileMore(page);
   if (document.body) document.body.dataset.page = page;   // v41：供窄屏样式做页面级避让
+  /* v42：顶栏在落地页/登录页是隐藏的，切回应用内必须重新实测高度，
+   * 否则 --hdr-h 会停留在隐藏时的旧值，导航条压住顶栏。
+   * 这里不用 rAF：布局测量不需要等动画帧，且要避开 reduced-motion 的零 rAF 断言。 */
+  try { if (typeof syncHeaderHeight === "function") syncHeaderHeight(); } catch (e) {}
 
   // 3) 面包屑
   const bc = $("bc-current");
@@ -8091,6 +8355,50 @@ function focusAnchor(btn) {
 }
 
 /**
+ * v42：追问气泡「上方」的锚定标签。
+ * 桌面端与移动端都能看到——它不是装饰，而是把「AI 此刻依据哪句原话在追问」摊开给用户看。
+ * 未落题前不假装知道模型会问什么，只说明观察员已定位了几个锚点。
+ * @param {string[]} hits 已命中的原话片段（空数组表示尚未落题/未命中）
+ * @param {number} count 本轮定位到的锚点总数
+ */
+function anchorRefTagHtml(hits, count) {
+  const list = (hits || []).filter(Boolean);
+  if (!list.length) {
+    const n = Number(count) || 0;
+    const lead = n
+      ? `观察员已定位 ${n} 个可追问锚点 · 等待面试官落题`
+      : "本轮未定位到可追问锚点 · 观察员继续收集证据";
+    return `<div class="anchor-ref-tag pending"><span class="art-lead">⚓</span><span class="art-text">${escHtml(lead)}</span></div>`;
+  }
+  const quoted = list.slice(0, 2).map((h) => `「${escHtml(h)}」`).join("");
+  return `<div class="anchor-ref-tag"><span class="art-lead">⚓</span>` +
+    `<span class="art-text">基于你提到的${quoted}发起追问</span></div>`;
+}
+
+/**
+ * 在指定气泡之前插入锚定标签容器（返回容器，便于后续更新状态）。
+ * @param {HTMLElement|null} bubble 参考气泡（null 时追加到容器末尾）
+ * @param {HTMLElement} host 聊天容器
+ */
+function openAnchorRefTag(host, bubble, count) {
+  if (!host || typeof host.insertBefore !== "function") return null;
+  const wrap = document.createElement("div");
+  wrap.className = "anchor-ref-host";
+  wrap.innerHTML = anchorRefTagHtml([], count);
+  try {
+    if (bubble) host.insertBefore(wrap, bubble);
+    else host.appendChild(wrap);
+  } catch (e) { return null; }
+  return wrap;
+}
+
+/** 更新锚定标签：落题后按「是否真的复述了原话」给出正向锚定或诚实降级 */
+function updateAnchorRefTag(wrap, hits, count) {
+  if (!wrap) return;
+  wrap.innerHTML = anchorRefTagHtml(hits, count);
+}
+
+/**
  * 追问气泡落定后，标出「这次追问锚定的是你哪句话」。
  * 只在模型确实复述了原话时给正向锚定；否则诚实说明「未直接复述」。
  * @returns {string[]} 命中的锚点文本
@@ -8100,6 +8408,12 @@ function annotateAnchorRef(bubble, question, anchors, turnIdx) {
   const hits = (anchors || []).filter((a) => a.text && q.includes(a.text)).map((a) => a.text);
   if (!bubble) return hits;
   const ref = document.createElement("div");
+  /* v42：同步更新气泡上方的锚定标签（存在时才更新，兼容历史会话与测试桩） */
+  const tagHost = bubble && bubble.previousElementSibling &&
+    bubble.previousElementSibling.classList &&
+    bubble.previousElementSibling.classList.contains("anchor-ref-host")
+    ? bubble.previousElementSibling : null;
+  if (tagHost) updateAnchorRefTag(tagHost, hits, (anchors || []).length);
   if (hits.length) {
     ref.className = "msg-anchor-ref";
     ref.innerHTML = `<span class="ref-lead">⚓ 追问锚点</span>${hits
@@ -8776,6 +9090,13 @@ function sendMsg() {
   const keyword = extractKeyword(text);
   const notes = observerNote(text);
   if (llm || fmApi.backendReady()) { sendMsgReal(text, speaker, keyword, notes, anchors); return; }
+  /* v42b：演练开关只在真实通道有意义。若此刻本就是本地模式，
+   * 如实告知而不是让开关一直挂着不触发——否则「开了没反应」比故障更伤信任。 */
+  if (degradeArmed) {
+    degradeArmed = false;
+    syncDegradeArmState();
+    toast("当前已是本地推理模式：降级演练需在接入真实模型后触发");
+  }
   sendMsgMock(text, speaker, keyword, notes, anchors);
 }
 
@@ -8820,6 +9141,8 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
     const bubble = document.createElement("div");
     bubble.className = "msg msg-ai";
     bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
+    /* v42：先插锚定标签，再插气泡——标签永远出现在追问内容上方 */
+    openAnchorRefTag(body, bubble, anchors.length);
     body.appendChild(bubble);
     chatAutoScroll(true);
     let i = 0;
@@ -8856,6 +9179,73 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
   }, 1250);
 }
 
+/* ==================================================================
+ * v42b · 降级演练开关（主动失效）
+ * ------------------------------------------------------------------
+ * 三级降级此前只在文档里承诺。真正的问题不是「能不能降」，而是
+ * 「演示现场能不能稳定地降一次给你看」——现场断网不可控、超时要等 60s。
+ * 这里提供一个显式开关：开启后下一次 Agent 调用必然失败一次。
+ * 失败是真实的失败（走与线上完全相同的 catch 分支），兜底内容出自
+ * 与服务端同构的本地引擎，因此这是可复现的演练，不是伪造结果。
+ * ================================================================== */
+let degradeArmed = false;
+let degradeDrill = false;   // 本次失败是否为演练触发（用于文案诚实标注）
+
+/** 开启演练：下一次提问强制失败一次 */
+function armDegradeDemo() {
+  degradeArmed = true;
+  syncDegradeArmState();
+  toast("已开启降级演练：下一次面试官提问会主动失效一次");
+}
+
+/** 解除演练 */
+function disarmDegradeDemo() {
+  degradeArmed = false;
+  syncDegradeArmState();
+  toast("已解除降级演练");
+}
+
+/** 测试钩子：与 __bpFx / __bpScroll 同族，供 jsdom 断言演练开关与横幅文案 */
+window.__bpDegrade = {
+  arm: function () { armDegradeDemo(); },
+  disarm: function () { disarmDegradeDemo(); },
+  armed: function () { return degradeArmed; },
+  banner: function () {
+    const el = $("fallback-banner");
+    if (!el) return null;
+    const who = $("fallback-who");
+    const reason = $("fallback-reason");
+    return { hidden: el.hidden, who: who ? who.textContent : "", reason: reason ? reason.textContent : "" };
+  },
+};
+
+function syncDegradeArmState() {
+  const badge = $("degrade-arm-state");
+  if (badge) {
+    badge.textContent = degradeArmed ? "已开启 · 待触发" : "未开启";
+    badge.className = "badge " + (degradeArmed ? "badge-amber" : "");
+  }
+  const btn = $("degrade-arm-btn");
+  if (btn) btn.textContent = degradeArmed ? "⚡ 演练已就绪" : "⚡ 让下一次提问失效";
+}
+
+/**
+ * 展示降级横幅：角色化 + 非阻塞。
+ * 横幅只做告知，不弹窗、不中断输入，流程继续往下走。
+ */
+function showDegradeBanner(speaker, reason, isDrill) {
+  const el = $("fallback-banner");
+  if (!el) return;
+  const raw = (speaker && speaker.name) || "";
+  /* HR 面试官 → HR 面；技术面试官 → 技术面；压力面试官 → 压力面 */
+  const who = raw ? raw.replace(/面试官\s*$/, "") + "面" : "当前";
+  const whoEl = $("fallback-who");
+  if (whoEl) whoEl.textContent = who;
+  const reasonEl = $("fallback-reason");
+  if (reasonEl) reasonEl.textContent = isDrill ? "演练触发 · " + reason : reason;
+  el.hidden = false;
+}
+
 /* ---- 真实 LLM 通道：浏览器直连 OpenAI 兼容流式接口 ---- */
 async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   const body = $("chat-body");
@@ -8870,6 +9260,8 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   bubble.className = "msg msg-ai";
   bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
   bubble.innerHTML = '<span class="caret"></span>';
+  /* v42：锚定标签先于气泡插入，追问落地后由 annotateAnchorRef 更新状态 */
+  openAnchorRefTag(body, bubble, anchors.length);
   body.appendChild(bubble);
   chatAutoScroll(true);
 
@@ -8879,6 +9271,13 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   let streamStarted = false;
   let refHits;   // 追问命中的原话（流式结束后回填）
   try {
+    /* v42b：演练开关命中则直接抛出，走与真实失败完全相同的兜底分支 */
+    if (degradeArmed) {
+      degradeArmed = false;
+      degradeDrill = true;
+      syncDegradeArmState();
+      throw new Error("模拟网关无响应");
+    }
     await streamChat(buildMessages(text), piece => {
       if (!streamStarted) { streamStarted = true; hideTyping(); }
       full += piece;
@@ -8894,11 +9293,14 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   } catch (e) {
     clearTimeout(killTimer);
     hideTyping();
+    /* v42：连锚定标签一起移除，避免「降级到 Mock」后留下一条无主的锚定提示 */
+    const staleTag = bubble.previousElementSibling;
+    if (staleTag && staleTag.classList && staleTag.classList.contains("anchor-ref-host")) staleTag.remove();
     bubble.remove();
     const reason = e.name === "AbortError" ? "超时 60s" : e.message;
-    $("fallback-reason").textContent = reason;
-    $("fallback-banner").hidden = false;
-    toast("真实模型调用失败（" + reason + "），已自动降级为 Mock 输出");
+    showDegradeBanner(speaker, reason, degradeDrill);
+    degradeDrill = false;
+    toast("真实模型调用失败（" + reason + "），已自动降级为本地推理，面试继续");
     addTimeline("系统", "⚠️ 真实模型调用失败 → 自动降级 Mock 兜底", false);
     $("chat-send").disabled = false;
     sendMsgMock(text, speaker, keyword, notes, anchors);
@@ -9112,6 +9514,8 @@ function restoreSession() {
     const div = document.createElement("div");
     div.className = "msg msg-ai";
     div.textContent = t.question;
+    /* v42：恢复时同样重建气泡上方的锚定标签，刷新后解释链不断 */
+    openAnchorRefTag($("chat-body"), div, anchors.length);
     $("chat-body").appendChild(div);
     if (t.anchorRef && t.anchorRef.length) annotateAnchorRef(div, t.question, anchors, i);
     addTimeline(t.agent, `（恢复）提问：${t.question.slice(0, 30)}…`, false);
@@ -9125,6 +9529,8 @@ function restoreSession() {
   // v32：恢复（或撤销重置）到已满 5 轮的会话时，输入框保持收尾态
   if (turn >= MAX_TURNS) { interviewClosed = true; lockInput(true); }
   else { interviewClosed = false; lockInput(false); }
+  /* v42：恢复历史会话后落在「最新一轮」，而不是停在几轮之前的老消息上 */
+  chatAutoScroll(true);
 }
 function addMsg(cls, text) {
   const body = $("chat-body");
@@ -9398,32 +9804,11 @@ function chatAutoScroll(force) {
   if (force || nearBottom) body.scrollTop = body.scrollHeight;
 }
 
-/* 可视高度写入 --app-vh：iOS Safari < 15.4 不支持 dvh 时，靠它让对话框跟随可视区收缩 */
+/* 可视高度写入 --app-vh：iOS Safari < 15.4 不支持 dvh 时，靠它让对话框跟随可视区收缩。
+ * v42：统一委托给 boot.js 的 syncViewportVars（同时写 --kb-h 与 .kb-open），
+ * 这里保留同名入口，避免旧调用点与测试断言失效。 */
 function syncAppViewport() {
-  try {
-    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    document.documentElement.style.setProperty("--app-vh", Math.round(h) + "px");
-  } catch (e) { /* 视口 API 不可用时保持 CSS 的 dvh 兜底 */ }
-}
-
-/* 输入框聚焦后把输入行滚进视野，避免软键盘顶起时输入框被遮住 */
-document.addEventListener("focusin", e => {
-  const el = e.target;
-  if (!el || typeof el.matches !== "function") return;
-  if (!el.matches("#chat-input, #ai-assistant-input, #resume-raw, #jd-text")) return;
-  try {
-    if (window.matchMedia && !window.matchMedia("(max-width: 900px)").matches) return;
-  } catch (err) { return; }
-  setTimeout(() => {
-    try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (err) { /* 老浏览器忽略 */ }
-  }, 220);   // 等软键盘起落动画结束再对齐
-});
-
-syncAppViewport();
-window.addEventListener("resize", syncAppViewport);
-if (window.visualViewport) {
-  window.visualViewport.addEventListener("resize", syncAppViewport);
-  window.visualViewport.addEventListener("scroll", syncAppViewport);
+  if (typeof syncViewportVars === "function") syncViewportVars();
 }
 /* ============================================================
  * 6. RAG 面经问答（BM25 + 端侧向量混合检索；接入模型后真实生成）
@@ -10368,11 +10753,18 @@ async function renderReport(force) {
         <table class="sr-only"><caption>各维度得分（满分 100）</caption><thead><tr><th>维度</th><th>得分</th></tr></thead><tbody>${dims.map((d) => `<tr><td>${d.dimension}</td><td>${d.score}</td></tr>`).join("")}</tbody></table>
       </div>
       <div><div class="pane-title">维度得分</div><div id="dims">${dims.map((d, i) => `
-        <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}">
+        <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}"
+             role="button" tabindex="0" aria-expanded="false"
+             onclick="openDimSheet(${i})"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDimSheet(${i});}">
           <div class="dim-head"><b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b><span style="color:var(--muted)">${d.score}</span></div>
           <div class="dim-bar"><div style="width:${d.score}%"></div></div>
-          <div class="dim-comment">${d.comment}</div>
-          <div class="dim-tip" role="tooltip">${d.dimension} · ${d.score}<br>${d.comment}</div>
+          <div class="dim-summary">📎 证据摘要：<q>“${escHtml(dimEvidenceFor(d, session.turns, i).digest)}”</q></div>
+          <div class="dim-full">
+            <div class="dim-comment">${d.comment}</div>
+            <div class="dim-tip" role="tooltip">${d.dimension} · ${d.score}<br>${d.comment}</div>
+          </div>
+          <div class="dim-more">查看完整引用 →</div>
         </div>`).join("")}</div></div>
     </div>
     ${reportStatusCard(camStatus)}
@@ -10445,7 +10837,179 @@ async function renderReport(force) {
    * 面试后仍显示「基线数据 · 完成面试后转为真实分布」，用户看不到自己的分布）。
    * v31.3：注入真实 dims，使看板雷达/热力/散点与主雷达同源（修复「看板数据与上面不一致」） */
   try { if (window.__bpViz && window.__bpViz.refreshReportPanel) window.__bpViz.refreshReportPanel({ dims: dims, turns: session.turns.length }); } catch (e) {}
+
+  /* v42：给每张维度卡挂上证据上下文（供底部面板读取，不新增全局 id） */
+  try {
+    lastDimEvidence = dims.map((d, i) => dimEvidenceFor(d, session.turns, i));
+  } catch (e) { lastDimEvidence = []; }
 }
+
+/* ============================================================
+ * v42 · 报告渐进披露：卡片 → 底部半屏面板
+ *   手机上把桌面端的完整报告直接塞进来 = 一屏看不完的表格。
+ *   卡片只给「维度 + 分数 + 一句证据摘要」，点开才是原话引用、
+ *   评分理由与「定位到对话」——三秒内形成记忆锚点，也不跳走。
+ * ============================================================ */
+let lastDimEvidence = [];
+let dimSheetEl = null;
+
+/**
+ * 为某个维度挑一句「代表证据」：优先该维度关心的锚点类型，
+ * 找不到就诚实退回「回答开头片段」，不凭空编造引用。
+ * @param {object} d 维度对象
+ * @param {Array<object>} turns 面试轮次
+ * @param {number} dimIdx 维度序号
+ * @returns {{quote:string, turn:number, from:string, note:string}}
+ */
+function dimEvidenceFor(d, turns, dimIdx) {
+  const list = Array.isArray(turns) ? turns : [];
+  const kindByDim = { depth: "metric", logic: "action", expression: "skill", fit: "skill", stress: "action" };
+  const want = kindByDim[d && d.key] || "skill";
+  const pool = [];
+  list.forEach((t, ti) => {
+    const anchors = (t.anchors && t.anchors.length) ? t.anchors : anchorPhrases(t.answer || "");
+    anchors.forEach(a => {
+      pool.push({
+        text: a.text,
+        kind: a.kind,
+        turn: ti + 1,
+        answer: String(t.answer || ""),
+        note: t.notes || "",
+        match: a.kind === want ? 1 : 0,
+      });
+    });
+  });
+  if (pool.length) {
+    // 同类型优先，其次取更长的片段（信息量更足）
+    const best = pool.slice().sort((a, b) =>
+      b.match - a.match || b.text.length - a.text.length)[0];
+    return {
+      quote: clipWindow(best.answer, best.text, 28),
+      digest: clipWindow(best.answer, best.text, 10),
+      turn: best.turn,
+      from: best.kind === want ? "锚点" : "同轮片段",
+      note: best.note,
+    };
+  }
+  const first = list[0];
+  const raw = String((first && first.answer) || "").replace(/\s+/g, " ").trim();
+  return {
+    quote: raw.length > 48 ? raw.slice(0, 48) + "…" : raw,
+    digest: raw.length > 26 ? raw.slice(0, 26) + "…" : raw,
+    turn: 1,
+    from: "开头片段",
+    note: (first && first.notes) || "",
+  };
+}
+
+/** 截取「锚点前后一段」作为引用，前后用省略号标注截断位置 */
+function clipWindow(answer, needle, pad) {
+  const src = String(answer || "");
+  const i = src.indexOf(needle);
+  if (i < 0 || !needle) return needle;
+  const s = Math.max(0, i - pad);
+  const e = Math.min(src.length, i + needle.length + pad * 2);
+  return (s > 0 ? "…" : "") + src.slice(s, e) + (e < src.length ? "…" : "");
+}
+
+/** 底部半屏面板：顶部是引用原话，下方是评分理由 + 定位到对话 */
+function dimSheetHtml(idx) {
+  const d = (lastReportData && lastReportData.dims || [])[idx];
+  if (!d) return "";
+  const ev = (lastDimEvidence && lastDimEvidence[idx]) || { quote: "", turn: 1, from: "", note: "" };
+  const views = (lastReportData && lastReportData.lensViews) || { items: [] };
+  const lv = (views.items && views.items[ev.turn - 1]) || null;
+  const signals = lv ? lv.tech.signals.concat(lv.hr.signals) : [];
+  const uniq = [];
+  signals.forEach(s => { if (uniq.indexOf(s) < 0) uniq.push(s); });
+  const lvTag = lv
+    ? `<span class="sh-lv ${gapLevel(lv.gap).cls}">跨角色分歧 ${lv.gap} 分 · ${gapLevel(lv.gap).label}</span>`
+    : "";
+  return `<div class="sheet-mask" onclick="closeDimSheet()"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="${escHtml(d.dimension)}评分详情">
+      <div class="sheet-head">
+        <div>
+          <div class="sheet-dim">${escHtml(d.dimension)}</div>
+          <div class="sheet-sub">第 ${ev.turn} 轮回答 · ${escHtml(ev.from)}${lvTag ? " · " + lvTag : ""}</div>
+        </div>
+        <button class="sheet-close" onclick="closeDimSheet()" aria-label="关闭">×</button>
+      </div>
+      <div class="sheet-quote">
+        <div class="sq-lead">📌 引用你的原话</div>
+        <q>“${escHtml(ev.quote)}”</q>
+      </div>
+      <div class="sheet-body">
+        <div class="sh-label">评分理由</div>
+        <p class="sh-reason">${escHtml(d.comment)}</p>
+        ${lv ? `<div class="sh-label">两位面试官的判断</div>
+        <div class="sh-lens">
+          <div class="sh-lens-row"><span class="sl-who">⚙️ 技术面</span><b>${lv.tech.score}</b><span class="sl-why">${escHtml(lv.tech.reason)}</span></div>
+          <div class="sh-lens-row"><span class="sl-who">💼 HR 面</span><b>${lv.hr.score}</b><span class="sl-why">${escHtml(lv.hr.reason)}</span></div>
+        </div>` : ""}
+        ${uniq.length ? `<div class="sh-label">命中信号</div><div class="sh-signals">${uniq.map(s => `<span>${escHtml(s)}</span>`).join("")}</div>` : ""}
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-primary btn-sm" onclick="gotoTurn(${ev.turn - 1})">📍 定位到对话</button>
+        <button class="btn btn-outline btn-sm" onclick="closeDimSheet()">关闭</button>
+      </div>
+    </div>`;
+}
+
+function openDimSheet(idx) {
+  const host = document.body;
+  if (!host) return;
+  /* 桌面端不需要浮层：行内本来就是完整的，点击只做展开/收起 */
+  let narrow = false;
+  try { narrow = !!(window.matchMedia && window.matchMedia("(max-width: 640px)").matches); } catch (e) {}
+  if (!narrow) {
+    const row = document.querySelector('.dim-row[data-dim="' + idx + '"]');
+    if (row) {
+      const on = row.classList.toggle("expanded");
+      row.setAttribute("aria-expanded", on ? "true" : "false");
+      const more = row.querySelector(".dim-more");
+      if (more) more.textContent = on ? "收起完整证据 ⌃" : "查看完整引用 →";
+    }
+    return;
+  }
+  if (!dimSheetEl) {
+    dimSheetEl = document.createElement("div");
+    dimSheetEl.className = "sheet";
+    host.appendChild(dimSheetEl);
+  }
+  dimSheetEl.innerHTML = dimSheetHtml(idx);
+  dimSheetEl.hidden = false;
+  document.documentElement.classList.add("sheet-open");
+  const panel = dimSheetEl.querySelector(".sheet-panel");
+  if (panel && typeof panel.focus === "function") { panel.setAttribute("tabindex", "-1"); panel.focus({ preventScroll: true }); }
+}
+
+function closeDimSheet() {
+  if (dimSheetEl) { dimSheetEl.hidden = true; dimSheetEl.innerHTML = ""; }
+  document.documentElement.classList.remove("sheet-open");
+}
+
+/** 从报告跳回面试对话，并高亮对应轮次（用 data-turn 对齐，不依赖渲染顺序） */
+function gotoTurn(turnIdx) {
+  closeDimSheet();
+  try { if (typeof navTo === "function") navTo("interview"); else if (typeof switchTab === "function") switchTab("interview"); } catch (e) {}
+  const jump = () => {
+    try {
+      const nodes = document.querySelectorAll('#chat-body .msg[data-turn="' + turnIdx + '"]');
+      const target = nodes.length ? nodes[nodes.length - 1] : null;
+      if (!target) return;
+      if (typeof target.scrollIntoView === "function") target.scrollIntoView({ block: "center" });
+      target.classList.remove("pulse");
+      void target.offsetWidth;
+      target.classList.add("pulse");
+    } catch (e) { /* 无布局环境跳过 */ }
+  };
+  try { requestAnimationFrame(() => setTimeout(jump, 140)); } catch (e) { setTimeout(jump, 160); }
+}
+
+/** Esc 关闭底部面板（移动端主要是「返回手势」，桌面端才是 Esc） */
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && dimSheetEl && !dimSheetEl.hidden) closeDimSheet();
+});
 
 /* ============================================================
  * 7.5 Prompt 查看器 · 实时能力追踪 · 报告导出
@@ -10634,7 +11198,10 @@ function syncHeaderHeight() {
   const h = document.querySelector("header");
   if (!h) return;
   try {
-    document.documentElement.style.setProperty("--hdr-h", Math.round(h.offsetHeight) + "px");
+    /* 顶栏在落地页/登录页会被隐藏（offsetHeight = 0）。此时不能写 0——
+     * 否则回到应用内时导航条会压在顶栏上、内容被盖住，故回落到安全默认值。 */
+    const v = Math.round(h.offsetHeight) || 58;
+    document.documentElement.style.setProperty("--hdr-h", v + "px");
   } catch (e) { /* 自定义属性不可用时保持 CSS 兜底值 */ }
 }
 
@@ -10676,19 +11243,212 @@ function fitChatHeight() {
   const main = document.querySelector(".chat-main");
   if (!main) return;
   const page = document.querySelector('.app-page[data-page="interview"]');
-  try {
-    if (!window.matchMedia("(max-width: 900px)").matches || !page || !page.classList.contains("active")) {
-      main.style.height = "";
-      return;
-    }
-  } catch (e) { return; }
+  let narrow;
+  try { narrow = !!(window.matchMedia && window.matchMedia("(max-width: 900px)").matches); } catch (e) { return; }
+  if (!narrow || !page || !page.classList.contains("active")) {
+    main.style.height = "";
+    main.classList.remove("kb-pinned");
+    return;
+  }
   try {
     if (typeof main.getBoundingClientRect !== "function") return;
-    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    const top = main.getBoundingClientRect().top;
-    const h = Math.max(240, Math.round(vh - top - 12));
+    const bodyEl = document.getElementById("chat-body");
+    /* 改高度前先看用户是否贴底，改完按原意图恢复——
+     * 否则每次键盘起落都会把正在回看历史的用户强行拽回底部。 */
+    let nearBottom = true;
+    try {
+      if (bodyEl && bodyEl.scrollHeight) {
+        nearBottom = bodyEl.scrollHeight - bodyEl.scrollTop - bodyEl.clientHeight < 90;
+    }
+    } catch (e) {}
+    const kb = keyboardInset();
+    /* 键盘弹出时布局视口不变、可视视口只剩上半屏，文档已经滚不动了——
+     * 唯一可靠做法是把对话卡片固定进可视区（见 CSS §17 的 .kb-pinned）。 */
+    if (kb > 0 && document.documentElement.classList.contains("kb-chat")) {
+      main.classList.add("kb-pinned");
+      main.style.height = "";
+      if (nearBottom && bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
+      return;
+    }
+    main.classList.remove("kb-pinned");
+    const vv = window.visualViewport;
+    const vh = vv && vv.height ? vv.height : window.innerHeight;
+    /* iOS 键盘弹起时 visualViewport 会被整体下推（offsetTop > 0），不减掉会算高。 */
+    const vTop = vv && typeof vv.offsetTop === "number" ? vv.offsetTop : 0;
+    let top = main.getBoundingClientRect().top - vTop;
+    if (top > 8) {
+      try { window.scrollBy({ top: top - 8, behavior: "auto" }); } catch (e) {}
+      top = main.getBoundingClientRect().top - vTop;
+    }
+    const h = Math.max(160, Math.round(vh - top - 12));
     main.style.height = h + "px";
+    if (nearBottom && bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
   } catch (e) { /* 无布局环境（逻辑测试桩）跳过 */ }
+}
+
+/* ---------- v42 · 键盘可见性：一切以 visualViewport 为准 ---------- */
+
+/**
+ * 软键盘遮挡量（px）：不可知时为 0。
+ * 不用 100vh，也不猜固定键盘高度——iOS 键盘从 260 到 336 不等，
+ * 且第三方输入法、横屏、工具栏都会改变它。
+ */
+function keyboardInset() {
+  try {
+    const vv = window.visualViewport;
+    if (!vv || typeof vv.height !== "number") return 0;
+    const layout = window.innerHeight || vv.height;
+    const hidden = layout - vv.height - (vv.offsetTop || 0);
+    return hidden > 24 ? hidden : 0;     // 24px 以内按工具栏抖动处理，不算键盘
+  } catch (e) { return 0; }
+}
+
+/**
+ * 把可视高度与键盘遮挡量写进 CSS 变量，供输入栏与对话区使用：
+ *   --app-vh 真实可视高度（等价于 dvh 的实测版）
+ *   --kb-h   键盘遮挡高度（键盘收起时为 0）
+ * 同时给 <html> 打 .kb-open，便于纯 CSS 做「键盘态」微调。
+ */
+function syncViewportVars() {
+  try {
+    const vv = window.visualViewport;
+    const h = vv && vv.height ? vv.height : window.innerHeight;
+    const root = document.documentElement;
+    root.style.setProperty("--app-vh", Math.round(h) + "px");
+    root.style.setProperty("--kb-h", Math.round(keyboardInset()) + "px");
+    root.classList.toggle("kb-open", keyboardInset() > 0);
+  } catch (e) { /* 视口 API 不可用时保持 CSS 的 dvh 兜底 */ }
+}
+
+/** v42：可视高度减去上下预留后的「可填满高度」，供对话区使用 */
+function visibleFill(reserve) {
+  try {
+    const vv = window.visualViewport;
+    const h = vv && vv.height ? vv.height : window.innerHeight;
+    return Math.max(240, Math.round(h - (typeof reserve === "number" ? reserve : 20)));
+  } catch (e) { return 240; }
+}
+
+/**
+ * 键盘起落后把输入行「按」回可视区底部。
+ * 只处理窄屏（≤900px）：桌面端键盘不存在，滚动反而打断阅读。
+ * @param {number} delay 等待动画结束的毫秒数
+ */
+function pinInputIntoView(delay) {
+  try {
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
+  } catch (e) { return; }
+  setTimeout(() => {
+    try {
+      const vv = window.visualViewport;
+      const bar = document.querySelector(".chat-input");
+      if (!bar || typeof bar.getBoundingClientRect !== "function") return;
+      const r = bar.getBoundingClientRect();
+      const visibleH = vv && vv.height ? vv.height : window.innerHeight;
+      const vTop = vv && typeof vv.offsetTop === "number" ? vv.offsetTop : 0;
+      const bottom = r.bottom - vTop;
+      const over = bottom - visibleH;
+      if (over > 0) window.scrollBy({ top: over + 8, behavior: "auto" });
+    } catch (e) { /* 无布局环境跳过 */ }
+  }, typeof delay === "number" ? delay : 200);
+}
+
+/** 输入框聚焦/失焦时同步视口变量并把输入行推回可视区 */
+function initKeyboardGuards() {
+  syncViewportVars();
+  window.addEventListener("resize", () => { syncViewportVars(); fitChatHeight(); });
+  const vv = window.visualViewport;
+  if (vv && typeof vv.addEventListener === "function") {
+    vv.addEventListener("resize", () => { syncViewportVars(); fitChatHeight(); pinInputIntoView(60); });
+    vv.addEventListener("scroll", () => { syncViewportVars(); });
+  }
+  const sel = "#chat-input, #ai-assistant-input, #resume-raw, #jd-text, #code-editor";
+  document.addEventListener("focusin", e => {
+    const el = e.target;
+    if (!el || typeof el.matches !== "function") return;
+    if (!el.matches(sel)) return;
+    /* 只有「对话输入框」才进入输入态：代码沙盒需要键盘，不能被折叠掉 */
+    const chat = el.matches("#chat-input, #ai-assistant-input");
+    document.documentElement.classList.toggle("kb-chat", chat);
+    syncViewportVars();
+    fitChatHeight();
+    pinInputIntoView(240);        // 等键盘起落动画结束再对齐
+  });
+  document.addEventListener("focusout", e => {
+    const el = e.target;
+    if (!el || typeof el.matches !== "function") return;
+    if (!el.matches(sel)) return;
+    document.documentElement.classList.remove("kb-chat");
+    syncViewportVars();
+    setTimeout(() => { syncViewportVars(); fitChatHeight(); }, 260);
+  });
+  // 键盘收起（视口恢复）时统一重算，避免「输入栏悬在半空」
+  window.addEventListener("resize", () => {
+    if (keyboardInset() === 0) document.documentElement.classList.remove("kb-chat");
+  });
+}
+
+/* ============================================================
+ * v42 · 首页信息优先级裁剪（只在窄屏生效）
+ *   落地页有 7 屏内容：功能矩阵 1926px、流程图 921px、数字统计 328px…
+ *   手机上全量堆叠 = 一条 5700px 的滚动条，10 秒内看不到「面试闭环」。
+ *   做法：窄屏把密集模块收成一行折叠条，首屏只剩价值主张 + 一个主 CTA。
+ *   DOM 结构不变（section 只是被折叠），所以打印、复制、测试、桌面布局全部照旧。
+ * ============================================================ */
+const LANDING_FOLD_TARGETS = [
+  { sel: ".hero-spec", title: "运行规格", hint: "在线后端 · GLM-4-Flash · 确定性评分引擎" },
+  { sel: ".hero-mock", title: "面试实录样例", hint: "看一段真实追问与量化回答" },
+  { sel: "#features", title: "功能矩阵", hint: "8 个业务模块 · 求职全流程闭环" },
+  { sel: "#workflow", title: "四步流程", hint: "简历 → 面试 → 报告 → 计划" },
+  { sel: "#stats", title: "关键数字", hint: "5 Agent · 24 岗位 · 1815 断言" },
+];
+
+function initMobileLandingFold() {
+  const land = document.querySelector("#view-landing");
+  LANDING_FOLD_TARGETS.forEach((cfg, i) => {
+    let box;
+    try { box = document.querySelector(cfg.sel); } catch (e) { return; }
+    if (!box || !box.dataset || !box.classList || typeof box.insertBefore !== "function") return;
+    // 只折叠落地页内部的模块（dashboard 里的 #stats 不受影响）
+    if (land && box.closest && box.closest("#view-landing") !== land) return;
+    if (box.dataset.foldReady) return;
+    box.dataset.foldReady = "1";
+    const panelId = "fm-fold-" + i;
+    box.id = box.id || panelId;
+    box.classList.add("is-foldable");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "fold-toggle";
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", box.id);
+    btn.innerHTML =
+      `<span class="ft-chev" aria-hidden="true">▸</span>` +
+      `<span class="ft-title">${cfg.title}</span>` +
+      `<span class="ft-hint">${cfg.hint}</span>`;
+    btn.addEventListener("click", () => {
+      const on = box.classList.toggle("fold-open");
+      btn.setAttribute("aria-expanded", on ? "true" : "false");
+      if (on) requestAnimationFrame(fitChatHeight);
+    });
+    box.parentNode.insertBefore(btn, box);
+  });
+  applyMobileLandingFold();
+}
+
+/** 依据当前宽度决定折叠条是否生效：宽屏一律展开（桌面布局零变化） */
+function applyMobileLandingFold() {
+  let narrow = false;
+  try {
+    narrow = !!(window.matchMedia && window.matchMedia("(max-width: 640px)").matches);
+  } catch (e) { narrow = false; }
+  document.querySelectorAll(".is-foldable").forEach(box => {
+    if (!box.classList) return;
+    const btn = box.parentNode ? box.parentNode.querySelector('.fold-toggle[aria-controls="' + box.id + '"]') : null;
+    const on = !narrow || box.classList.contains("fold-open");
+    box.classList.toggle("fold-hidden", !on);
+    if (btn && !narrow) btn.setAttribute("aria-expanded", "true");
+    else if (btn) btn.setAttribute("aria-expanded", box.classList.contains("fold-open") ? "true" : "false");
+  });
 }
 
 function bootApp() {
@@ -10702,10 +11462,12 @@ function bootApp() {
   animateCounters();
   // 加载当前用户数据（依赖 currentUser，故放在这里）
   initMobileCompact();
+  initMobileLandingFold();
   syncHeaderHeight();
   window.addEventListener("resize", syncHeaderHeight);
-  window.addEventListener("resize", fitChatHeight);
-  if (window.visualViewport) window.visualViewport.addEventListener("resize", fitChatHeight);
+  window.addEventListener("resize", applyMobileLandingFold);
+  // v42：键盘/视口守卫（visualViewport 变化时重算可视高度与对话区）
+  initKeyboardGuards();
   session = store.get("fm_session", { mode: "general", turns: [] });
   matchResult = store.get("fm_match", null);
   turn = session.turns.length;

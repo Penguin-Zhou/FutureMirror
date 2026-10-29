@@ -83,15 +83,15 @@ try {
             生成可解释的评分报告、能力雷达图与个性化学习路径。
           </p>
           <div class="hero-cta">
-            <button class="btn btn-primary" onclick="enterAppOrAuth()">立即体验 →</button>
+            <button class="btn btn-primary" onclick="enterAppOrAuth()"><span class="cta-wide">立即体验 →</span><span class="cta-narrow">上传简历，开始一场可溯源的模拟面试 →</span></button>
             <button class="btn btn-outline" onclick="showView('app')">先看看界面</button>
           </div>
           <div class="hero-kbd-hint">按 <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> 打开命令面板 · 直达任意功能页</div>
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>1513</b> 项自动化断言</span><span class="dot-sep">/</span>
-            <span><b>29</b> 页技术文档</span>
+            <span><b>1815</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>30</b> 页技术文档</span>
           </div>
         </div>
         <aside class="hero-spec bp-crop">
@@ -101,7 +101,7 @@ try {
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 1513 ／ pytest 37</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 1815 ／ pytest 44</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -147,7 +147,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">1513 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1815 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -157,7 +157,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">1513 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">1815 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -446,7 +446,7 @@ try {
       </div>
 
       <button class="btn btn-ghost btn-sm" onclick="openEvaluatorGate()" title="仅访客与技术验证使用" style="font-size:12px">
-        🎛 开发者模式
+        🎛 <span class="devmode-text">开发者模式</span>
       </button>
       <button class="btn btn-ghost btn-sm kbd-hint" onclick="if(window.__openCommandPalette)window.__openCommandPalette()" title="打开命令面板：快速跳转页面、开始面试、看真实岗位等">
         ⌘K 命令面板
@@ -843,9 +843,12 @@ try {
           <div id="code-result" style="margin-top:12px;font-size:13px"></div>
         </div>
 
-        <!-- 降级提示横幅（真实模型失败时出现） -->
-        <div id="fallback-banner" class="fallback-banner" hidden role="alert">
-          ⚠️ 真实模型调用失败（<span id="fallback-reason"></span>），已自动降级为 Mock 输出，演示不中断。
+        <!-- 降级提示横幅（真实模型失败时出现）· v42b：角色化文案 + 非阻塞置顶 -->
+        <div id="fallback-banner" class="fallback-banner" hidden role="status" aria-live="polite">
+          <span class="fb-dot" aria-hidden="true"></span>
+          <span class="fb-text">
+            <b id="fallback-who">技术面</b> Agent 已降级至本地推理模式（<span id="fallback-reason"></span>）· 面试不中断，评分口径与在线一致
+          </span>
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fallback-banner').hidden=true">知道了</button>
         </div>
 
@@ -1615,7 +1618,7 @@ try {
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、1513 项前端断言 + 37 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、1815 项前端断言 + 44 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -1691,6 +1694,18 @@ try {
           <div style="color:var(--faint)">等待调用…</div>
         </div>
       </div>
+    </section>
+
+    <!-- 5.5 降级演练：把「三级降级」变成可当场复现的动作 -->
+    <section class="eval-section" id="eval-degrade">
+      <h2 class="eval-section-title">🛡️ 降级演练（主动失效）</h2>
+      <p class="eval-section-sub">无需真的断网。开启后，<b>下一次</b>面试官提问会强制失败一次，用于现场验证降级链路：顶部出现非阻塞横幅、对话继续、评分口径不变。演练用完即自动解除。</p>
+      <div class="eval-actions">
+        <button class="btn btn-outline btn-sm" id="degrade-arm-btn" onclick="armDegradeDemo()">⚡ 让下一次提问失效</button>
+        <button class="btn btn-ghost btn-sm" onclick="disarmDegradeDemo()">解除演练</button>
+        <span class="badge" id="degrade-arm-state">未开启</span>
+      </div>
+      <p class="hint" id="degrade-arm-hint">演练只影响一次提问；失败是真实失败，兜底输出走的是与在线同构的本地引擎，不会伪造结果。</p>
     </section>
 
     <!-- 6. 端侧能力证据 -->
@@ -1772,7 +1787,7 @@ try {
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（38 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、1513 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（41 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、1815 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>

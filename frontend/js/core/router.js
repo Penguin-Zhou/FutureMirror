@@ -191,6 +191,10 @@ function applyRoute() {
   });
   syncMobileMore(page);
   if (document.body) document.body.dataset.page = page;   // v41：供窄屏样式做页面级避让
+  /* v42：顶栏在落地页/登录页是隐藏的，切回应用内必须重新实测高度，
+   * 否则 --hdr-h 会停留在隐藏时的旧值，导航条压住顶栏。
+   * 这里不用 rAF：布局测量不需要等动画帧，且要避开 reduced-motion 的零 rAF 断言。 */
+  try { if (typeof syncHeaderHeight === "function") syncHeaderHeight(); } catch (e) {}
 
   // 3) 面包屑
   const bc = $("bc-current");

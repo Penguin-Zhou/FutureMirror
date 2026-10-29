@@ -414,6 +414,13 @@ function sendMsg() {
   const keyword = extractKeyword(text);
   const notes = observerNote(text);
   if (llm || fmApi.backendReady()) { sendMsgReal(text, speaker, keyword, notes, anchors); return; }
+  /* v42b：演练开关只在真实通道有意义。若此刻本就是本地模式，
+   * 如实告知而不是让开关一直挂着不触发——否则「开了没反应」比故障更伤信任。 */
+  if (degradeArmed) {
+    degradeArmed = false;
+    syncDegradeArmState();
+    toast("当前已是本地推理模式：降级演练需在接入真实模型后触发");
+  }
   sendMsgMock(text, speaker, keyword, notes, anchors);
 }
 
@@ -458,6 +465,8 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
     const bubble = document.createElement("div");
     bubble.className = "msg msg-ai";
     bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
+    /* v42：先插锚定标签，再插气泡——标签永远出现在追问内容上方 */
+    openAnchorRefTag(body, bubble, anchors.length);
     body.appendChild(bubble);
     chatAutoScroll(true);
     let i = 0;
@@ -494,6 +503,73 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
   }, 1250);
 }
 
+/* ==================================================================
+ * v42b · 降级演练开关（主动失效）
+ * ------------------------------------------------------------------
+ * 三级降级此前只在文档里承诺。真正的问题不是「能不能降」，而是
+ * 「演示现场能不能稳定地降一次给你看」——现场断网不可控、超时要等 60s。
+ * 这里提供一个显式开关：开启后下一次 Agent 调用必然失败一次。
+ * 失败是真实的失败（走与线上完全相同的 catch 分支），兜底内容出自
+ * 与服务端同构的本地引擎，因此这是可复现的演练，不是伪造结果。
+ * ================================================================== */
+let degradeArmed = false;
+let degradeDrill = false;   // 本次失败是否为演练触发（用于文案诚实标注）
+
+/** 开启演练：下一次提问强制失败一次 */
+function armDegradeDemo() {
+  degradeArmed = true;
+  syncDegradeArmState();
+  toast("已开启降级演练：下一次面试官提问会主动失效一次");
+}
+
+/** 解除演练 */
+function disarmDegradeDemo() {
+  degradeArmed = false;
+  syncDegradeArmState();
+  toast("已解除降级演练");
+}
+
+/** 测试钩子：与 __bpFx / __bpScroll 同族，供 jsdom 断言演练开关与横幅文案 */
+window.__bpDegrade = {
+  arm: function () { armDegradeDemo(); },
+  disarm: function () { disarmDegradeDemo(); },
+  armed: function () { return degradeArmed; },
+  banner: function () {
+    const el = $("fallback-banner");
+    if (!el) return null;
+    const who = $("fallback-who");
+    const reason = $("fallback-reason");
+    return { hidden: el.hidden, who: who ? who.textContent : "", reason: reason ? reason.textContent : "" };
+  },
+};
+
+function syncDegradeArmState() {
+  const badge = $("degrade-arm-state");
+  if (badge) {
+    badge.textContent = degradeArmed ? "已开启 · 待触发" : "未开启";
+    badge.className = "badge " + (degradeArmed ? "badge-amber" : "");
+  }
+  const btn = $("degrade-arm-btn");
+  if (btn) btn.textContent = degradeArmed ? "⚡ 演练已就绪" : "⚡ 让下一次提问失效";
+}
+
+/**
+ * 展示降级横幅：角色化 + 非阻塞。
+ * 横幅只做告知，不弹窗、不中断输入，流程继续往下走。
+ */
+function showDegradeBanner(speaker, reason, isDrill) {
+  const el = $("fallback-banner");
+  if (!el) return;
+  const raw = (speaker && speaker.name) || "";
+  /* HR 面试官 → HR 面；技术面试官 → 技术面；压力面试官 → 压力面 */
+  const who = raw ? raw.replace(/面试官\s*$/, "") + "面" : "当前";
+  const whoEl = $("fallback-who");
+  if (whoEl) whoEl.textContent = who;
+  const reasonEl = $("fallback-reason");
+  if (reasonEl) reasonEl.textContent = isDrill ? "演练触发 · " + reason : reason;
+  el.hidden = false;
+}
+
 /* ---- 真实 LLM 通道：浏览器直连 OpenAI 兼容流式接口 ---- */
 async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   const body = $("chat-body");
@@ -508,6 +584,8 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   bubble.className = "msg msg-ai";
   bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
   bubble.innerHTML = '<span class="caret"></span>';
+  /* v42：锚定标签先于气泡插入，追问落地后由 annotateAnchorRef 更新状态 */
+  openAnchorRefTag(body, bubble, anchors.length);
   body.appendChild(bubble);
   chatAutoScroll(true);
 
@@ -517,6 +595,13 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   let streamStarted = false;
   let refHits;   // 追问命中的原话（流式结束后回填）
   try {
+    /* v42b：演练开关命中则直接抛出，走与真实失败完全相同的兜底分支 */
+    if (degradeArmed) {
+      degradeArmed = false;
+      degradeDrill = true;
+      syncDegradeArmState();
+      throw new Error("模拟网关无响应");
+    }
     await streamChat(buildMessages(text), piece => {
       if (!streamStarted) { streamStarted = true; hideTyping(); }
       full += piece;
@@ -532,11 +617,14 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   } catch (e) {
     clearTimeout(killTimer);
     hideTyping();
+    /* v42：连锚定标签一起移除，避免「降级到 Mock」后留下一条无主的锚定提示 */
+    const staleTag = bubble.previousElementSibling;
+    if (staleTag && staleTag.classList && staleTag.classList.contains("anchor-ref-host")) staleTag.remove();
     bubble.remove();
     const reason = e.name === "AbortError" ? "超时 60s" : e.message;
-    $("fallback-reason").textContent = reason;
-    $("fallback-banner").hidden = false;
-    toast("真实模型调用失败（" + reason + "），已自动降级为 Mock 输出");
+    showDegradeBanner(speaker, reason, degradeDrill);
+    degradeDrill = false;
+    toast("真实模型调用失败（" + reason + "），已自动降级为本地推理，面试继续");
     addTimeline("系统", "⚠️ 真实模型调用失败 → 自动降级 Mock 兜底", false);
     $("chat-send").disabled = false;
     sendMsgMock(text, speaker, keyword, notes, anchors);
@@ -750,6 +838,8 @@ function restoreSession() {
     const div = document.createElement("div");
     div.className = "msg msg-ai";
     div.textContent = t.question;
+    /* v42：恢复时同样重建气泡上方的锚定标签，刷新后解释链不断 */
+    openAnchorRefTag($("chat-body"), div, anchors.length);
     $("chat-body").appendChild(div);
     if (t.anchorRef && t.anchorRef.length) annotateAnchorRef(div, t.question, anchors, i);
     addTimeline(t.agent, `（恢复）提问：${t.question.slice(0, 30)}…`, false);
@@ -763,6 +853,8 @@ function restoreSession() {
   // v32：恢复（或撤销重置）到已满 5 轮的会话时，输入框保持收尾态
   if (turn >= MAX_TURNS) { interviewClosed = true; lockInput(true); }
   else { interviewClosed = false; lockInput(false); }
+  /* v42：恢复历史会话后落在「最新一轮」，而不是停在几轮之前的老消息上 */
+  chatAutoScroll(true);
 }
 function addMsg(cls, text) {
   const body = $("chat-body");
@@ -1036,30 +1128,9 @@ function chatAutoScroll(force) {
   if (force || nearBottom) body.scrollTop = body.scrollHeight;
 }
 
-/* 可视高度写入 --app-vh：iOS Safari < 15.4 不支持 dvh 时，靠它让对话框跟随可视区收缩 */
+/* 可视高度写入 --app-vh：iOS Safari < 15.4 不支持 dvh 时，靠它让对话框跟随可视区收缩。
+ * v42：统一委托给 boot.js 的 syncViewportVars（同时写 --kb-h 与 .kb-open），
+ * 这里保留同名入口，避免旧调用点与测试断言失效。 */
 function syncAppViewport() {
-  try {
-    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    document.documentElement.style.setProperty("--app-vh", Math.round(h) + "px");
-  } catch (e) { /* 视口 API 不可用时保持 CSS 的 dvh 兜底 */ }
-}
-
-/* 输入框聚焦后把输入行滚进视野，避免软键盘顶起时输入框被遮住 */
-document.addEventListener("focusin", e => {
-  const el = e.target;
-  if (!el || typeof el.matches !== "function") return;
-  if (!el.matches("#chat-input, #ai-assistant-input, #resume-raw, #jd-text")) return;
-  try {
-    if (window.matchMedia && !window.matchMedia("(max-width: 900px)").matches) return;
-  } catch (err) { return; }
-  setTimeout(() => {
-    try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (err) { /* 老浏览器忽略 */ }
-  }, 220);   // 等软键盘起落动画结束再对齐
-});
-
-syncAppViewport();
-window.addEventListener("resize", syncAppViewport);
-if (window.visualViewport) {
-  window.visualViewport.addEventListener("resize", syncAppViewport);
-  window.visualViewport.addEventListener("scroll", syncAppViewport);
+  if (typeof syncViewportVars === "function") syncViewportVars();
 }

@@ -130,8 +130,13 @@ async function runTests() {
   ok(!!main && parseInt(main.style.height, 10) >= 240, "对话区不低于下限（键盘弹出仍可读上下文）");
   ok(/100dvh/.test(css) && /--app-vh/.test(css), "CSS 保留 dvh 与 --app-vh 双兜底（旧 Safari 可降级）");
   ok(/clamp\(\s*240px/.test(css), "对话区高度有下限保护，键盘弹出时不塌成一条");
+  /* v42：监听统一收敛到 boot.js 的 initKeyboardGuards（resize + 键盘 + 失焦），
+   * 断言改为检查守卫所在文件，语义仍是「键盘起落会重算可视高度」。 */
   ok(
-    /visualViewport/.test(fs.readFileSync(path.join(ROOT, "frontend", "js", "features", "interview.js"), "utf8")),
+    /visualViewport/.test(
+      fs.readFileSync(path.join(ROOT, "frontend", "js", "core", "boot.js"), "utf8") +
+        fs.readFileSync(path.join(ROOT, "frontend", "js", "features", "interview.js"), "utf8")
+    ),
     "监听 visualViewport（键盘起落时重算可视高度）"
   );
 

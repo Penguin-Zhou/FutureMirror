@@ -1738,3 +1738,41 @@
   .anchor-hl.pulse { animation: none; }
   .vl-dot { animation: none; }
 }
+
+/* ============================================================
+ * v42 · 可解释性前移：追问气泡「上方」的锚定标签
+ *   目的不是多一行 UI，而是让使用者看到「AI 判断的那一刻就有据可依」——
+ *   追问因何而起、锚定的是哪句原话，在问题出现的同时就摆在眼前。
+ * ============================================================ */
+.anchor-ref-host { align-self: flex-start; max-width: 92%; }
+.anchor-ref-tag {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  margin: 2px 0 6px; padding: 4px 9px;
+  border: 1px dashed var(--line-2); background: var(--chip-bg);
+  font-size: 11.5px; line-height: 1.5; color: var(--muted);
+}
+.anchor-ref-tag .art-lead { color: var(--brand); font-size: 11px; }
+.anchor-ref-tag .art-text b { font-style: normal; }
+.anchor-ref-tag.pending { opacity: .78; }
+@media (max-width: 640px) {
+  .anchor-ref-tag { font-size: 11px; padding: 4px 8px; }
+  .anchor-ref-tag .art-text {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+}
+
+/* 「定位到对话」后目标气泡脉冲一次，视觉上指回去 */
+.msg.pulse { animation: bubblePulse 1s ease-out 1; }
+@keyframes bubblePulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 45%, transparent); }
+  100% { box-shadow: 0 0 0 10px transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .msg.pulse { animation: none; }
+}
+
+/* ============ v42b · 降级演练面板（开发者模式） ============ */
+.eval-actions {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+}
+.eval-actions .btn { min-height: 32px; }

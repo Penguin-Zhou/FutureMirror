@@ -267,11 +267,18 @@ async function renderReport(force) {
         <table class="sr-only"><caption>各维度得分（满分 100）</caption><thead><tr><th>维度</th><th>得分</th></tr></thead><tbody>${dims.map((d) => `<tr><td>${d.dimension}</td><td>${d.score}</td></tr>`).join("")}</tbody></table>
       </div>
       <div><div class="pane-title">维度得分</div><div id="dims">${dims.map((d, i) => `
-        <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}">
+        <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}"
+             role="button" tabindex="0" aria-expanded="false"
+             onclick="openDimSheet(${i})"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDimSheet(${i});}">
           <div class="dim-head"><b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b><span style="color:var(--muted)">${d.score}</span></div>
           <div class="dim-bar"><div style="width:${d.score}%"></div></div>
-          <div class="dim-comment">${d.comment}</div>
-          <div class="dim-tip" role="tooltip">${d.dimension} · ${d.score}<br>${d.comment}</div>
+          <div class="dim-summary">📎 证据摘要：<q>“${escHtml(dimEvidenceFor(d, session.turns, i).digest)}”</q></div>
+          <div class="dim-full">
+            <div class="dim-comment">${d.comment}</div>
+            <div class="dim-tip" role="tooltip">${d.dimension} · ${d.score}<br>${d.comment}</div>
+          </div>
+          <div class="dim-more">查看完整引用 →</div>
         </div>`).join("")}</div></div>
     </div>
     ${reportStatusCard(camStatus)}
@@ -344,5 +351,177 @@ async function renderReport(force) {
    * 面试后仍显示「基线数据 · 完成面试后转为真实分布」，用户看不到自己的分布）。
    * v31.3：注入真实 dims，使看板雷达/热力/散点与主雷达同源（修复「看板数据与上面不一致」） */
   try { if (window.__bpViz && window.__bpViz.refreshReportPanel) window.__bpViz.refreshReportPanel({ dims: dims, turns: session.turns.length }); } catch (e) {}
+
+  /* v42：给每张维度卡挂上证据上下文（供底部面板读取，不新增全局 id） */
+  try {
+    lastDimEvidence = dims.map((d, i) => dimEvidenceFor(d, session.turns, i));
+  } catch (e) { lastDimEvidence = []; }
 }
+
+/* ============================================================
+ * v42 · 报告渐进披露：卡片 → 底部半屏面板
+ *   手机上把桌面端的完整报告直接塞进来 = 一屏看不完的表格。
+ *   卡片只给「维度 + 分数 + 一句证据摘要」，点开才是原话引用、
+ *   评分理由与「定位到对话」——三秒内形成记忆锚点，也不跳走。
+ * ============================================================ */
+let lastDimEvidence = [];
+let dimSheetEl = null;
+
+/**
+ * 为某个维度挑一句「代表证据」：优先该维度关心的锚点类型，
+ * 找不到就诚实退回「回答开头片段」，不凭空编造引用。
+ * @param {object} d 维度对象
+ * @param {Array<object>} turns 面试轮次
+ * @param {number} dimIdx 维度序号
+ * @returns {{quote:string, turn:number, from:string, note:string}}
+ */
+function dimEvidenceFor(d, turns, dimIdx) {
+  const list = Array.isArray(turns) ? turns : [];
+  const kindByDim = { depth: "metric", logic: "action", expression: "skill", fit: "skill", stress: "action" };
+  const want = kindByDim[d && d.key] || "skill";
+  const pool = [];
+  list.forEach((t, ti) => {
+    const anchors = (t.anchors && t.anchors.length) ? t.anchors : anchorPhrases(t.answer || "");
+    anchors.forEach(a => {
+      pool.push({
+        text: a.text,
+        kind: a.kind,
+        turn: ti + 1,
+        answer: String(t.answer || ""),
+        note: t.notes || "",
+        match: a.kind === want ? 1 : 0,
+      });
+    });
+  });
+  if (pool.length) {
+    // 同类型优先，其次取更长的片段（信息量更足）
+    const best = pool.slice().sort((a, b) =>
+      b.match - a.match || b.text.length - a.text.length)[0];
+    return {
+      quote: clipWindow(best.answer, best.text, 28),
+      digest: clipWindow(best.answer, best.text, 10),
+      turn: best.turn,
+      from: best.kind === want ? "锚点" : "同轮片段",
+      note: best.note,
+    };
+  }
+  const first = list[0];
+  const raw = String((first && first.answer) || "").replace(/\s+/g, " ").trim();
+  return {
+    quote: raw.length > 48 ? raw.slice(0, 48) + "…" : raw,
+    digest: raw.length > 26 ? raw.slice(0, 26) + "…" : raw,
+    turn: 1,
+    from: "开头片段",
+    note: (first && first.notes) || "",
+  };
+}
+
+/** 截取「锚点前后一段」作为引用，前后用省略号标注截断位置 */
+function clipWindow(answer, needle, pad) {
+  const src = String(answer || "");
+  const i = src.indexOf(needle);
+  if (i < 0 || !needle) return needle;
+  const s = Math.max(0, i - pad);
+  const e = Math.min(src.length, i + needle.length + pad * 2);
+  return (s > 0 ? "…" : "") + src.slice(s, e) + (e < src.length ? "…" : "");
+}
+
+/** 底部半屏面板：顶部是引用原话，下方是评分理由 + 定位到对话 */
+function dimSheetHtml(idx) {
+  const d = (lastReportData && lastReportData.dims || [])[idx];
+  if (!d) return "";
+  const ev = (lastDimEvidence && lastDimEvidence[idx]) || { quote: "", turn: 1, from: "", note: "" };
+  const views = (lastReportData && lastReportData.lensViews) || { items: [] };
+  const lv = (views.items && views.items[ev.turn - 1]) || null;
+  const signals = lv ? lv.tech.signals.concat(lv.hr.signals) : [];
+  const uniq = [];
+  signals.forEach(s => { if (uniq.indexOf(s) < 0) uniq.push(s); });
+  const lvTag = lv
+    ? `<span class="sh-lv ${gapLevel(lv.gap).cls}">跨角色分歧 ${lv.gap} 分 · ${gapLevel(lv.gap).label}</span>`
+    : "";
+  return `<div class="sheet-mask" onclick="closeDimSheet()"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="${escHtml(d.dimension)}评分详情">
+      <div class="sheet-head">
+        <div>
+          <div class="sheet-dim">${escHtml(d.dimension)}</div>
+          <div class="sheet-sub">第 ${ev.turn} 轮回答 · ${escHtml(ev.from)}${lvTag ? " · " + lvTag : ""}</div>
+        </div>
+        <button class="sheet-close" onclick="closeDimSheet()" aria-label="关闭">×</button>
+      </div>
+      <div class="sheet-quote">
+        <div class="sq-lead">📌 引用你的原话</div>
+        <q>“${escHtml(ev.quote)}”</q>
+      </div>
+      <div class="sheet-body">
+        <div class="sh-label">评分理由</div>
+        <p class="sh-reason">${escHtml(d.comment)}</p>
+        ${lv ? `<div class="sh-label">两位面试官的判断</div>
+        <div class="sh-lens">
+          <div class="sh-lens-row"><span class="sl-who">⚙️ 技术面</span><b>${lv.tech.score}</b><span class="sl-why">${escHtml(lv.tech.reason)}</span></div>
+          <div class="sh-lens-row"><span class="sl-who">💼 HR 面</span><b>${lv.hr.score}</b><span class="sl-why">${escHtml(lv.hr.reason)}</span></div>
+        </div>` : ""}
+        ${uniq.length ? `<div class="sh-label">命中信号</div><div class="sh-signals">${uniq.map(s => `<span>${escHtml(s)}</span>`).join("")}</div>` : ""}
+      </div>
+      <div class="sheet-actions">
+        <button class="btn btn-primary btn-sm" onclick="gotoTurn(${ev.turn - 1})">📍 定位到对话</button>
+        <button class="btn btn-outline btn-sm" onclick="closeDimSheet()">关闭</button>
+      </div>
+    </div>`;
+}
+
+function openDimSheet(idx) {
+  const host = document.body;
+  if (!host) return;
+  /* 桌面端不需要浮层：行内本来就是完整的，点击只做展开/收起 */
+  let narrow = false;
+  try { narrow = !!(window.matchMedia && window.matchMedia("(max-width: 640px)").matches); } catch (e) {}
+  if (!narrow) {
+    const row = document.querySelector('.dim-row[data-dim="' + idx + '"]');
+    if (row) {
+      const on = row.classList.toggle("expanded");
+      row.setAttribute("aria-expanded", on ? "true" : "false");
+      const more = row.querySelector(".dim-more");
+      if (more) more.textContent = on ? "收起完整证据 ⌃" : "查看完整引用 →";
+    }
+    return;
+  }
+  if (!dimSheetEl) {
+    dimSheetEl = document.createElement("div");
+    dimSheetEl.className = "sheet";
+    host.appendChild(dimSheetEl);
+  }
+  dimSheetEl.innerHTML = dimSheetHtml(idx);
+  dimSheetEl.hidden = false;
+  document.documentElement.classList.add("sheet-open");
+  const panel = dimSheetEl.querySelector(".sheet-panel");
+  if (panel && typeof panel.focus === "function") { panel.setAttribute("tabindex", "-1"); panel.focus({ preventScroll: true }); }
+}
+
+function closeDimSheet() {
+  if (dimSheetEl) { dimSheetEl.hidden = true; dimSheetEl.innerHTML = ""; }
+  document.documentElement.classList.remove("sheet-open");
+}
+
+/** 从报告跳回面试对话，并高亮对应轮次（用 data-turn 对齐，不依赖渲染顺序） */
+function gotoTurn(turnIdx) {
+  closeDimSheet();
+  try { if (typeof navTo === "function") navTo("interview"); else if (typeof switchTab === "function") switchTab("interview"); } catch (e) {}
+  const jump = () => {
+    try {
+      const nodes = document.querySelectorAll('#chat-body .msg[data-turn="' + turnIdx + '"]');
+      const target = nodes.length ? nodes[nodes.length - 1] : null;
+      if (!target) return;
+      if (typeof target.scrollIntoView === "function") target.scrollIntoView({ block: "center" });
+      target.classList.remove("pulse");
+      void target.offsetWidth;
+      target.classList.add("pulse");
+    } catch (e) { /* 无布局环境跳过 */ }
+  };
+  try { requestAnimationFrame(() => setTimeout(jump, 140)); } catch (e) { setTimeout(jump, 160); }
+}
+
+/** Esc 关闭底部面板（移动端主要是「返回手势」，桌面端才是 Esc） */
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && dimSheetEl && !dimSheetEl.hidden) closeDimSheet();
+});
 

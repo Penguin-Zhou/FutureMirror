@@ -125,6 +125,50 @@ function focusAnchor(btn) {
 }
 
 /**
+ * v42：追问气泡「上方」的锚定标签。
+ * 桌面端与移动端都能看到——它不是装饰，而是把「AI 此刻依据哪句原话在追问」摊开给用户看。
+ * 未落题前不假装知道模型会问什么，只说明观察员已定位了几个锚点。
+ * @param {string[]} hits 已命中的原话片段（空数组表示尚未落题/未命中）
+ * @param {number} count 本轮定位到的锚点总数
+ */
+function anchorRefTagHtml(hits, count) {
+  const list = (hits || []).filter(Boolean);
+  if (!list.length) {
+    const n = Number(count) || 0;
+    const lead = n
+      ? `观察员已定位 ${n} 个可追问锚点 · 等待面试官落题`
+      : "本轮未定位到可追问锚点 · 观察员继续收集证据";
+    return `<div class="anchor-ref-tag pending"><span class="art-lead">⚓</span><span class="art-text">${escHtml(lead)}</span></div>`;
+  }
+  const quoted = list.slice(0, 2).map((h) => `「${escHtml(h)}」`).join("");
+  return `<div class="anchor-ref-tag"><span class="art-lead">⚓</span>` +
+    `<span class="art-text">基于你提到的${quoted}发起追问</span></div>`;
+}
+
+/**
+ * 在指定气泡之前插入锚定标签容器（返回容器，便于后续更新状态）。
+ * @param {HTMLElement|null} bubble 参考气泡（null 时追加到容器末尾）
+ * @param {HTMLElement} host 聊天容器
+ */
+function openAnchorRefTag(host, bubble, count) {
+  if (!host || typeof host.insertBefore !== "function") return null;
+  const wrap = document.createElement("div");
+  wrap.className = "anchor-ref-host";
+  wrap.innerHTML = anchorRefTagHtml([], count);
+  try {
+    if (bubble) host.insertBefore(wrap, bubble);
+    else host.appendChild(wrap);
+  } catch (e) { return null; }
+  return wrap;
+}
+
+/** 更新锚定标签：落题后按「是否真的复述了原话」给出正向锚定或诚实降级 */
+function updateAnchorRefTag(wrap, hits, count) {
+  if (!wrap) return;
+  wrap.innerHTML = anchorRefTagHtml(hits, count);
+}
+
+/**
  * 追问气泡落定后，标出「这次追问锚定的是你哪句话」。
  * 只在模型确实复述了原话时给正向锚定；否则诚实说明「未直接复述」。
  * @returns {string[]} 命中的锚点文本
@@ -134,6 +178,12 @@ function annotateAnchorRef(bubble, question, anchors, turnIdx) {
   const hits = (anchors || []).filter((a) => a.text && q.includes(a.text)).map((a) => a.text);
   if (!bubble) return hits;
   const ref = document.createElement("div");
+  /* v42：同步更新气泡上方的锚定标签（存在时才更新，兼容历史会话与测试桩） */
+  const tagHost = bubble && bubble.previousElementSibling &&
+    bubble.previousElementSibling.classList &&
+    bubble.previousElementSibling.classList.contains("anchor-ref-host")
+    ? bubble.previousElementSibling : null;
+  if (tagHost) updateAnchorRefTag(tagHost, hits, (anchors || []).length);
   if (hits.length) {
     ref.className = "msg-anchor-ref";
     ref.innerHTML = `<span class="ref-lead">⚓ 追问锚点</span>${hits

@@ -8,7 +8,10 @@ function syncHeaderHeight() {
   const h = document.querySelector("header");
   if (!h) return;
   try {
-    document.documentElement.style.setProperty("--hdr-h", Math.round(h.offsetHeight) + "px");
+    /* 顶栏在落地页/登录页会被隐藏（offsetHeight = 0）。此时不能写 0——
+     * 否则回到应用内时导航条会压在顶栏上、内容被盖住，故回落到安全默认值。 */
+    const v = Math.round(h.offsetHeight) || 58;
+    document.documentElement.style.setProperty("--hdr-h", v + "px");
   } catch (e) { /* 自定义属性不可用时保持 CSS 兜底值 */ }
 }
 
@@ -50,19 +53,212 @@ function fitChatHeight() {
   const main = document.querySelector(".chat-main");
   if (!main) return;
   const page = document.querySelector('.app-page[data-page="interview"]');
-  try {
-    if (!window.matchMedia("(max-width: 900px)").matches || !page || !page.classList.contains("active")) {
-      main.style.height = "";
-      return;
-    }
-  } catch (e) { return; }
+  let narrow;
+  try { narrow = !!(window.matchMedia && window.matchMedia("(max-width: 900px)").matches); } catch (e) { return; }
+  if (!narrow || !page || !page.classList.contains("active")) {
+    main.style.height = "";
+    main.classList.remove("kb-pinned");
+    return;
+  }
   try {
     if (typeof main.getBoundingClientRect !== "function") return;
-    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    const top = main.getBoundingClientRect().top;
-    const h = Math.max(240, Math.round(vh - top - 12));
+    const bodyEl = document.getElementById("chat-body");
+    /* 改高度前先看用户是否贴底，改完按原意图恢复——
+     * 否则每次键盘起落都会把正在回看历史的用户强行拽回底部。 */
+    let nearBottom = true;
+    try {
+      if (bodyEl && bodyEl.scrollHeight) {
+        nearBottom = bodyEl.scrollHeight - bodyEl.scrollTop - bodyEl.clientHeight < 90;
+    }
+    } catch (e) {}
+    const kb = keyboardInset();
+    /* 键盘弹出时布局视口不变、可视视口只剩上半屏，文档已经滚不动了——
+     * 唯一可靠做法是把对话卡片固定进可视区（见 CSS §17 的 .kb-pinned）。 */
+    if (kb > 0 && document.documentElement.classList.contains("kb-chat")) {
+      main.classList.add("kb-pinned");
+      main.style.height = "";
+      if (nearBottom && bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
+      return;
+    }
+    main.classList.remove("kb-pinned");
+    const vv = window.visualViewport;
+    const vh = vv && vv.height ? vv.height : window.innerHeight;
+    /* iOS 键盘弹起时 visualViewport 会被整体下推（offsetTop > 0），不减掉会算高。 */
+    const vTop = vv && typeof vv.offsetTop === "number" ? vv.offsetTop : 0;
+    let top = main.getBoundingClientRect().top - vTop;
+    if (top > 8) {
+      try { window.scrollBy({ top: top - 8, behavior: "auto" }); } catch (e) {}
+      top = main.getBoundingClientRect().top - vTop;
+    }
+    const h = Math.max(160, Math.round(vh - top - 12));
     main.style.height = h + "px";
+    if (nearBottom && bodyEl) bodyEl.scrollTop = bodyEl.scrollHeight;
   } catch (e) { /* 无布局环境（逻辑测试桩）跳过 */ }
+}
+
+/* ---------- v42 · 键盘可见性：一切以 visualViewport 为准 ---------- */
+
+/**
+ * 软键盘遮挡量（px）：不可知时为 0。
+ * 不用 100vh，也不猜固定键盘高度——iOS 键盘从 260 到 336 不等，
+ * 且第三方输入法、横屏、工具栏都会改变它。
+ */
+function keyboardInset() {
+  try {
+    const vv = window.visualViewport;
+    if (!vv || typeof vv.height !== "number") return 0;
+    const layout = window.innerHeight || vv.height;
+    const hidden = layout - vv.height - (vv.offsetTop || 0);
+    return hidden > 24 ? hidden : 0;     // 24px 以内按工具栏抖动处理，不算键盘
+  } catch (e) { return 0; }
+}
+
+/**
+ * 把可视高度与键盘遮挡量写进 CSS 变量，供输入栏与对话区使用：
+ *   --app-vh 真实可视高度（等价于 dvh 的实测版）
+ *   --kb-h   键盘遮挡高度（键盘收起时为 0）
+ * 同时给 <html> 打 .kb-open，便于纯 CSS 做「键盘态」微调。
+ */
+function syncViewportVars() {
+  try {
+    const vv = window.visualViewport;
+    const h = vv && vv.height ? vv.height : window.innerHeight;
+    const root = document.documentElement;
+    root.style.setProperty("--app-vh", Math.round(h) + "px");
+    root.style.setProperty("--kb-h", Math.round(keyboardInset()) + "px");
+    root.classList.toggle("kb-open", keyboardInset() > 0);
+  } catch (e) { /* 视口 API 不可用时保持 CSS 的 dvh 兜底 */ }
+}
+
+/** v42：可视高度减去上下预留后的「可填满高度」，供对话区使用 */
+function visibleFill(reserve) {
+  try {
+    const vv = window.visualViewport;
+    const h = vv && vv.height ? vv.height : window.innerHeight;
+    return Math.max(240, Math.round(h - (typeof reserve === "number" ? reserve : 20)));
+  } catch (e) { return 240; }
+}
+
+/**
+ * 键盘起落后把输入行「按」回可视区底部。
+ * 只处理窄屏（≤900px）：桌面端键盘不存在，滚动反而打断阅读。
+ * @param {number} delay 等待动画结束的毫秒数
+ */
+function pinInputIntoView(delay) {
+  try {
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
+  } catch (e) { return; }
+  setTimeout(() => {
+    try {
+      const vv = window.visualViewport;
+      const bar = document.querySelector(".chat-input");
+      if (!bar || typeof bar.getBoundingClientRect !== "function") return;
+      const r = bar.getBoundingClientRect();
+      const visibleH = vv && vv.height ? vv.height : window.innerHeight;
+      const vTop = vv && typeof vv.offsetTop === "number" ? vv.offsetTop : 0;
+      const bottom = r.bottom - vTop;
+      const over = bottom - visibleH;
+      if (over > 0) window.scrollBy({ top: over + 8, behavior: "auto" });
+    } catch (e) { /* 无布局环境跳过 */ }
+  }, typeof delay === "number" ? delay : 200);
+}
+
+/** 输入框聚焦/失焦时同步视口变量并把输入行推回可视区 */
+function initKeyboardGuards() {
+  syncViewportVars();
+  window.addEventListener("resize", () => { syncViewportVars(); fitChatHeight(); });
+  const vv = window.visualViewport;
+  if (vv && typeof vv.addEventListener === "function") {
+    vv.addEventListener("resize", () => { syncViewportVars(); fitChatHeight(); pinInputIntoView(60); });
+    vv.addEventListener("scroll", () => { syncViewportVars(); });
+  }
+  const sel = "#chat-input, #ai-assistant-input, #resume-raw, #jd-text, #code-editor";
+  document.addEventListener("focusin", e => {
+    const el = e.target;
+    if (!el || typeof el.matches !== "function") return;
+    if (!el.matches(sel)) return;
+    /* 只有「对话输入框」才进入输入态：代码沙盒需要键盘，不能被折叠掉 */
+    const chat = el.matches("#chat-input, #ai-assistant-input");
+    document.documentElement.classList.toggle("kb-chat", chat);
+    syncViewportVars();
+    fitChatHeight();
+    pinInputIntoView(240);        // 等键盘起落动画结束再对齐
+  });
+  document.addEventListener("focusout", e => {
+    const el = e.target;
+    if (!el || typeof el.matches !== "function") return;
+    if (!el.matches(sel)) return;
+    document.documentElement.classList.remove("kb-chat");
+    syncViewportVars();
+    setTimeout(() => { syncViewportVars(); fitChatHeight(); }, 260);
+  });
+  // 键盘收起（视口恢复）时统一重算，避免「输入栏悬在半空」
+  window.addEventListener("resize", () => {
+    if (keyboardInset() === 0) document.documentElement.classList.remove("kb-chat");
+  });
+}
+
+/* ============================================================
+ * v42 · 首页信息优先级裁剪（只在窄屏生效）
+ *   落地页有 7 屏内容：功能矩阵 1926px、流程图 921px、数字统计 328px…
+ *   手机上全量堆叠 = 一条 5700px 的滚动条，10 秒内看不到「面试闭环」。
+ *   做法：窄屏把密集模块收成一行折叠条，首屏只剩价值主张 + 一个主 CTA。
+ *   DOM 结构不变（section 只是被折叠），所以打印、复制、测试、桌面布局全部照旧。
+ * ============================================================ */
+const LANDING_FOLD_TARGETS = [
+  { sel: ".hero-spec", title: "运行规格", hint: "在线后端 · GLM-4-Flash · 确定性评分引擎" },
+  { sel: ".hero-mock", title: "面试实录样例", hint: "看一段真实追问与量化回答" },
+  { sel: "#features", title: "功能矩阵", hint: "8 个业务模块 · 求职全流程闭环" },
+  { sel: "#workflow", title: "四步流程", hint: "简历 → 面试 → 报告 → 计划" },
+  { sel: "#stats", title: "关键数字", hint: "5 Agent · 24 岗位 · 1815 断言" },
+];
+
+function initMobileLandingFold() {
+  const land = document.querySelector("#view-landing");
+  LANDING_FOLD_TARGETS.forEach((cfg, i) => {
+    let box;
+    try { box = document.querySelector(cfg.sel); } catch (e) { return; }
+    if (!box || !box.dataset || !box.classList || typeof box.insertBefore !== "function") return;
+    // 只折叠落地页内部的模块（dashboard 里的 #stats 不受影响）
+    if (land && box.closest && box.closest("#view-landing") !== land) return;
+    if (box.dataset.foldReady) return;
+    box.dataset.foldReady = "1";
+    const panelId = "fm-fold-" + i;
+    box.id = box.id || panelId;
+    box.classList.add("is-foldable");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "fold-toggle";
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", box.id);
+    btn.innerHTML =
+      `<span class="ft-chev" aria-hidden="true">▸</span>` +
+      `<span class="ft-title">${cfg.title}</span>` +
+      `<span class="ft-hint">${cfg.hint}</span>`;
+    btn.addEventListener("click", () => {
+      const on = box.classList.toggle("fold-open");
+      btn.setAttribute("aria-expanded", on ? "true" : "false");
+      if (on) requestAnimationFrame(fitChatHeight);
+    });
+    box.parentNode.insertBefore(btn, box);
+  });
+  applyMobileLandingFold();
+}
+
+/** 依据当前宽度决定折叠条是否生效：宽屏一律展开（桌面布局零变化） */
+function applyMobileLandingFold() {
+  let narrow = false;
+  try {
+    narrow = !!(window.matchMedia && window.matchMedia("(max-width: 640px)").matches);
+  } catch (e) { narrow = false; }
+  document.querySelectorAll(".is-foldable").forEach(box => {
+    if (!box.classList) return;
+    const btn = box.parentNode ? box.parentNode.querySelector('.fold-toggle[aria-controls="' + box.id + '"]') : null;
+    const on = !narrow || box.classList.contains("fold-open");
+    box.classList.toggle("fold-hidden", !on);
+    if (btn && !narrow) btn.setAttribute("aria-expanded", "true");
+    else if (btn) btn.setAttribute("aria-expanded", box.classList.contains("fold-open") ? "true" : "false");
+  });
 }
 
 function bootApp() {
@@ -76,10 +272,12 @@ function bootApp() {
   animateCounters();
   // 加载当前用户数据（依赖 currentUser，故放在这里）
   initMobileCompact();
+  initMobileLandingFold();
   syncHeaderHeight();
   window.addEventListener("resize", syncHeaderHeight);
-  window.addEventListener("resize", fitChatHeight);
-  if (window.visualViewport) window.visualViewport.addEventListener("resize", fitChatHeight);
+  window.addEventListener("resize", applyMobileLandingFold);
+  // v42：键盘/视口守卫（visualViewport 变化时重算可视高度与对话区）
+  initKeyboardGuards();
   session = store.get("fm_session", { mode: "general", turns: [] });
   matchResult = store.get("fm_match", null);
   turn = session.turns.length;

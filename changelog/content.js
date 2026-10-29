@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1815</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1887</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -40,6 +40,8 @@ export const changelogHtml = `
     <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
     <li><a href="#vbeta1-12"><span class="cl-toc-tag">Beta 1.1.2</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
     <li><a href="#v41"><span class="cl-toc-tag">Beta 1.1.2 · v41</span><span class="cl-toc-title-txt">移动端适配层 · 窄屏单栏任务流 + 导航收敛 5 格 + 对话区自适应 + 交互去 hover 化</span></a></li>
+    <li><a href="#v42"><span class="cl-toc-tag">Beta 1.1.2 · v42</span><span class="cl-toc-title-txt">移动端信息优先级裁剪 · 首屏单 CTA + 圆桌 chips + 报告渐进披露 + 键盘可见</span></a></li>
+    <li><a href="#v42b"><span class="cl-toc-tag">Beta 1.1.2 · v42b</span><span class="cl-toc-title-txt">降级演练（主动失效）· 三级降级从文档承诺变成可当场复现的动作</span></a></li>
     <li><a href="#v40"><span class="cl-toc-tag">Beta 1.1.2 · v40</span><span class="cl-toc-title-txt">可解释性交互层 · 面试实时锚点 + Agent 分歧视图 + 语音流式转写 + 表达节奏</span></a></li>
     <li><a href="#v39"><span class="cl-toc-tag">Beta 1.1.2 · v39</span><span class="cl-toc-title-txt">反馈闭环层 · 免责声明 + 骨架屏 + 表单校验 + 移动端 + 离线提示 + 空状态 + 无障碍 + 导出补全</span></a></li>
     <li><a href="#v38"><span class="cl-toc-tag">Beta 1.1.2 · v38</span><span class="cl-toc-title-txt">求职材料闭环 · 简历自定义板块 + 模板库 + PDF 自动拆分 + 建议可视化 + 真实岗位入看板</span></a></li>
@@ -228,6 +230,64 @@ export const changelogHtml = `
         <div class="metric"><div class="m-val">32</div><div class="m-label">v33 新增断言</div></div>
         <div class="metric"><div class="m-val">1522</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v42b · 降级演练（主动失效）
+       ======================================================== -->
+  <div class="version" id="v42b">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 降级演练 · 主动失效（v42b）</span>
+      <span class="v-title">把「三级降级」从文档承诺变成可当场复现的动作</span>
+      <span class="v-date">2026.10.29</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        三级降级此前一直写在文档里，但现场没有稳定的办法演示它——靠断网不可控，靠超时要等 60 秒。这一轮补上缺失的一环：<strong>一个显式的演练开关</strong>。开启后，<strong>下一次</strong>面试官提问必然失败一次，走的是与真实故障<strong>完全相同</strong>的兜底分支：顶部出现非阻塞横幅「<b>技术面</b> Agent 已降级至本地推理模式（演练触发 · 模拟网关无响应）· 面试不中断，评分口径与在线一致」，不弹窗、不锁输入，对话继续往下走。<strong>这不是伪造结果</strong>——失败是真的抛出，兜底内容出自与服务端同构的本地评分引擎，口径不变；横幅上如实标注「演练触发」，不假装发生了真实故障。若当前本就是本地模式，开关不会被悄悄挂着，而是直接提示「降级演练需在接入真实模型后触发」。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>可复现</b>：无需断网、无需等待超时，一键让下一次提问失效</div>
+        <div class="vh-item"><b>用完即解</b>：触发后自动解除，不会污染后续提问</div>
+        <div class="vh-item"><b>角色化文案</b>：HR 面试官 / 技术面试官 / 压力面试官 → HR 面 / 技术面 / 压力面</div>
+        <div class="vh-item"><b>非阻塞</b>：<code>role="status" aria-live="polite"</code> + sticky 贴顶，实测输入框未被禁用、无弹窗</div>
+        <div class="vh-item"><b>不留孤儿节点</b>：降级时同步清理未落题的锚定标签</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">35</div><div class="m-label">v42b 新增断言</div></div>
+        <div class="metric"><div class="m-val">1887</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">32</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">652</div><div class="m-label">共享全局符号</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v42 · 移动端信息优先级裁剪
+       ======================================================== -->
+  <div class="version" id="v42">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 移动端信息优先级裁剪（v42）</span>
+      <span class="v-title">首屏只留价值主张 + 一个主 CTA · 圆桌改角色 chips · 报告渐进披露 · 键盘可见</span>
+      <span class="v-date">2026.10.29</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        上一轮把「不横向溢出」做完了，这一轮处理更前置的问题：<strong>信息密度</strong>。实测 iPhone 尺寸下落地页滚动高度 <strong>5735px ≈ 7 屏</strong>——功能矩阵一屏就 1926px，访客 10 秒内根本看不到「面试闭环」这条主线。做法是<strong>按优先级裁剪，而不是全量堆叠</strong>：<strong>① 首屏只留一句话价值主张 + 一个主 CTA</strong>（文案换成「上传简历，开始一场可溯源的模拟面试」），功能矩阵、四步流程、关键数字、运行规格、面试实录五个密集模块收成一行折叠条，默认收起、点击展开；⌘K 提示与数字条在手机上直接隐藏。<strong>② 圆桌去并排</strong>——五张 Agent 卡片在窄屏改为横向可滑的角色 chips（150–220px），「多 Agent 同屏」在桌面上是丰富度，在手机上只是噪音。<strong>③ 报告卡片渐进披露</strong>——每张卡默认只给「维度 + 分数 + 一句证据摘要」，点开才是底部半屏面板：顶部引用你的原话，下方评分理由与两位面试官的分歧判断，底部一个「定位到对话」按钮把它接回面试现场。<strong>④ 键盘是答辩级细节</strong>——不依赖 100vh，一切以 visualViewport 为准：可视高度写进 <code>--app-vh</code>、遮挡量写进 <code>--kb-h</code>，输入栏 sticky 贴底且字号 16px（绕开 iOS 聚焦缩放）；键盘弹起时布局视口不会变，文档也滚不动，所以焦点在回答框时进入「输入态」，让上方辅助信息暂时让位，保证发送按钮与最近几条对话同屏。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>落地页从 7 屏压到 2.1 屏</b>：375px 宽下滚动高度 5735px → 1706px，首屏主 CTA 在 607px 处可见</div>
+        <div class="vh-item"><b>折叠不是删除</b>：五个模块保留在原 DOM（打印、复制链接、测试断言全部照旧），仅窄屏用 CSS 收起</div>
+        <div class="vh-item"><b>键盘实测三档</b>：375×812 / 414×896 / 360×640，模拟 336px 软键盘后输入栏底边均在可视区内</div>
+        <div class="vh-item"><b>诚实降级仍在</b>：模型未复述原话时，锚定标签显示「未直接复述」，不伪造因果</div>
+        <div class="vh-item"><b>桌面端零变化</b>：所有裁剪规则锁在 ≤640px，宽屏仍是一次性展开的完整版</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">38</div><div class="m-label">v42 新增断言</div></div>
+        <div class="metric"><div class="m-val">1853</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">31</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">646</div><div class="m-label">共享全局符号</div></div>
       </div>
     </div>
   </div>
