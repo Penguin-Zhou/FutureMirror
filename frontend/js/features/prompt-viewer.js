@@ -89,6 +89,23 @@ function reportToMarkdown() {
   } else {
     lines.push("- 本次面试未开启摄像头，无在场数据");
   }
+  /* v40：Agent 分歧视图随报告导出（同一回答、两套镜头的独立判断） */
+  const views = agentLensViews(session.turns);
+  lines.push("", "## Agent 分歧视图（同一回答 · 两套评价镜头）");
+  lines.push(`- 平均分歧 ${views.avgGap} 分，最大 ${views.maxGap} 分，显著分歧 ${views.diverged}/${views.items.length} 轮`);
+  views.items.slice().sort((a, b) => b.gap - a.gap).slice(0, 2).forEach((x) => {
+    lines.push(`- 第 ${x.turn} 轮（分歧 ${x.gap} 分 · 原话「${x.quote.text}」）`);
+    lines.push(`  - 技术面试官 ${x.tech.score} 分：${x.tech.reason}`);
+    lines.push(`  - HR 面试官 ${x.hr.score} 分：${x.hr.reason}`);
+  });
+  /* v40：表达节奏（仅当本场用过语音输入） */
+  const rh = rhythmSummary((session && session.voiceSegments) || []);
+  if (rh.hasData) {
+    lines.push("", "## 表达节奏（语音转写时间戳）");
+    lines.push(`- 语速：${rh.cpm} 字/分（${rh.cpmLevel}）`);
+    lines.push(`- 平均停顿：${rh.pauseAvg} 秒；2 秒以上停顿 ${rh.longPauses} 次`);
+    lines.push(`- 口头禅密度：${rh.fillerRate}‰（${rh.filler} 次）`);
+  }
   lines.push("", "## 评分证据");
   ev.forEach((e, i) => lines.push(`${i + 1}. **[${e.agent}]** “${e.quote}”  `, `   标注：${e.note}`));
   lines.push("", "## 改进建议");
@@ -128,6 +145,13 @@ function exportReportCsv() {
     rows.push(["指标", "值"]);
     rows.push(["综合得分", total]);
     dims.forEach(d => rows.push([d.dimension, d.score, d.comment || ""]));
+    const views = agentLensViews(session.turns);
+    rows.push(["Agent 分歧度", views.avgGap + " 分（最大 " + views.maxGap + "，显著分歧 " + views.diverged + "/" + views.items.length + " 轮）"]);
+    const rh = rhythmSummary((session && session.voiceSegments) || []);
+    if (rh.hasData) {
+      rows.push(["语速", rh.cpm + " 字/分（" + rh.cpmLevel + "）"]);
+      rows.push(["平均停顿", rh.pauseAvg + " 秒 / 长停顿 " + rh.longPauses + " 次"]);
+    }
     rows.push([]);
     rows.push(["面试状态（摄像头在场检测）", ""]);
     if (st && st.count) {

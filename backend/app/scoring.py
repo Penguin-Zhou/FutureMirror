@@ -32,6 +32,129 @@ def _clamp(v: float) -> int:
     return max(30, min(96, math.floor(v + 0.5)))
 
 
+# ---------------- v40 · 锚点与双镜头评价 ----------------
+# 与前端 features/explain.js 的 anchorPhrases / lensScore 逐条对齐：
+# 同一份回答，技术面与 HR 面用不同权重独立打分，分歧度即「多 Agent 各自判断」的证据。
+
+METRIC_RE = re.compile(r"[\d.]+\s*(?:%|qps|QPS|ms|毫秒|万|亿|倍|人日|人|天|小时|分钟|秒|GB|MB|TB|核|台)")
+ACTION_RE = re.compile(r"(?:负责|实现|搭建|优化|设计|主导|重构|上线|接入|迁移|排查|压测)[^，。；、,.;!?！？\s]{0,8}")
+COLLAB_RE = re.compile(r"(?:协作|沟通|推动|协调|带队|配合|汇报|对齐)[^，。；、,.;!?！？\s]{0,6}")
+
+
+def _anchor_candidates(text: str) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for s in sorted(SKILL_DICT, key=len, reverse=True):
+        i = text.find(s)
+        while i >= 0:
+            out.append({"start": i, "end": i + len(s), "kind": "skill", "weight": 3})
+            i = text.find(s, i + 1)
+    for m in METRIC_RE.finditer(text):
+        if len(m.group(0).strip()) >= 2:
+            out.append({"start": m.start(), "end": m.end(), "kind": "metric", "weight": 2})
+    for re_ in (ACTION_RE, COLLAB_RE):
+        for m in re_.finditer(text):
+            if len(m.group(0)) >= 3:
+                out.append({"start": m.start(), "end": m.end(), "kind": "action", "weight": 1})
+    return out
+
+
+def anchor_phrases(text: str) -> list[dict[str, Any]]:
+    """提取可锚定片段（技术名词 > 量化 > 动作），最多 3 个，按出现位置排序。"""
+    src = text or ""
+    if not src.strip():
+        return []
+    cands = sorted(_anchor_candidates(src), key=lambda c: (-c["weight"], -(c["end"] - c["start"])))
+    kept: list[dict[str, Any]] = []
+    for c in cands:
+        if any(c["start"] < k["end"] and k["start"] < c["end"] for k in kept):
+            continue
+        kept.append(c)
+        if len(kept) >= 6:
+            break
+    kept = sorted(kept[:3], key=lambda c: c["start"])
+    return [{"start": c["start"], "end": c["end"], "text": src[c["start"]:c["end"]],
+             "kind": c["kind"], "weight": c["weight"]} for c in kept]
+
+
+def _lens_features(text: str) -> dict[str, int]:
+    t = text or ""
+    return {
+        "len": len(t),
+        "digits": len(re.findall(r"\d", t)),
+        "skills": sum(1 for s in SKILL_DICT if s in t),
+        "principle": len(re.findall(r"原理|机制|一致性|索引|并发|缓存|锁|架构|协议|复杂度|算法|事务|幂等|超时|重试|链路", t)),
+        "tradeoff": len(re.findall(r"权衡|取舍|对比|相比|替代|因为|代价|成本|降级|兜底", t)),
+        "star": len(re.findall(r"背景|目标|负责|通过|最终|结果|因此|于是", t)),
+        "collab": len(re.findall(r"团队|协作|沟通|推动|协调|配合|对接|复盘", t)),
+        "motive": len(re.findall(r"为什么|成长|学习|规划|价值|兴趣|选择", t)),
+        "filler": len(re.findall(r"然后|那个|就是", t)),
+    }
+
+
+def lens_score(answer: str, lens: str) -> dict[str, Any]:
+    f = _lens_features(answer)
+    len_bonus = min(6, f["len"] // 80)
+    signals: list[str] = []
+    if lens == "tech":
+        score = _clamp(40 + min(18, f["skills"] * 6) + min(14, f["digits"] * 2)
+                       + min(12, f["principle"] * 4) + min(8, f["tradeoff"] * 3)
+                       + len_bonus - min(8, f["filler"] * 2))
+        if f["skills"]:
+            signals.append(f"技术名词 {f['skills']} 个")
+        if f["digits"]:
+            signals.append(f"量化数字 {f['digits']} 个")
+        if f["principle"]:
+            signals.append(f"原理性表述 {f['principle']} 处")
+        if f["tradeoff"]:
+            signals.append(f"取舍/对比 {f['tradeoff']} 处")
+        if f["filler"]:
+            signals.append(f"口头禅 {f['filler']} 处")
+        reason = ("回答给出了可验证的实现细节，技术面判为「经得起深挖」" if score >= 75 else
+                  "有实现轮廓，但原理与量化证据不足，技术面保留判断" if score >= 60 else
+                  "只有结论没有机制与数据，技术面判为「需立即追问」")
+    else:
+        score = _clamp(42 + min(14, f["star"] * 4) + min(14, f["collab"] * 6)
+                       + min(10, f["motive"] * 4) + min(6, f["digits"]) + len_bonus
+                       - min(10, f["filler"] * 3))
+        if f["star"]:
+            signals.append(f"STAR 结构线索 {f['star']} 处")
+        if f["collab"]:
+            signals.append(f"协作表述 {f['collab']} 处")
+        if f["motive"]:
+            signals.append(f"动机/成长表述 {f['motive']} 处")
+        if f["filler"]:
+            signals.append(f"口头禅 {f['filler']} 处")
+        reason = ("叙事完整、协作与动机线索清晰，HR 面判为「可继续推进」" if score >= 75 else
+                  "有事实但缺协作角色与结果，HR 面认为「画像还不够立体」" if score >= 60 else
+                  "缺少团队角色与动机交代，HR 面判为「稳定性存疑」")
+    return {"score": score, "signals": signals, "reason": reason}
+
+
+def agent_views(turns: list[dict[str, Any]]) -> dict[str, Any]:
+    items = []
+    for i, t in enumerate(turns):
+        answer = t.get("answer", "") or ""
+        anchors = t.get("anchors") or anchor_phrases(answer)
+        tech = lens_score(answer, "tech")
+        hr = lens_score(answer, "hr")
+        gap = abs(tech["score"] - hr["score"])
+        if anchors:
+            quote = {"text": anchors[0]["text"], "fromAnchor": True}
+        else:
+            flat = re.sub(r"\s+", " ", answer).strip()
+            quote = {"text": flat[:28] + "…" if len(flat) > 28 else flat, "fromAnchor": False}
+        items.append({"turn": i + 1, "asker": t.get("agent", ""), "question": t.get("question", ""),
+                      "quote": quote, "tech": tech, "hr": hr, "gap": gap,
+                      "diverged": gap >= 8})
+    gaps = [x["gap"] for x in items]
+    return {
+        "items": items,
+        "maxGap": max(gaps) if gaps else 0,
+        "avgGap": (math.floor(sum(gaps) / len(gaps) * 10 + 0.5) / 10) if gaps else 0,
+        "diverged": sum(1 for x in items if x["diverged"]),
+    }
+
+
 def score_session(turns: list[dict[str, Any]], match_score: int | None = None,
                   code_score: float | None = None,
                   match_gaps: list[str] | None = None) -> dict[str, Any]:
@@ -93,4 +216,5 @@ def score_session(turns: list[dict[str, Any]], match_score: int | None = None,
         for t in turns[-4:]
     ]
     return {"total": total, "dims": dims, "plan": plan, "evidence": evidence,
-            "weakest": {"dimension": weakest["dimension"], "score": weakest["score"]}}
+            "weakest": {"dimension": weakest["dimension"], "score": weakest["score"]},
+            "agent_views": agent_views(turns)}

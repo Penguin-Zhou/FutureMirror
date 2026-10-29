@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1719</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1768</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -314,6 +314,7 @@ body {
   <ul class="cl-toc-list">
     <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
     <li><a href="#vbeta1-12"><span class="cl-toc-tag">Beta 1.1.2</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
+    <li><a href="#v40"><span class="cl-toc-tag">Beta 1.1.2 · v40</span><span class="cl-toc-title-txt">可解释性交互层 · 面试实时锚点 + Agent 分歧视图 + 语音流式转写 + 表达节奏</span></a></li>
     <li><a href="#v39"><span class="cl-toc-tag">Beta 1.1.2 · v39</span><span class="cl-toc-title-txt">反馈闭环层 · 免责声明 + 骨架屏 + 表单校验 + 移动端 + 离线提示 + 空状态 + 无障碍 + 导出补全</span></a></li>
     <li><a href="#v38"><span class="cl-toc-tag">Beta 1.1.2 · v38</span><span class="cl-toc-title-txt">求职材料闭环 · 简历自定义板块 + 模板库 + PDF 自动拆分 + 建议可视化 + 真实岗位入看板</span></a></li>
     <li><a href="#v37"><span class="cl-toc-tag">Beta 1.1.2 · v37</span><span class="cl-toc-title-txt">可视化基建 · 通用图表模块（7 组件零依赖）</span></a></li>
@@ -508,6 +509,35 @@ body {
   <!-- ========================================================
        Beta 1.1.2 · v39 · 反馈/容错/模式提示/空状态/无障碍/导出
        ======================================================== -->
+  <!-- ========================================================
+       Beta 1.1.2 · v40 · 可解释性交互层
+       ======================================================== -->
+  <div class="version" id="v40">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 可解释性交互层（v40）</span>
+      <span class="v-title">面试中实时锚点 + Agent 分歧视图 + 语音流式转写 + 表达节奏</span>
+      <span class="v-date">2026.10.29</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        把「可解释」从报告里的一个特性，前移成面试过程中就能看见的交互。<strong>① 实时锚点</strong>——每段回答落屏即由 <code>anchorPhrases()</code> 抽出「技术点 / 量化 / 动作」三类可追问片段并原地高亮，气泡下方列出锚点 chip；面试官追问落地后，被引用的那句话在两侧同时点亮（追问气泡尾部回挂「⚓ 追问锚点」，时间线同步记录锚定关系）。<strong>② Agent 分歧视图</strong>——同一份回答由技术面与 HR 面<strong>两套镜头独立打分</strong>（<code>lensScore</code>：技术面看原理 / 量化 / 取舍，HR 面看结构 / 协作 / 动机），报告并排展示两位面试官的分数、理由与各自引用的原话，分歧 ≥8 分记为显著分歧，并给出平均 / 最大分歧度。<strong>③ 语音流式转写</strong>——语音输入由「说完填框」升级为 <code>interimResults</code> 流式：边说边出字、实时字幕条显示已转写字数与语速，停顿 1.6 秒自动提交，面试官基于流式文本继续追问。<strong>④ 表达节奏</strong>——把每段语音的字数与时长记为本地时间戳，报告新增「语速 / 平均停顿 / 2 秒以上停顿 / 口头禅密度」四项表达层指标与改进建议。<strong>⑤ 报告逐块呈现</strong>——报告 DOM 一次成型，区块按节奏依次入场（<code>prefers-reduced-motion</code> 下静态落位），维度评语与分歧理由逐行浮现。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>判断有锚点</b>：「你刚才提到用了 Redis 做缓存，但没说明缓存击穿的处理策略」——同时把你原话里的「Redis」高亮出来，每一步追问都能指回你的原句</div>
+        <div class="vh-item"><b>多 Agent 不是轮流提问</b>：技术面 78 分 / HR 面 52 分，同一份回答两套理由并排，10 秒看懂分歧从哪来</div>
+        <div class="vh-item"><b>AI 在听的时候就在想</b>：语音边说边转写，停顿即自动提交并触发追问，而不是「说完再等结果」</div>
+        <div class="vh-item"><b>从内容评估到表达评估</b>：语速、2 秒以上停顿次数、口头禅密度——全部来自本机时间戳，音频不出浏览器</div>
+        <div class="vh-item"><b>不伪造因果</b>：模型没复述原话时，锚点说明降为灰态「未直接复述原话片段」，不硬指一句</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">49</div><div class="m-label">v40 新增断言</div></div>
+        <div class="metric"><div class="m-val">1768</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">29</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">618</div><div class="m-label">共享全局符号</div></div>
+      </div>
+    </div>
+  </div>
+
   <div class="version" id="v39">
     <div class="version-head">
       <span class="v-tag">Beta 1.1.2 · 反馈闭环层（v39）</span>

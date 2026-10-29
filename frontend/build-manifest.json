@@ -93,6 +93,14 @@
       "note": "§4 简历匹配"
     },
     {
+      "file": "js/features/explain.js",
+      "lines": [
+        0,
+        0
+      ],
+      "note": "v40 · 可解释性交互层（锚点 / 双镜头 / 节奏）"
+    },
+    {
       "file": "js/features/interview.js",
       "lines": [
         7208,
@@ -358,6 +366,7 @@
     "js/core/theme.js",
     "js/core/router-pages.js",
     "js/features/match.js",
+    "js/features/explain.js",
     "js/features/interview.js",
     "js/data/kb.js",
     "js/features/report.js",

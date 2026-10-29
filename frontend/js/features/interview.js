@@ -391,25 +391,34 @@ function sendMsg() {
   const text = input.value.trim();
   input.value = "";
   clearFieldError(input);
+  if (listening) { try { recognition.stop(); } catch (e) {} }   // 手动发送即视为语音输入结束
   stopAnswerTimer();
   const body = $("chat-body");
+  /* v40：可解释性前移——先把「这段回答里可被追问的片段」在气泡内高亮并列出锚点，
+   * 等面试官追问落地，再把锚点回挂到追问气泡上（同一句话在两侧同时被点亮）。 */
+  const turnIdx = session.turns.length;
+  const anchors = anchorPhrases(text);
   const userDiv = document.createElement("div");
   userDiv.className = "msg msg-user";
-  userDiv.textContent = text;
+  userDiv.dataset.turn = String(turnIdx);
+  userDiv.innerHTML = anchorHtml(text, anchors) + anchorStripHtml(anchors, turnIdx);
   body.appendChild(userDiv);
   body.scrollTop = body.scrollHeight;
+  if (anchors.length) {
+    addTimeline("观察员", `⚓ 定位到 ${anchors.length} 个可追问锚点：${anchors.map(a => a.text).join(" / ")}`, "note");
+  }
 
   const speaker = SPEAKERS[turn % SPEAKERS.length];
   turn++;
   setCurrentSpeaker(speaker.name);
   const keyword = extractKeyword(text);
   const notes = observerNote(text);
-  if (llm || fmApi.backendReady()) { sendMsgReal(text, speaker, keyword, notes); return; }
-  sendMsgMock(text, speaker, keyword, notes);
+  if (llm || fmApi.backendReady()) { sendMsgReal(text, speaker, keyword, notes, anchors); return; }
+  sendMsgMock(text, speaker, keyword, notes, anchors);
 }
 
 /* ---- Mock 通道：规划 → 工具三态调用 → 打字机流式 → 观察员记录 ---- */
-function sendMsgMock(text, speaker, keyword, notes) {
+function sendMsgMock(text, speaker, keyword, notes, anchors) {
   const body = $("chat-body");
   $("chat-send").disabled = true;
   const mode = session.mode;
@@ -463,11 +472,16 @@ function sendMsgMock(text, speaker, keyword, notes) {
       if (i >= question.length) {
         clearInterval(timer);
         bubble.textContent = question;
+        // v40：追问落地后再回挂锚点——「这次追问是因为你说了这句」
+        const refHits = annotateAnchorRef(bubble, question, anchors, turn - 1);
+        if (refHits.length) {
+          addTimeline(speaker.name, `⚓ 追问锚定原话「${refHits[0]}」→ 依据该片段发起深挖`, "note");
+        }
         v16MaybeAutoSpeak();
         addTimeline(speaker.name, "📮 已发送提问（流式输出完成）", false);
         startAnswerTimer();
         addTimeline("观察员", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
-        session.turns.push({ agent: speaker.name, question, answer: text, notes, mode });
+        session.turns.push({ agent: speaker.name, question, answer: text, notes, mode, anchors, anchorRef: refHits || [] });
         persistSession();
         updateLiveTracker();
         if (turn === MAX_TURNS) addTimeline("提问规划", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
@@ -481,7 +495,7 @@ function sendMsgMock(text, speaker, keyword, notes) {
 }
 
 /* ---- 真实 LLM 通道：浏览器直连 OpenAI 兼容流式接口 ---- */
-async function sendMsgReal(text, speaker, keyword, notes) {
+async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   const body = $("chat-body");
   $("chat-send").disabled = true;
 
@@ -501,6 +515,7 @@ async function sendMsgReal(text, speaker, keyword, notes) {
   const killTimer = setTimeout(() => ctrl.abort(), 60000);
   let full = "";
   let streamStarted = false;
+  let refHits;   // 追问命中的原话（流式结束后回填）
   try {
     await streamChat(buildMessages(text), piece => {
       if (!streamStarted) { streamStarted = true; hideTyping(); }
@@ -509,6 +524,9 @@ async function sendMsgReal(text, speaker, keyword, notes) {
       body.scrollTop = body.scrollHeight;
     }, ctrl.signal);
     addTimeline("模型调用", `✅ 流式输出完成（${full.length} 字）`, "tool");
+    // v40：模型流式输出结束后，把「锚定你哪句话」回挂到追问气泡
+    refHits = annotateAnchorRef(bubble, full, anchors, turn - 1);
+    if (refHits.length) addTimeline(speaker.name, `⚓ 追问锚定原话「${refHits[0]}」→ 模型复述并深挖该片段`, "note");
     v16MaybeAutoSpeak();
     $("fallback-banner").hidden = true;
   } catch (e) {
@@ -521,13 +539,13 @@ async function sendMsgReal(text, speaker, keyword, notes) {
     toast("真实模型调用失败（" + reason + "），已自动降级为 Mock 输出");
     addTimeline("系统", "⚠️ 真实模型调用失败 → 自动降级 Mock 兜底", false);
     $("chat-send").disabled = false;
-    sendMsgMock(text, speaker, keyword, notes);
+    sendMsgMock(text, speaker, keyword, notes, anchors);
     return;
   }
   clearTimeout(killTimer);
   addTimeline("观察员", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
   startAnswerTimer();
-  session.turns.push({ agent: speaker.name, question: full, answer: text, notes, mode: session.mode });
+  session.turns.push({ agent: speaker.name, question: full, answer: text, notes, mode: session.mode, anchors, anchorRef: refHits });
   persistSession();
   updateLiveTracker();
   if (turn === MAX_TURNS) addTimeline("提问规划", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
@@ -549,8 +567,9 @@ function restartInterview() {
   if (!requireLogin()) return;
   try { stopCamera(); } catch (e) {}   // 重置前收掉摄像头，避免悬挂设备占用
   // v29 撤销支持：重置前留存会话快照（turns 内含 v28 批注 notes）
-  const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null };
+  const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null, voiceSegments: (session.voiceSegments || []).slice() };
   session.turns = [];
+  session.voiceSegments = [];   // v40：新一轮清空表达节奏的时间戳样本
   camWasActiveThisSession = false;   // 新一轮面试，重置摄像头开启标记（上一轮的摄像头状态不带入）
   // v22.1：一轮面试对应后端一条独立会话记录——清掉 interviewId，
   // 下次生成报告时新建（否则幂等 /sync 会把新一轮问答判重为「已入库」，
@@ -584,6 +603,7 @@ function restartInterview() {
     session.turns = bpSnap.turns;
     session.mode = bpSnap.mode;
     session.interviewId = bpSnap.interviewId;
+    session.voiceSegments = bpSnap.voiceSegments || [];
     turn = session.turns.length;
     persistSession();
     restoreSession();
@@ -591,34 +611,109 @@ function restartInterview() {
   });
 }
 
-/* ---- 语音输入（Web Speech API，零成本） ---- */
+/* ---- 语音输入（Web Speech API，零成本） ----
+ * v40：从「说完一次性填进输入框」升级为「边说边转写、边说边可追问」：
+ *   interimResults 流式转写 → 输入框与实时字幕同步生长 → 停顿 1.6s 自动提交，
+ *   面试官基于流式文本继续提问。同时把每段语音的时长/字数记为时间戳，
+ *   供报告做「语速 / 停顿 / 口头禅密度」的表达层分析（音频不出浏览器）。 */
+let voiceCommitted = "", voiceInterim = "", voiceSegStart = 0, voiceSilenceTimer = null, voiceAutoPending = false;
+
+function setVoiceLive(text, meta, state) {
+  const bar = $("voice-live");
+  if (!bar) return;
+  if (text == null) { bar.hidden = true; bar.className = "voice-live"; return; }
+  bar.hidden = false;
+  bar.className = "voice-live" + (state ? " " + state : "");
+  const t = $("voice-live-text"), m = $("voice-live-meta");
+  if (t) t.textContent = text;
+  if (m) m.textContent = meta || "";
+}
+
+function voiceSyncInput() {
+  const input = $("chat-input");
+  if (!input) return;
+  input.value = (voiceCommitted + voiceInterim).replace(/\s+/g, " ").trim();
+}
+
+/** 记一段语音的时长与字数（时间戳留在本地，只用于表达节奏统计） */
+function recordVoiceSegment(text, ms) {
+  if (!text || !ms || ms < 200) return;
+  if (!Array.isArray(session.voiceSegments)) session.voiceSegments = [];
+  session.voiceSegments.push({ chars: text.length, ms, at: voiceSegStart, text: String(text).slice(0, 120) });
+  persistSession();
+}
+
+/** 停顿判定为「说完了」→ 自动提交（语音面试的自然交互，无需再点发送） */
+function commitVoiceTurn() {
+  if (!listening) return;
+  const input = $("chat-input");
+  const text = input ? input.value.trim() : "";
+  if (text.length < 2) return;
+  voiceAutoPending = true;
+  try { recognition && recognition.stop(); } catch (e) {}
+  setVoiceLive(text.slice(-70), "已转写 · 提交中", "done");
+  addTimeline("系统", `🎤 流式转写完成（${text.length} 字）→ 自动提交，面试官基于这段文本继续追问`, false);
+  try { analyzeVoiceInput(text, Date.now() - voiceStartAt); } catch (e) {}
+  setTimeout(() => { voiceAutoPending = false; sendMsg(); }, 220);
+}
+
 function toggleVoice() {
   try { if (!getProfile().prefs.voice) { toast("语音输入已在「个人中心 · 偏好设置」中关闭"); return; } } catch (e) {}
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { toast("当前浏览器不支持语音识别，推荐使用 Chrome / Edge"); return; }
-  if (listening) { recognition.stop(); return; }
+  if (listening) { try { recognition.stop(); } catch (e) {} return; }
   recognition = new SR();
   recognition.lang = "zh-CN";
-  recognition.interimResults = false;
+  recognition.interimResults = true;    // v40：流式中间结果——边说边出字
+  recognition.continuous = true;        // 长回答不因一句停顿就断
   recognition.maxAlternatives = 1;
   voiceStartAt = Date.now();
+  voiceSegStart = Date.now();
+  voiceCommitted = "";
+  voiceInterim = "";
   listening = true;
   $("mic-btn").textContent = "🔴";
   $("mic-btn").classList.add("btn-primary");
-  addTimeline("系统", "🎤 语音识别已开启（浏览器本地 ASR），请开始说话…", false);
+  setVoiceLive("", "开始说话…", "on");
+  addTimeline("系统", "🎤 语音识别已开启（浏览器本地 ASR · 流式转写），请开始说话…", false);
   recognition.onresult = e => {
-    const transcript = e.results[0][0].transcript;
-    $("chat-input").value = transcript;
-    toast("语音转文字完成，已填入输入框");
-    analyzeVoiceInput(transcript, Date.now() - voiceStartAt);
+    let interim = "", finalText = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      const txt = (r[0] && r[0].transcript) || "";
+      if (r.isFinal) finalText += txt; else interim += txt;
+    }
+    if (finalText) {
+      voiceCommitted += finalText;
+      recordVoiceSegment(finalText, Date.now() - voiceSegStart);
+      voiceSegStart = Date.now();
+    }
+    voiceInterim = interim;
+    voiceSyncInput();
+    const full = (voiceCommitted + voiceInterim).trim();
+    const sum = rhythmSummary(session.voiceSegments);
+    setVoiceLive(full.slice(-70), sum.hasData ? `${sum.cpm} 字/分 · 已转写 ${full.length} 字` : `已转写 ${full.length} 字`, "on");
+    // 停顿 1.6s 没有新内容即认为一句话说完
+    if (voiceSilenceTimer) clearTimeout(voiceSilenceTimer);
+    voiceSilenceTimer = setTimeout(commitVoiceTurn, 1600);
   };
   recognition.onerror = e => {
     toast("语音识别出错：" + (e.error === "not-allowed" ? "麦克风权限被拒绝" : e.error));
   };
   recognition.onend = () => {
     listening = false;
+    if (voiceSilenceTimer) { clearTimeout(voiceSilenceTimer); voiceSilenceTimer = null; }
     $("mic-btn").textContent = "🎤";
     $("mic-btn").classList.remove("btn-primary");
+    if (voiceAutoPending) return;      // 自动提交链路自己收尾
+    const left = ($("chat-input") ? $("chat-input").value : "").trim();
+    if (left) {
+      setVoiceLive(left.slice(-70), "转写完成 · Enter 发送 / 点「发送」", "done");
+      toast("语音转写完成，已填入输入框");
+      setTimeout(() => { if (!listening && !voiceAutoPending) setVoiceLive(null); }, 2600);
+    } else {
+      setVoiceLive(null);
+    }
   };
   recognition.start();
 }
@@ -645,11 +740,18 @@ function restoreSession() {
   document.querySelectorAll(".mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === session.mode));
   $("chat-mode-label").textContent = modeLabelWithCount(session.mode);
   session.turns.forEach((t, i) => {
-    addMsg("msg-user", t.answer);
+    // v40：恢复会话时同样重建锚点高亮，可解释性不因刷新而丢失
+    const anchors = (t.anchors && t.anchors.length) ? t.anchors : anchorPhrases(t.answer);
+    const bubble = document.createElement("div");
+    bubble.className = "msg msg-user";
+    bubble.dataset.turn = String(i);
+    bubble.innerHTML = anchorHtml(t.answer, anchors) + anchorStripHtml(anchors, i);
+    $("chat-body").appendChild(bubble);
     const div = document.createElement("div");
     div.className = "msg msg-ai";
     div.textContent = t.question;
     $("chat-body").appendChild(div);
+    if (t.anchorRef && t.anchorRef.length) annotateAnchorRef(div, t.question, anchors, i);
     addTimeline(t.agent, `（恢复）提问：${t.question.slice(0, 30)}…`, false);
     addTimeline("观察员", `（恢复）证据 #${i + 1}：${t.notes}`, "note");
   });

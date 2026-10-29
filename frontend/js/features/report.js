@@ -208,6 +208,13 @@ async function renderReport(force) {
     scoring = { engine: "heuristic", llm_enriched: false };
   }
   const rewrites = buildSentenceRewrites(session.turns);
+  /* v40：Agent 分歧视图——同一份回答由技术面 / HR 面用不同权重独立打分。
+   * 服务端已给则用服务端（与 dims 同源），否则本地规则引擎即时计算（规则逐条对齐 scoring.py）。 */
+  const lensViews = (backendPayload && backendPayload.agent_views)
+    ? backendPayload.agent_views
+    : agentLensViews(session.turns);
+  /* v40：表达节奏——只读本机语音时间戳，未用语音时给中性说明，不伪造指标 */
+  const rhythm = rhythmSummary((session && session.voiceSegments) || []);
   /* v34：面试状态数据（无摄像头时为 null → 区块显示中性提示）。
    * 优先级：服务端 status（有采样）→ 本地 camLastSummary（后台为零但端侧确有数据时兜底，
    * 防止 interview_id 错配或后端瞬时不可达导致数据丢失）→ null。 */
@@ -218,6 +225,7 @@ async function renderReport(force) {
   /* v36：沉淀报告上下文（供 AI 小助手追问） */
   lastReportData = {
     total, dims, evidence, plan, weakest,
+    lensViews, rhythm,
     turns: (session.turns || []).slice(0, 12).map((t) => ({ q: t.question || "", a: t.answer || "" })),
   };
   const suggestions = [...dims].sort((a, b) => a.score - b.score).slice(0, 3)
@@ -267,11 +275,13 @@ async function renderReport(force) {
         </div>`).join("")}</div></div>
     </div>
     ${reportStatusCard(camStatus)}
+    ${rhythmCard(rhythm)}
     ${narrative ? `<div class="notice-llm">🧭 教练总评：${esc(narrative)}</div>` : ""}
     <div class="pane-title" style="margin-top:18px">评分证据（引用你的真实回答）</div>
     <div id="evidence">${evidence.map(e => `
       <div class="evidence"><span class="badge badge-brand">${esc(e.agent)}</span><br>
         <q>“${esc(e.quote)}”</q><p>📝 ${esc(e.note)}</p></div>`).join("")}</div>
+    ${agentSplitHtml(lensViews)}
     ${rewrites.length ? `<div class="pane-title" style="margin-top:18px">✍️ 句子级改写建议 <span class="tag-demo">规则引擎 · 无需 LLM</span></div>
     <div id="rewrites">${rewrites.map(r => `
       <div class="evidence"><span class="badge badge-amber rw-dim">${r.dimension}</span><q>“${esc(r.original)}”</q><p>✍️ ${esc(r.advice)}</p></div>`).join("")}</div>` : ""}
@@ -297,6 +307,8 @@ async function renderReport(force) {
 
   // v27：全站交互层——总分滚动 + 维度条生长（reduced-motion 下静态落位）
   try { if (window.__bpApp && window.__bpApp.reportIn) window.__bpApp.reportIn(); } catch (e) {}
+  // v40：报告逐块流式入场（DOM 一次成型，仅控制呈现节奏，不影响复制/打印/读取）
+  try { streamReportBlocks(box); } catch (e) {}
 
   // 历史记录（同一会话不重复写入）
   const sig = total + ":" + session.turns.length;

@@ -1510,3 +1510,231 @@
     text-transform: uppercase;
     color: var(--faint);
   }
+
+/* ============================================================
+ * v40 · 可解释性交互层（锚点高亮 / Agent 分歧视图 / 表达节奏）
+ * 视觉纪律：零投影、全直角、发丝线；朱红仅用于「分歧」与「锚定」两处语义
+ * ============================================================ */
+.anchor-hl {
+  background: transparent;
+  color: inherit;
+  border-bottom: 1px solid var(--line-2);
+  padding-bottom: 1px;
+}
+.anchor-hl.k-skill { border-bottom: 1.5px solid currentColor; }
+.anchor-hl.k-metric { border-bottom: 1.5px double currentColor; font-family: var(--mono); }
+.anchor-hl.k-action { border-bottom-style: dashed; }
+.anchor-hl.pulse { animation: anchorPulse .9s ease-out 1; }
+@keyframes anchorPulse {
+  0% { background: color-mix(in srgb, var(--brand) 18%, transparent); }
+  100% { background: transparent; }
+}
+
+.anchor-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px dashed color-mix(in srgb, currentColor 28%, transparent);
+}
+.anchor-lead {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .7;
+}
+.anchor-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
+  background: transparent;
+  color: inherit;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: border-color .16s, color .16s, background .16s;
+}
+.anchor-chip:hover { border-color: var(--brand); color: var(--brand); }
+.anchor-chip.used {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  color: var(--brand);
+}
+.anchor-chip.used::before { content: "↳ "; }
+.anchor-kind {
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  opacity: .62;
+  text-transform: uppercase;
+}
+
+.msg-anchor-ref {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--line-2);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: var(--brand);
+}
+.msg-anchor-ref .ref-lead { letter-spacing: .06em; margin-right: 6px; opacity: .85; }
+.msg-anchor-ref .ref-note { color: var(--faint); margin-left: 6px; }
+.msg-anchor-ref.muted, .msg-anchor-ref.muted .ref-lead { color: var(--faint); }
+
+/* ---- 语音实时转写条 ---- */
+.voice-live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+  overflow: hidden;
+}
+.voice-live[hidden] { display: none; }
+.vl-dot {
+  width: 6px; height: 6px;
+  background: var(--brand);
+  flex: none;
+  animation: vlBlink 1.1s steps(2, end) infinite;
+}
+.voice-live.done .vl-dot { animation: none; background: var(--green); }
+@keyframes vlBlink { 50% { opacity: .18; } }
+.vl-tag { letter-spacing: .08em; text-transform: uppercase; color: var(--faint); flex: none; }
+.vl-text {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vl-meta { flex: none; color: var(--faint); }
+
+/* ---- Agent 分歧视图 ---- */
+.agent-split {
+  margin-top: 12px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  padding: 12px 14px;
+}
+.split-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.split-q { font-size: 12.5px; color: var(--muted); }
+.split-q b { color: var(--ink); margin-right: 6px; font-family: var(--mono); }
+.split-q span { margin-left: 4px; }
+.split-gap { font-family: var(--mono); font-size: 11px; letter-spacing: .05em; }
+.split-gap.g-high { color: var(--brand); }
+.split-gap.g-mid { color: var(--amber); }
+.split-gap.g-low { color: var(--green); }
+.split-quote-line {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.split-quote-line q { color: var(--ink); }
+.q-note { color: var(--faint); font-family: var(--mono); font-size: 10.5px; }
+.gap-bar {
+  height: 3px;
+  background: var(--line);
+  margin: 9px 0 12px;
+}
+.gap-bar i { display: block; height: 100%; background: var(--brand); }
+.gap-bar i.g-mid { background: var(--amber); }
+.gap-bar i.g-low { background: var(--green); }
+.split-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+}
+.split-col { padding: 12px 12px 2px 0; min-width: 0; }
+.split-col.hr { padding-left: 14px; border-left: 1px solid var(--line); }
+.split-who {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .05em;
+  color: var(--ink);
+}
+.split-focus { color: var(--faint); font-size: 10px; letter-spacing: .02em; }
+.split-score {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--ink);
+}
+.split-col.hr .split-score { color: var(--ink); }
+.split-score span { font-size: 12px; color: var(--faint); margin-left: 2px; }
+.split-lv {
+  margin-left: 8px;
+  font-style: normal;
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  padding: 1px 5px;
+  border: 1px solid var(--line-2);
+  color: var(--muted);
+  vertical-align: middle;
+}
+.split-lv.lv-认可 { color: var(--green); border-color: color-mix(in srgb, var(--green) 45%, transparent); }
+.split-lv.lv-存疑 { color: var(--brand); border-color: color-mix(in srgb, var(--brand) 45%, transparent); }
+.split-reason { margin: 8px 0 0; font-size: 12.5px; line-height: 1.75; color: var(--muted); }
+.split-signals { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.split-signals span {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  color: var(--faint);
+}
+.split-none {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px dashed var(--line-2);
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+
+/* ---- 表达节奏 ---- */
+.rhythm-card .status-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.rhythm-notes { margin: 10px 0 6px; padding-left: 16px; font-size: 12.5px; line-height: 1.85; color: var(--muted); }
+
+/* ---- 报告逐块流式入场 ---- */
+.rv-block { animation: rvIn .34s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes rvIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 720px) {
+  .split-cols { grid-template-columns: 1fr; }
+  .split-col.hr { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); padding-top: 12px; }
+  .rhythm-card .status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .anchor-strip { gap: 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-block { animation: none; }
+  .anchor-hl.pulse { animation: none; }
+  .vl-dot { animation: none; }
+}

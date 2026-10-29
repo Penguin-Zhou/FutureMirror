@@ -911,6 +911,12 @@ try {
               <button class="btn btn-outline btn-sm" id="mic-btn" onclick="toggleVoice()" aria-label="语音输入（浏览器语音识别）" title="语音输入（需 Chrome/Edge）">🎤</button>
               <button class="btn btn-primary btn-sm" id="chat-send" onclick="sendMsg()">发送</button>
             </div>
+            <div class="voice-live" id="voice-live" hidden aria-live="polite">
+              <span class="vl-dot"></span>
+              <span class="vl-tag">实时转写</span>
+              <span class="vl-text" id="voice-live-text"></span>
+              <span class="vl-meta" id="voice-live-meta"></span>
+            </div>
           </div>
           <details class="chat-aside" id="timeline-box" open>
             <summary>查看思考过程（面试官团队）</summary>
@@ -932,7 +938,7 @@ try {
             </div>
           </details>
         </div>
-        <p class="hint">提示：回答尽量具体、带数据（如「QPS 从 200 提升到 1200」）；支持 🎤 语音输入与 🔊 朗读。观察员会实时标注证据与风险，并写入评估上下文。</p>
+        <p class="hint">提示：回答尽量具体、带数据（如「QPS 从 200 提升到 1200」）。支持 🎤 语音输入（边说边转写，停顿自动提交）与 🔊 朗读；面试进行中会实时高亮「可被追问的原话锚点」，追问落地后再把锚点回挂到问题上——AI 的判断每一步都有据可查。</p>
       
     </div>
   </div>
@@ -1909,6 +1915,7 @@ try {
   <script src="js/core/theme.js"></script>
   <script src="js/core/router-pages.js"></script>
   <script src="js/features/match.js"></script>
+  <script src="js/features/explain.js"></script>
   <script src="js/features/interview.js"></script>
   <script src="js/data/kb.js"></script>
   <script src="js/features/report.js"></script>
