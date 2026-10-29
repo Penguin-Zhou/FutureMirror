@@ -291,7 +291,7 @@ body {
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.1.2，为当前正式发布版本（体验修复层：3 个主流程缺陷修复 + 学习计划板块 + 十字准线开关 + 36 枚自制图标）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.1.2，为当前正式发布版本（体验修复层：3 个主流程缺陷修复 + 学习计划板块 + 十字准线开关 + 36 枚自制图标；其后的 v36–v39 为<strong>同一版本的增量批次</strong>，覆盖求职闭环 / 可视化基建 / 求职材料与岗位闭环 / 反馈容错与无障碍，均不升版，详见下方对应版本块）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
   </div>
 
   <!-- ============ 总览 ============ -->
@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1625</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1719</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -314,6 +314,10 @@ body {
   <ul class="cl-toc-list">
     <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
     <li><a href="#vbeta1-12"><span class="cl-toc-tag">Beta 1.1.2</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
+    <li><a href="#v39"><span class="cl-toc-tag">Beta 1.1.2 · v39</span><span class="cl-toc-title-txt">反馈闭环层 · 免责声明 + 骨架屏 + 表单校验 + 移动端 + 离线提示 + 空状态 + 无障碍 + 导出补全</span></a></li>
+    <li><a href="#v38"><span class="cl-toc-tag">Beta 1.1.2 · v38</span><span class="cl-toc-title-txt">求职材料闭环 · 简历自定义板块 + 模板库 + PDF 自动拆分 + 建议可视化 + 真实岗位入看板</span></a></li>
+    <li><a href="#v37"><span class="cl-toc-tag">Beta 1.1.2 · v37</span><span class="cl-toc-title-txt">可视化基建 · 通用图表模块（7 组件零依赖）</span></a></li>
+    <li><a href="#v36"><span class="cl-toc-tag">Beta 1.1.2 · v36</span><span class="cl-toc-title-txt">求职闭环增强 · 求职档案 + MBTI + 真实岗位 + 对话式匹配 + 报告追问</span></a></li>
     <li><a href="#vbeta1-11"><span class="cl-toc-tag">Beta 1.1.1</span><span class="cl-toc-title-txt">审计加固层 · 文档一致性 + 安全加固 + XSS 收口 + 泄漏修复 + 视觉纪律</span></a></li>
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">生产能力对齐 · 生产级 RAG · 多模态扩展</span></a></li>
     <li><a href="#vbeta1-9"><span class="cl-toc-tag">Beta 1.0.9</span><span class="cl-toc-title-txt">专家能力层 · 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化</span></a></li>
@@ -497,6 +501,119 @@ body {
         <div class="metric"><div class="m-val">32</div><div class="m-label">v33 新增断言</div></div>
         <div class="metric"><div class="m-val">1522</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v39 · 反馈/容错/模式提示/空状态/无障碍/导出
+       ======================================================== -->
+  <div class="version" id="v39">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 反馈闭环层（v39）</span>
+      <span class="v-title">免责声明 + 骨架屏 + 表单校验 + 移动端触控 + 离线降级提示 + 空状态 + 无障碍 + 导出补全</span>
+      <span class="v-date">2026.10.29</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        依据一份覆盖产品逻辑 / UI / 移动端 / 工程 / 可访问性 / 边界容错 / 文案 / 部署 八个维度的改进检查报告，把「看起来能用」补成「边界上也稳」：<strong>① 免责与反馈</strong>——RAG 回答区加「AI 生成 · 仅供练习 · 不保证准确」声明，MBTI 结果加「非专业心理测评、仅供参考」提示；<code>askRag</code> / 简历改写 / 面试初始化 / 简历解析四处接入 <code>bpSkeleton</code> 骨架屏与内联错误。<strong>② 表单校验</strong>——新增 <code>store.guardField / clearFieldError</code>（内联错误 + <code>aria-invalid</code> + toast + 聚焦），简历 / 匹配 / 面经 / 面试接入必填与最小长度校验。<strong>③ 移动端与溢出</strong>——全局 <code>overflow-wrap</code> 防横向溢出，按钮 <code>min-height:44px</code> 满足触控尺寸。<strong>④ 模式提示与登录安全</strong>——新增 <code>initNetworkMonitor()</code>，断网 Toast 降级本地 Mock、恢复即提示，状态胶囊加 <code>.offline</code>；登录弹窗加「请勿使用真实密码 · 演示级系统」警告。<strong>⑤ 空状态</strong>——投递看板无记录时渲染引导卡。<strong>⑥ 无障碍</strong>——导航激活态加 <code>aria-current</code>、报告雷达旁加 <code>.sr-only</code> 维度数值表、顶栏加 ⌘K 命令面板入口。<strong>⑦ 导出补全</strong>——报告 CSV（UTF-8 BOM）、个人数据全量导出。<strong>⑧ 术语降噪与 SEO</strong>——去除「多 Agent 驱动的」字样，补 <code>og:url</code> / <code>canonical</code> / keywords。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>断网也说得清</b>：离线时提示「已降级本地 Mock」，恢复即提示，状态胶囊同步变灰</div>
+        <div class="vh-item"><b>不再拿真实密码</b>：登录弹窗醒目提示「演示级系统，请勿使用真实密码」</div>
+        <div class="vh-item"><b>空看板有出口</b>：投递看板无记录时给引导卡，直达真实岗位页</div>
+        <div class="vh-item"><b>读屏能读数值</b>：雷达图旁补 <code>.sr-only</code> 维度数值表，色弱 / 读屏可访问</div>
+        <div class="vh-item"><b>数据能带走</b>：报告 CSV + 个人数据全量导出，端侧生成零外传</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">18</div><div class="m-label">v39 新增断言</div></div>
+        <div class="metric"><div class="m-val">1719</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">28</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">592</div><div class="m-label">共享全局符号</div></div>
+        <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v38 · 求职材料与岗位闭环增强
+       ======================================================== -->
+  <div class="version" id="v38">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 求职材料闭环（v38）</span>
+      <span class="v-title">简历自定义板块 + 模板库 + PDF 自动拆分填入 + AI 建议分块可视化 + 真实岗位一键入看板 + MBTI 结果页重做</span>
+      <span class="v-date">2026.10.28</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        把简历从「一个文本框」升级成「结构化求职材料」，并让岗位推荐真正通往投递：<strong>① 简历自定义板块</strong>——新增 <code>fm_jobseek.sections</code>（实习 / 志愿 / 证书 / 荣誉 / 技能 / 作品等预设），编辑器 <code>renderResumeSectionsEditor</code>，导出 PDF 时经 <code>resumeSectionsPdf</code> 带出。<strong>② 模板库</strong>——<code>RESUME_TEMPLATES</code> 四套（标准校招 / 实习导向 / 科研学术 / 社招进阶）。<strong>③ PDF 导入自动拆分</strong>——<code>RESUME_SPLIT_HEADERS</code> 正则映射 + <code>splitResumeText</code> / <code>splitSegmentItems</code>，LLM 兜底拆分，全程复用端侧 <code>parsePdfText</code>（原文不出浏览器）。<strong>④ AI 建议分块可视化</strong>——<code>resumeAdviceVisual</code>（donut + 六维 hbar）+ 关键词 chips + <code>chunkMarkdown</code>，把大段文字切成卡片。<strong>⑤ 今日推荐换真实岗位</strong>——<code>today.js</code> 改取 <code>REAL_JOBS</code>（日期种子稳定 + <code>rotateTodayPicks</code> 换一批），卡片带薪资 / 城市 / 标签 / 官网，一键「添加到看板」（去重写 <code>fm_apps</code> 并带 url）。<strong>⑥ MBTI 结果页重做</strong>——类型英雄卡 + 四维小卡 + 双极条 + 雷达 + 典型度条。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>简历能分块填</b>：自定义板块 + 四套模板，导出 PDF 自动带上</div>
+        <div class="vh-item"><b>PDF 导入自动拆分</b>：上传即按板块拆分填入，端侧解析零外传</div>
+        <div class="vh-item"><b>建议不再一大段</b>：AI 建议切成卡片 + 可视化图表</div>
+        <div class="vh-item"><b>推荐真能投</b>：今日推荐换成真实岗位，带官网，一键进看板</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">1700</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">27</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">585</div><div class="m-label">共享全局符号</div></div>
+        <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v37 · 可视化基建
+       ======================================================== -->
+  <div class="version" id="v37">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 可视化基建（v37）</span>
+      <span class="v-title">通用图表模块 · 七个组件零第三方依赖（纯 SVG 字符串）</span>
+      <span class="v-date">2026.10.28</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        抽出统一的图表基建 <code>features/charts.js</code>（零第三方库、纯 SVG 字符串），七个组件：<code>donut</code> / <code>hbar</code> / <code>bipolar</code> / <code>radar4</code> / <code>trend</code> / <code>column</code> / <code>progressDots</code>，供简历建议 / MBTI / 报告 / 岗位等模块复用，不再各自手绘。三条硬约束：<strong>颜色只走 CSS 变量</strong>（随主题反转，禁硬编码色值）、<strong>悬停提示复用 <code>[data-tip]</code> 全局接管</strong>（勿自绑事件）、<strong>数值统一过 <code>chartNum / chartClamp</code></strong>，空数据返回 <code>.chart-empty</code> 空态。可点击图表用 <code>onclick</code> 回调（如岗位条形定位、报告维度条直达追问）。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>图表有统一底座</b>：七个纯 SVG 组件，零第三方库</div>
+        <div class="vh-item"><b>主题能反转</b>：颜色只走 CSS 变量，跟随明暗主题</div>
+        <div class="vh-item"><b>空数据不崩</b>：统一返回 <code>.chart-empty</code> 空态</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">7</div><div class="m-label">图表组件</div></div>
+        <div class="metric"><div class="m-val">0</div><div class="m-label">第三方依赖</div></div>
+        <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v36 · 求职闭环增强
+       ======================================================== -->
+  <div class="version" id="v36">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 求职闭环增强（v36）</span>
+      <span class="v-title">求职信息档案 + 简历 A4 导出 + MBTI 测评页 + 真实岗位库 + 对话式匹配 + 报告追问</span>
+      <span class="v-date">2026.10.27</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        把「训练」与「求职」真正接上：<strong>① 求职信息档案</strong>（<code>fm_jobseek</code>）+ <code>aiResumeAdvice</code>（LLM，规则兜底）+ 简历 A4 打印导出（<code>buildResumeHtml</code> / <code>exportResumePdf</code>，<code>window.print()</code> 零依赖，弹窗被拦降级隐藏 iframe）。<strong>② 新模块 / 新页面 MBTI</strong>——<code>features/mbti.js</code>，4 维 × 20 题，<code>computeMbtiResult</code> 确定性（全同意→ESTJ / 全反对→INFP），结果写回 <code>fm_profile.mbti</code> 并即时刷新个人中心。<strong>③ 真实岗位</strong>——<code>career.js</code> 加 <code>REAL_JOBS</code> 16 条真实岗位（每条直达企业招聘官网）+ <code>matchJobToResume</code>（简历匹配 + MBTI 契合 +5）+ <code>aiInterviewAdvice</code>。<strong>④ 对话式匹配</strong>——<code>match.js</code> 加 4 轮追问 <code>MATCH_QA_STEPS</code> / <code>applyQaEvidence</code>，按 JD 技能覆盖率实时重算。<strong>⑤ 报告追问</strong>——<code>report.js</code> 沉淀 <code>lastReportData</code>，小助手注入报告上下文；无模型时 <code>ruleReportAnswer</code> 基于真实数据作答。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>求职有档案了</b>：求职信息集中管理，简历可导出打印 PDF</div>
+        <div class="vh-item"><b>MBTI 能测能存</b>：4 维 20 题，结果写回个人中心</div>
+        <div class="vh-item"><b>岗位是真链接</b>：16 条真实岗位直达企业官网，带 MBTI 契合加分</div>
+        <div class="vh-item"><b>匹配会追问</b>：4 轮对话式追问，按 JD 覆盖率实时重算</div>
+        <div class="vh-item"><b>报告能追问</b>：小助手基于真实报告数据回答</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">1625</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">26</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">12</div><div class="m-label">功能页</div></div>
+        <div class="metric"><div class="m-val">40</div><div class="m-label">前端模块</div></div>
       </div>
     </div>
   </div>
