@@ -2,7 +2,7 @@
 <html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>面镜 FutureMirror · AI 模拟面试与能力成长平台（Beta 1.1.2 演示版）</title>
 <meta name="description" content="面镜 FutureMirror · AI 驱动的模拟面试与能力成长平台：简历匹配、多轮面试、可解释评分报告与个性化学习路径（在线演示版）。">
 <meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)">
@@ -4671,6 +4671,231 @@ input.invalid, textarea.invalid, select.invalid {
   padding: 22px; border-radius: 0; background: var(--card);
 }
 
+
+/* ============================================================
+ * v41 · 移动端适配层：窄屏收敛为「单栏任务流」
+ * 设计取舍：
+ * 1) 不重写页面，只收敛——桌面多栏在窄屏降为单栏，交互从 hover 改为点击可达；
+ * 2) 导航从「10 项横滑」收敛为 5 格，次级页面走「更多 → 命令面板」；
+ * 3) 面试区高度改用 dvh 自适应，软键盘弹出时对话框随之收缩，输入框始终可见；
+ * 4) 视觉宪法不变：零投影、全直角、发丝线、朱红 ≤5%。
+ * ============================================================ */
+
+/* ---------- 1) 安全区：刘海屏顶部 + 底部浮层 ---------- */
+@media (max-width: 900px) {
+  header { padding-top: env(safe-area-inset-top, 0px); }
+  .app-tabbar { top: calc(58px + env(safe-area-inset-top, 0px)); }
+  .app-main { padding-top: calc(104px + env(safe-area-inset-top, 0px)); }
+}
+
+/* ---------- 2) 媒体与自适应容器不撑破视口 ---------- */
+img, svg, video, canvas { max-width: 100%; }
+#radar, #radar svg { max-width: 100%; height: auto; }
+
+/* ---------- 3) 底部导航：≤640px 收敛为 5 格（4 主入口 + 更多） ---------- */
+.tabbar-more { display: none; }
+@media (max-width: 640px) {
+  .app-tabbar { overflow-x: visible; gap: 0; padding: 0 4px; }
+  .app-tabbar .tabbar-item {
+    flex: 1 1 0; justify-content: center; padding: 10px 2px; gap: 4px;
+  }
+  .app-tabbar .tabbar-item > span:not(.tb-icon) { font-size: 11px; }
+  /* 次级页面收进「更多」：DOM 保留（路由与测试口径不变），仅窄屏不占格 */
+  .app-tabbar .tabbar-item[data-nav="match"],
+  .app-tabbar .tabbar-item[data-nav="resume"],
+  .app-tabbar .tabbar-item[data-nav="career"],
+  .app-tabbar .tabbar-item[data-nav="rag"],
+  .app-tabbar .tabbar-item[data-nav="jobs"],
+  .app-tabbar .tabbar-item[data-nav="quiz"] { display: none; }
+  .tabbar-more {
+    display: flex; flex: 1 1 0; flex-direction: row; align-items: center; justify-content: center;
+    gap: 4px; min-height: 44px; padding: 10px 2px;
+    border: 0; background: transparent; color: var(--muted);
+    font-family: inherit; font-size: 11px; line-height: 1;
+    cursor: pointer; touch-action: manipulation; position: relative;
+  }
+  .tabbar-more .tb-icon { font-size: 16px; line-height: 1; }
+  .tabbar-more:active { transform: scale(.94); }
+  .tabbar-more.active { color: var(--brand); font-weight: 600; }
+  .tabbar-more.active::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--brand);
+  }
+}
+
+/* ---------- 4) 面试页：对话框随视口收缩，输入框不被软键盘遮挡 ---------- */
+@media (max-width: 900px) {
+  /* 两条声明：不支持 dvh 的浏览器整条作废，自动回落到上面的 480px 基线 */
+  .chat-main { height: clamp(340px, calc(100dvh - 330px), 560px); }
+  .chat-body { scroll-behavior: auto; }
+}
+@media (max-width: 640px) {
+  .chat-main { height: clamp(240px, calc(var(--app-vh, 100dvh) - 300px), 520px); }
+  .chat-head { padding: 8px 10px; font-size: 12px; gap: 6px; }
+  .chat-body { padding: 10px; gap: 8px; }
+  .msg { max-width: 92%; font-size: 13.5px; }
+  .chat-input { padding: 8px; gap: 6px; }
+  .chat-input .btn { min-width: 42px; padding-left: 8px; padding-right: 8px; }
+  .chat-input #chat-send { min-width: 56px; padding-left: 12px; padding-right: 12px; }
+  .voice-live { font-size: 11px; padding: 6px 8px; }
+  .voice-live .vl-meta { display: none; }   /* 窄屏只保留转写正文，避免挤成两行 */
+}
+/* 横屏：以视口高度为准，保证对话区仍可滚动、输入栏不被裁掉 */
+@media (max-width: 900px) and (orientation: landscape) {
+  .chat-main { height: calc(100dvh - 128px); }
+  .app-main { padding-bottom: 16px; }
+}
+
+/* ---------- 5) 触控可达性：hover 专属信息在触摸设备上没有意义 ---------- */
+@media (max-width: 900px) {
+  .dim-tip { display: none; }               /* 评语已由 .dim-comment 直接呈现 */
+  .anchor-chip { min-height: 36px; padding: 4px 9px; }
+  .anchor-chip::after { content: ""; position: absolute; inset: -4px; }  /* 扩展命中区到 44px */
+  .anchor-chip { position: relative; }
+  .split-signals span { min-height: 26px; display: inline-flex; align-items: center; }
+  .split-cols { grid-template-columns: 1fr; }
+  .split-col { padding: 10px 0 2px; }
+  .split-col.hr { border-left: 0; border-top: 1px solid var(--line); padding: 10px 0 2px; }
+  .split-score { font-size: 27px; }
+}
+
+/* ---------- 6) 报告页窄屏：指标不拥挤、长表格横向滚动兜底 ---------- */
+@media (max-width: 640px) {
+  .report-grid { gap: 14px; }
+  .status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rhythm-card .status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .report-table, .table-scroll { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .evidence q { font-size: 13px; }
+  .page-header h2 { font-size: 21px; }
+  .pane-title { font-size: 13.5px; }
+}
+
+/* ---------- 7) 慢网 / 降级横幅：非阻塞，贴顶不遮内容 ---------- */
+@media (max-width: 640px) {
+  .fallback-banner { font-size: 12px; padding: 7px 10px; gap: 6px; }
+  .offline-banner, .net-banner { position: sticky; top: 0; z-index: 48; }
+}
+
+/* ---------- 8) 面试页窄屏：把辅助工具折叠，让对话先出现 ---------- */
+/* 通用折叠机制：桌面端完全不受影响（.compact-toggle 默认隐藏），
+ * 窄屏下默认收起为一行，点击才展开。 */
+.compact-toggle { display: none; }
+@media (max-width: 900px) {
+  .compact-toggle {
+    display: block; width: 100%; min-height: 44px; padding: 12px 0;
+    border: 0; background: transparent; color: var(--ink);
+    font-family: inherit; font-size: 12.5px; font-weight: 600; line-height: 1.5;
+    text-align: left; cursor: pointer; touch-action: manipulation;
+  }
+  .compact-toggle[aria-expanded="true"] { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+  /* 面板正文常带内联 display，必须 !important 才能真的收起 */
+  .is-compact:not(.expanded) > *:not(.compact-toggle) { display: none !important; }
+  .is-compact:not(.expanded) { padding: 0 14px !important; margin-bottom: 10px !important; }
+  .is-compact { border-color: var(--line-2); }
+
+  /* 模式条：单行横滑，不再换行吃掉 100px */
+  .mode-bar {
+    flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: none;
+  }
+  .mode-bar::-webkit-scrollbar { display: none; }
+  .mode-bar > * { flex: 0 0 auto; }
+  .mode-btn { min-height: 40px; padding: 8px 12px; }
+}
+
+/* 页面头：窄屏只留标题 + 两行说明 */
+@media (max-width: 640px) {
+  .page-header { padding: 0 0 10px; }
+  .page-header h2 { font-size: 20px; line-height: 1.25; }
+  .page-header p {
+    font-size: 12px; margin-top: 4px; line-height: 1.6;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .chat-aside summary { min-height: 44px; display: flex; align-items: center; font-size: 12.5px; }
+  /* 向量索引条：按钮换行而非撑破容器 */
+  .vec-bar { flex-wrap: wrap; row-gap: 6px; }
+  .vec-bar .btn-sm { flex: 1 1 100%; max-width: 100%; white-space: normal; text-align: center; }
+  /* 应用内不再重复「演示版声明」：落地页仍完整展示 */
+  body.in-app .banner { display: none; }
+}
+
+/* ---------- 9) 顶栏与导航条对齐：不再假设 header 恰好 56px ---------- */
+/* 窄屏顶栏内容多，实测高度可能 >56px；导航条与主内容区一律跟随 --hdr-h，
+ * 避免「导航条压在顶栏下沿」或「首屏被顶栏盖住」。 */
+@media (max-width: 900px) {
+  .app-tabbar { top: var(--hdr-h, 58px); }
+  .app-main { padding-top: calc(var(--hdr-h, 58px) + 50px); }
+}
+@media (max-width: 640px) {
+  /* ⌘K 在手机上无意义（没有 ⌘ 键），其入口由底栏「更多」承担 */
+  .kbd-hint { display: none !important; }
+  header .nav { gap: 6px; flex-wrap: nowrap; }
+  .logo { font-size: 14.5px; white-space: nowrap; gap: 6px; flex: 0 1 auto; min-width: 0; }
+  .logo svg { width: 22px; height: 22px; flex: none; }
+  .nav-right { gap: 4px; flex-wrap: nowrap; }
+  .nav-right .btn-icon { min-width: 34px; min-height: 34px; padding: 4px; }
+  .nav-right .btn { white-space: nowrap; font-size: 11.5px; padding-left: 8px; padding-right: 8px; }
+  /* 状态胶囊只留圆点，颜色语义（真实=绿 / Mock=黄 / 离线=朱红）仍在 title 中可读 */
+  #status-pill { padding: 5px 6px; }
+  #status-pill #status-text { display: none; }
+  /* 演示声明横幅：长说明收进标题，避免窄屏换行吃掉 200px 首屏 */
+  .banner .wrap { gap: 6px; flex-wrap: nowrap; }
+  .banner b { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .banner .wrap > span { display: none; }
+  .banner .btn-primary { margin-left: auto; flex: none; font-size: 11.5px; padding: 0 10px; }
+  .banner .btn-ghost { flex: none; }
+}
+
+/* ---------- 10) 极窄屏（≤360px）与对话头部：再挤一挤 ---------- */
+@media (max-width: 640px) {
+  /* 头部按钮组内部横滑，但组本身可收缩——直接给容器 nowrap 会把对话区撑宽成横向溢出 */
+  .chat-main { min-width: 0; }
+  .chat-head { flex-wrap: wrap; min-width: 0; }
+  .chat-head > * { min-width: 0; }
+  .chat-head > span:last-child {
+    max-width: 100%; overflow-x: auto; scrollbar-width: none;
+    flex-wrap: nowrap; justify-content: flex-start;
+  }
+  .chat-head > span:last-child::-webkit-scrollbar { display: none; }
+  .chat-head .btn-sm { min-height: 36px; padding: 6px 9px; font-size: 12px; white-space: nowrap; }
+}
+@media (max-width: 360px) {
+  .page-header p { display: none; }         /* 320px 只留标题，把高度让给对话 */
+  .page-header h2 { font-size: 18px; }
+  .page-header { padding-bottom: 6px; }
+  .msg { font-size: 13px; }
+  .chat-input .btn { min-width: 44px; padding-left: 8px; padding-right: 8px; }
+}
+
+/* ---------- 11) 面试页悬浮球避让输入栏 ---------- */
+@media (max-width: 900px) {
+  /* 悬浮球由 JS 写内联 left/top 定位，只有 !important 能覆盖；
+   * 面试页让它浮在输入栏上方，避免盖住「发送」。其余页面保持可拖拽。 */
+  body[data-page="interview"] .ai-fab {
+    top: auto !important;
+    left: auto !important;
+    right: 14px !important;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+    width: 44px; height: 44px; font-size: 19px;
+  }
+  .chat-input input { min-width: 0; }
+}
+
+/* ---------- 12) 报告页：操作按钮改为两列网格（不再各占一行、也不撑破容器） ---------- */
+@media (max-width: 640px) {
+  .report-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    justify-content: stretch !important;
+    width: 100%;
+    min-width: 0;
+  }
+  .report-actions .btn {
+    width: 100%; min-width: 0; min-height: 38px;
+    font-size: 12px; padding: 7px 8px;
+    justify-content: center; white-space: nowrap;
+  }
+}
 </style>
 </head>
 <body>
@@ -5547,7 +5772,7 @@ input.invalid, textarea.invalid, select.invalid {
               <div class="msg msg-system">面试开始：选择模式并发送第一条消息，AI 面试官团队将依次提问</div>
             </div>
             <div class="chat-input">
-              <input type="text" id="chat-input" placeholder="输入你的回答，Enter 发送" onkeydown="if(event.key==='Enter')sendMsg()" aria-label="回答输入框">
+              <input type="text" id="chat-input" placeholder="输入回答，Enter 发送" onkeydown="if(event.key==='Enter')sendMsg()" aria-label="回答输入框">
               <button class="btn btn-ghost btn-sm" id="cam-btn" onclick="toggleCamera()" aria-label="开启或关闭摄像头（面试状态监测）" title="开启摄像头进行面试，后台实时检测在场与专注状态">📷</button>
               <button class="btn btn-outline btn-sm" id="mic-btn" onclick="toggleVoice()" aria-label="语音输入（浏览器语音识别）" title="语音输入（需 Chrome/Edge）">🎤</button>
               <button class="btn btn-primary btn-sm" id="chat-send" onclick="sendMsg()">发送</button>
@@ -6193,6 +6418,9 @@ input.invalid, textarea.invalid, select.invalid {
   <a class="tabbar-item" href="#/plan" data-nav="plan">
     <span class="tb-icon" data-ic="plan">🗓</span><span>计划</span>
   </a>
+  <button class="tabbar-more" type="button" onclick="openMobileMore()" aria-label="更多功能与页面" aria-haspopup="dialog">
+    <span class="tb-icon" aria-hidden="true">⋯</span><span>更多</span>
+  </button>
 </nav>
 
   <!-- v20：AI 小助手（全局悬浮入口 + 抽屉式对话面板） -->
@@ -6587,6 +6815,7 @@ function showView(name) {
   // 记住当前视图，刷新后仍停在同一页
   try { sessionStorage.setItem(VIEW_KEY, name); } catch (e) {}
 
+  if (document.body) document.body.classList.toggle("in-app", name === "app");
   if (name === "app") {
     updateGuestBanner();
     // 应用当前 hash 子路由（#/dashboard · #/match …）
@@ -6726,6 +6955,28 @@ function navTo(page) {
   else applyRoute();   // 相同 hash 时手动触发一次
 }
 
+/* v41：窄屏底部导航收敛——6 个次级页面收进「更多」，用命令面板兜住全部入口，
+ * 这样 375px 下每格都是 44px 触控目标，不需要横向滑动去找页面。 */
+const SECONDARY_NAV = ["match", "resume", "career", "rag", "jobs", "quiz"];
+
+function openMobileMore() {
+  if (typeof window.__openCommandPalette === "function") {
+    window.__openCommandPalette();
+    return;
+  }
+  navTo("dashboard");   // 命令面板不可用时的兜底，不让按钮点了没反应
+}
+
+/* 当前页被收进「更多」时，让「更多」承接激活态，避免底栏看起来「哪都不在」 */
+function syncMobileMore(page) {
+  const btn = document.querySelector(".tabbar-more");
+  if (!btn) return;
+  const on = SECONDARY_NAV.indexOf(page) >= 0;
+  btn.classList.toggle("active", on);
+  if (on) btn.setAttribute("aria-current", "page");
+  else btn.removeAttribute("aria-current");
+}
+
 function applyRoute() {
   const page = currentPage();
 
@@ -6741,6 +6992,8 @@ function applyRoute() {
     if (on) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   });
+  syncMobileMore(page);
+  if (document.body) document.body.dataset.page = page;   // v41：供窄屏样式做页面级避让
 
   // 3) 面包屑
   const bc = $("bc-current");
@@ -6753,6 +7006,10 @@ function applyRoute() {
   if (metaDesc) metaDesc.content = `面镜 FutureMirror · ${title} · AI 模拟面试与能力成长平台（在线演示版）`;
 
   // 5) 按需渲染
+  if (page === "interview") {
+    // v41：切换页面后一帧再量，等布局稳定（折叠条/模式条高度已确定）
+    requestAnimationFrame(() => { try { fitChatHeight(); } catch (e) {} });
+  }
   if (page === "report") { try { renderReport(); } catch (e) {} }
   if (page === "profile") { try { renderProfile(); } catch (e) {} }
   if (page === "jobs") { try { renderJobsPage(); } catch (e) {} }
@@ -8177,7 +8434,7 @@ function finishByInterviewer() {
     `面试官：本场（${MODE_SHORT[session.mode] || "模拟面试"}）${MAX_TURNS} 轮问答已完成，` +
     `面试到此结束。观察员已汇总全部证据，正在生成你的可解释评估报告…`;
   body.appendChild(notice);
-  body.scrollTop = body.scrollHeight;
+  chatAutoScroll(true);
   addTimeline("提问规划", `🏁 已收集 ${MAX_TURNS} 轮证据 → 面试官发送结束通知，自动收尾并生成报告`, false);
   stopAnswerTimer();
   lockInput(true);
@@ -8508,7 +8765,7 @@ function sendMsg() {
   userDiv.dataset.turn = String(turnIdx);
   userDiv.innerHTML = anchorHtml(text, anchors) + anchorStripHtml(anchors, turnIdx);
   body.appendChild(userDiv);
-  body.scrollTop = body.scrollHeight;
+  chatAutoScroll(true);
   if (anchors.length) {
     addTimeline("观察员", `⚓ 定位到 ${anchors.length} 个可追问锚点：${anchors.map(a => a.text).join(" / ")}`, "note");
   }
@@ -8564,7 +8821,7 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
     bubble.className = "msg msg-ai";
     bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
     body.appendChild(bubble);
-    body.scrollTop = body.scrollHeight;
+    chatAutoScroll(true);
     let i = 0;
     const timer = setInterval(() => {
       /* 用 textContent 逐字推进再挂光标，避免把问题文本当 HTML 解析
@@ -8573,7 +8830,7 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
       const caret = document.createElement("span");
       caret.className = "caret";
       bubble.appendChild(caret);
-      body.scrollTop = body.scrollHeight;
+      chatAutoScroll();
       if (i >= question.length) {
         clearInterval(timer);
         bubble.textContent = question;
@@ -8591,7 +8848,7 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
         updateLiveTracker();
         if (turn === MAX_TURNS) addTimeline("提问规划", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
         $("chat-send").disabled = false;
-        body.scrollTop = body.scrollHeight;
+        chatAutoScroll();
         // v32：第 5 题答完 → 面试官发送结束通知并自动收尾
         maybeFinishAtTurnLimit();
       }
@@ -8614,7 +8871,7 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
   bubble.innerHTML = '<span class="caret"></span>';
   body.appendChild(bubble);
-  body.scrollTop = body.scrollHeight;
+  chatAutoScroll(true);
 
   const ctrl = new AbortController();
   const killTimer = setTimeout(() => ctrl.abort(), 60000);
@@ -8626,7 +8883,7 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
       if (!streamStarted) { streamStarted = true; hideTyping(); }
       full += piece;
       bubble.textContent = full;
-      body.scrollTop = body.scrollHeight;
+      chatAutoScroll();
     }, ctrl.signal);
     addTimeline("模型调用", `✅ 流式输出完成（${full.length} 字）`, "tool");
     // v40：模型流式输出结束后，把「锚定你哪句话」回挂到追问气泡
@@ -8875,7 +9132,7 @@ function addMsg(cls, text) {
   div.className = "msg " + cls;
   div.textContent = text;
   body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
+  chatAutoScroll();
 }
 
 /* ---- v24 · 打字指示器：LLM 流式前的等待反馈（三点墨点 + 等宽标签） ---- */
@@ -8894,7 +9151,7 @@ function showTyping(label) {
   div.appendChild(dots);
   div.appendChild(tag);
   body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
+  chatAutoScroll();
 }
 function hideTyping() {
   const t = document.getElementById("typing-row");
@@ -9127,6 +9384,47 @@ function stopCamera() {
 /* 面试结束 / 重置 / 离开页面时收掉摄像头，避免悬挂设备占用 */
 window.addEventListener("beforeunload", function () { try { stopCamera(); } catch (e) {} });
 
+
+/* ============================================================
+ * v41 · 移动端视口适配（滚动克制 / 可视高度 / 键盘可见）
+ * ============================================================ */
+
+/* 流式输出不抢用户滚动：只有「本来就在看底部」或本轮是新消息时才跟随。
+ * 原先每来一个 token 都写 scrollTop=scrollHeight，用户向上翻历史会被强行拽回底部。 */
+function chatAutoScroll(force) {
+  const body = $("chat-body");
+  if (!body) return;
+  const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 90;
+  if (force || nearBottom) body.scrollTop = body.scrollHeight;
+}
+
+/* 可视高度写入 --app-vh：iOS Safari < 15.4 不支持 dvh 时，靠它让对话框跟随可视区收缩 */
+function syncAppViewport() {
+  try {
+    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty("--app-vh", Math.round(h) + "px");
+  } catch (e) { /* 视口 API 不可用时保持 CSS 的 dvh 兜底 */ }
+}
+
+/* 输入框聚焦后把输入行滚进视野，避免软键盘顶起时输入框被遮住 */
+document.addEventListener("focusin", e => {
+  const el = e.target;
+  if (!el || typeof el.matches !== "function") return;
+  if (!el.matches("#chat-input, #ai-assistant-input, #resume-raw, #jd-text")) return;
+  try {
+    if (window.matchMedia && !window.matchMedia("(max-width: 900px)").matches) return;
+  } catch (err) { return; }
+  setTimeout(() => {
+    try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (err) { /* 老浏览器忽略 */ }
+  }, 220);   // 等软键盘起落动画结束再对齐
+});
+
+syncAppViewport();
+window.addEventListener("resize", syncAppViewport);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", syncAppViewport);
+  window.visualViewport.addEventListener("scroll", syncAppViewport);
+}
 /* ============================================================
  * 6. RAG 面经问答（BM25 + 端侧向量混合检索；接入模型后真实生成）
  *    检索层实现见文件下半部分「BM25 + 端侧向量混合」，40 条面经向量
@@ -10327,10 +10625,72 @@ function exportReportCsv() {
   } catch (e) { toast("导出失败：" + e.message); }
 }
 
-"use strict";
 /* ============================================================
  * 9. 启动流程：先判断登录，再进入应用
  * ============================================================ */
+/* v41：把顶栏实测高度写进 --hdr-h。窄屏顶栏可能换行变高，
+ * 底部导航条与主内容区据此对齐，不再硬编码 58px 造成遮挡。 */
+function syncHeaderHeight() {
+  const h = document.querySelector("header");
+  if (!h) return;
+  try {
+    document.documentElement.style.setProperty("--hdr-h", Math.round(h.offsetHeight) + "px");
+  } catch (e) { /* 自定义属性不可用时保持 CSS 兜底值 */ }
+}
+
+/* v41：窄屏把「辅助工具」折叠成一行——演示时先看到对话，需要时点开。
+ * 只处理可见的辅助面板；默认隐藏的面板（如 #llm-panel[hidden]）不碰，
+ * 避免用户自行打开时拿到一个被清空的面板。 */
+const MOBILE_COMPACT_TARGETS = [
+  { sel: "#code-sandbox", off: "💻 代码题沙盒 · 两数之和（点击展开）", on: "💻 收起代码题沙盒" },
+];
+
+function initMobileCompact() {
+  MOBILE_COMPACT_TARGETS.forEach(cfg => {
+    let box;
+    try { box = document.querySelector(cfg.sel); } catch (e) { return; }
+    // 逻辑测试桩里没有完整 DOM（无 dataset / insertBefore），直接跳过
+    if (!box || !box.dataset || !box.classList || typeof box.insertBefore !== "function") return;
+    if (box.dataset.compactReady) return;
+    box.dataset.compactReady = "1";
+    box.classList.add("is-compact");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "compact-toggle";
+    btn.setAttribute("aria-expanded", "false");
+    btn.textContent = cfg.off;
+    btn.addEventListener("click", () => {
+      const on = box.classList.toggle("expanded");
+      btn.setAttribute("aria-expanded", on ? "true" : "false");
+      btn.textContent = on ? cfg.on : cfg.off;
+      fitChatHeight();
+    });
+    box.insertBefore(btn, box.firstChild);
+  });
+}
+
+/* v41：面试对话区按「当前视口 - 对话区顶部位置」精确占满剩余空间。
+ * 用实测值而非固定 offset，是因为上方内容（页面头/模式条/折叠条）会随宽度变化；
+ * 软键盘弹起时 visualViewport 变矮 → 重算 → 输入框始终留在可视区内。 */
+function fitChatHeight() {
+  const main = document.querySelector(".chat-main");
+  if (!main) return;
+  const page = document.querySelector('.app-page[data-page="interview"]');
+  try {
+    if (!window.matchMedia("(max-width: 900px)").matches || !page || !page.classList.contains("active")) {
+      main.style.height = "";
+      return;
+    }
+  } catch (e) { return; }
+  try {
+    if (typeof main.getBoundingClientRect !== "function") return;
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const top = main.getBoundingClientRect().top;
+    const h = Math.max(240, Math.round(vh - top - 12));
+    main.style.height = h + "px";
+  } catch (e) { /* 无布局环境（逻辑测试桩）跳过 */ }
+}
+
 function bootApp() {
   // 更新用户菜单
   renderUserMenu();
@@ -10341,6 +10701,11 @@ function bootApp() {
   syncAccentBtn();
   animateCounters();
   // 加载当前用户数据（依赖 currentUser，故放在这里）
+  initMobileCompact();
+  syncHeaderHeight();
+  window.addEventListener("resize", syncHeaderHeight);
+  window.addEventListener("resize", fitChatHeight);
+  if (window.visualViewport) window.visualViewport.addEventListener("resize", fitChatHeight);
   session = store.get("fm_session", { mode: "general", turns: [] });
   matchResult = store.get("fm_match", null);
   turn = session.turns.length;

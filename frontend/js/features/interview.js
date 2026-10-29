@@ -72,7 +72,7 @@ function finishByInterviewer() {
     `面试官：本场（${MODE_SHORT[session.mode] || "模拟面试"}）${MAX_TURNS} 轮问答已完成，` +
     `面试到此结束。观察员已汇总全部证据，正在生成你的可解释评估报告…`;
   body.appendChild(notice);
-  body.scrollTop = body.scrollHeight;
+  chatAutoScroll(true);
   addTimeline("提问规划", `🏁 已收集 ${MAX_TURNS} 轮证据 → 面试官发送结束通知，自动收尾并生成报告`, false);
   stopAnswerTimer();
   lockInput(true);
@@ -403,7 +403,7 @@ function sendMsg() {
   userDiv.dataset.turn = String(turnIdx);
   userDiv.innerHTML = anchorHtml(text, anchors) + anchorStripHtml(anchors, turnIdx);
   body.appendChild(userDiv);
-  body.scrollTop = body.scrollHeight;
+  chatAutoScroll(true);
   if (anchors.length) {
     addTimeline("观察员", `⚓ 定位到 ${anchors.length} 个可追问锚点：${anchors.map(a => a.text).join(" / ")}`, "note");
   }
@@ -459,7 +459,7 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
     bubble.className = "msg msg-ai";
     bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
     body.appendChild(bubble);
-    body.scrollTop = body.scrollHeight;
+    chatAutoScroll(true);
     let i = 0;
     const timer = setInterval(() => {
       /* 用 textContent 逐字推进再挂光标，避免把问题文本当 HTML 解析
@@ -468,7 +468,7 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
       const caret = document.createElement("span");
       caret.className = "caret";
       bubble.appendChild(caret);
-      body.scrollTop = body.scrollHeight;
+      chatAutoScroll();
       if (i >= question.length) {
         clearInterval(timer);
         bubble.textContent = question;
@@ -486,7 +486,7 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
         updateLiveTracker();
         if (turn === MAX_TURNS) addTimeline("提问规划", `已收集 ${MAX_TURNS} 轮证据 → 评估上下文就绪，面试到此结束`, false);
         $("chat-send").disabled = false;
-        body.scrollTop = body.scrollHeight;
+        chatAutoScroll();
         // v32：第 5 题答完 → 面试官发送结束通知并自动收尾
         maybeFinishAtTurnLimit();
       }
@@ -509,7 +509,7 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
   bubble.innerHTML = '<span class="caret"></span>';
   body.appendChild(bubble);
-  body.scrollTop = body.scrollHeight;
+  chatAutoScroll(true);
 
   const ctrl = new AbortController();
   const killTimer = setTimeout(() => ctrl.abort(), 60000);
@@ -521,7 +521,7 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
       if (!streamStarted) { streamStarted = true; hideTyping(); }
       full += piece;
       bubble.textContent = full;
-      body.scrollTop = body.scrollHeight;
+      chatAutoScroll();
     }, ctrl.signal);
     addTimeline("模型调用", `✅ 流式输出完成（${full.length} 字）`, "tool");
     // v40：模型流式输出结束后，把「锚定你哪句话」回挂到追问气泡
@@ -770,7 +770,7 @@ function addMsg(cls, text) {
   div.className = "msg " + cls;
   div.textContent = text;
   body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
+  chatAutoScroll();
 }
 
 /* ---- v24 · 打字指示器：LLM 流式前的等待反馈（三点墨点 + 等宽标签） ---- */
@@ -789,7 +789,7 @@ function showTyping(label) {
   div.appendChild(dots);
   div.appendChild(tag);
   body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
+  chatAutoScroll();
 }
 function hideTyping() {
   const t = document.getElementById("typing-row");
@@ -1022,3 +1022,44 @@ function stopCamera() {
 /* 面试结束 / 重置 / 离开页面时收掉摄像头，避免悬挂设备占用 */
 window.addEventListener("beforeunload", function () { try { stopCamera(); } catch (e) {} });
 
+
+/* ============================================================
+ * v41 · 移动端视口适配（滚动克制 / 可视高度 / 键盘可见）
+ * ============================================================ */
+
+/* 流式输出不抢用户滚动：只有「本来就在看底部」或本轮是新消息时才跟随。
+ * 原先每来一个 token 都写 scrollTop=scrollHeight，用户向上翻历史会被强行拽回底部。 */
+function chatAutoScroll(force) {
+  const body = $("chat-body");
+  if (!body) return;
+  const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 90;
+  if (force || nearBottom) body.scrollTop = body.scrollHeight;
+}
+
+/* 可视高度写入 --app-vh：iOS Safari < 15.4 不支持 dvh 时，靠它让对话框跟随可视区收缩 */
+function syncAppViewport() {
+  try {
+    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty("--app-vh", Math.round(h) + "px");
+  } catch (e) { /* 视口 API 不可用时保持 CSS 的 dvh 兜底 */ }
+}
+
+/* 输入框聚焦后把输入行滚进视野，避免软键盘顶起时输入框被遮住 */
+document.addEventListener("focusin", e => {
+  const el = e.target;
+  if (!el || typeof el.matches !== "function") return;
+  if (!el.matches("#chat-input, #ai-assistant-input, #resume-raw, #jd-text")) return;
+  try {
+    if (window.matchMedia && !window.matchMedia("(max-width: 900px)").matches) return;
+  } catch (err) { return; }
+  setTimeout(() => {
+    try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (err) { /* 老浏览器忽略 */ }
+  }, 220);   // 等软键盘起落动画结束再对齐
+});
+
+syncAppViewport();
+window.addEventListener("resize", syncAppViewport);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", syncAppViewport);
+  window.visualViewport.addEventListener("scroll", syncAppViewport);
+}

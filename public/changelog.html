@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1768</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1815</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -314,6 +314,7 @@ body {
   <ul class="cl-toc-list">
     <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
     <li><a href="#vbeta1-12"><span class="cl-toc-tag">Beta 1.1.2</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
+    <li><a href="#v41"><span class="cl-toc-tag">Beta 1.1.2 · v41</span><span class="cl-toc-title-txt">移动端适配层 · 窄屏单栏任务流 + 导航收敛 5 格 + 对话区自适应 + 交互去 hover 化</span></a></li>
     <li><a href="#v40"><span class="cl-toc-tag">Beta 1.1.2 · v40</span><span class="cl-toc-title-txt">可解释性交互层 · 面试实时锚点 + Agent 分歧视图 + 语音流式转写 + 表达节奏</span></a></li>
     <li><a href="#v39"><span class="cl-toc-tag">Beta 1.1.2 · v39</span><span class="cl-toc-title-txt">反馈闭环层 · 免责声明 + 骨架屏 + 表单校验 + 移动端 + 离线提示 + 空状态 + 无障碍 + 导出补全</span></a></li>
     <li><a href="#v38"><span class="cl-toc-tag">Beta 1.1.2 · v38</span><span class="cl-toc-title-txt">求职材料闭环 · 简历自定义板块 + 模板库 + PDF 自动拆分 + 建议可视化 + 真实岗位入看板</span></a></li>
@@ -507,8 +508,35 @@ body {
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v39 · 反馈/容错/模式提示/空状态/无障碍/导出
+       Beta 1.1.2 · v41 · 移动端适配层
        ======================================================== -->
+  <div class="version" id="v41">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 移动端适配层（v41）</span>
+      <span class="v-title">窄屏单栏任务流 + 导航收敛 + 对话区自适应 + 交互去 hover 化</span>
+      <span class="v-date">2026.10.29</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        移动端不做「缩小版桌面」，而是把多栏布局<strong>收敛成单栏任务流</strong>。先用无头浏览器在 320 / 375 / 390 / 414 四个宽度下逐页实测（12 个页面 × 4 个宽度 = 48 组），把问题按「阻断闭环」与「体验损耗」分开处理：<strong>① 阻断类</strong>——RAG 页按钮在 320px 撑出 37px 横向滚动、面试对话区被上方 900px 面板顶到首屏之外、AI 悬浮球压住「发送」按钮、软键盘弹出时输入框被遮；<strong>② 损耗类</strong>——底部导航 10 项需横滑才能找齐、代码沙盒与模型面板占掉 700px、评分评语依赖 hover 导致触摸端完全不可达。<strong>③ 结构收敛</strong>——窄屏底栏收敛为 5 格（工作台 / 面试 / 计划 / 我的 / 更多），6 个次级页面收进「更多」（复用命令面板，全部入口一键可达且可搜索）；面试页把代码沙盒折叠为一行，页面头压到标题 + 两行说明；对话区高度改为按「实测顶部位置 → 视口底部」动态占满，软键盘起落时重算。<strong>④ 交互去 hover 化</strong>——评语直接可见，hover 气泡在触摸端隐藏；锚点 chip 扩展命中区；报告 6 个操作按钮改两列网格，不再各占一行。<strong>⑤ 滚动克制</strong>——流式输出不再每来一个 token 就滚到底，用户上翻回看历史时不会被拽回。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>四个宽度实测，不是拍脑袋改</b>：320/375/390/414 逐页扫描横向溢出，改完复测 48 组全部为 0</div>
+        <div class="vh-item"><b>手机上没有「第 7 个 Tab」</b>：底栏 5 格每格 ≥44px，次级页面走「更多 → 可搜索面板」，不用横滑找入口</div>
+        <div class="vh-item"><b>输入框永远在视口内</b>：对话区按实测剩余高度占满，键盘弹起时 visualViewport 变化触发重算，输入行不会被遮</div>
+        <div class="vh-item"><b>顶栏变高也不遮挡</b>：顶栏实测高度写入 --hdr-h，导航条与内容区跟随，不再假设 header 恰好 56px</div>
+        <div class="vh-item"><b>刘海屏与横屏都算过</b>：viewport-fit=cover + env(safe-area-inset-*)，横屏按视高收缩对话区</div>
+        <div class="vh-item"><b>不动桌面端</b>：所有收敛规则都在 ≤640/≤900 断点内，桌面布局与交互零变化</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">47</div><div class="m-label">v41 新增断言</div></div>
+        <div class="metric"><div class="m-val">1815</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">30</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">627</div><div class="m-label">共享全局符号</div></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ========================================================
        Beta 1.1.2 · v40 · 可解释性交互层
        ======================================================== -->
@@ -538,6 +566,9 @@ body {
     </div>
   </div>
 
+  <!-- ========================================================
+       Beta 1.1.2 · v39 · 反馈/容错/模式提示/空状态/无障碍/导出
+       ======================================================== -->
   <div class="version" id="v39">
     <div class="version-head">
       <span class="v-tag">Beta 1.1.2 · 反馈闭环层（v39）</span>

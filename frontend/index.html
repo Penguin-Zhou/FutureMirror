@@ -2,7 +2,7 @@
 <html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>面镜 FutureMirror · AI 模拟面试与能力成长平台（Beta 1.1.2 演示版）</title>
 <meta name="description" content="面镜 FutureMirror · AI 驱动的模拟面试与能力成长平台：简历匹配、多轮面试、可解释评分报告与个性化学习路径（在线演示版）。">
 <meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)">
@@ -906,7 +906,7 @@ try {
               <div class="msg msg-system">面试开始：选择模式并发送第一条消息，AI 面试官团队将依次提问</div>
             </div>
             <div class="chat-input">
-              <input type="text" id="chat-input" placeholder="输入你的回答，Enter 发送" onkeydown="if(event.key==='Enter')sendMsg()" aria-label="回答输入框">
+              <input type="text" id="chat-input" placeholder="输入回答，Enter 发送" onkeydown="if(event.key==='Enter')sendMsg()" aria-label="回答输入框">
               <button class="btn btn-ghost btn-sm" id="cam-btn" onclick="toggleCamera()" aria-label="开启或关闭摄像头（面试状态监测）" title="开启摄像头进行面试，后台实时检测在场与专注状态">📷</button>
               <button class="btn btn-outline btn-sm" id="mic-btn" onclick="toggleVoice()" aria-label="语音输入（浏览器语音识别）" title="语音输入（需 Chrome/Edge）">🎤</button>
               <button class="btn btn-primary btn-sm" id="chat-send" onclick="sendMsg()">发送</button>
@@ -1552,6 +1552,9 @@ try {
   <a class="tabbar-item" href="#/plan" data-nav="plan">
     <span class="tb-icon" data-ic="plan">🗓</span><span>计划</span>
   </a>
+  <button class="tabbar-more" type="button" onclick="openMobileMore()" aria-label="更多功能与页面" aria-haspopup="dialog">
+    <span class="tb-icon" aria-hidden="true">⋯</span><span>更多</span>
+  </button>
 </nav>
 
   <!-- v20：AI 小助手（全局悬浮入口 + 抽屉式对话面板） -->

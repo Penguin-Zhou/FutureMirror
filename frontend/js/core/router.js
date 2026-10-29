@@ -12,6 +12,7 @@ function showView(name) {
   // 记住当前视图，刷新后仍停在同一页
   try { sessionStorage.setItem(VIEW_KEY, name); } catch (e) {}
 
+  if (document.body) document.body.classList.toggle("in-app", name === "app");
   if (name === "app") {
     updateGuestBanner();
     // 应用当前 hash 子路由（#/dashboard · #/match …）
@@ -151,6 +152,28 @@ function navTo(page) {
   else applyRoute();   // 相同 hash 时手动触发一次
 }
 
+/* v41：窄屏底部导航收敛——6 个次级页面收进「更多」，用命令面板兜住全部入口，
+ * 这样 375px 下每格都是 44px 触控目标，不需要横向滑动去找页面。 */
+const SECONDARY_NAV = ["match", "resume", "career", "rag", "jobs", "quiz"];
+
+function openMobileMore() {
+  if (typeof window.__openCommandPalette === "function") {
+    window.__openCommandPalette();
+    return;
+  }
+  navTo("dashboard");   // 命令面板不可用时的兜底，不让按钮点了没反应
+}
+
+/* 当前页被收进「更多」时，让「更多」承接激活态，避免底栏看起来「哪都不在」 */
+function syncMobileMore(page) {
+  const btn = document.querySelector(".tabbar-more");
+  if (!btn) return;
+  const on = SECONDARY_NAV.indexOf(page) >= 0;
+  btn.classList.toggle("active", on);
+  if (on) btn.setAttribute("aria-current", "page");
+  else btn.removeAttribute("aria-current");
+}
+
 function applyRoute() {
   const page = currentPage();
 
@@ -166,6 +189,8 @@ function applyRoute() {
     if (on) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   });
+  syncMobileMore(page);
+  if (document.body) document.body.dataset.page = page;   // v41：供窄屏样式做页面级避让
 
   // 3) 面包屑
   const bc = $("bc-current");
@@ -178,6 +203,10 @@ function applyRoute() {
   if (metaDesc) metaDesc.content = `面镜 FutureMirror · ${title} · AI 模拟面试与能力成长平台（在线演示版）`;
 
   // 5) 按需渲染
+  if (page === "interview") {
+    // v41：切换页面后一帧再量，等布局稳定（折叠条/模式条高度已确定）
+    requestAnimationFrame(() => { try { fitChatHeight(); } catch (e) {} });
+  }
   if (page === "report") { try { renderReport(); } catch (e) {} }
   if (page === "profile") { try { renderProfile(); } catch (e) {} }
   if (page === "jobs") { try { renderJobsPage(); } catch (e) {} }

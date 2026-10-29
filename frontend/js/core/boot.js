@@ -2,6 +2,69 @@
 /* ============================================================
  * 9. 启动流程：先判断登录，再进入应用
  * ============================================================ */
+/* v41：把顶栏实测高度写进 --hdr-h。窄屏顶栏可能换行变高，
+ * 底部导航条与主内容区据此对齐，不再硬编码 58px 造成遮挡。 */
+function syncHeaderHeight() {
+  const h = document.querySelector("header");
+  if (!h) return;
+  try {
+    document.documentElement.style.setProperty("--hdr-h", Math.round(h.offsetHeight) + "px");
+  } catch (e) { /* 自定义属性不可用时保持 CSS 兜底值 */ }
+}
+
+/* v41：窄屏把「辅助工具」折叠成一行——演示时先看到对话，需要时点开。
+ * 只处理可见的辅助面板；默认隐藏的面板（如 #llm-panel[hidden]）不碰，
+ * 避免用户自行打开时拿到一个被清空的面板。 */
+const MOBILE_COMPACT_TARGETS = [
+  { sel: "#code-sandbox", off: "💻 代码题沙盒 · 两数之和（点击展开）", on: "💻 收起代码题沙盒" },
+];
+
+function initMobileCompact() {
+  MOBILE_COMPACT_TARGETS.forEach(cfg => {
+    let box;
+    try { box = document.querySelector(cfg.sel); } catch (e) { return; }
+    // 逻辑测试桩里没有完整 DOM（无 dataset / insertBefore），直接跳过
+    if (!box || !box.dataset || !box.classList || typeof box.insertBefore !== "function") return;
+    if (box.dataset.compactReady) return;
+    box.dataset.compactReady = "1";
+    box.classList.add("is-compact");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "compact-toggle";
+    btn.setAttribute("aria-expanded", "false");
+    btn.textContent = cfg.off;
+    btn.addEventListener("click", () => {
+      const on = box.classList.toggle("expanded");
+      btn.setAttribute("aria-expanded", on ? "true" : "false");
+      btn.textContent = on ? cfg.on : cfg.off;
+      fitChatHeight();
+    });
+    box.insertBefore(btn, box.firstChild);
+  });
+}
+
+/* v41：面试对话区按「当前视口 - 对话区顶部位置」精确占满剩余空间。
+ * 用实测值而非固定 offset，是因为上方内容（页面头/模式条/折叠条）会随宽度变化；
+ * 软键盘弹起时 visualViewport 变矮 → 重算 → 输入框始终留在可视区内。 */
+function fitChatHeight() {
+  const main = document.querySelector(".chat-main");
+  if (!main) return;
+  const page = document.querySelector('.app-page[data-page="interview"]');
+  try {
+    if (!window.matchMedia("(max-width: 900px)").matches || !page || !page.classList.contains("active")) {
+      main.style.height = "";
+      return;
+    }
+  } catch (e) { return; }
+  try {
+    if (typeof main.getBoundingClientRect !== "function") return;
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const top = main.getBoundingClientRect().top;
+    const h = Math.max(240, Math.round(vh - top - 12));
+    main.style.height = h + "px";
+  } catch (e) { /* 无布局环境（逻辑测试桩）跳过 */ }
+}
+
 function bootApp() {
   // 更新用户菜单
   renderUserMenu();
@@ -12,6 +75,11 @@ function bootApp() {
   syncAccentBtn();
   animateCounters();
   // 加载当前用户数据（依赖 currentUser，故放在这里）
+  initMobileCompact();
+  syncHeaderHeight();
+  window.addEventListener("resize", syncHeaderHeight);
+  window.addEventListener("resize", fitChatHeight);
+  if (window.visualViewport) window.visualViewport.addEventListener("resize", fitChatHeight);
   session = store.get("fm_session", { mode: "general", turns: [] });
   matchResult = store.get("fm_match", null);
   turn = session.turns.length;
