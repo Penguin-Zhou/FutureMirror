@@ -289,7 +289,8 @@ function personaBridgeHtml(p) {
     : "";
   return `
     <div class="persona-link" style="margin-top:16px">
-      <div class="pane-title" style="font-size:14px">🧬 这份结果怎么进入面试（只调提问方式，不参与评分）</div>
+      <div class="pane-title" style="font-size:14px">🎯 你的面试策略已调整 <span class="tag-demo">只调提问方式 · 不参与评分</span></div>
+      <p class="pl-lead">这是一份「参数」而不是标签：同一句回答，三位面试官会因为下面三条改问别的问题。</p>
       ${weak}
       <div class="pl-grid">${rows}</div>
       ${trace ? `<details class="pl-details"><summary>参数溯源：哪一维导致了什么</summary>${trace}</details>` : ""}

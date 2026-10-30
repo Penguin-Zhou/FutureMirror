@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1952</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2026</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -39,6 +39,7 @@ export const changelogHtml = `
   <ul class="cl-toc-list">
     <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
     <li><a href="#vbeta1-12"><span class="cl-toc-tag">Beta 1.1.2</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
+    <li><a href="#v44"><span class="cl-toc-tag">Beta 1.1.2 · v44</span><span class="cl-toc-title-txt">感知密度层 · 报告首屏一句诊断 + 点阵/分歧标记 + MBTI 策略前置 + 两处真实缺陷修复</span></a></li>
     <li><a href="#v41"><span class="cl-toc-tag">Beta 1.1.2 · v41</span><span class="cl-toc-title-txt">移动端适配层 · 窄屏单栏任务流 + 导航收敛 5 格 + 对话区自适应 + 交互去 hover 化</span></a></li>
     <li><a href="#v42"><span class="cl-toc-tag">Beta 1.1.2 · v42</span><span class="cl-toc-title-txt">移动端信息优先级裁剪 · 首屏单 CTA + 圆桌 chips + 报告渐进披露 + 键盘可见</span></a></li>
     <li><a href="#v43"><span class="cl-toc-tag">Beta 1.1.2 · v43</span><span class="cl-toc-title-txt">人格参数化层 · MBTI 从「孤岛测评」变成面试的输入参数 + 报告的关联维度</span></a></li>
@@ -236,6 +237,42 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
+       Beta 1.1.2 · v44 · 感知密度层
+       ======================================================== -->
+  <div class="version" id="v44">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 感知密度层（v44）</span>
+      <span class="v-title">把已经存在的纵深，摆到三秒能被看见的位置</span>
+      <span class="v-date">2026.10.30</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        前几轮把纵深堆出来了：可解释评分、实时锚点、Agent 分歧、人格参数、三级降级。问题换了一个——<strong>这些纵深需要点开三层才看得见</strong>。
+        这一版不加功能，只做一件事：把已有信息按「先结论、后依据」重排，并修掉沿途发现的两处真实缺陷。
+        报告页首屏从「五个数字」改成<strong>一句诊断 + 五维轮廓</strong>：诊断句由确定性规则拼装（取最强/最弱与分差三档），同一份报告刷新多少次都是同一句话；
+        维度卡改为<strong>点阵 + 数字双轨</strong>（点阵是视觉冗余，数字保留给读屏与打印）；分歧标记只标显著（≥10 分）且<strong>同一轮只标一次</strong>——
+        多个维度常常引用同一段原话，同一个事实不该被说四遍。雷达补一条<strong>目标线</strong>，并在图下写明它是「本产品的达标参考值，不是人群统计」。
+        学习路径从一串条目改成纵向时间线。
+        MBTI 结果页把「<strong>你的面试策略已调整</strong>」提到四维依据之前，先给结论再给依据；测评过程加四段维度进度条；选项按钮抬到 48px。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>一句诊断，可复现</b>：规则拼装（最强 / 最弱 / 分差三档），不调模型、不随机</div>
+        <div class="vh-item"><b>分歧落到卡上</b>：≥10 分才标，同轮只标一次，点开看两个镜头的原话与理由</div>
+        <div class="vh-item"><b>降级记账</b>：演练触发后写进报告「降级记录」（第几轮 / 演练触发 / 本地引擎接管），没触发就整块不渲染</div>
+        <div class="vh-item"><b>证据分散</b>：五个维度按相关度各挑一轮（抗压优先压力轮），不再五条全指向同一段话</div>
+        <div class="vh-item"><b>修缺陷一</b>：锚定标签此前先 insertBefore 后入 DOM，参考节点不在父节点 → 抛错被吞，标签从未出现（v42 遗留）</div>
+        <div class="vh-item"><b>修缺陷二</b>：窄屏顶栏固定 56px + 允许换行 → 内容溢出压住底部导航；改为高度自适应并回写 --hdr-h</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">67</div><div class="m-label">v44 新增断言</div></div>
+        <div class="metric"><div class="m-val">2026</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">34</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">375</div><div class="m-label">窄屏实测宽度（px）</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
        Beta 1.1.2 · v43 · 人格参数化层（MBTI → 面试输入参数）
        ======================================================== -->
   <div class="version" id="v43">
@@ -310,7 +347,7 @@ export const changelogHtml = `
     </div>
     <div class="version-body">
       <div class="v-summary">
-        上一轮把「不横向溢出」做完了，这一轮处理更前置的问题：<strong>信息密度</strong>。实测 iPhone 尺寸下落地页滚动高度 <strong>5735px ≈ 7 屏</strong>——功能矩阵一屏就 1926px，访客 10 秒内根本看不到「面试闭环」这条主线。做法是<strong>按优先级裁剪，而不是全量堆叠</strong>：<strong>① 首屏只留一句话价值主张 + 一个主 CTA</strong>（文案换成「上传简历，开始一场可溯源的模拟面试」），功能矩阵、四步流程、关键数字、运行规格、面试实录五个密集模块收成一行折叠条，默认收起、点击展开；⌘K 提示与数字条在手机上直接隐藏。<strong>② 圆桌去并排</strong>——五张 Agent 卡片在窄屏改为横向可滑的角色 chips（150–220px），「多 Agent 同屏」在桌面上是丰富度，在手机上只是噪音。<strong>③ 报告卡片渐进披露</strong>——每张卡默认只给「维度 + 分数 + 一句证据摘要」，点开才是底部半屏面板：顶部引用你的原话，下方评分理由与两位面试官的分歧判断，底部一个「定位到对话」按钮把它接回面试现场。<strong>④ 键盘是答辩级细节</strong>——不依赖 100vh，一切以 visualViewport 为准：可视高度写进 <code>--app-vh</code>、遮挡量写进 <code>--kb-h</code>，输入栏 sticky 贴底且字号 16px（绕开 iOS 聚焦缩放）；键盘弹起时布局视口不会变，文档也滚不动，所以焦点在回答框时进入「输入态」，让上方辅助信息暂时让位，保证发送按钮与最近几条对话同屏。
+        上一轮把「不横向溢出」做完了，这一轮处理更前置的问题：<strong>信息密度</strong>。实测 iPhone 尺寸下落地页滚动高度 <strong>5735px ≈ 7 屏</strong>——功能矩阵一屏就 1926px，访客 10 秒内根本看不到「面试闭环」这条主线。做法是<strong>按优先级裁剪，而不是全量堆叠</strong>：<strong>① 首屏只留一句话价值主张 + 一个主 CTA</strong>（文案换成「上传简历，开始一场可溯源的模拟面试」），功能矩阵、四步流程、关键数字、运行规格、面试实录五个密集模块收成一行折叠条，默认收起、点击展开；⌘K 提示与数字条在手机上直接隐藏。<strong>② 圆桌去并排</strong>——五张 Agent 卡片在窄屏改为横向可滑的角色 chips（150–220px），「多 Agent 同屏」在桌面上是丰富度，在手机上只是噪音。<strong>③ 报告卡片渐进披露</strong>——每张卡默认只给「维度 + 分数 + 一句证据摘要」，点开才是底部半屏面板：顶部引用你的原话，下方评分理由与两位面试官的分歧判断，底部一个「定位到对话」按钮把它接回面试现场。<strong>④ 键盘是体验级细节</strong>——不依赖 100vh，一切以 visualViewport 为准：可视高度写进 <code>--app-vh</code>、遮挡量写进 <code>--kb-h</code>，输入栏 sticky 贴底且字号 16px（绕开 iOS 聚焦缩放）；键盘弹起时布局视口不会变，文档也滚不动，所以焦点在回答框时进入「输入态」，让上方辅助信息暂时让位，保证发送按钮与最近几条对话同屏。
       </div>
       <div class="v-highlights">
         <div class="vh-item"><b>落地页从 7 屏压到 2.1 屏</b>：375px 宽下滚动高度 5735px → 1706px，首屏主 CTA 在 607px 处可见</div>

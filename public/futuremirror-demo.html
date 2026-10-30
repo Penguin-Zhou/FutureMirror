@@ -4455,15 +4455,16 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 .mbti-progress-wrap { margin-bottom: 14px; }
 .mbti-progress-bar { height: 4px; background: var(--line); }
 .mbti-progress-fill { height: 4px; background: var(--brand); transition: width .35s ease; }
-.mbti-q-card { border: 1px solid var(--line); padding: 16px; margin-bottom: 12px; }
-.mbti-q-text { font-size: 14.5px; font-weight: 700; line-height: 1.7; margin-bottom: 12px; }
+.mbti-q-card { border: 1px solid var(--line); padding: 16px; margin-bottom: 12px; max-width: 620px; }
+.mbti-q-text { font-size: 16px; font-weight: 700; line-height: 1.7; margin-bottom: 14px; }
 .mbti-opts { display: grid; gap: 8px; }
 .mbti-opt {
-  text-align: left; font-size: 13px; padding: 10px 12px; cursor: pointer;
+  text-align: left; font-size: 13.5px; padding: 13px 14px; min-height: 48px; cursor: pointer;
   background: transparent; border: 1px solid var(--line); color: var(--muted);
-  font-family: inherit; transition: border-color .18s ease, color .18s ease;
+  font-family: inherit; transition: border-color .18s ease, color .18s ease, background .18s ease;
 }
 .mbti-opt:hover { border-color: var(--ink); color: var(--ink); }
+.mbti-opt:active { background: var(--brand-bg); border-color: var(--brand); color: var(--ink); }
 .mbti-type-big {
   font-family: var(--mono); font-size: 34px; font-weight: 700;
   letter-spacing: 3px; color: var(--ink);
@@ -4880,11 +4881,15 @@ img, svg, video, canvas { max-width: 100%; }
 @media (max-width: 640px) {
   /* ⌘K 在手机上无意义（没有 ⌘ 键），其入口由底栏「更多」承担 */
   .kbd-hint { display: none !important; }
-  /* v42：顶栏允许换行并让标题可收缩——之前 nowrap 会把 Logo 文案裁掉 */
-  header .nav { gap: 8px; flex-wrap: wrap; row-gap: 6px; }
-  .logo { font-size: 15px; gap: 6px; flex: 0 1 auto; min-width: 0; }
+  /* v44：顶栏换行必须同时「允许变高」。
+   * 之前 .nav 固定 height:56px + flex-wrap:wrap，换行后的内容溢出容器，
+   * 压在 tabbar 上、与 logo 相互覆盖——这才是「窄屏顶栏看起来糊成一团」的根因。
+   * 改成 min-height + 高度自适应，syncHeaderHeight() 会把真实高度写回 --hdr-h，
+   * tabbar 与主内容区随之让位。 */
+  header .nav { gap: 6px; flex-wrap: wrap; row-gap: 4px; height: auto; min-height: 54px; padding: 5px 0; }
+  .logo { font-size: 14px; gap: 6px; flex: 0 1 auto; min-width: 0; }
   .logo svg { width: 24px; height: 24px; flex: none; }
-  .nav-right { gap: 6px; flex-wrap: wrap; row-gap: 6px; justify-content: flex-end; }
+  .nav-right { gap: 5px; flex-wrap: wrap; row-gap: 4px; justify-content: flex-end; }
   .nav-right .btn-icon { min-width: 34px; min-height: 34px; padding: 4px; }
   .nav-right .btn { white-space: nowrap; font-size: 11.5px; padding-left: 8px; padding-right: 8px; }
   /* 状态胶囊只留圆点，颜色语义（真实=绿 / Mock=黄 / 离线=朱红）仍在 title 中可读 */
@@ -4896,6 +4901,23 @@ img, svg, video, canvas { max-width: 100%; }
   .banner .wrap > span { display: none; }
   .banner .btn-primary { margin-left: auto; flex: none; font-size: 11.5px; padding: 0 10px; }
   .banner .btn-ghost { flex: none; }
+}
+
+/* v44：≤480 把顶栏收到「图标级」——375/390 上原先四项挤成两行，
+ * 名字与下拉箭头一起把 logo 顶出可视区。这里只收窄，不删功能：
+ * 主题色切换仍在设置页与「更多」里可达。 */
+@media (max-width: 480px) {
+  .devmode-text { display: none; }
+  #accent-btn { display: none; }
+  #nav-username, .user-caret { display: none; }
+  .user-btn { padding: 3px; }
+  /* 375 上给顶栏腾 30px：logo 降一档字号 + 左右内边距收窄，
+   * 否则「开发者模式」按钮会被挤出可视区右边（裁成半个图标）。 */
+  header .wrap { padding-left: 14px; padding-right: 14px; }
+  header .logo { font-size: 13px; gap: 5px; }
+  header .logo svg { width: 22px; height: 22px; }
+  header .nav-right { gap: 4px; }
+  header .nav-right .btn { padding-left: 6px; padding-right: 6px; }
 }
 
 /* ---------- 10) 极窄屏（≤360px）与对话头部：再挤一挤 ---------- */
@@ -4937,15 +4959,15 @@ img, svg, video, canvas { max-width: 100%; }
 @media (max-width: 640px) {
   .report-actions {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 6px !important;
     justify-content: stretch !important;
     width: 100%;
     min-width: 0;
   }
   .report-actions .btn {
-    width: 100%; min-width: 0; min-height: 38px;
-    font-size: 12px; padding: 7px 8px;
+    width: 100%; min-width: 0; min-height: 36px;
+    font-size: 11.5px; padding: 6px 4px;
     justify-content: center; white-space: nowrap;
   }
 }
@@ -5051,8 +5073,8 @@ img, svg, video, canvas { max-width: 100%; }
 .sh-lv.g-mid { color: var(--amber); }
 .sh-lv.g-low { color: var(--green); }
 .sheet-close {
-  flex: none; width: 34px; height: 34px; border: 1px solid var(--line);
-  background: transparent; color: var(--muted); font-size: 18px; line-height: 1;
+  flex: none; width: 44px; height: 44px; border: 1px solid var(--line);
+  background: transparent; color: var(--muted); font-size: 20px; line-height: 1;
   cursor: pointer; touch-action: manipulation;
 }
 .sheet-quote {
@@ -5264,6 +5286,111 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
   .mt-q { grid-column: 1 / -1; }
   .pb-trace, .pl-trace { grid-template-columns: 70px 1fr; }
   .pb-eff, .pl-trace span:last-child { grid-column: 1 / -1; }
+}
+
+/* ============================================================
+ * v44 · 感知密度层
+ *   报告页与 MBTI 页是访客停留最久的两屏。这一层不改功能，
+ *   只做一件事：把「已经有纵深」的信息在 3 秒内摆到能看见的位置。
+ *   规范沿用蓝图编辑风：直角、发丝线、零投影；朱红只做强调。
+ * ============================================================ */
+
+/* ---------- ① 报告页：首屏诊断 + 五维轮廓 ---------- */
+.report-top { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px; }
+.rt-lead { min-width: 0; }
+.report-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+.report-headline {
+  display: grid; grid-template-columns: 118px 1fr; gap: 18px;
+  margin-top: 14px; padding: 14px 16px;
+  border: 1px solid var(--line); border-left: 3px solid var(--brand);
+  background: var(--card);
+}
+.rh-total { align-self: center; }
+.rh-num { font-family: var(--mono); font-size: 52px; line-height: 1; font-weight: 800; color: var(--brand); }
+.rh-cap { font-size: 11.5px; color: var(--muted); margin-top: 5px; letter-spacing: .04em; }
+.rh-mid { min-width: 0; }
+.rh-say { margin: 0 0 10px; font-size: 14px; line-height: 1.75; color: var(--ink); }
+.rh-strip { display: grid; gap: 3px; }
+.rp-row { display: grid; grid-template-columns: 70px 1fr 30px; gap: 8px; align-items: center; font-size: 11.5px; }
+.rp-name { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-track { display: block; height: 6px; background: var(--chip-bg); }
+.rp-track i { display: block; height: 100%; background: var(--brand); }
+.rp-num { font-family: var(--mono); font-size: 11px; color: var(--faint); text-align: right; }
+
+/* ---------- ② 维度卡：点阵评分 + 分歧标记 ---------- */
+.dim-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dim-dots { display: inline-flex; gap: 3px; }
+.dim-dots i { width: 7px; height: 7px; border: 1px solid var(--line-2); display: block; }
+.dim-dots i.on { background: var(--brand); border-color: var(--brand); }
+.dim-score { font-family: var(--mono); font-size: 12.5px; color: var(--ink); margin-left: auto; }
+.dim-gap {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .03em;
+  padding: 1px 5px; border: 1px solid currentColor; color: var(--muted); white-space: nowrap;
+}
+.dim-gap.g-high { color: var(--brand); }
+.dim-gap.g-mid { color: var(--amber); }
+.radar-legend { text-align: center; margin: 6px 0 0; font-size: 11px; }
+
+/* ---------- ③ 学习路径：纵向时间线（保持 DOM 不变，只改排版） ---------- */
+.plan-list { position: relative; padding-left: 15px; margin-top: 8px; }
+.plan-list::before {
+  content: ""; position: absolute; left: 3px; top: 10px; bottom: 10px; width: 1px; background: var(--line);
+}
+.plan-list .plan-day { position: relative; }
+.plan-list .plan-day::before {
+  content: ""; position: absolute; left: -15px; top: 11px; width: 7px; height: 7px;
+  background: var(--card); border: 1px solid var(--brand);
+}
+.plan-list .plan-day[data-day="0"]::before { background: var(--brand); }
+
+/* <q> 的自动引号会和模板里的中文引号叠成双层（「“…”」），统一关掉自动引号 */
+q { quotes: none; }
+
+/* ---------- ②b 维度卡之间：一条发丝线，五张卡才成「卡片流」而不是长列表 ---------- */
+#dims .dim-row + .dim-row {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-bottom: 12px;
+}
+
+/* ---------- ④ 报告页：降级账本 ---------- */
+.degrade-log .dl-row {
+  display: grid; grid-template-columns: 62px 1fr auto; gap: 4px 10px;
+  padding: 6px 0; border-top: 1px dashed var(--line); font-size: 12.5px; align-items: baseline;
+}
+.degrade-log .dl-turn { font-family: var(--mono); font-size: 11.5px; color: var(--brand); }
+.degrade-log .dl-why { color: var(--ink); }
+.degrade-log .dl-how { color: var(--muted); font-size: 11.5px; }
+
+/* ---------- ⑤ MBTI：四段进度 + 结果页边界 ---------- */
+.mbti-stage { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 8px; }
+.mbti-stage i { display: block; height: 5px; background: var(--line); }
+.mbti-stage i.done { background: var(--brand); opacity: .45; }
+.mbti-stage i.now { background: var(--brand); }
+.mbti-boundary {
+  margin: 14px 0 0; font-size: 11.5px; line-height: 1.75; color: var(--faint);
+  border-top: 1px dashed var(--line); padding-top: 8px;
+}
+.pl-lead { margin: 2px 0 8px; font-size: 12.5px; line-height: 1.7; color: var(--muted); }
+
+/* 答题态：收起页头描述，题干与选项直接进入视口（边界说明在结果页底部保留） */
+body.mbti-quizzing .page-header p,
+body.mbti-resulting .page-header p { display: none; }
+body.mbti-quizzing .page-header,
+body.mbti-resulting .page-header { padding-bottom: 6px; margin-bottom: 8px; }
+body.mbti-quizzing .page-header h2 { font-size: 17px; }
+
+@media (max-width: 640px) {
+  .report-headline { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
+  .rh-num { font-size: 44px; }
+  .rh-total { display: flex; align-items: baseline; gap: 10px; }
+  .rh-cap { margin-top: 0; }
+  .rh-say { font-size: 13.5px; line-height: 1.7; margin-bottom: 8px; }
+  .rh-strip { gap: 2px; }
+  .degrade-log .dl-row { grid-template-columns: 62px 1fr; }
+  .degrade-log .dl-how { grid-column: 1 / -1; }
+  .rp-row { grid-template-columns: 64px 1fr 28px; }
 }
 </style>
 </head>
@@ -6432,14 +6559,15 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
       <div class="pane-title">🧠 MBTI 职业性格测评
         <span class="tag-demo">v43 · 端侧计算 · 结果仅存本地</span>
       </div>
-      <p class="hint" style="margin-top:0;margin-bottom:12px">
-        答题约需 2 分钟。结果有两个去处：写入个人中心，以及作为<b>面试提问策略参数</b>——它只改变面试官「怎么问」，<b>不参与评分</b>。全部计算在本地完成，不上传服务器。
-      </p>
-      <div class="notice notice-info" style="margin-bottom:12px">⚠️ <b>本测评为端侧简易量表，不是专业心理测评</b>：结果仅作求职参考，不能作为心理诊断、职业决策或能力评价的依据。</div>
-
       <div id="mbti-resume" hidden></div>
 
       <div id="mbti-intro">
+        <!-- v44：说明与边界声明收进 #mbti-intro。此前它们写在外面，intro.hidden 管不到，
+             测评完成后结果页仍被这两段顶着，首屏看不到 ESTJ 与策略卡。 -->
+        <p class="hint" style="margin-top:0;margin-bottom:12px">
+          答题约需 2 分钟。结果有两个去处：写入个人中心，以及作为<b>面试提问策略参数</b>——它只改变面试官「怎么问」，<b>不参与评分</b>。全部计算在本地完成，不上传服务器。
+        </p>
+        <div class="notice notice-info" style="margin-bottom:12px">⚠️ <b>本测评为端侧简易量表，不是专业心理测评</b>：结果仅作求职参考，不能作为心理诊断、职业决策或能力评价的依据。</div>
         <div class="grid2">
           <div>
             <div class="pane-title" style="font-size:14px">📐 四个维度</div>
@@ -9374,9 +9502,11 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
     const bubble = document.createElement("div");
     bubble.className = "msg msg-ai";
     bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
-    /* v42：先插锚定标签，再插气泡——标签永远出现在追问内容上方 */
-    openAnchorRefTag(body, bubble, anchors.length);
+    /* v42 / v44 修复：锚定标签必须插在「已入 DOM 的气泡」之前。
+     * 原先先 insertBefore 再 appendChild，参考节点还不在父节点里，
+     * insertBefore 直接抛 NotFoundError 被 try/catch 吞掉——标签从未出现。 */
     body.appendChild(bubble);
+    openAnchorRefTag(body, bubble, anchors.length);   // 标签永远落在追问内容上方
     chatAutoScroll(true);
     let i = 0;
     const timer = setInterval(() => {
@@ -9496,9 +9626,9 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   bubble.className = "msg msg-ai";
   bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
   bubble.innerHTML = '<span class="caret"></span>';
-  /* v42：锚定标签先于气泡插入，追问落地后由 annotateAnchorRef 更新状态 */
-  openAnchorRefTag(body, bubble, anchors.length);
+  /* v42 / v44 修复：先入 DOM 再插标签（否则 insertBefore 的参考节点不在父节点，抛错被吞） */
   body.appendChild(bubble);
+  openAnchorRefTag(body, bubble, anchors.length);
   chatAutoScroll(true);
 
   const ctrl = new AbortController();
@@ -9541,6 +9671,13 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
     bubble.remove();
     const reason = e.name === "AbortError" ? "超时 60s" : e.message;
     showDegradeBanner(speaker, reason, degradeDrill);
+    /* v44：把降级写进会话（随后进报告）——演练才有可追溯的记录价值，
+     * 否则它就只是演示当下的一次表演。turn-1 是本轮下标，与气泡 data-turn 对齐。 */
+    try {
+      if (!Array.isArray(session.degradeLog)) session.degradeLog = [];
+      session.degradeLog.push({ turn: turn - 1, drill: !!degradeDrill, at: Date.now(), reason: String(reason).slice(0, 60) });
+      persistSession();
+    } catch (err) {}
     degradeDrill = false;
     toast("真实模型调用失败（" + reason + "），已自动降级为本地推理，面试继续");
     addTimeline("系统", "⚠️ 真实模型调用失败 → 自动降级 Mock 兜底", false);
@@ -9576,6 +9713,7 @@ function restartInterview() {
   const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null, voiceSegments: (session.voiceSegments || []).slice() };
   session.turns = [];
   session.voiceSegments = [];   // v40：新一轮清空表达节奏的时间戳样本
+  session.degradeLog = [];      // v44：降级记录按场次记账，不把上一场的兜底算进这一场
   camWasActiveThisSession = false;   // 新一轮面试，重置摄像头开启标记（上一轮的摄像头状态不带入）
   // v22.1：一轮面试对应后端一条独立会话记录——清掉 interviewId，
   // 下次生成报告时新建（否则幂等 /sync 会把新一轮问答判重为「已入库」，
@@ -9759,9 +9897,9 @@ function restoreSession() {
     const div = document.createElement("div");
     div.className = "msg msg-ai";
     div.textContent = t.question;
-    /* v42：恢复时同样重建气泡上方的锚定标签，刷新后解释链不断 */
-    openAnchorRefTag($("chat-body"), div, anchors.length);
+    /* v42 / v44 修复：恢复会话同理——先把气泡放进 DOM，再插上方的锚定标签 */
     $("chat-body").appendChild(div);
+    openAnchorRefTag($("chat-body"), div, anchors.length);
     if (t.anchorRef && t.anchorRef.length) annotateAnchorRef(div, t.question, anchors, i);
     addTimeline(t.agent, `（恢复）提问：${t.question.slice(0, 30)}…`, false);
     addTimeline("观察员", `（恢复）证据 #${i + 1}：${t.notes}`, "note");
@@ -10730,6 +10868,7 @@ async function askRag(skipLlm) {
   </div>`;
 }
 
+"use strict";
 /* ============================================================
  * 7. 评估报告（由真实面试对话动态生成，可解释评分）
  * ============================================================ */
@@ -10801,7 +10940,76 @@ function buildPlan(dims) {
   return { plan, weakest: sorted[0] };
 }
 
-function radarSVG(data) {
+/* ============================================================
+ * v44 · 报告首屏：把「一堆分数」压成一句诊断 + 一张轮廓
+ * ------------------------------------------------------------
+ * 报告页的停留通常只有十几秒，第一眼需要的不是 5 个数字，
+ * 而是「我强在哪、该补哪」。这句诊断由确定性规则拼出（不调 LLM），
+ * 因此每次刷新同一份报告得到同一句话，可被断言、可被复现。
+ * ============================================================ */
+/**
+ * @param {Array<{dimension:string,score:number}>} dims 五维得分
+ * @returns {{say:string,tone:string,gap:number,best:object|null,worst:object|null}}
+ */
+function reportDiagnosis(dims) {
+  const list = (dims || []).slice().sort((a, b) => b.score - a.score);
+  if (!list.length) return { say: "", tone: "flat", gap: 0, best: null, worst: null };
+  const best = list[0];
+  const worst = list[list.length - 1];
+  const gap = best.score - worst.score;
+  let say;
+  if (gap < 8) {
+    say = `五维分布集中（${worst.score}–${best.score}），没有明显短板——下一步是把「${best.dimension}」做成能复述三分钟的完整故事。`;
+  } else if (worst.score < 60) {
+    say = `「${best.dimension}」是本场最强项（${best.score}），「${worst.dimension}」是最需要投入的方向（${worst.score}）——相差 ${gap} 分，能力结构还不均衡。`;
+  } else {
+    say = `「${best.dimension}」是本场最强项（${best.score}），「${worst.dimension}」相对偏弱（${worst.score}）——差距 ${gap} 分，属于可接受的波动。`;
+  }
+  return { say, tone: gap >= 20 ? "wide" : gap >= 8 ? "mid" : "flat", gap, best, worst };
+}
+
+/** 五维轮廓缩略：5 条短轨，比完整雷达更快被扫读 */
+function profileStripHtml(dims) {
+  const list = dims || [];
+  const aria = "五维得分轮廓：" + list.map((d) => d.dimension + " " + d.score + " 分").join("，");
+  return `<div class="rh-strip" role="img" aria-label="${escHtml(aria)}">${list
+    .map(
+      (d) =>
+        `<div class="rp-row"><span class="rp-name">${escHtml(d.dimension)}</span><span class="rp-track"><i style="width:${Math.max(
+          2,
+          Math.min(100, d.score)
+        )}%"></i></span><span class="rp-num">${d.score}</span></div>`
+    )
+    .join("")}</div>`;
+}
+
+/* 点阵评分：5 格对应 5 档，比纯数字更容易一眼比较。
+ * 数字仍然保留（可读性 + 读屏 + 打印），点阵只做视觉冗余。 */
+function dimDots(score) {
+  const n = Math.max(0, Math.min(5, Math.round((Number(score) || 0) / 20)));
+  let out = "";
+  for (let i = 0; i < 5; i++) out += `<i class="${i < n ? "on" : ""}"></i>`;
+  return `<span class="dim-dots" aria-hidden="true">${out}</span>`;
+}
+
+/** 该轮回答的两个镜头分歧（无数据返回 null，不伪造一致） */
+function lensGapFor(views, turn) {
+  const items = (views && views.items) || [];
+  const hit = items[turn - 1];
+  return hit && typeof hit.gap === "number" ? hit.gap : null;
+}
+
+/** 分歧标记：只在值得注意时出现（≥10 分）。
+ *  两位面试官在 0–9 分内摆动属于同一判断区间，标在卡上只会稀释信号；
+ *  完整的分歧视图（含 8 分起的每一轮）仍在报告下方的「Agent 分歧视图」里。 */
+function dimGapTag(gap) {
+  if (gap == null || gap < 10) return "";
+  const lv = gapLevel(gap);
+  return `<span class="dim-gap ${lv.cls}" title="同一段原话：技术面与 HR 面评分相差 ${gap} 分">⚖ ${gap}</span>`;
+}
+
+function radarSVG(data, opts) {
+  const ref = opts && typeof opts.ref === "number" ? opts.ref : 0;
   const cx = 165, cy = 160, R = 108, n = data.length;
   const angle = i => (Math.PI * 2 * i / n) - Math.PI / 2;
   const pt = (i, r) => [cx + Math.cos(angle(i)) * r, cy + Math.sin(angle(i)) * r];
@@ -10817,8 +11025,13 @@ function radarSVG(data) {
     return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="12.5" fill="var(--muted)">${d.dimension}</text>
             <text x="${x}" y="${y + 15}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="var(--faint)">${d.score}</text>`;
   }).join("");
+  /* v44：目标线——明确是「本产品设定的达标参考」，不是人群统计基线，
+   * 所以文案里不出现「同岗位平均」这类无法提供来源的说法。 */
+  const refPoly = ref
+    ? `<polygon class="radar-ref" points="${data.map((_, i) => pt(i, R * ref / 100).join(",")).join(" ")}" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 4"/>`
+    : "";
   return `<svg viewBox="0 0 330 330" style="width:100%;max-width:340px" role="img" aria-label="能力雷达图">
-    ${rings}${axes}
+    ${rings}${axes}${refPoly}
     <polygon class="radar-pop" points="${vpts}" fill="var(--brand-bg)" stroke="var(--brand)" stroke-width="2"/>
     ${dots}${labels}
   </svg>`;
@@ -10969,6 +11182,31 @@ function personaFitCard(dims, p) {
     </div>`;
 }
 
+/* ============================================================
+ * v44 · 降级账本：本场有没有走过兜底路径，报告里写明
+ * ------------------------------------------------------------
+ * 降级演练如果只活在演示那一刻，它仍然是一次「表演」。写进报告后，
+ * 它就变成一条可追溯记录：第几轮、由什么触发、结果是否标注。
+ * 没有触发时整块不渲染——不虚构一次「成功兜底」。
+ * ============================================================ */
+function degradeLogCard(log) {
+  const list = Array.isArray(log) ? log : [];
+  if (!list.length) return "";
+  const rows = list
+    .map(
+      (x) =>
+        `<div class="dl-row"><span class="dl-turn">第 ${x.turn} 轮</span><span class="dl-why">${
+          x.drill ? "演练触发（主动失效）" : "网关无响应"
+        }</span><span class="dl-how">本地引擎接管 · 未伪造结果</span></div>`
+    )
+    .join("");
+  return `<div class="card degrade-log" id="report-degrade" style="padding:14px 16px;margin-top:14px">
+      <div class="pane-title" style="margin-bottom:2px">⚡ 降级记录<span class="tag-demo">共 ${list.length} 次 · 对话未中断</span></div>
+      <p class="hint" style="margin:2px 0 8px">在线通道不可用时，该轮追问由本地确定性引擎接管并<b>在气泡上标注</b>；其余轮次仍走真实模型，报告评分不因降级而改判。</p>
+      ${rows}
+    </div>`;
+}
+
 function reportStatusCard(st) {
   const count = st && st.count ? st.count : 0;
   const pr = st && st.presence_rate != null ? st.presence_rate : null;
@@ -11087,26 +11325,31 @@ async function renderReport(force) {
     ? (scoring.llm_enriched
         ? ` <span class="tag-engine">确定性引擎 ＋ LLM 增强</span>`
         : ` <span class="tag-engine">确定性引擎（未配置 LLM）</span>`)
-    : ` <span class="tag-engine">启发式演示</span>`;
+    : "";   // v44：标题已标「启发式引擎演示」，不再重复一遍
+  const diagnosis = reportDiagnosis(dims);
   box.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px">
-      <div>
+    <div class="report-top">
+      <div class="rt-lead">
         <div class="pane-title">📊 评估报告（可解释评分） <span class="tag-demo">${serverScored ? "服务端评分引擎 · 已落库" : "启发式引擎演示"}</span>${engineBadge}</div>
-        <p class="hint" style="margin-top:0">基于本次 ${session.turns.length} 轮真实对话动态生成——每条证据均引用你的回答原话</p>
+        <p class="hint" style="margin:0">基于本次 ${session.turns.length} 轮真实对话动态生成——每条证据均引用你的回答原话</p>
       </div>
-      <div style="text-align:right;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;justify-content:flex-end">
-        <div class="report-actions" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-          <button class="btn btn-outline btn-sm" onclick="copyReportMarkdown()">📋 复制 Markdown</button>
-          <button class="btn btn-outline btn-sm" onclick="exportReportCsv()">📊 导出 CSV</button>
-          <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 导出 PDF</button>
-          <button class="btn btn-outline btn-sm" onclick="shareReport()">🔗 分享报告</button>
-          <button class="btn btn-outline btn-sm" onclick="restartInterview()">🔄 再来一次</button>
-          <button class="btn btn-outline btn-sm" onclick="askReportFollowup()" title="把本次报告注入 AI 小助手，针对维度与证据追问细节">🤖 追问细节</button>
-        </div>
-        <div>
-          <div style="font-size:36px;font-weight:800;color:var(--brand);line-height:1" id="report-total" data-count="${total}">${total}</div>
-          <div class="hint" style="margin-top:0">综合得分 / 100</div>
-        </div>
+      <div class="report-actions">
+        <button class="btn btn-outline btn-sm" onclick="copyReportMarkdown()" title="复制为 Markdown 文本，便于贴进笔记或文档">📋 复制文本</button>
+        <button class="btn btn-outline btn-sm" onclick="exportReportCsv()">📊 导出 CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 导出 PDF</button>
+        <button class="btn btn-outline btn-sm" onclick="shareReport()">🔗 分享报告</button>
+        <button class="btn btn-outline btn-sm" onclick="restartInterview()">🔄 再来一次</button>
+        <button class="btn btn-outline btn-sm" onclick="askReportFollowup()" title="把本次报告注入 AI 小助手，针对维度与证据追问细节">🤖 追问细节</button>
+      </div>
+    </div>
+    <div class="report-headline tone-${diagnosis.tone}" id="report-headline">
+      <div class="rh-total">
+        <div class="rh-num" id="report-total" data-count="${total}">${total}</div>
+        <div class="rh-cap">综合得分 / 100</div>
+      </div>
+      <div class="rh-mid">
+        <p class="rh-say">${escHtml(diagnosis.say)}</p>
+        ${profileStripHtml(dims)}
       </div>
     </div>
     ${renderReportCover()}
@@ -11114,25 +11357,48 @@ async function renderReport(force) {
       ? `本报告由<b>服务端确定性评分引擎</b>生成（每条证据引用真实回答，问答记录已写入 SQLite 可跨设备恢复）。${scoring.llm_enriched ? "<b>已接入 LLM</b>：在确定性分数之外额外生成逐维质性点评（分数始终由确定性引擎给出，可解释、不幻觉）。" : "当前服务端未配置 LLM，点评由规则引擎生成；配置后可在确定性分数之外叠加 LLM 质性点评。"}`
       : "本报告由<b>无 API Key 时的兜底规则引擎</b>生成，用于演示「可解释评分」的结构与证据链（每条证据引用真实回答、学习路径按最弱维度动态生成）。"}</div>
     <div class="report-grid" style="margin-top:16px">
-      <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims)}</div>
+      <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims, { ref: 70 })}</div>
+        <p class="hint radar-legend">实线为本次得分，虚线为目标线 70 分（本产品的达标参考值，非人群统计）</p>
         <table class="sr-only"><caption>各维度得分（满分 100）</caption><thead><tr><th>维度</th><th>得分</th></tr></thead><tbody>${dims.map((d) => `<tr><td>${d.dimension}</td><td>${d.score}</td></tr>`).join("")}</tbody></table>
       </div>
-      <div><div class="pane-title">维度得分</div><div id="dims">${dims.map((d, i) => `
+      <div><div class="pane-title">维度得分 <span class="tag-demo">点开看原话</span></div><div id="dims">${(() => {
+        /* 分歧是「针对某一段原话」的，不是「针对某个维度」的。
+         * 多个维度可能引用同一轮（同一段话同时是深度与结构的证据），
+         * 若每张卡都挂一次标记，同一个事实会被说四遍——只在该轮首次出现处标。 */
+        const gapMarked = {};
+        /* 同一句原话只当一次证据：维度卡按顺序领取，已用过的片段让给后面的维度 */
+        const usedEv = new Set();
+        return dims
+          .map((d, i) => {
+            const ev = dimEvidenceFor(d, session.turns, i, usedEv);
+            const gap = lensGapFor(lensViews, ev.turn);
+            const showGap = gap != null && gap >= 10 && !gapMarked[ev.turn];
+            if (showGap) gapMarked[ev.turn] = true;
+            return `
         <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}"
              role="button" tabindex="0" aria-expanded="false"
              onclick="openDimSheet(${i})"
              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDimSheet(${i});}">
-          <div class="dim-head"><b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b><span style="color:var(--muted)">${d.score}</span></div>
+          <div class="dim-head">
+            <b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b>
+            ${dimDots(d.score)}
+            <span class="dim-score">${d.score}</span>
+            ${showGap ? dimGapTag(gap) : ""}
+          </div>
           <div class="dim-bar"><div style="width:${d.score}%"></div></div>
-          <div class="dim-summary">📎 证据摘要：<q>“${escHtml(dimEvidenceFor(d, session.turns, i).digest)}”</q></div>
+          <div class="dim-summary">📎 证据摘要：<q>“${escHtml(ev.digest)}”</q></div>
           <div class="dim-full">
             <div class="dim-comment">${d.comment}</div>
             <div class="dim-tip" role="tooltip">${d.dimension} · ${d.score}<br>${d.comment}</div>
           </div>
           <div class="dim-more">查看完整引用 →</div>
-        </div>`).join("")}</div></div>
+        </div>`;
+          })
+          .join("");
+      })()}</div></div>
     </div>
     ${reportStatusCard(camStatus)}
+    ${degradeLogCard(session.degradeLog)}
     ${typeof personaFitCard === "function" ? personaFitCard(dims, typeof activePersona === "function" ? activePersona() : null) : ""}
     ${rhythmCard(rhythm)}
     ${narrative ? `<div class="notice-llm">🧭 教练总评：${esc(narrative)}</div>` : ""}
@@ -11152,8 +11418,8 @@ async function renderReport(force) {
       <div>
         <div class="pane-title">7 天学习路径（按最弱维度动态生成）</div>
         <div class="plan-banner">因你在【${weakest.dimension}】得分最低（${weakest.score} 分），Day 1-3 已为你安排专项训练</div>
-        <div id="plan">${plan.map(p => `
-          <div class="plan-day"><b>${p.day}</b><span>${p.task}</span></div>`).join("")}</div>
+        <div id="plan" class="plan-list">${plan.map((p, i) => `
+          <div class="plan-day" data-day="${i}"><b>${p.day}</b><span>${p.task}</span></div>`).join("")}</div>
         <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="switchTab('plan')" title="把本路径导入学习计划板块：每日任务 + 时间分配 + 完成打卡">进入学习计划板块（每日任务 + 时间分配 + 打卡）→</button>
       </div>
     </div>
@@ -11206,7 +11472,9 @@ async function renderReport(force) {
 
   /* v42：给每张维度卡挂上证据上下文（供底部面板读取，不新增全局 id） */
   try {
-    lastDimEvidence = dims.map((d, i) => dimEvidenceFor(d, session.turns, i));
+    /* 与维度卡同一套去重顺序：面板里看到的引用必须和卡上那句一致 */
+    const usedEv = new Set();
+    lastDimEvidence = dims.map((d, i) => dimEvidenceFor(d, session.turns, i, usedEv));
   } catch (e) { lastDimEvidence = []; }
 }
 
@@ -11220,6 +11488,30 @@ let lastDimEvidence = [];
 let dimSheetEl = null;
 
 /**
+ * 每个维度「最该引用哪一轮回答」。
+ * 不这么做的话，五个维度都会挑中最长的那一轮——报告看起来像只有一段话，
+ * 五条证据全指向同一处，反而削弱了「每条评分都有出处」的说服力。
+ * @param {object} t 轮次对象
+ * @param {string} key 维度 key
+ * @returns {number} 相关度（越大越该被引用）
+ */
+function turnRelevance(t, key) {
+  const a = String((t && t.answer) || "");
+  const digits = (a.match(/\d/g) || []).length;
+  const skills = (typeof SKILL_DICT !== "undefined" ? SKILL_DICT : []).filter((s) => a.includes(s)).length;
+  const star = (a.match(/背景|目标|负责|通过|最终|结果|因此|于是/g) || []).length;
+  const filler = (a.match(/然后|那个|就是/g) || []).length;
+  const len = a.length;
+  if (key === "depth") return digits * 2 + skills * 2 + Math.min(6, len / 60);
+  if (key === "logic") return star * 3 + Math.min(4, len / 120);
+  if (key === "expression") return Math.min(6, len / 50) - filler * 2;
+  if (key === "fit") return skills * 2 + digits;
+  /* 抗压维度优先引用压力轮；没有压力轮时，短回答更能暴露临场状态 */
+  if (key === "stress") return (t && t.mode === "pressure" ? 8 : 0) + (len < 70 ? 1.5 : 0);
+  return 0;
+}
+
+/**
  * 为某个维度挑一句「代表证据」：优先该维度关心的锚点类型，
  * 找不到就诚实退回「回答开头片段」，不凭空编造引用。
  * @param {object} d 维度对象
@@ -11227,33 +11519,38 @@ let dimSheetEl = null;
  * @param {number} dimIdx 维度序号
  * @returns {{quote:string, turn:number, from:string, note:string}}
  */
-function dimEvidenceFor(d, turns, dimIdx) {
+function dimEvidenceFor(d, turns, dimIdx, used) {
   const list = Array.isArray(turns) ? turns : [];
   const kindByDim = { depth: "metric", logic: "action", expression: "skill", fit: "skill", stress: "action" };
   const want = kindByDim[d && d.key] || "skill";
+  const key = (d && d.key) || "";
+  const taken = used && typeof used.has === "function" ? used : null;
   const pool = [];
   list.forEach((t, ti) => {
-    const anchors = (t.anchors && t.anchors.length) ? t.anchors : anchorPhrases(t.answer || "");
-    anchors.forEach(a => {
-      pool.push({
-        text: a.text,
-        kind: a.kind,
-        turn: ti + 1,
-        answer: String(t.answer || ""),
-        note: t.notes || "",
-        match: a.kind === want ? 1 : 0,
-      });
-    });
+    const answer = String(t.answer || "");
+    const anchors = (t.anchors && t.anchors.length) ? t.anchors : anchorPhrases(answer);
+    const rel = turnRelevance(t, key);
+    const push = (text, kind) =>
+      pool.push({ text, kind, turn: ti + 1, answer, note: t.notes || "", match: kind === want ? 1 : 0, rel });
+    anchors.forEach(a => push(a.text, a.kind));
+    /* 这一轮没有任何可锚定片段（比如压力轮全是短句与判断）时，
+     * 仍保留一个「开头片段」备选——否则最该被证据化的那一轮反而引用不到。 */
+    if (!anchors.length && answer) push(answer.slice(0, 24), "opening");
   });
   if (pool.length) {
-    // 同类型优先，其次取更长的片段（信息量更足）
-    const best = pool.slice().sort((a, b) =>
-      b.match - a.match || b.text.length - a.text.length)[0];
+    /* 先取与本维度最相关的那一轮，再看锚点类型是否对口，最后取信息量更足的片段。
+     * 已经在上一个维度用过的片段排到最后——五个维度都引用同一句会让「每条评分都有出处」
+     * 变成「五条评分都出自同一句」，反而削弱证据感；实在没有第二句时才复用。 */
+    const fresh = (x) => (taken && taken.has(x.text) ? 1 : 0);
+    const best = pool
+      .slice()
+      .sort((a, b) => fresh(a) - fresh(b) || b.rel - a.rel || b.match - a.match || b.text.length - a.text.length)[0];
+    if (taken) taken.add(best.text);
     return {
       quote: clipWindow(best.answer, best.text, 28),
       digest: clipWindow(best.answer, best.text, 10),
       turn: best.turn,
-      from: best.kind === want ? "锚点" : "同轮片段",
+      from: best.kind === "opening" ? "开头片段" : best.kind === want ? "锚点" : "同轮片段",
       note: best.note,
     };
   }
@@ -20412,6 +20709,7 @@ function refreshBackendUi() {
     reduced: RM,
   };
 })();
+"use strict";
 /* ============================================================
  * v36 · MBTI 职业性格测评
  *   ① MBTI_DIMS / MBTI_SCALE / MBTI_QUESTIONS（4 维度 × 5 题 = 20 题）
@@ -20523,6 +20821,19 @@ function mbtiDimProgress(idx) {
   };
 }
 
+/* v44：四段进度条——比「第 8/20 题」更能说明「四个维度各走一遍」，
+ * 也让中段（最容易被放弃的位置）有一个可预期的终点。 */
+function mbtiStageBar(pg) {
+  const total = (pg && pg.gTotal) || 4;
+  const cur = (pg && pg.g) || 0;
+  let out = "";
+  for (let i = 0; i < total; i++) {
+    const cls = i < cur ? "done" : i === cur ? "now" : "";
+    out += `<i class="${cls}"></i>`;
+  }
+  return `<div class="mbti-stage" role="progressbar" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${cur + 1}" aria-label="维度进度 ${cur + 1}/${total}">${out}</div>`;
+}
+
 function getMbti() {
   try { return store.get("fm_mbti", null); } catch (e) { return null; }
 }
@@ -20596,7 +20907,15 @@ function openMbtiQuiz() {
   if (intro) intro.hidden = true;
   if (result) result.innerHTML = "";
   if (quiz) quiz.hidden = false;
+  /* v44：答题时收起页面级的说明与免责声明——手机上那两段会占掉 130px，
+   * 题干被推出视口，每题都要先滚一下才能作答。边界说明在结果页底部仍完整保留。 */
+  try { document.body.classList.add("mbti-quizzing"); } catch (e) {}
   renderMbtiQuestion();
+}
+
+/** 退出答题态（暂停 / 放弃 / 完成都要调用，否则说明区会一直藏着） */
+function leaveMbtiQuiz() {
+  try { document.body.classList.remove("mbti-quizzing"); } catch (e) {}
 }
 
 function renderMbtiQuestion() {
@@ -20612,6 +20931,7 @@ function renderMbtiQuestion() {
   const pg = mbtiDimProgress(idx);
   quiz.innerHTML = `
     <div class="mbti-progress-wrap">
+      ${mbtiStageBar(pg)}
       <div class="mbti-step">
         <span class="mbti-step-dim">维度 ${pg.g + 1}/${pg.gTotal}${pg.gName ? " · " + escHtml(pg.gName) : ""}</span>
         <span class="mbti-step-q">第 ${pg.inGroup}/${pg.inTotal} 题</span>
@@ -20651,6 +20971,7 @@ function prevMbti() {
 function pauseMbti() {
   saveMbtiDraft();
   mbtiState = null;
+  leaveMbtiQuiz();
   const quiz = $("mbti-quiz");
   if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
   renderMbtiPage();
@@ -20661,6 +20982,7 @@ function pauseMbti() {
 function cancelMbti() {
   mbtiState = null;
   clearMbtiDraft();
+  leaveMbtiQuiz();
   const quiz = $("mbti-quiz");
   if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
   renderMbtiPage();
@@ -20673,6 +20995,7 @@ function finishMbti() {
   saveMbti(r);
   syncMbtiToProfile(r);
   mbtiState = null;
+  leaveMbtiQuiz();
   clearMbtiDraft();   // v43：完成后清掉草稿，避免「继续上次」指向已结束的测评
   const quiz = $("mbti-quiz");
   if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
@@ -20737,9 +21060,12 @@ function renderMbtiResult(r) {
       </div>
     </div>
 
+    ${typeof personaBridgeHtml === "function" ? personaBridgeHtml(personaParams(r)) : ""}
+
+    <div class="pane-title" style="font-size:14px;margin-top:18px">🧾 逐维依据 <span class="tag-demo">点开看是哪几题导致的</span></div>
     <div class="mbti-dim-grid">${dimCards}</div>
 
-    <div class="pane-title" style="font-size:14px;margin-top:16px">📊 四维倾向（条形过半即偏向左侧字母）</div>
+    <div class="pane-title" style="font-size:14px;margin-top:16px">📊 四维刻度（条形过半即偏向左侧字母）</div>
     ${bipolarBarsSVG(r.dims, { aria: r.type + " 四维倾向" })}
 
     <div class="mbti-radar-wrap">
@@ -20756,7 +21082,6 @@ function renderMbtiResult(r) {
       </div>
     </div>
 
-    ${typeof personaBridgeHtml === "function" ? personaBridgeHtml(personaParams(r)) : ""}
     <div class="report-grid" style="margin-top:14px">
       <div>
         <div class="pane-title" style="font-size:14px">💬 面试提醒</div>
@@ -20768,10 +21093,7 @@ function renderMbtiResult(r) {
       </div>
     </div>
 
-    <div class="notice notice-info" style="margin-top:14px">
-      结果已同步到「个人中心」（fm_profile.mbti），并作为<b>面试提问策略参数</b>生效：只改变面试官「怎么问」，<b>不参与评分</b>。
-    </div>
-    <div class="notice notice-info" style="margin-top:8px">⚠️ 本测评为端侧简易量表，<b>非专业心理测评</b>；结果仅供参考，不作为心理诊断或职业决策依据。</div>
+    <p class="mbti-boundary">ⓘ 端侧简易量表，<b>非专业心理测评</b>：结果仅作求职参考，不作心理诊断或职业决策依据。结果已同步到个人中心，并作为面试提问策略参数生效——只改变面试官「怎么问」，<b>不参与评分</b>。</p>
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-outline btn-sm" onclick="startMbti()">重新测评</button>
       <button class="btn btn-primary btn-sm" onclick="switchTab('profile')">查看个人中心 →</button>
@@ -20780,6 +21102,9 @@ function renderMbtiResult(r) {
 }
 
 function renderMbtiPage() {
+  /* 路由重渲染时（例如从别的页面切回来）统一退出答题态：
+   * 有草稿会显示「继续测评」入口，不应停留在半隐藏的说明区。 */
+  if (!mbtiState) leaveMbtiQuiz();
   const intro = $("mbti-intro");
   const quiz = $("mbti-quiz");
   const result = $("mbti-result");
@@ -20807,9 +21132,13 @@ function renderMbtiPage() {
   if (saved && saved.type) {
     intro.hidden = true;
     if (quiz) quiz.hidden = true;
+    /* 有结果时页头描述也收起：首屏要留给 ESTJ 与「面试策略已调整」，
+     * 说明性文字在下方结果末尾仍完整保留。 */
+    try { document.body.classList.add("mbti-resulting"); } catch (e) {}
     renderMbtiResult(saved);
     return;
   }
+  try { document.body.classList.remove("mbti-resulting"); } catch (e) {}
   intro.hidden = false;
   if (quiz) quiz.hidden = true;
   if (result) {
@@ -21114,7 +21443,8 @@ function personaBridgeHtml(p) {
     : "";
   return `
     <div class="persona-link" style="margin-top:16px">
-      <div class="pane-title" style="font-size:14px">🧬 这份结果怎么进入面试（只调提问方式，不参与评分）</div>
+      <div class="pane-title" style="font-size:14px">🎯 你的面试策略已调整 <span class="tag-demo">只调提问方式 · 不参与评分</span></div>
+      <p class="pl-lead">这是一份「参数」而不是标签：同一句回答，三位面试官会因为下面三条改问别的问题。</p>
       ${weak}
       <div class="pl-grid">${rows}</div>
       ${trace ? `<details class="pl-details"><summary>参数溯源：哪一维导致了什么</summary>${trace}</details>` : ""}

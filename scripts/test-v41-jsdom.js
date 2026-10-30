@@ -188,8 +188,8 @@ async function runTests() {
   ok(/orientation: landscape/.test(css), "横屏断点（对话区按视高收缩）");
   ok(/\.vec-bar \{ flex-wrap: wrap/.test(css), "向量索引条按钮换行（320px 不再溢出 37px）");
   ok(
-    /\.report-actions[\s\S]{0,220}grid-template-columns: repeat\(2, minmax\(0, 1fr\)\) !important/.test(css),
-    "报告操作按钮两列网格（不撑破容器）"
+    /\.report-actions[\s\S]{0,220}grid-template-columns: repeat\(3, minmax\(0, 1fr\)\) !important/.test(css),
+    "报告操作按钮网格排布（v44 由两列改三列：六个按钮从三行压到两行，首屏给诊断块让位）"
   );
   ok(/\.dim-tip\s*\{\s*display:\s*none/.test(css), "依赖 hover 的评语气泡在触摸端隐藏");
   ok(/body\[data-page="interview"\] \.ai-fab/.test(css), "面试页悬浮球避让输入栏（不遮挡发送）");

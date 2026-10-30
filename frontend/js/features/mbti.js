@@ -110,6 +110,19 @@ function mbtiDimProgress(idx) {
   };
 }
 
+/* v44：四段进度条——比「第 8/20 题」更能说明「四个维度各走一遍」，
+ * 也让中段（最容易被放弃的位置）有一个可预期的终点。 */
+function mbtiStageBar(pg) {
+  const total = (pg && pg.gTotal) || 4;
+  const cur = (pg && pg.g) || 0;
+  let out = "";
+  for (let i = 0; i < total; i++) {
+    const cls = i < cur ? "done" : i === cur ? "now" : "";
+    out += `<i class="${cls}"></i>`;
+  }
+  return `<div class="mbti-stage" role="progressbar" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${cur + 1}" aria-label="维度进度 ${cur + 1}/${total}">${out}</div>`;
+}
+
 function getMbti() {
   try { return store.get("fm_mbti", null); } catch (e) { return null; }
 }
@@ -183,7 +196,15 @@ function openMbtiQuiz() {
   if (intro) intro.hidden = true;
   if (result) result.innerHTML = "";
   if (quiz) quiz.hidden = false;
+  /* v44：答题时收起页面级的说明与免责声明——手机上那两段会占掉 130px，
+   * 题干被推出视口，每题都要先滚一下才能作答。边界说明在结果页底部仍完整保留。 */
+  try { document.body.classList.add("mbti-quizzing"); } catch (e) {}
   renderMbtiQuestion();
+}
+
+/** 退出答题态（暂停 / 放弃 / 完成都要调用，否则说明区会一直藏着） */
+function leaveMbtiQuiz() {
+  try { document.body.classList.remove("mbti-quizzing"); } catch (e) {}
 }
 
 function renderMbtiQuestion() {
@@ -199,6 +220,7 @@ function renderMbtiQuestion() {
   const pg = mbtiDimProgress(idx);
   quiz.innerHTML = `
     <div class="mbti-progress-wrap">
+      ${mbtiStageBar(pg)}
       <div class="mbti-step">
         <span class="mbti-step-dim">维度 ${pg.g + 1}/${pg.gTotal}${pg.gName ? " · " + escHtml(pg.gName) : ""}</span>
         <span class="mbti-step-q">第 ${pg.inGroup}/${pg.inTotal} 题</span>
@@ -238,6 +260,7 @@ function prevMbti() {
 function pauseMbti() {
   saveMbtiDraft();
   mbtiState = null;
+  leaveMbtiQuiz();
   const quiz = $("mbti-quiz");
   if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
   renderMbtiPage();
@@ -248,6 +271,7 @@ function pauseMbti() {
 function cancelMbti() {
   mbtiState = null;
   clearMbtiDraft();
+  leaveMbtiQuiz();
   const quiz = $("mbti-quiz");
   if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
   renderMbtiPage();
@@ -260,6 +284,7 @@ function finishMbti() {
   saveMbti(r);
   syncMbtiToProfile(r);
   mbtiState = null;
+  leaveMbtiQuiz();
   clearMbtiDraft();   // v43：完成后清掉草稿，避免「继续上次」指向已结束的测评
   const quiz = $("mbti-quiz");
   if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
@@ -324,9 +349,12 @@ function renderMbtiResult(r) {
       </div>
     </div>
 
+    ${typeof personaBridgeHtml === "function" ? personaBridgeHtml(personaParams(r)) : ""}
+
+    <div class="pane-title" style="font-size:14px;margin-top:18px">🧾 逐维依据 <span class="tag-demo">点开看是哪几题导致的</span></div>
     <div class="mbti-dim-grid">${dimCards}</div>
 
-    <div class="pane-title" style="font-size:14px;margin-top:16px">📊 四维倾向（条形过半即偏向左侧字母）</div>
+    <div class="pane-title" style="font-size:14px;margin-top:16px">📊 四维刻度（条形过半即偏向左侧字母）</div>
     ${bipolarBarsSVG(r.dims, { aria: r.type + " 四维倾向" })}
 
     <div class="mbti-radar-wrap">
@@ -343,7 +371,6 @@ function renderMbtiResult(r) {
       </div>
     </div>
 
-    ${typeof personaBridgeHtml === "function" ? personaBridgeHtml(personaParams(r)) : ""}
     <div class="report-grid" style="margin-top:14px">
       <div>
         <div class="pane-title" style="font-size:14px">💬 面试提醒</div>
@@ -355,10 +382,7 @@ function renderMbtiResult(r) {
       </div>
     </div>
 
-    <div class="notice notice-info" style="margin-top:14px">
-      结果已同步到「个人中心」（fm_profile.mbti），并作为<b>面试提问策略参数</b>生效：只改变面试官「怎么问」，<b>不参与评分</b>。
-    </div>
-    <div class="notice notice-info" style="margin-top:8px">⚠️ 本测评为端侧简易量表，<b>非专业心理测评</b>；结果仅供参考，不作为心理诊断或职业决策依据。</div>
+    <p class="mbti-boundary">ⓘ 端侧简易量表，<b>非专业心理测评</b>：结果仅作求职参考，不作心理诊断或职业决策依据。结果已同步到个人中心，并作为面试提问策略参数生效——只改变面试官「怎么问」，<b>不参与评分</b>。</p>
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-outline btn-sm" onclick="startMbti()">重新测评</button>
       <button class="btn btn-primary btn-sm" onclick="switchTab('profile')">查看个人中心 →</button>
@@ -367,6 +391,9 @@ function renderMbtiResult(r) {
 }
 
 function renderMbtiPage() {
+  /* 路由重渲染时（例如从别的页面切回来）统一退出答题态：
+   * 有草稿会显示「继续测评」入口，不应停留在半隐藏的说明区。 */
+  if (!mbtiState) leaveMbtiQuiz();
   const intro = $("mbti-intro");
   const quiz = $("mbti-quiz");
   const result = $("mbti-result");
@@ -394,9 +421,13 @@ function renderMbtiPage() {
   if (saved && saved.type) {
     intro.hidden = true;
     if (quiz) quiz.hidden = true;
+    /* 有结果时页头描述也收起：首屏要留给 ESTJ 与「面试策略已调整」，
+     * 说明性文字在下方结果末尾仍完整保留。 */
+    try { document.body.classList.add("mbti-resulting"); } catch (e) {}
     renderMbtiResult(saved);
     return;
   }
+  try { document.body.classList.remove("mbti-resulting"); } catch (e) {}
   intro.hidden = false;
   if (quiz) quiz.hidden = true;
   if (result) {

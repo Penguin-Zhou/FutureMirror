@@ -567,9 +567,11 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
     const bubble = document.createElement("div");
     bubble.className = "msg msg-ai";
     bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
-    /* v42：先插锚定标签，再插气泡——标签永远出现在追问内容上方 */
-    openAnchorRefTag(body, bubble, anchors.length);
+    /* v42 / v44 修复：锚定标签必须插在「已入 DOM 的气泡」之前。
+     * 原先先 insertBefore 再 appendChild，参考节点还不在父节点里，
+     * insertBefore 直接抛 NotFoundError 被 try/catch 吞掉——标签从未出现。 */
     body.appendChild(bubble);
+    openAnchorRefTag(body, bubble, anchors.length);   // 标签永远落在追问内容上方
     chatAutoScroll(true);
     let i = 0;
     const timer = setInterval(() => {
@@ -689,9 +691,9 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   bubble.className = "msg msg-ai";
   bubble.dataset.turn = String(turn - 1);   // v28：与 session.turns 下标对齐，供实时批注定位
   bubble.innerHTML = '<span class="caret"></span>';
-  /* v42：锚定标签先于气泡插入，追问落地后由 annotateAnchorRef 更新状态 */
-  openAnchorRefTag(body, bubble, anchors.length);
+  /* v42 / v44 修复：先入 DOM 再插标签（否则 insertBefore 的参考节点不在父节点，抛错被吞） */
   body.appendChild(bubble);
+  openAnchorRefTag(body, bubble, anchors.length);
   chatAutoScroll(true);
 
   const ctrl = new AbortController();
@@ -734,6 +736,13 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
     bubble.remove();
     const reason = e.name === "AbortError" ? "超时 60s" : e.message;
     showDegradeBanner(speaker, reason, degradeDrill);
+    /* v44：把降级写进会话（随后进报告）——演练才有可追溯的记录价值，
+     * 否则它就只是演示当下的一次表演。turn-1 是本轮下标，与气泡 data-turn 对齐。 */
+    try {
+      if (!Array.isArray(session.degradeLog)) session.degradeLog = [];
+      session.degradeLog.push({ turn: turn - 1, drill: !!degradeDrill, at: Date.now(), reason: String(reason).slice(0, 60) });
+      persistSession();
+    } catch (err) {}
     degradeDrill = false;
     toast("真实模型调用失败（" + reason + "），已自动降级为本地推理，面试继续");
     addTimeline("系统", "⚠️ 真实模型调用失败 → 自动降级 Mock 兜底", false);
@@ -769,6 +778,7 @@ function restartInterview() {
   const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null, voiceSegments: (session.voiceSegments || []).slice() };
   session.turns = [];
   session.voiceSegments = [];   // v40：新一轮清空表达节奏的时间戳样本
+  session.degradeLog = [];      // v44：降级记录按场次记账，不把上一场的兜底算进这一场
   camWasActiveThisSession = false;   // 新一轮面试，重置摄像头开启标记（上一轮的摄像头状态不带入）
   // v22.1：一轮面试对应后端一条独立会话记录——清掉 interviewId，
   // 下次生成报告时新建（否则幂等 /sync 会把新一轮问答判重为「已入库」，
@@ -952,9 +962,9 @@ function restoreSession() {
     const div = document.createElement("div");
     div.className = "msg msg-ai";
     div.textContent = t.question;
-    /* v42：恢复时同样重建气泡上方的锚定标签，刷新后解释链不断 */
-    openAnchorRefTag($("chat-body"), div, anchors.length);
+    /* v42 / v44 修复：恢复会话同理——先把气泡放进 DOM，再插上方的锚定标签 */
     $("chat-body").appendChild(div);
+    openAnchorRefTag($("chat-body"), div, anchors.length);
     if (t.anchorRef && t.anchorRef.length) annotateAnchorRef(div, t.question, anchors, i);
     addTimeline(t.agent, `（恢复）提问：${t.question.slice(0, 30)}…`, false);
     addTimeline("观察员", `（恢复）证据 #${i + 1}：${t.notes}`, "note");

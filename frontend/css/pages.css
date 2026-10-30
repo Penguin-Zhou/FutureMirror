@@ -861,15 +861,16 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
 .mbti-progress-wrap { margin-bottom: 14px; }
 .mbti-progress-bar { height: 4px; background: var(--line); }
 .mbti-progress-fill { height: 4px; background: var(--brand); transition: width .35s ease; }
-.mbti-q-card { border: 1px solid var(--line); padding: 16px; margin-bottom: 12px; }
-.mbti-q-text { font-size: 14.5px; font-weight: 700; line-height: 1.7; margin-bottom: 12px; }
+.mbti-q-card { border: 1px solid var(--line); padding: 16px; margin-bottom: 12px; max-width: 620px; }
+.mbti-q-text { font-size: 16px; font-weight: 700; line-height: 1.7; margin-bottom: 14px; }
 .mbti-opts { display: grid; gap: 8px; }
 .mbti-opt {
-  text-align: left; font-size: 13px; padding: 10px 12px; cursor: pointer;
+  text-align: left; font-size: 13.5px; padding: 13px 14px; min-height: 48px; cursor: pointer;
   background: transparent; border: 1px solid var(--line); color: var(--muted);
-  font-family: inherit; transition: border-color .18s ease, color .18s ease;
+  font-family: inherit; transition: border-color .18s ease, color .18s ease, background .18s ease;
 }
 .mbti-opt:hover { border-color: var(--ink); color: var(--ink); }
+.mbti-opt:active { background: var(--brand-bg); border-color: var(--brand); color: var(--ink); }
 .mbti-type-big {
   font-family: var(--mono); font-size: 34px; font-weight: 700;
   letter-spacing: 3px; color: var(--ink);
@@ -1286,11 +1287,15 @@ img, svg, video, canvas { max-width: 100%; }
 @media (max-width: 640px) {
   /* ⌘K 在手机上无意义（没有 ⌘ 键），其入口由底栏「更多」承担 */
   .kbd-hint { display: none !important; }
-  /* v42：顶栏允许换行并让标题可收缩——之前 nowrap 会把 Logo 文案裁掉 */
-  header .nav { gap: 8px; flex-wrap: wrap; row-gap: 6px; }
-  .logo { font-size: 15px; gap: 6px; flex: 0 1 auto; min-width: 0; }
+  /* v44：顶栏换行必须同时「允许变高」。
+   * 之前 .nav 固定 height:56px + flex-wrap:wrap，换行后的内容溢出容器，
+   * 压在 tabbar 上、与 logo 相互覆盖——这才是「窄屏顶栏看起来糊成一团」的根因。
+   * 改成 min-height + 高度自适应，syncHeaderHeight() 会把真实高度写回 --hdr-h，
+   * tabbar 与主内容区随之让位。 */
+  header .nav { gap: 6px; flex-wrap: wrap; row-gap: 4px; height: auto; min-height: 54px; padding: 5px 0; }
+  .logo { font-size: 14px; gap: 6px; flex: 0 1 auto; min-width: 0; }
   .logo svg { width: 24px; height: 24px; flex: none; }
-  .nav-right { gap: 6px; flex-wrap: wrap; row-gap: 6px; justify-content: flex-end; }
+  .nav-right { gap: 5px; flex-wrap: wrap; row-gap: 4px; justify-content: flex-end; }
   .nav-right .btn-icon { min-width: 34px; min-height: 34px; padding: 4px; }
   .nav-right .btn { white-space: nowrap; font-size: 11.5px; padding-left: 8px; padding-right: 8px; }
   /* 状态胶囊只留圆点，颜色语义（真实=绿 / Mock=黄 / 离线=朱红）仍在 title 中可读 */
@@ -1302,6 +1307,23 @@ img, svg, video, canvas { max-width: 100%; }
   .banner .wrap > span { display: none; }
   .banner .btn-primary { margin-left: auto; flex: none; font-size: 11.5px; padding: 0 10px; }
   .banner .btn-ghost { flex: none; }
+}
+
+/* v44：≤480 把顶栏收到「图标级」——375/390 上原先四项挤成两行，
+ * 名字与下拉箭头一起把 logo 顶出可视区。这里只收窄，不删功能：
+ * 主题色切换仍在设置页与「更多」里可达。 */
+@media (max-width: 480px) {
+  .devmode-text { display: none; }
+  #accent-btn { display: none; }
+  #nav-username, .user-caret { display: none; }
+  .user-btn { padding: 3px; }
+  /* 375 上给顶栏腾 30px：logo 降一档字号 + 左右内边距收窄，
+   * 否则「开发者模式」按钮会被挤出可视区右边（裁成半个图标）。 */
+  header .wrap { padding-left: 14px; padding-right: 14px; }
+  header .logo { font-size: 13px; gap: 5px; }
+  header .logo svg { width: 22px; height: 22px; }
+  header .nav-right { gap: 4px; }
+  header .nav-right .btn { padding-left: 6px; padding-right: 6px; }
 }
 
 /* ---------- 10) 极窄屏（≤360px）与对话头部：再挤一挤 ---------- */
@@ -1343,15 +1365,15 @@ img, svg, video, canvas { max-width: 100%; }
 @media (max-width: 640px) {
   .report-actions {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 6px !important;
     justify-content: stretch !important;
     width: 100%;
     min-width: 0;
   }
   .report-actions .btn {
-    width: 100%; min-width: 0; min-height: 38px;
-    font-size: 12px; padding: 7px 8px;
+    width: 100%; min-width: 0; min-height: 36px;
+    font-size: 11.5px; padding: 6px 4px;
     justify-content: center; white-space: nowrap;
   }
 }
@@ -1457,8 +1479,8 @@ img, svg, video, canvas { max-width: 100%; }
 .sh-lv.g-mid { color: var(--amber); }
 .sh-lv.g-low { color: var(--green); }
 .sheet-close {
-  flex: none; width: 34px; height: 34px; border: 1px solid var(--line);
-  background: transparent; color: var(--muted); font-size: 18px; line-height: 1;
+  flex: none; width: 44px; height: 44px; border: 1px solid var(--line);
+  background: transparent; color: var(--muted); font-size: 20px; line-height: 1;
   cursor: pointer; touch-action: manipulation;
 }
 .sheet-quote {
@@ -1670,4 +1692,109 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
   .mt-q { grid-column: 1 / -1; }
   .pb-trace, .pl-trace { grid-template-columns: 70px 1fr; }
   .pb-eff, .pl-trace span:last-child { grid-column: 1 / -1; }
+}
+
+/* ============================================================
+ * v44 · 感知密度层
+ *   报告页与 MBTI 页是访客停留最久的两屏。这一层不改功能，
+ *   只做一件事：把「已经有纵深」的信息在 3 秒内摆到能看见的位置。
+ *   规范沿用蓝图编辑风：直角、发丝线、零投影；朱红只做强调。
+ * ============================================================ */
+
+/* ---------- ① 报告页：首屏诊断 + 五维轮廓 ---------- */
+.report-top { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px; }
+.rt-lead { min-width: 0; }
+.report-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+.report-headline {
+  display: grid; grid-template-columns: 118px 1fr; gap: 18px;
+  margin-top: 14px; padding: 14px 16px;
+  border: 1px solid var(--line); border-left: 3px solid var(--brand);
+  background: var(--card);
+}
+.rh-total { align-self: center; }
+.rh-num { font-family: var(--mono); font-size: 52px; line-height: 1; font-weight: 800; color: var(--brand); }
+.rh-cap { font-size: 11.5px; color: var(--muted); margin-top: 5px; letter-spacing: .04em; }
+.rh-mid { min-width: 0; }
+.rh-say { margin: 0 0 10px; font-size: 14px; line-height: 1.75; color: var(--ink); }
+.rh-strip { display: grid; gap: 3px; }
+.rp-row { display: grid; grid-template-columns: 70px 1fr 30px; gap: 8px; align-items: center; font-size: 11.5px; }
+.rp-name { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-track { display: block; height: 6px; background: var(--chip-bg); }
+.rp-track i { display: block; height: 100%; background: var(--brand); }
+.rp-num { font-family: var(--mono); font-size: 11px; color: var(--faint); text-align: right; }
+
+/* ---------- ② 维度卡：点阵评分 + 分歧标记 ---------- */
+.dim-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dim-dots { display: inline-flex; gap: 3px; }
+.dim-dots i { width: 7px; height: 7px; border: 1px solid var(--line-2); display: block; }
+.dim-dots i.on { background: var(--brand); border-color: var(--brand); }
+.dim-score { font-family: var(--mono); font-size: 12.5px; color: var(--ink); margin-left: auto; }
+.dim-gap {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .03em;
+  padding: 1px 5px; border: 1px solid currentColor; color: var(--muted); white-space: nowrap;
+}
+.dim-gap.g-high { color: var(--brand); }
+.dim-gap.g-mid { color: var(--amber); }
+.radar-legend { text-align: center; margin: 6px 0 0; font-size: 11px; }
+
+/* ---------- ③ 学习路径：纵向时间线（保持 DOM 不变，只改排版） ---------- */
+.plan-list { position: relative; padding-left: 15px; margin-top: 8px; }
+.plan-list::before {
+  content: ""; position: absolute; left: 3px; top: 10px; bottom: 10px; width: 1px; background: var(--line);
+}
+.plan-list .plan-day { position: relative; }
+.plan-list .plan-day::before {
+  content: ""; position: absolute; left: -15px; top: 11px; width: 7px; height: 7px;
+  background: var(--card); border: 1px solid var(--brand);
+}
+.plan-list .plan-day[data-day="0"]::before { background: var(--brand); }
+
+/* <q> 的自动引号会和模板里的中文引号叠成双层（「“…”」），统一关掉自动引号 */
+q { quotes: none; }
+
+/* ---------- ②b 维度卡之间：一条发丝线，五张卡才成「卡片流」而不是长列表 ---------- */
+#dims .dim-row + .dim-row {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-bottom: 12px;
+}
+
+/* ---------- ④ 报告页：降级账本 ---------- */
+.degrade-log .dl-row {
+  display: grid; grid-template-columns: 62px 1fr auto; gap: 4px 10px;
+  padding: 6px 0; border-top: 1px dashed var(--line); font-size: 12.5px; align-items: baseline;
+}
+.degrade-log .dl-turn { font-family: var(--mono); font-size: 11.5px; color: var(--brand); }
+.degrade-log .dl-why { color: var(--ink); }
+.degrade-log .dl-how { color: var(--muted); font-size: 11.5px; }
+
+/* ---------- ⑤ MBTI：四段进度 + 结果页边界 ---------- */
+.mbti-stage { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 8px; }
+.mbti-stage i { display: block; height: 5px; background: var(--line); }
+.mbti-stage i.done { background: var(--brand); opacity: .45; }
+.mbti-stage i.now { background: var(--brand); }
+.mbti-boundary {
+  margin: 14px 0 0; font-size: 11.5px; line-height: 1.75; color: var(--faint);
+  border-top: 1px dashed var(--line); padding-top: 8px;
+}
+.pl-lead { margin: 2px 0 8px; font-size: 12.5px; line-height: 1.7; color: var(--muted); }
+
+/* 答题态：收起页头描述，题干与选项直接进入视口（边界说明在结果页底部保留） */
+body.mbti-quizzing .page-header p,
+body.mbti-resulting .page-header p { display: none; }
+body.mbti-quizzing .page-header,
+body.mbti-resulting .page-header { padding-bottom: 6px; margin-bottom: 8px; }
+body.mbti-quizzing .page-header h2 { font-size: 17px; }
+
+@media (max-width: 640px) {
+  .report-headline { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
+  .rh-num { font-size: 44px; }
+  .rh-total { display: flex; align-items: baseline; gap: 10px; }
+  .rh-cap { margin-top: 0; }
+  .rh-say { font-size: 13.5px; line-height: 1.7; margin-bottom: 8px; }
+  .rh-strip { gap: 2px; }
+  .degrade-log .dl-row { grid-template-columns: 62px 1fr; }
+  .degrade-log .dl-how { grid-column: 1 / -1; }
+  .rp-row { grid-template-columns: 64px 1fr 28px; }
 }

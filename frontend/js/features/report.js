@@ -70,7 +70,76 @@ function buildPlan(dims) {
   return { plan, weakest: sorted[0] };
 }
 
-function radarSVG(data) {
+/* ============================================================
+ * v44 · 报告首屏：把「一堆分数」压成一句诊断 + 一张轮廓
+ * ------------------------------------------------------------
+ * 报告页的停留通常只有十几秒，第一眼需要的不是 5 个数字，
+ * 而是「我强在哪、该补哪」。这句诊断由确定性规则拼出（不调 LLM），
+ * 因此每次刷新同一份报告得到同一句话，可被断言、可被复现。
+ * ============================================================ */
+/**
+ * @param {Array<{dimension:string,score:number}>} dims 五维得分
+ * @returns {{say:string,tone:string,gap:number,best:object|null,worst:object|null}}
+ */
+function reportDiagnosis(dims) {
+  const list = (dims || []).slice().sort((a, b) => b.score - a.score);
+  if (!list.length) return { say: "", tone: "flat", gap: 0, best: null, worst: null };
+  const best = list[0];
+  const worst = list[list.length - 1];
+  const gap = best.score - worst.score;
+  let say;
+  if (gap < 8) {
+    say = `五维分布集中（${worst.score}–${best.score}），没有明显短板——下一步是把「${best.dimension}」做成能复述三分钟的完整故事。`;
+  } else if (worst.score < 60) {
+    say = `「${best.dimension}」是本场最强项（${best.score}），「${worst.dimension}」是最需要投入的方向（${worst.score}）——相差 ${gap} 分，能力结构还不均衡。`;
+  } else {
+    say = `「${best.dimension}」是本场最强项（${best.score}），「${worst.dimension}」相对偏弱（${worst.score}）——差距 ${gap} 分，属于可接受的波动。`;
+  }
+  return { say, tone: gap >= 20 ? "wide" : gap >= 8 ? "mid" : "flat", gap, best, worst };
+}
+
+/** 五维轮廓缩略：5 条短轨，比完整雷达更快被扫读 */
+function profileStripHtml(dims) {
+  const list = dims || [];
+  const aria = "五维得分轮廓：" + list.map((d) => d.dimension + " " + d.score + " 分").join("，");
+  return `<div class="rh-strip" role="img" aria-label="${escHtml(aria)}">${list
+    .map(
+      (d) =>
+        `<div class="rp-row"><span class="rp-name">${escHtml(d.dimension)}</span><span class="rp-track"><i style="width:${Math.max(
+          2,
+          Math.min(100, d.score)
+        )}%"></i></span><span class="rp-num">${d.score}</span></div>`
+    )
+    .join("")}</div>`;
+}
+
+/* 点阵评分：5 格对应 5 档，比纯数字更容易一眼比较。
+ * 数字仍然保留（可读性 + 读屏 + 打印），点阵只做视觉冗余。 */
+function dimDots(score) {
+  const n = Math.max(0, Math.min(5, Math.round((Number(score) || 0) / 20)));
+  let out = "";
+  for (let i = 0; i < 5; i++) out += `<i class="${i < n ? "on" : ""}"></i>`;
+  return `<span class="dim-dots" aria-hidden="true">${out}</span>`;
+}
+
+/** 该轮回答的两个镜头分歧（无数据返回 null，不伪造一致） */
+function lensGapFor(views, turn) {
+  const items = (views && views.items) || [];
+  const hit = items[turn - 1];
+  return hit && typeof hit.gap === "number" ? hit.gap : null;
+}
+
+/** 分歧标记：只在值得注意时出现（≥10 分）。
+ *  两位面试官在 0–9 分内摆动属于同一判断区间，标在卡上只会稀释信号；
+ *  完整的分歧视图（含 8 分起的每一轮）仍在报告下方的「Agent 分歧视图」里。 */
+function dimGapTag(gap) {
+  if (gap == null || gap < 10) return "";
+  const lv = gapLevel(gap);
+  return `<span class="dim-gap ${lv.cls}" title="同一段原话：技术面与 HR 面评分相差 ${gap} 分">⚖ ${gap}</span>`;
+}
+
+function radarSVG(data, opts) {
+  const ref = opts && typeof opts.ref === "number" ? opts.ref : 0;
   const cx = 165, cy = 160, R = 108, n = data.length;
   const angle = i => (Math.PI * 2 * i / n) - Math.PI / 2;
   const pt = (i, r) => [cx + Math.cos(angle(i)) * r, cy + Math.sin(angle(i)) * r];
@@ -86,8 +155,13 @@ function radarSVG(data) {
     return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="12.5" fill="var(--muted)">${d.dimension}</text>
             <text x="${x}" y="${y + 15}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="var(--faint)">${d.score}</text>`;
   }).join("");
+  /* v44：目标线——明确是「本产品设定的达标参考」，不是人群统计基线，
+   * 所以文案里不出现「同岗位平均」这类无法提供来源的说法。 */
+  const refPoly = ref
+    ? `<polygon class="radar-ref" points="${data.map((_, i) => pt(i, R * ref / 100).join(",")).join(" ")}" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 4"/>`
+    : "";
   return `<svg viewBox="0 0 330 330" style="width:100%;max-width:340px" role="img" aria-label="能力雷达图">
-    ${rings}${axes}
+    ${rings}${axes}${refPoly}
     <polygon class="radar-pop" points="${vpts}" fill="var(--brand-bg)" stroke="var(--brand)" stroke-width="2"/>
     ${dots}${labels}
   </svg>`;
@@ -238,6 +312,31 @@ function personaFitCard(dims, p) {
     </div>`;
 }
 
+/* ============================================================
+ * v44 · 降级账本：本场有没有走过兜底路径，报告里写明
+ * ------------------------------------------------------------
+ * 降级演练如果只活在演示那一刻，它仍然是一次「表演」。写进报告后，
+ * 它就变成一条可追溯记录：第几轮、由什么触发、结果是否标注。
+ * 没有触发时整块不渲染——不虚构一次「成功兜底」。
+ * ============================================================ */
+function degradeLogCard(log) {
+  const list = Array.isArray(log) ? log : [];
+  if (!list.length) return "";
+  const rows = list
+    .map(
+      (x) =>
+        `<div class="dl-row"><span class="dl-turn">第 ${x.turn} 轮</span><span class="dl-why">${
+          x.drill ? "演练触发（主动失效）" : "网关无响应"
+        }</span><span class="dl-how">本地引擎接管 · 未伪造结果</span></div>`
+    )
+    .join("");
+  return `<div class="card degrade-log" id="report-degrade" style="padding:14px 16px;margin-top:14px">
+      <div class="pane-title" style="margin-bottom:2px">⚡ 降级记录<span class="tag-demo">共 ${list.length} 次 · 对话未中断</span></div>
+      <p class="hint" style="margin:2px 0 8px">在线通道不可用时，该轮追问由本地确定性引擎接管并<b>在气泡上标注</b>；其余轮次仍走真实模型，报告评分不因降级而改判。</p>
+      ${rows}
+    </div>`;
+}
+
 function reportStatusCard(st) {
   const count = st && st.count ? st.count : 0;
   const pr = st && st.presence_rate != null ? st.presence_rate : null;
@@ -356,26 +455,31 @@ async function renderReport(force) {
     ? (scoring.llm_enriched
         ? ` <span class="tag-engine">确定性引擎 ＋ LLM 增强</span>`
         : ` <span class="tag-engine">确定性引擎（未配置 LLM）</span>`)
-    : ` <span class="tag-engine">启发式演示</span>`;
+    : "";   // v44：标题已标「启发式引擎演示」，不再重复一遍
+  const diagnosis = reportDiagnosis(dims);
   box.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px">
-      <div>
+    <div class="report-top">
+      <div class="rt-lead">
         <div class="pane-title">📊 评估报告（可解释评分） <span class="tag-demo">${serverScored ? "服务端评分引擎 · 已落库" : "启发式引擎演示"}</span>${engineBadge}</div>
-        <p class="hint" style="margin-top:0">基于本次 ${session.turns.length} 轮真实对话动态生成——每条证据均引用你的回答原话</p>
+        <p class="hint" style="margin:0">基于本次 ${session.turns.length} 轮真实对话动态生成——每条证据均引用你的回答原话</p>
       </div>
-      <div style="text-align:right;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;justify-content:flex-end">
-        <div class="report-actions" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-          <button class="btn btn-outline btn-sm" onclick="copyReportMarkdown()">📋 复制 Markdown</button>
-          <button class="btn btn-outline btn-sm" onclick="exportReportCsv()">📊 导出 CSV</button>
-          <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 导出 PDF</button>
-          <button class="btn btn-outline btn-sm" onclick="shareReport()">🔗 分享报告</button>
-          <button class="btn btn-outline btn-sm" onclick="restartInterview()">🔄 再来一次</button>
-          <button class="btn btn-outline btn-sm" onclick="askReportFollowup()" title="把本次报告注入 AI 小助手，针对维度与证据追问细节">🤖 追问细节</button>
-        </div>
-        <div>
-          <div style="font-size:36px;font-weight:800;color:var(--brand);line-height:1" id="report-total" data-count="${total}">${total}</div>
-          <div class="hint" style="margin-top:0">综合得分 / 100</div>
-        </div>
+      <div class="report-actions">
+        <button class="btn btn-outline btn-sm" onclick="copyReportMarkdown()" title="复制为 Markdown 文本，便于贴进笔记或文档">📋 复制文本</button>
+        <button class="btn btn-outline btn-sm" onclick="exportReportCsv()">📊 导出 CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 导出 PDF</button>
+        <button class="btn btn-outline btn-sm" onclick="shareReport()">🔗 分享报告</button>
+        <button class="btn btn-outline btn-sm" onclick="restartInterview()">🔄 再来一次</button>
+        <button class="btn btn-outline btn-sm" onclick="askReportFollowup()" title="把本次报告注入 AI 小助手，针对维度与证据追问细节">🤖 追问细节</button>
+      </div>
+    </div>
+    <div class="report-headline tone-${diagnosis.tone}" id="report-headline">
+      <div class="rh-total">
+        <div class="rh-num" id="report-total" data-count="${total}">${total}</div>
+        <div class="rh-cap">综合得分 / 100</div>
+      </div>
+      <div class="rh-mid">
+        <p class="rh-say">${escHtml(diagnosis.say)}</p>
+        ${profileStripHtml(dims)}
       </div>
     </div>
     ${renderReportCover()}
@@ -383,25 +487,48 @@ async function renderReport(force) {
       ? `本报告由<b>服务端确定性评分引擎</b>生成（每条证据引用真实回答，问答记录已写入 SQLite 可跨设备恢复）。${scoring.llm_enriched ? "<b>已接入 LLM</b>：在确定性分数之外额外生成逐维质性点评（分数始终由确定性引擎给出，可解释、不幻觉）。" : "当前服务端未配置 LLM，点评由规则引擎生成；配置后可在确定性分数之外叠加 LLM 质性点评。"}`
       : "本报告由<b>无 API Key 时的兜底规则引擎</b>生成，用于演示「可解释评分」的结构与证据链（每条证据引用真实回答、学习路径按最弱维度动态生成）。"}</div>
     <div class="report-grid" style="margin-top:16px">
-      <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims)}</div>
+      <div><div class="pane-title">能力雷达</div><div id="radar" style="display:grid;place-items:center">${radarSVG(dims, { ref: 70 })}</div>
+        <p class="hint radar-legend">实线为本次得分，虚线为目标线 70 分（本产品的达标参考值，非人群统计）</p>
         <table class="sr-only"><caption>各维度得分（满分 100）</caption><thead><tr><th>维度</th><th>得分</th></tr></thead><tbody>${dims.map((d) => `<tr><td>${d.dimension}</td><td>${d.score}</td></tr>`).join("")}</tbody></table>
       </div>
-      <div><div class="pane-title">维度得分</div><div id="dims">${dims.map((d, i) => `
+      <div><div class="pane-title">维度得分 <span class="tag-demo">点开看原话</span></div><div id="dims">${(() => {
+        /* 分歧是「针对某一段原话」的，不是「针对某个维度」的。
+         * 多个维度可能引用同一轮（同一段话同时是深度与结构的证据），
+         * 若每张卡都挂一次标记，同一个事实会被说四遍——只在该轮首次出现处标。 */
+        const gapMarked = {};
+        /* 同一句原话只当一次证据：维度卡按顺序领取，已用过的片段让给后面的维度 */
+        const usedEv = new Set();
+        return dims
+          .map((d, i) => {
+            const ev = dimEvidenceFor(d, session.turns, i, usedEv);
+            const gap = lensGapFor(lensViews, ev.turn);
+            const showGap = gap != null && gap >= 10 && !gapMarked[ev.turn];
+            if (showGap) gapMarked[ev.turn] = true;
+            return `
         <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}"
              role="button" tabindex="0" aria-expanded="false"
              onclick="openDimSheet(${i})"
              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDimSheet(${i});}">
-          <div class="dim-head"><b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b><span style="color:var(--muted)">${d.score}</span></div>
+          <div class="dim-head">
+            <b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b>
+            ${dimDots(d.score)}
+            <span class="dim-score">${d.score}</span>
+            ${showGap ? dimGapTag(gap) : ""}
+          </div>
           <div class="dim-bar"><div style="width:${d.score}%"></div></div>
-          <div class="dim-summary">📎 证据摘要：<q>“${escHtml(dimEvidenceFor(d, session.turns, i).digest)}”</q></div>
+          <div class="dim-summary">📎 证据摘要：<q>“${escHtml(ev.digest)}”</q></div>
           <div class="dim-full">
             <div class="dim-comment">${d.comment}</div>
             <div class="dim-tip" role="tooltip">${d.dimension} · ${d.score}<br>${d.comment}</div>
           </div>
           <div class="dim-more">查看完整引用 →</div>
-        </div>`).join("")}</div></div>
+        </div>`;
+          })
+          .join("");
+      })()}</div></div>
     </div>
     ${reportStatusCard(camStatus)}
+    ${degradeLogCard(session.degradeLog)}
     ${typeof personaFitCard === "function" ? personaFitCard(dims, typeof activePersona === "function" ? activePersona() : null) : ""}
     ${rhythmCard(rhythm)}
     ${narrative ? `<div class="notice-llm">🧭 教练总评：${esc(narrative)}</div>` : ""}
@@ -421,8 +548,8 @@ async function renderReport(force) {
       <div>
         <div class="pane-title">7 天学习路径（按最弱维度动态生成）</div>
         <div class="plan-banner">因你在【${weakest.dimension}】得分最低（${weakest.score} 分），Day 1-3 已为你安排专项训练</div>
-        <div id="plan">${plan.map(p => `
-          <div class="plan-day"><b>${p.day}</b><span>${p.task}</span></div>`).join("")}</div>
+        <div id="plan" class="plan-list">${plan.map((p, i) => `
+          <div class="plan-day" data-day="${i}"><b>${p.day}</b><span>${p.task}</span></div>`).join("")}</div>
         <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="switchTab('plan')" title="把本路径导入学习计划板块：每日任务 + 时间分配 + 完成打卡">进入学习计划板块（每日任务 + 时间分配 + 打卡）→</button>
       </div>
     </div>
@@ -475,7 +602,9 @@ async function renderReport(force) {
 
   /* v42：给每张维度卡挂上证据上下文（供底部面板读取，不新增全局 id） */
   try {
-    lastDimEvidence = dims.map((d, i) => dimEvidenceFor(d, session.turns, i));
+    /* 与维度卡同一套去重顺序：面板里看到的引用必须和卡上那句一致 */
+    const usedEv = new Set();
+    lastDimEvidence = dims.map((d, i) => dimEvidenceFor(d, session.turns, i, usedEv));
   } catch (e) { lastDimEvidence = []; }
 }
 
@@ -489,6 +618,30 @@ let lastDimEvidence = [];
 let dimSheetEl = null;
 
 /**
+ * 每个维度「最该引用哪一轮回答」。
+ * 不这么做的话，五个维度都会挑中最长的那一轮——报告看起来像只有一段话，
+ * 五条证据全指向同一处，反而削弱了「每条评分都有出处」的说服力。
+ * @param {object} t 轮次对象
+ * @param {string} key 维度 key
+ * @returns {number} 相关度（越大越该被引用）
+ */
+function turnRelevance(t, key) {
+  const a = String((t && t.answer) || "");
+  const digits = (a.match(/\d/g) || []).length;
+  const skills = (typeof SKILL_DICT !== "undefined" ? SKILL_DICT : []).filter((s) => a.includes(s)).length;
+  const star = (a.match(/背景|目标|负责|通过|最终|结果|因此|于是/g) || []).length;
+  const filler = (a.match(/然后|那个|就是/g) || []).length;
+  const len = a.length;
+  if (key === "depth") return digits * 2 + skills * 2 + Math.min(6, len / 60);
+  if (key === "logic") return star * 3 + Math.min(4, len / 120);
+  if (key === "expression") return Math.min(6, len / 50) - filler * 2;
+  if (key === "fit") return skills * 2 + digits;
+  /* 抗压维度优先引用压力轮；没有压力轮时，短回答更能暴露临场状态 */
+  if (key === "stress") return (t && t.mode === "pressure" ? 8 : 0) + (len < 70 ? 1.5 : 0);
+  return 0;
+}
+
+/**
  * 为某个维度挑一句「代表证据」：优先该维度关心的锚点类型，
  * 找不到就诚实退回「回答开头片段」，不凭空编造引用。
  * @param {object} d 维度对象
@@ -496,33 +649,38 @@ let dimSheetEl = null;
  * @param {number} dimIdx 维度序号
  * @returns {{quote:string, turn:number, from:string, note:string}}
  */
-function dimEvidenceFor(d, turns, dimIdx) {
+function dimEvidenceFor(d, turns, dimIdx, used) {
   const list = Array.isArray(turns) ? turns : [];
   const kindByDim = { depth: "metric", logic: "action", expression: "skill", fit: "skill", stress: "action" };
   const want = kindByDim[d && d.key] || "skill";
+  const key = (d && d.key) || "";
+  const taken = used && typeof used.has === "function" ? used : null;
   const pool = [];
   list.forEach((t, ti) => {
-    const anchors = (t.anchors && t.anchors.length) ? t.anchors : anchorPhrases(t.answer || "");
-    anchors.forEach(a => {
-      pool.push({
-        text: a.text,
-        kind: a.kind,
-        turn: ti + 1,
-        answer: String(t.answer || ""),
-        note: t.notes || "",
-        match: a.kind === want ? 1 : 0,
-      });
-    });
+    const answer = String(t.answer || "");
+    const anchors = (t.anchors && t.anchors.length) ? t.anchors : anchorPhrases(answer);
+    const rel = turnRelevance(t, key);
+    const push = (text, kind) =>
+      pool.push({ text, kind, turn: ti + 1, answer, note: t.notes || "", match: kind === want ? 1 : 0, rel });
+    anchors.forEach(a => push(a.text, a.kind));
+    /* 这一轮没有任何可锚定片段（比如压力轮全是短句与判断）时，
+     * 仍保留一个「开头片段」备选——否则最该被证据化的那一轮反而引用不到。 */
+    if (!anchors.length && answer) push(answer.slice(0, 24), "opening");
   });
   if (pool.length) {
-    // 同类型优先，其次取更长的片段（信息量更足）
-    const best = pool.slice().sort((a, b) =>
-      b.match - a.match || b.text.length - a.text.length)[0];
+    /* 先取与本维度最相关的那一轮，再看锚点类型是否对口，最后取信息量更足的片段。
+     * 已经在上一个维度用过的片段排到最后——五个维度都引用同一句会让「每条评分都有出处」
+     * 变成「五条评分都出自同一句」，反而削弱证据感；实在没有第二句时才复用。 */
+    const fresh = (x) => (taken && taken.has(x.text) ? 1 : 0);
+    const best = pool
+      .slice()
+      .sort((a, b) => fresh(a) - fresh(b) || b.rel - a.rel || b.match - a.match || b.text.length - a.text.length)[0];
+    if (taken) taken.add(best.text);
     return {
       quote: clipWindow(best.answer, best.text, 28),
       digest: clipWindow(best.answer, best.text, 10),
       turn: best.turn,
-      from: best.kind === want ? "锚点" : "同轮片段",
+      from: best.kind === "opening" ? "开头片段" : best.kind === want ? "锚点" : "同轮片段",
       note: best.note,
     };
   }

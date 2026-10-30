@@ -1197,14 +1197,15 @@ try {
       <div class="pane-title">🧠 MBTI 职业性格测评
         <span class="tag-demo">v43 · 端侧计算 · 结果仅存本地</span>
       </div>
-      <p class="hint" style="margin-top:0;margin-bottom:12px">
-        答题约需 2 分钟。结果有两个去处：写入个人中心，以及作为<b>面试提问策略参数</b>——它只改变面试官「怎么问」，<b>不参与评分</b>。全部计算在本地完成，不上传服务器。
-      </p>
-      <div class="notice notice-info" style="margin-bottom:12px">⚠️ <b>本测评为端侧简易量表，不是专业心理测评</b>：结果仅作求职参考，不能作为心理诊断、职业决策或能力评价的依据。</div>
-
       <div id="mbti-resume" hidden></div>
 
       <div id="mbti-intro">
+        <!-- v44：说明与边界声明收进 #mbti-intro。此前它们写在外面，intro.hidden 管不到，
+             测评完成后结果页仍被这两段顶着，首屏看不到 ESTJ 与策略卡。 -->
+        <p class="hint" style="margin-top:0;margin-bottom:12px">
+          答题约需 2 分钟。结果有两个去处：写入个人中心，以及作为<b>面试提问策略参数</b>——它只改变面试官「怎么问」，<b>不参与评分</b>。全部计算在本地完成，不上传服务器。
+        </p>
+        <div class="notice notice-info" style="margin-bottom:12px">⚠️ <b>本测评为端侧简易量表，不是专业心理测评</b>：结果仅作求职参考，不能作为心理诊断、职业决策或能力评价的依据。</div>
         <div class="grid2">
           <div>
             <div class="pane-title" style="font-size:14px">📐 四个维度</div>
