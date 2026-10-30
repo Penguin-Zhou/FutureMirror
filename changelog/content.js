@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">1887</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">1952</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -41,6 +41,7 @@ export const changelogHtml = `
     <li><a href="#vbeta1-12"><span class="cl-toc-tag">Beta 1.1.2</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
     <li><a href="#v41"><span class="cl-toc-tag">Beta 1.1.2 · v41</span><span class="cl-toc-title-txt">移动端适配层 · 窄屏单栏任务流 + 导航收敛 5 格 + 对话区自适应 + 交互去 hover 化</span></a></li>
     <li><a href="#v42"><span class="cl-toc-tag">Beta 1.1.2 · v42</span><span class="cl-toc-title-txt">移动端信息优先级裁剪 · 首屏单 CTA + 圆桌 chips + 报告渐进披露 + 键盘可见</span></a></li>
+    <li><a href="#v43"><span class="cl-toc-tag">Beta 1.1.2 · v43</span><span class="cl-toc-title-txt">人格参数化层 · MBTI 从「孤岛测评」变成面试的输入参数 + 报告的关联维度</span></a></li>
     <li><a href="#v42b"><span class="cl-toc-tag">Beta 1.1.2 · v42b</span><span class="cl-toc-title-txt">降级演练（主动失效）· 三级降级从文档承诺变成可当场复现的动作</span></a></li>
     <li><a href="#v40"><span class="cl-toc-tag">Beta 1.1.2 · v40</span><span class="cl-toc-title-txt">可解释性交互层 · 面试实时锚点 + Agent 分歧视图 + 语音流式转写 + 表达节奏</span></a></li>
     <li><a href="#v39"><span class="cl-toc-tag">Beta 1.1.2 · v39</span><span class="cl-toc-title-txt">反馈闭环层 · 免责声明 + 骨架屏 + 表单校验 + 移动端 + 离线提示 + 空状态 + 无障碍 + 导出补全</span></a></li>
@@ -230,6 +231,41 @@ export const changelogHtml = `
         <div class="metric"><div class="m-val">32</div><div class="m-label">v33 新增断言</div></div>
         <div class="metric"><div class="m-val">1522</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v43 · 人格参数化层（MBTI → 面试输入参数）
+       ======================================================== -->
+  <div class="version" id="v43">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 人格参数化 · MBTI 接入面试（v43）</span>
+      <span class="v-title">把 MBTI 从「第 10 个功能」改成面试的输入参数</span>
+      <span class="v-date">2026.10.30</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        MBTI 之前是一个孤岛：测完给四个字母和一段通用建议，和面试没有关系。这一轮把它接成两条线——<strong>面试的提问策略</strong>与<strong>报告的解释维度</strong>。
+        做法不是把「用户是 INTJ」写进提示词，而是把四个维度折算成<strong>五个带方向与强度的行为参数</strong>（结构化追问 / 开放式施压 / 情绪适配 / 举证偏好 / 细节偏好），
+        每个参数都保留来源维度与百分比，可逐条追溯。于是同一句回答，在不同参数下会问出不同的问题：偏 J 的人被追问「你的决策依据是什么」，偏 P 的人被问「条件突变你怎么调整」；
+        偏 F 的人遇到的第一次施压会<strong>降一档强度</strong>，并在追问下方显性标注「本轮压力强度已按你的情绪偏好下调一档（偏 F 62%）」。
+        报告页新增「人格 - 表现关联」：五维得分与参数逐条对照，判定分三种——一致 / 值得注意 / <strong>无显著关联</strong>。
+        第三种是刻意保留的：承认「这一维跟你的人格没关系」比硬编一个故事更可信。<strong>人格参数从不参与打分</strong>，评分引擎里没有任何 MBTI 痕迹。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>面试里可感知</b>：Mock 通道奇数轮改出题、真实通道注入提示词后缀，两种通道都有痕迹</div>
+        <div class="vh-item"><b>可审计</b>：参数→策略→影响三段可查，报告里能看到「哪一维导致了什么」</div>
+        <div class="vh-item"><b>显性适配</b>：压力强度被调整时，在追问下方直接写出来，不藏在黑盒里</div>
+        <div class="vh-item"><b>测评可溯源</b>：每个维度都能展开看「是哪 5 题导致的」，含题目 / 你的选择 / 贡献分</div>
+        <div class="vh-item"><b>断点续答</b>：20 题分段（维度 x/4 · 第 y/5 题），每答一题落盘，中途退出可接着答</div>
+        <div class="vh-item"><b>诚实降级</b>：无测评、或四维典型度都低于 20 时，不启用策略、不做关联推断、胶囊不显示</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">63</div><div class="m-label">v43 新增断言</div></div>
+        <div class="metric"><div class="m-val">1952</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">33</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">5</div><div class="m-label">人格行为参数</div></div>
       </div>
     </div>
   </div>

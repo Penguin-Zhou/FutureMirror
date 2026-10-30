@@ -151,7 +151,9 @@ async function runTests() {
     return el ? el.innerHTML : "";
   })();
   ok(/chart-dots/.test(qHtml), "答题页渲染点阵进度");
-  ok(/第 1 \/ 20 题/.test(qHtml), "答题页显示题序");
+  /* v43：题序从「第 1 / 20 题」升级为分段进度——先看「这一维还剩几题」，再看总进度 */
+  ok(/维度 1\/4/.test(qHtml) && /第 1\/5 题/.test(qHtml), "答题页显示「维度 x/4 · 第 y/5 题」分段进度");
+  ok(/已完成 0\/20/.test(qHtml), "答题页同时保留总进度");
   w.eval("cancelMbti();");
 
   /* ---------- ④ 真实岗位可视化 ---------- */

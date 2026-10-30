@@ -210,6 +210,8 @@ function applyRoute() {
   if (page === "interview") {
     // v41：切换页面后一帧再量，等布局稳定（折叠条/模式条高度已确定）
     requestAnimationFrame(() => { try { fitChatHeight(); } catch (e) {} });
+    // v43：回到面试页时刷新人格参数胶囊（可能刚做完测评）
+    if (typeof renderPersonaCapsule === "function") { try { renderPersonaCapsule(); } catch (e) {} }
   }
   if (page === "report") { try { renderReport(); } catch (e) {} }
   if (page === "profile") { try { renderProfile(); } catch (e) {} }

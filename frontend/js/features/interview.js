@@ -162,13 +162,21 @@ const SYS_PROMPTS = {
 };
 
 /* v10：题库 + 动态追问模板混合出题——优先发未被问过的题库原题，其余基于回答关键词动态生成
- * v18：① 连环追问优先（同一技术点连续 2 轮深挖）② 按面试官人设选池（HR / 压力面有专属题库） */
+ * v18：① 连环追问优先（同一技术点连续 2 轮深挖）② 按面试官人设选池（HR / 压力面有专属题库）
+ * v43：人格参数偏置——同一句回答在不同测评结果下会问出不同的问题（规则确定，可复现） */
 function pickQuestion(mode, n, keyword, speaker) {
   if (deepDive.left > 0) {
     const k = deepDive.topic || keyword;
     deepDive.left--;
     if (deepDive.left <= 0) deepDive = { topic: null, left: 0 };
     return DEEP_DIVE_QUESTIONS[(n || 0) % DEEP_DIVE_QUESTIONS.length](k);
+  }
+  /* v43：奇数轮交给人格参数偏置；偶数轮仍走题库/常规追问，
+   * 避免每一句都被参数接管而显得机械。 */
+  const bias = typeof personaQuestionBias === "function" ? personaQuestionBias(activePersona(), n || 0, keyword) : null;
+  if (bias) {
+    lastPersonaBias = bias;
+    return bias.question;
   }
   let pool;
   if (mode === "tech") pool = TECH_QUESTIONS;
@@ -185,6 +193,8 @@ function pickQuestion(mode, n, keyword, speaker) {
 
 let session = { mode: "general", turns: [] };   // 在 bootApp() 中按当前用户加载
 let turn = 0;
+/* v43：本次出题是否命中了人格参数偏置（供时间线如实说明「为什么问这个」） */
+let lastPersonaBias = null;
 let recognition = null, listening = false, voiceStartAt = 0;
 let speaking = false;
 let lastReportSig = "";
@@ -319,7 +329,11 @@ async function streamChat(messages, onDelta, signal) {
 }
 
 function buildMessages(text) {
-  const msgs = [{ role: "system", content: SYS_PROMPTS[session.mode] || SYS_PROMPTS.general }];
+  /* v43：把人格参数折算成「提问方式」指令追加在系统提示词后。
+   * 无测评结果 / 参数不显著时 personaPromptSuffix 返回空串，面试官走通用策略。 */
+  const base = SYS_PROMPTS[session.mode] || SYS_PROMPTS.general;
+  const suffix = typeof personaPromptSuffix === "function" ? personaPromptSuffix(activePersona()) : "";
+  const msgs = [{ role: "system", content: base + suffix }];
   for (const t of session.turns) {
     msgs.push({ role: "assistant", content: t.question });
     msgs.push({ role: "user", content: t.answer });
@@ -372,6 +386,94 @@ function addTimeline(agent, text, kind) {
   div.innerHTML = `<span class="tl-agent">${escHtml(agent)}</span><br>${icon}${escHtml(text)}`;
   tl.appendChild(div);
   tl.scrollTop = tl.scrollHeight;
+}
+
+/* ---- v43：人格参数在面试中的可感知痕迹 ----
+ * 参数不是藏在提示词里的形容词：它必须在这三处留痕，否则「因人施面」不可验证。
+ *   ① 出题时：时间线说明「这一问为什么这么问」
+ *   ② 追问下：压力强度被适配时显性标注
+ *   ③ 头部：胶囊显示本场生效的测评类型与策略档位 */
+function notePersonaBias() {
+  if (!lastPersonaBias) return;
+  addTimeline(
+    "提问规划",
+    `🧬 人格参数「${lastPersonaBias.paramLabel}」→ ${lastPersonaBias.effect}（偏 ${lastPersonaBias.polar} ${lastPersonaBias.pct}%）`,
+    false
+  );
+  lastPersonaBias = null;
+}
+
+function attachPersonaNote(body, bubble, speaker) {
+  if (!speaker || speaker.id !== "pressure") return;
+  const p = activePersona();
+  const html = typeof personaPressureNoteHtml === "function" ? personaPressureNoteHtml(p) : "";
+  if (!html) return;
+  const row = document.createElement("div");
+  row.className = "persona-note-row";
+  row.innerHTML = html;
+  body.insertBefore(row, bubble.nextSibling);
+  const strat = typeof personaStrategy === "function" ? personaStrategy(p) : null;
+  if (strat) addTimeline(speaker.name, `🫱 压力强度适配为「${strat.pressure.level}」→ 已在该追问下方显性标注`, "note");
+}
+
+/** 头部人格胶囊：无测评时隐藏（不占位、不暗示「已识别」） */
+function renderPersonaCapsule() {
+  const chip = $("persona-chip");
+  const brief = $("persona-brief");
+  if (!chip) return;
+  const p = activePersona();
+  const text = typeof personaCapsuleText === "function" ? personaCapsuleText(p) : "";
+  if (!text) {
+    chip.hidden = true;
+    if (brief) brief.hidden = true;
+    return;
+  }
+  chip.hidden = false;
+  chip.textContent = text;
+  chip.setAttribute("aria-expanded", brief && !brief.hidden ? "true" : "false");
+  if (brief && !brief.hidden) brief.innerHTML = personaBriefHtml(p);
+}
+
+/** 策略摘要面板：三行说清「哪一面会怎么变」+ 参数溯源入口 */
+function personaBriefHtml(p) {
+  const strat = typeof personaStrategy === "function" ? personaStrategy(p) : null;
+  if (!strat) return "";
+  const rows = [
+    ["💼 HR 面", strat.hr.label, strat.hr.detail],
+    ["⚙️ 技术面", strat.tech.label, strat.tech.detail],
+    ["🔥 压力面", strat.pressure.level, strat.pressure.detail],
+  ]
+    .map(
+      (r) =>
+        `<div class="pb-row"><b>${escHtml(r[0])} · ${escHtml(r[1])}</b><span>${escHtml(r[2])}</span></div>`
+    )
+    .join("");
+  const trace =
+    typeof personaTrace === "function"
+      ? personaTrace(p)
+          .map(
+            (t) =>
+              `<div class="pb-trace"><span class="pb-dim">${escHtml(t.dimName)}</span><span class="pb-pct">偏 ${escHtml(t.letter)} ${t.pct}%</span><span class="pb-eff">${escHtml(t.effect)}</span></div>`
+          )
+          .join("")
+      : "";
+  return `
+    <div class="pb-head">🧬 本场提问策略（来自你自评的 ${escHtml(p.type)}，只调提问方式，不参与评分）</div>
+    ${rows}
+    <details class="pb-details"><summary>查看参数溯源（哪一维导致了什么）</summary>${trace}</details>`;
+}
+
+function togglePersonaBrief() {
+  const brief = $("persona-brief");
+  if (!brief) return;
+  const p = activePersona();
+  if (!p) return; // 无测评时没有可展开的内容，别留一个空面板
+  brief.hidden = !brief.hidden;
+  if (!brief.hidden) brief.innerHTML = personaBriefHtml(p);
+  const chip = $("persona-chip");
+  if (chip) chip.setAttribute("aria-expanded", brief.hidden ? "false" : "true");
+  /* 面板占了纵向空间，对话区要重新量一次，否则底部输入框会被挤出去 */
+  if (typeof fitChatHeight === "function") { try { fitChatHeight(); } catch (e) {} }
 }
 
 function persistSession() { store.set("fm_session", session); }
@@ -486,6 +588,9 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
         if (refHits.length) {
           addTimeline(speaker.name, `⚓ 追问锚定原话「${refHits[0]}」→ 依据该片段发起深挖`, "note");
         }
+        /* v43：说明这一问为何这么问，并按需标注压力强度适配 */
+        notePersonaBias();
+        attachPersonaNote(body, bubble, speaker);
         v16MaybeAutoSpeak();
         addTimeline(speaker.name, "📮 已发送提问（流式输出完成）", false);
         startAnswerTimer();
@@ -612,6 +717,12 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
     // v40：模型流式输出结束后，把「锚定你哪句话」回挂到追问气泡
     refHits = annotateAnchorRef(bubble, full, anchors, turn - 1);
     if (refHits.length) addTimeline(speaker.name, `⚓ 追问锚定原话「${refHits[0]}」→ 模型复述并深挖该片段`, "note");
+    /* v43：真实通道下出题由模型决定，这里如实说明「参数已进提示词」，
+     * 而不是假装我们知道模型一定照做。 */
+    if (typeof personaPromptSuffix === "function" && personaPromptSuffix(activePersona())) {
+      addTimeline("提问规划", "🧬 本轮系统提示词已携带人格参数（只影响提问方式，不参与评分）", false);
+    }
+    attachPersonaNote(body, bubble, speaker);
     v16MaybeAutoSpeak();
     $("fallback-banner").hidden = true;
   } catch (e) {
@@ -683,6 +794,9 @@ function restartInterview() {
   $("live-hint").textContent = "发送第一条回答后开始追踪";
   $("progress-bar").style.width = "0%";
   $("fallback-banner").hidden = true;
+  /* v43：新一轮开面时快照人格参数——本场策略固定，中途重测不影响已开始的这场 */
+  if (typeof capturePersona === "function") capturePersona();
+  renderPersonaCapsule();
   const sbBadge0 = $("sb-interview-badge");
   if (sbBadge0) { sbBadge0.textContent = `0/${MAX_TURNS}`; sbBadge0.style.background = "var(--brand-bg)"; sbBadge0.style.color = "var(--brand)"; }
   lastReportSig = "";

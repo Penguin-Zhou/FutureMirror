@@ -74,6 +74,42 @@ const MBTI_TYPES = {
 /* ---------- ③ 测评引擎 ---------- */
 let mbtiState = null;   // { i: 当前题序, answers: [{dim,dir,v}] }
 
+/* v43：断点续答——答到一半切走/刷新不该让 20 题从头再来 */
+function getMbtiDraft() {
+  try {
+    const d = store.get("fm_mbti_draft", null);
+    if (d && typeof d.i === "number" && Array.isArray(d.answers)) return d;
+    return null;
+  } catch (e) { return null; }
+}
+
+function saveMbtiDraft() {
+  if (!mbtiState) return;
+  try { store.set("fm_mbti_draft", { i: mbtiState.i, answers: mbtiState.answers, at: Date.now() }, true); } catch (e) {}
+}
+
+function clearMbtiDraft() {
+  try { store.set("fm_mbti_draft", null, true); } catch (e) {}
+}
+
+/* v43：按维度分组的进度——「维度 2/4 · 第 3/5 题」比「第 8/20 题」更能减少焦虑 */
+function mbtiDimProgress(idx) {
+  const item = MBTI_QUESTIONS[idx];
+  const gTotal = MBTI_DIMS.length;
+  if (!item) return { g: 0, gTotal, gName: "", inGroup: 1, inTotal: 5, done: idx };
+  const g = MBTI_DIMS.map((d) => d.key).indexOf(item.dim);
+  const inDim = MBTI_QUESTIONS.map((q, i) => (q.dim === item.dim ? i : -1)).filter((i) => i >= 0);
+  const dimMeta = MBTI_DIMS[g] || {};
+  return {
+    g: g < 0 ? 0 : g,
+    gTotal,
+    gName: dimMeta.name || "",
+    inGroup: inDim.indexOf(idx) + 1,
+    inTotal: inDim.length,
+    done: idx,
+  };
+}
+
 function getMbti() {
   try { return store.get("fm_mbti", null); } catch (e) { return null; }
 }
@@ -83,12 +119,14 @@ function saveMbti(result) {
   return result;
 }
 
-/* 计算：每维 5 题，v∈[-2,2] → 原始分 ∈[-10,10] → 偏向 a 的百分比 */
+/* 计算：每维 5 题，v∈[-2,2] → 原始分 ∈[-10,10] → 偏向 a 的百分比
+ * v43：同时产出 trace（逐题溯源）——「是哪几道题把你判成了 I」必须可查，
+ * 否则这套量表对外就是个黑盒，和「可解释」的整体叙事自相矛盾。 */
 function computeMbtiResult(answers) {
   const acc = {};
   MBTI_DIMS.forEach((d) => { acc[d.key] = 0; });
   (answers || []).forEach((a) => {
-    if (acc[a.dim] === undefined) return;
+    if (!a || acc[a.dim] === undefined) return;
     acc[a.dim] += a.v * a.dir;
   });
   const dims = MBTI_DIMS.map((d) => {
@@ -98,16 +136,47 @@ function computeMbtiResult(answers) {
     const strength = Math.abs(pctA - 50) * 2;         // 0-100，越大越典型
     return {
       key: d.key, name: d.name, a: d.a, b: d.b, aName: d.aName, bName: d.bName,
-      pctA, pctB: 100 - pctA, letter, strength,
+      pctA, pctB: 100 - pctA, letter, strength, raw,
     };
   });
   const type = dims.map((d) => d.letter).join("");
   const clarity = Math.round(dims.reduce((s, d) => s + d.strength, 0) / dims.length);
-  return { type, dims, clarity, at: Date.now() };
+  return { type, dims, clarity, at: Date.now(), trace: mbtiTrace(answers) };
+}
+
+/* v43：逐题溯源——题目 / 你的选择 / 贡献分（正=推向首选字母，负=推向次选字母） */
+function mbtiTrace(answers) {
+  const out = [];
+  (answers || []).forEach((a, i) => {
+    const q = MBTI_QUESTIONS[i];
+    if (!q || !a || typeof a.v !== "number") return;
+    const scale = MBTI_SCALE.filter((s) => s.v === a.v)[0];
+    const contrib = a.v * q.dir;
+    const dimMeta = MBTI_DIMS.filter((d) => d.key === q.dim)[0] || {};
+    out.push({
+      i, dim: q.dim, dimName: dimMeta.name || q.dim, q: q.q,
+      v: a.v, label: scale ? scale.label : String(a.v),
+      contrib, toward: contrib > 0 ? dimMeta.a : contrib < 0 ? dimMeta.b : "",
+    });
+  });
+  return out;
 }
 
 function startMbti() {
   mbtiState = { i: 0, answers: [] };
+  clearMbtiDraft();
+  openMbtiQuiz();
+}
+
+/* v43：继续上次进度（20 题在手机上被打断的概率很高） */
+function resumeMbti() {
+  const d = getMbtiDraft();
+  if (!d) { startMbti(); return; }
+  mbtiState = { i: Math.min(d.i, MBTI_QUESTIONS.length - 1), answers: d.answers || [] };
+  openMbtiQuiz();
+}
+
+function openMbtiQuiz() {
   const intro = $("mbti-intro");
   const quiz = $("mbti-quiz");
   const result = $("mbti-result");
@@ -126,9 +195,15 @@ function renderMbtiQuestion() {
   const total = MBTI_QUESTIONS.length;
   const pct = Math.round(idx / total * 100);
   const dimMeta = MBTI_DIMS.filter((d) => d.key === item.dim)[0];
+  /* v43：分段进度——先让用户知道「这一维还剩几题」，再谈总进度 */
+  const pg = mbtiDimProgress(idx);
   quiz.innerHTML = `
     <div class="mbti-progress-wrap">
-      <div class="hint" style="margin-top:0">第 ${idx + 1} / ${total} 题${dimMeta ? "　·　" + escHtml(dimMeta.name) : ""}　（${pct}%）</div>
+      <div class="mbti-step">
+        <span class="mbti-step-dim">维度 ${pg.g + 1}/${pg.gTotal}${pg.gName ? " · " + escHtml(pg.gName) : ""}</span>
+        <span class="mbti-step-q">第 ${pg.inGroup}/${pg.inTotal} 题</span>
+        <span class="mbti-step-all">已完成 ${idx}/${total}（${pct}%）</span>
+      </div>
       ${progressDotsSVG(total, idx, { cell: 13, gap: 4 })}
     </div>
     <div class="mbti-q-card">
@@ -138,7 +213,8 @@ function renderMbtiQuestion() {
       </div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-outline btn-sm" onclick="${idx > 0 ? "prevMbti()" : "cancelMbti()"}">${idx > 0 ? "← 上一题" : "取消测评"}</button>
+      ${idx > 0 ? `<button class="btn btn-outline btn-sm" onclick="prevMbti()">← 上一题</button>` : ""}
+      <button class="btn btn-ghost btn-sm" onclick="pauseMbti()">稍后继续</button>
     </div>`;
 }
 
@@ -147,19 +223,31 @@ function answerMbti(v) {
   const item = MBTI_QUESTIONS[mbtiState.i];
   mbtiState.answers[mbtiState.i] = { dim: item.dim, dir: item.dir, v };
   mbtiState.i++;
+  saveMbtiDraft();   // v43：每答一题落一次盘，被打断也能接上
   renderMbtiQuestion();
 }
 
 function prevMbti() {
   if (!mbtiState || mbtiState.i <= 0) return;
   mbtiState.i--;
+  saveMbtiDraft();
   renderMbtiQuestion();
 }
 
+/* v43：稍后继续——保留草稿，回到 intro 态（不丢已答的题） */
+function pauseMbti() {
+  saveMbtiDraft();
+  mbtiState = null;
+  const quiz = $("mbti-quiz");
+  if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
+  renderMbtiPage();
+  toast("进度已保存，下次可从断点继续");
+}
+
+/* v43：放弃本次测评（清空草稿） */
 function cancelMbti() {
   mbtiState = null;
-  const intro = $("mbti-intro");
-  if (intro) intro.hidden = false;
+  clearMbtiDraft();
   const quiz = $("mbti-quiz");
   if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
   renderMbtiPage();
@@ -172,10 +260,13 @@ function finishMbti() {
   saveMbti(r);
   syncMbtiToProfile(r);
   mbtiState = null;
+  clearMbtiDraft();   // v43：完成后清掉草稿，避免「继续上次」指向已结束的测评
   const quiz = $("mbti-quiz");
   if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
   renderMbtiResult(r);
-  toast(`测评完成：${r.type}（已同步到个人中心）`);
+  /* v43：测评完成即刷新面试页的人格胶囊——结果要立刻能在面试里被看见 */
+  if (typeof renderPersonaCapsule === "function") { try { renderPersonaCapsule(); } catch (e) {} }
+  toast(`测评完成：${r.type}（已同步到个人中心与面试提问策略）`);
   try { logDev("info", `MBTI 测评完成：${r.type}`); } catch (e) {}
 }
 
@@ -194,7 +285,21 @@ function renderMbtiResult(r) {
   const box = $("mbti-result");
   if (!box) return;
   const t = MBTI_TYPES[r.type] || { nick: "", trait: "", fit: "", tip: "" };
-  const dimCards = r.dims.map((d) => `
+  const dimCards = r.dims.map((d) => {
+    /* v43：逐题溯源——每个维度都能展开看「哪几道题把你判成了这一极」 */
+    const rows = (r.trace || []).filter((t) => t.dim === d.key);
+    const rawTxt = typeof d.raw === "number" ? (d.raw > 0 ? "+" : "") + d.raw : "—";
+    const traceHtml = rows.length
+      ? `<details class="mbti-trace">
+        <summary>🔍 查看是哪 ${rows.length} 题导致的（原始分 ${rawTxt} / ±10）</summary>
+        ${rows.map((t) => `<div class="mt-row">
+          <span class="mt-q">${escHtml(t.q)}</span>
+          <span class="mt-a">${escHtml(t.label)}</span>
+          <span class="mt-c${t.contrib === 0 ? " mt-zero" : ""}">${t.contrib === 0 ? "中性" : (t.contrib > 0 ? "+" : "") + t.contrib + " → " + escHtml(t.toward)}</span>
+        </div>`).join("")}
+      </details>`
+      : `<div class="mbti-trace-none">本次结果由旧版本生成，重新测评可查看逐题溯源。</div>`;
+    return `
     <div class="mbti-dim-card">
       <div class="mbti-dim-name">${escHtml(d.name)}</div>
       <div class="mbti-dim-axis">
@@ -203,7 +308,9 @@ function renderMbtiResult(r) {
         <span class="${d.letter === d.b ? "on" : ""}">${escHtml(d.bName)}</span>
       </div>
       <div class="mbti-dim-pct">偏 ${escHtml(d.letter)}　·　典型度 ${d.strength}%</div>
-    </div>`).join("");
+      ${traceHtml}
+    </div>`;
+  }).join("");
   box.innerHTML = `
     <div class="mbti-hero fade-up">
       <div class="mbti-hero-left">
@@ -236,6 +343,7 @@ function renderMbtiResult(r) {
       </div>
     </div>
 
+    ${typeof personaBridgeHtml === "function" ? personaBridgeHtml(personaParams(r)) : ""}
     <div class="report-grid" style="margin-top:14px">
       <div>
         <div class="pane-title" style="font-size:14px">💬 面试提醒</div>
@@ -248,7 +356,7 @@ function renderMbtiResult(r) {
     </div>
 
     <div class="notice notice-info" style="margin-top:14px">
-      结果已同步到「个人中心」（fm_profile.mbti）。岗位推荐与面试建议会参考该结果。
+      结果已同步到「个人中心」（fm_profile.mbti），并作为<b>面试提问策略参数</b>生效：只改变面试官「怎么问」，<b>不参与评分</b>。
     </div>
     <div class="notice notice-info" style="margin-top:8px">⚠️ 本测评为端侧简易量表，<b>非专业心理测评</b>；结果仅供参考，不作为心理诊断或职业决策依据。</div>
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
@@ -264,6 +372,25 @@ function renderMbtiPage() {
   const result = $("mbti-result");
   if (!intro) return;
   const saved = getMbti();
+  const draft = getMbtiDraft();
+  /* v43：有草稿就先把「继续」摆在最前面——20 题被打断过的人不该从第 1 题重来 */
+  const resumeBox = $("mbti-resume");
+  if (resumeBox) {
+    if (draft && draft.i > 0 && (!saved || !saved.type)) {
+      resumeBox.hidden = false;
+      resumeBox.innerHTML = `
+        <div class="notice notice-info mbti-resume-box">
+          <span>上次答到第 <b>${draft.i}</b> / ${MBTI_QUESTIONS.length} 题（维度 ${mbtiDimProgress(Math.min(draft.i, MBTI_QUESTIONS.length - 1)).g + 1}/4）</span>
+          <span style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="resumeMbti()">继续测评 →</button>
+            <button class="btn btn-ghost btn-sm" onclick="cancelMbti()">重新开始</button>
+          </span>
+        </div>`;
+    } else {
+      resumeBox.hidden = true;
+      resumeBox.innerHTML = "";
+    }
+  }
   if (saved && saved.type) {
     intro.hidden = true;
     if (quiz) quiz.hidden = true;
@@ -273,7 +400,9 @@ function renderMbtiPage() {
   intro.hidden = false;
   if (quiz) quiz.hidden = true;
   if (result) {
-    result.innerHTML = `<div class="notice notice-info">还没有测评记录。点击上方「开始测评」，20 道题约需 2 分钟。</div>`;
+    result.innerHTML = draft && draft.i > 0
+      ? `<div class="notice notice-info">有一份未完成的测评（已答 ${draft.i} 题）。点上方「继续测评」接着答，或「重新开始」清空重来。</div>`
+      : `<div class="notice notice-info">还没有测评记录。点击上方「开始测评」，20 道题约需 2 分钟。</div>`;
   }
 }
 

@@ -349,6 +349,14 @@
       "note": "v36 MBTI 职业性格测评"
     },
     {
+      "file": "js/features/persona.js",
+      "lines": [
+        0,
+        0
+      ],
+      "note": "v43 人格参数化层"
+    },
+    {
       "file": "js/features/charts.js",
       "lines": [
         17579,
@@ -398,6 +406,7 @@
     "js/core/skeleton.js",
     "js/core/media.js",
     "js/features/mbti.js",
+    "js/features/persona.js",
     "js/features/charts.js"
   ],
   "loadOrderNote": "与原区划顺序唯一差异：theme-variants 提前于 reveal（init() 加载期调用 syncAccentBtn，跨文件无函数提升）"

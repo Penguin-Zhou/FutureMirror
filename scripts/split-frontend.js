@@ -128,6 +128,7 @@ const jsRules = [
   ["js/core/skeleton.js", "v30 骨架屏", ["Z1. 骨架屏 v30"]],
   ["js/core/media.js", "v30 媒体懒加载与预览", ["Z2. 媒体加载 v30"]],
   ["js/features/mbti.js", "v36 MBTI 职业性格测评", ["v36 · MBTI 职业性格测评"]],
+  ["js/features/persona.js", "v43 人格参数化层", ["v43 · 人格参数化层"]],
   ["js/features/charts.js", "v37 通用图表组件", ["v37 · 通用图表组件"]],
 ];
 
@@ -219,6 +220,7 @@ const LOAD_ORDER = [
   "js/core/skeleton.js",
   "js/core/media.js",
   "js/features/mbti.js",
+  "js/features/persona.js",
   "js/features/charts.js",
 ];
 if (

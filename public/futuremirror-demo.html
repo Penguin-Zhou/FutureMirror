@@ -5141,6 +5141,130 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
   .chat-head .answer-timer { margin-left: 0; }
   .chat-head > span:last-child { flex: 1 1 100%; }
 }
+
+/* ============================================================
+ * v43 · 人格参数化层
+ *   ① 面试页：参数胶囊 + 策略摘要面板 + 压力适配标注
+ *   ② MBTI 页：分段进度（骨架补充）与断点续答
+ *   ③ MBTI 结果页：逐题溯源 + 「参数如何进入面试」
+ *   ④ 报告页：人格 - 表现关联卡片
+ * 视觉沿用蓝图编辑风：零投影、直角、发丝线；朱红只用于「值得注意」。
+ * ============================================================ */
+
+/* ---------- ① 面试页：参数胶囊 ---------- */
+.persona-chip {
+  flex: 0 0 auto;
+  align-self: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: .02em;
+  padding: 5px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+  background: var(--chip-bg);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.persona-chip:hover { border-color: var(--ink); color: var(--ink); }
+.persona-chip[aria-expanded="true"] { border-color: var(--ink); color: var(--ink); background: var(--card); }
+
+.persona-brief {
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--ink);
+  background: var(--card);
+  padding: 10px 12px;
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.pb-head { font-family: var(--mono); font-size: 11px; color: var(--faint); letter-spacing: .04em; margin-bottom: 8px; }
+.pb-row { display: grid; grid-template-columns: 92px 1fr; gap: 4px 10px; padding: 5px 0; border-top: 1px dashed var(--line); }
+.pb-row:first-of-type { border-top: 0; }
+.pb-row b { color: var(--ink); font-weight: 600; }
+.pb-details { margin-top: 8px; }
+.pb-details summary { cursor: pointer; font-size: 12px; color: var(--brand); }
+.pb-trace { display: grid; grid-template-columns: 74px 92px 1fr; gap: 6px; padding: 4px 0; border-top: 1px dashed var(--line); font-size: 12px; }
+.pb-dim { color: var(--ink); }
+.pb-pct { font-family: var(--mono); color: var(--faint); }
+.pb-eff { color: var(--muted); }
+
+/* ---------- ① 面试页：压力强度适配标注（追问下方） ---------- */
+.persona-note-row { display: flex; align-self: flex-start; max-width: 92%; }
+.persona-fit-note {
+  display: inline-block;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  background: var(--chip-bg);
+  border-left: 2px solid var(--brand);
+  padding: 5px 9px;
+}
+
+/* ---------- ② MBTI 页：分段进度 + 断点续答 ---------- */
+.mbti-step { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-family: var(--mono); font-size: 11.5px; }
+.mbti-step-dim { color: var(--ink); letter-spacing: .03em; }
+.mbti-step-q { color: var(--brand); }
+.mbti-step-all { color: var(--faint); }
+.mbti-resume-box { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+
+/* ---------- ③ MBTI 结果页：逐题溯源 ---------- */
+.mbti-trace { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 6px; }
+.mbti-trace summary { cursor: pointer; font-size: 11.5px; color: var(--brand); }
+.mt-row {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 6px 8px;
+  align-items: baseline; padding: 5px 0; border-top: 1px dashed var(--line); font-size: 12px;
+}
+.mt-row:first-of-type { border-top: 0; }
+.mt-q { color: var(--muted); line-height: 1.6; }
+.mt-a { font-family: var(--mono); font-size: 11px; color: var(--faint); white-space: nowrap; }
+.mt-c { font-family: var(--mono); font-size: 11px; color: var(--ink); white-space: nowrap; }
+.mt-c.mt-zero { color: var(--faint); }
+.mbti-trace-none { font-size: 11.5px; color: var(--faint); margin-top: 6px; }
+
+/* ---------- ③ MBTI 结果页：参数如何进入面试 ---------- */
+.persona-link { border: 1px solid var(--line); border-top: 2px solid var(--ink); background: var(--card); padding: 12px 14px; }
+.pl-grid { display: grid; gap: 0; margin-top: 8px; }
+.pl-row {
+  display: grid; grid-template-columns: 88px 116px 1fr; gap: 4px 10px;
+  padding: 8px 0; border-top: 1px dashed var(--line); font-size: 12.5px; align-items: baseline;
+}
+.pl-row:first-child { border-top: 0; }
+.pl-who { color: var(--ink); font-weight: 600; }
+.pl-tag { font-family: var(--mono); font-size: 11px; color: var(--brand); }
+.pl-why { color: var(--muted); line-height: 1.65; }
+.pl-details { margin-top: 8px; }
+.pl-details summary { cursor: pointer; font-size: 12px; color: var(--brand); }
+.pl-trace { display: grid; grid-template-columns: 74px 92px 1fr; gap: 6px; padding: 5px 0; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); }
+.pl-trace b { font-family: var(--mono); font-size: 11px; color: var(--ink); font-weight: 500; }
+.pl-hint { font-size: 12px; color: var(--muted); line-height: 1.7; margin: 8px 0 0; padding: 7px 9px; background: var(--chip-bg); border-left: 2px solid var(--line-2); }
+
+/* ---------- ④ 报告页：人格 - 表现关联 ---------- */
+.persona-fit .pf-row { padding: 8px 0; border-top: 1px dashed var(--line); }
+.persona-fit .pf-row:first-of-type { border-top: 0; }
+.pf-head { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
+.pf-head b { color: var(--ink); font-weight: 600; }
+.pf-score { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+.pf-kind {
+  margin-left: auto; font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em;
+  padding: 2px 6px; border: 1px solid var(--line-2); color: var(--muted); white-space: nowrap;
+}
+.pf-aligned .pf-kind { color: var(--green); border-color: var(--green); background: var(--green-bg); }
+.pf-tension .pf-kind { color: var(--brand); border-color: var(--brand); background: var(--brand-bg); }
+.pf-none .pf-kind, .pf-note .pf-kind { color: var(--faint); }
+.pf-text { font-size: 12.5px; color: var(--muted); line-height: 1.75; margin-top: 5px; }
+
+/* 窄屏：溯源表格在手机上改为两行（题目一行、判定一行） */
+@media (max-width: 640px) {
+  .pb-row, .pl-row { grid-template-columns: 1fr; gap: 2px; }
+  .pl-tag { color: var(--brand); }
+  .mt-row { grid-template-columns: 1fr auto; }
+  .mt-q { grid-column: 1 / -1; }
+  .pb-trace, .pl-trace { grid-template-columns: 70px 1fr; }
+  .pb-eff, .pl-trace span:last-child { grid-column: 1 / -1; }
+}
 </style>
 </head>
 <body>
@@ -5999,6 +6123,7 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
             <div class="chat-head">
               <span class="badge badge-green" id="chat-agent">提问规划</span>
               <span id="chat-mode-label">综合面 · 动态追问模式 · 题库 6 题</span>
+              <button class="persona-chip" id="persona-chip" hidden aria-expanded="false" aria-controls="persona-brief" onclick="togglePersonaBrief()" title="本场提问策略来自你的 MBTI 自评（只影响提问方式，不参与评分）">🧬</button>
               <div class="progress-wrap" title="面试进度（5 轮）"><div class="progress-bar" id="progress-bar"></div></div>
               <span class="answer-timer" id="answer-timer" title="本题答题倒计时（90 秒）——超时将记入「抗压表现」维度">⏱ 90s</span>
               <span style="margin-left:auto;display:flex;gap:6px">
@@ -6008,6 +6133,7 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
                 <button class="btn btn-ghost btn-sm" onclick="finishInterview()">结束面试 →</button>
               </span>
             </div>
+            <div class="persona-brief" id="persona-brief" hidden></div>
             <div class="cam-bar" id="cam-bar" hidden>
               <video id="cam-preview" autoplay muted playsinline aria-label="摄像头预览"></video>
               <div class="cam-meta">
@@ -6304,12 +6430,14 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
     </div>
     <div class="page-card">
       <div class="pane-title">🧠 MBTI 职业性格测评
-        <span class="tag-demo">v36 · 本地计算 · 结果仅存本地</span>
+        <span class="tag-demo">v43 · 端侧计算 · 结果仅存本地</span>
       </div>
       <p class="hint" style="margin-top:0;margin-bottom:12px">
-        答题约需 2 分钟。结果用于校准岗位推荐与面试建议，不会上传服务器。
+        答题约需 2 分钟。结果有两个去处：写入个人中心，以及作为<b>面试提问策略参数</b>——它只改变面试官「怎么问」，<b>不参与评分</b>。全部计算在本地完成，不上传服务器。
       </p>
       <div class="notice notice-info" style="margin-bottom:12px">⚠️ <b>本测评为端侧简易量表，不是专业心理测评</b>：结果仅作求职参考，不能作为心理诊断、职业决策或能力评价的依据。</div>
+
+      <div id="mbti-resume" hidden></div>
 
       <div id="mbti-intro">
         <div class="grid2">
@@ -6328,9 +6456,10 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
             <div class="pane-title" style="font-size:14px">🧭 结果怎么用</div>
             <div class="evidence">
               <p style="line-height:1.9">
-                · 自动写入「个人中心」，与求职信息合并展示<br>
-                · 岗位推荐会参考适配方向<br>
-                · 面试建议会给出该性格的应答提醒<br>
+                · <b>面试官按你的偏好调整追问方式</b>（结构化 / 开放式、施压强度、举证偏好）<br>
+                · 压力面会在追问下方<b>显性标注</b>强度是否被适配<br>
+                · 报告页给出「人格 - 表现关联」，并说明哪些维度其实无关<br>
+                · 每条倾向都可展开查看<b>是哪几道题</b>导致的<br>
                 · 随时可重新测评，历史结果保留在本地
               </p>
             </div>
@@ -7273,6 +7402,8 @@ function applyRoute() {
   if (page === "interview") {
     // v41：切换页面后一帧再量，等布局稳定（折叠条/模式条高度已确定）
     requestAnimationFrame(() => { try { fitChatHeight(); } catch (e) {} });
+    // v43：回到面试页时刷新人格参数胶囊（可能刚做完测评）
+    if (typeof renderPersonaCapsule === "function") { try { renderPersonaCapsule(); } catch (e) {} }
   }
   if (page === "report") { try { renderReport(); } catch (e) {} }
   if (page === "profile") { try { renderProfile(); } catch (e) {} }
@@ -8838,13 +8969,21 @@ const SYS_PROMPTS = {
 };
 
 /* v10：题库 + 动态追问模板混合出题——优先发未被问过的题库原题，其余基于回答关键词动态生成
- * v18：① 连环追问优先（同一技术点连续 2 轮深挖）② 按面试官人设选池（HR / 压力面有专属题库） */
+ * v18：① 连环追问优先（同一技术点连续 2 轮深挖）② 按面试官人设选池（HR / 压力面有专属题库）
+ * v43：人格参数偏置——同一句回答在不同测评结果下会问出不同的问题（规则确定，可复现） */
 function pickQuestion(mode, n, keyword, speaker) {
   if (deepDive.left > 0) {
     const k = deepDive.topic || keyword;
     deepDive.left--;
     if (deepDive.left <= 0) deepDive = { topic: null, left: 0 };
     return DEEP_DIVE_QUESTIONS[(n || 0) % DEEP_DIVE_QUESTIONS.length](k);
+  }
+  /* v43：奇数轮交给人格参数偏置；偶数轮仍走题库/常规追问，
+   * 避免每一句都被参数接管而显得机械。 */
+  const bias = typeof personaQuestionBias === "function" ? personaQuestionBias(activePersona(), n || 0, keyword) : null;
+  if (bias) {
+    lastPersonaBias = bias;
+    return bias.question;
   }
   let pool;
   if (mode === "tech") pool = TECH_QUESTIONS;
@@ -8861,6 +9000,8 @@ function pickQuestion(mode, n, keyword, speaker) {
 
 let session = { mode: "general", turns: [] };   // 在 bootApp() 中按当前用户加载
 let turn = 0;
+/* v43：本次出题是否命中了人格参数偏置（供时间线如实说明「为什么问这个」） */
+let lastPersonaBias = null;
 let recognition = null, listening = false, voiceStartAt = 0;
 let speaking = false;
 let lastReportSig = "";
@@ -8995,7 +9136,11 @@ async function streamChat(messages, onDelta, signal) {
 }
 
 function buildMessages(text) {
-  const msgs = [{ role: "system", content: SYS_PROMPTS[session.mode] || SYS_PROMPTS.general }];
+  /* v43：把人格参数折算成「提问方式」指令追加在系统提示词后。
+   * 无测评结果 / 参数不显著时 personaPromptSuffix 返回空串，面试官走通用策略。 */
+  const base = SYS_PROMPTS[session.mode] || SYS_PROMPTS.general;
+  const suffix = typeof personaPromptSuffix === "function" ? personaPromptSuffix(activePersona()) : "";
+  const msgs = [{ role: "system", content: base + suffix }];
   for (const t of session.turns) {
     msgs.push({ role: "assistant", content: t.question });
     msgs.push({ role: "user", content: t.answer });
@@ -9048,6 +9193,94 @@ function addTimeline(agent, text, kind) {
   div.innerHTML = `<span class="tl-agent">${escHtml(agent)}</span><br>${icon}${escHtml(text)}`;
   tl.appendChild(div);
   tl.scrollTop = tl.scrollHeight;
+}
+
+/* ---- v43：人格参数在面试中的可感知痕迹 ----
+ * 参数不是藏在提示词里的形容词：它必须在这三处留痕，否则「因人施面」不可验证。
+ *   ① 出题时：时间线说明「这一问为什么这么问」
+ *   ② 追问下：压力强度被适配时显性标注
+ *   ③ 头部：胶囊显示本场生效的测评类型与策略档位 */
+function notePersonaBias() {
+  if (!lastPersonaBias) return;
+  addTimeline(
+    "提问规划",
+    `🧬 人格参数「${lastPersonaBias.paramLabel}」→ ${lastPersonaBias.effect}（偏 ${lastPersonaBias.polar} ${lastPersonaBias.pct}%）`,
+    false
+  );
+  lastPersonaBias = null;
+}
+
+function attachPersonaNote(body, bubble, speaker) {
+  if (!speaker || speaker.id !== "pressure") return;
+  const p = activePersona();
+  const html = typeof personaPressureNoteHtml === "function" ? personaPressureNoteHtml(p) : "";
+  if (!html) return;
+  const row = document.createElement("div");
+  row.className = "persona-note-row";
+  row.innerHTML = html;
+  body.insertBefore(row, bubble.nextSibling);
+  const strat = typeof personaStrategy === "function" ? personaStrategy(p) : null;
+  if (strat) addTimeline(speaker.name, `🫱 压力强度适配为「${strat.pressure.level}」→ 已在该追问下方显性标注`, "note");
+}
+
+/** 头部人格胶囊：无测评时隐藏（不占位、不暗示「已识别」） */
+function renderPersonaCapsule() {
+  const chip = $("persona-chip");
+  const brief = $("persona-brief");
+  if (!chip) return;
+  const p = activePersona();
+  const text = typeof personaCapsuleText === "function" ? personaCapsuleText(p) : "";
+  if (!text) {
+    chip.hidden = true;
+    if (brief) brief.hidden = true;
+    return;
+  }
+  chip.hidden = false;
+  chip.textContent = text;
+  chip.setAttribute("aria-expanded", brief && !brief.hidden ? "true" : "false");
+  if (brief && !brief.hidden) brief.innerHTML = personaBriefHtml(p);
+}
+
+/** 策略摘要面板：三行说清「哪一面会怎么变」+ 参数溯源入口 */
+function personaBriefHtml(p) {
+  const strat = typeof personaStrategy === "function" ? personaStrategy(p) : null;
+  if (!strat) return "";
+  const rows = [
+    ["💼 HR 面", strat.hr.label, strat.hr.detail],
+    ["⚙️ 技术面", strat.tech.label, strat.tech.detail],
+    ["🔥 压力面", strat.pressure.level, strat.pressure.detail],
+  ]
+    .map(
+      (r) =>
+        `<div class="pb-row"><b>${escHtml(r[0])} · ${escHtml(r[1])}</b><span>${escHtml(r[2])}</span></div>`
+    )
+    .join("");
+  const trace =
+    typeof personaTrace === "function"
+      ? personaTrace(p)
+          .map(
+            (t) =>
+              `<div class="pb-trace"><span class="pb-dim">${escHtml(t.dimName)}</span><span class="pb-pct">偏 ${escHtml(t.letter)} ${t.pct}%</span><span class="pb-eff">${escHtml(t.effect)}</span></div>`
+          )
+          .join("")
+      : "";
+  return `
+    <div class="pb-head">🧬 本场提问策略（来自你自评的 ${escHtml(p.type)}，只调提问方式，不参与评分）</div>
+    ${rows}
+    <details class="pb-details"><summary>查看参数溯源（哪一维导致了什么）</summary>${trace}</details>`;
+}
+
+function togglePersonaBrief() {
+  const brief = $("persona-brief");
+  if (!brief) return;
+  const p = activePersona();
+  if (!p) return; // 无测评时没有可展开的内容，别留一个空面板
+  brief.hidden = !brief.hidden;
+  if (!brief.hidden) brief.innerHTML = personaBriefHtml(p);
+  const chip = $("persona-chip");
+  if (chip) chip.setAttribute("aria-expanded", brief.hidden ? "false" : "true");
+  /* 面板占了纵向空间，对话区要重新量一次，否则底部输入框会被挤出去 */
+  if (typeof fitChatHeight === "function") { try { fitChatHeight(); } catch (e) {} }
 }
 
 function persistSession() { store.set("fm_session", session); }
@@ -9162,6 +9395,9 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
         if (refHits.length) {
           addTimeline(speaker.name, `⚓ 追问锚定原话「${refHits[0]}」→ 依据该片段发起深挖`, "note");
         }
+        /* v43：说明这一问为何这么问，并按需标注压力强度适配 */
+        notePersonaBias();
+        attachPersonaNote(body, bubble, speaker);
         v16MaybeAutoSpeak();
         addTimeline(speaker.name, "📮 已发送提问（流式输出完成）", false);
         startAnswerTimer();
@@ -9288,6 +9524,12 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
     // v40：模型流式输出结束后，把「锚定你哪句话」回挂到追问气泡
     refHits = annotateAnchorRef(bubble, full, anchors, turn - 1);
     if (refHits.length) addTimeline(speaker.name, `⚓ 追问锚定原话「${refHits[0]}」→ 模型复述并深挖该片段`, "note");
+    /* v43：真实通道下出题由模型决定，这里如实说明「参数已进提示词」，
+     * 而不是假装我们知道模型一定照做。 */
+    if (typeof personaPromptSuffix === "function" && personaPromptSuffix(activePersona())) {
+      addTimeline("提问规划", "🧬 本轮系统提示词已携带人格参数（只影响提问方式，不参与评分）", false);
+    }
+    attachPersonaNote(body, bubble, speaker);
     v16MaybeAutoSpeak();
     $("fallback-banner").hidden = true;
   } catch (e) {
@@ -9359,6 +9601,9 @@ function restartInterview() {
   $("live-hint").textContent = "发送第一条回答后开始追踪";
   $("progress-bar").style.width = "0%";
   $("fallback-banner").hidden = true;
+  /* v43：新一轮开面时快照人格参数——本场策略固定，中途重测不影响已开始的这场 */
+  if (typeof capturePersona === "function") capturePersona();
+  renderPersonaCapsule();
   const sbBadge0 = $("sb-interview-badge");
   if (sbBadge0) { sbBadge0.textContent = `0/${MAX_TURNS}`; sbBadge0.style.background = "var(--brand-bg)"; sbBadge0.style.color = "var(--brand)"; }
   lastReportSig = "";
@@ -10604,6 +10849,126 @@ let lastReportStatus = null;
  * 只存维度得分 / 证据 / 学习路径等结构化结果，回答一律基于真实数据，不编造分数。 */
 let lastReportData = null;
 
+/* ============================================================
+ * v43 · 人格 - 表现关联（可解释，且明确承认「无关」）
+ * ------------------------------------------------------------
+ * MBTI 在此不是标签，而是**一条可验证的假设**：
+ *   若你自评偏 J（结构化），但「结构逻辑」得分偏低，
+ *   那么这个落差更可能来自临场组织，而不是规划能力——这比
+ *   「你是 INTJ，适合做架构」有用得多。
+ * 三种判定都必须说得出依据，也必须允许说「没有显著关联」：
+ *   aligned 一致 / tension 值得注意 / none 无显著关联
+ * 相关不等于因果；一场面试、一份 20 题自评，样本极小。
+ * ============================================================ */
+const PERSONA_DIM_LINKS = [
+  { key: "depth", params: ["evidence", "concrete"] },
+  { key: "logic", params: ["structure"] },
+  { key: "expression", params: ["openness"] },
+  { key: "fit", params: [] },
+  { key: "stress", params: ["empathy"] },
+];
+
+/**
+ * 单维关联判定。
+ * @param {string} dimKey 维度 key
+ * @param {number} score 该维得分
+ * @param {object|null} p personaParams 的返回
+ * @returns {{kind:string,text:string,param:string,pct:number,letter:string}|null}
+ */
+function personaFitFor(dimKey, score, p) {
+  if (!p || !p.significant) return null;
+  const link = PERSONA_DIM_LINKS.filter((l) => l.key === dimKey)[0];
+  if (!link || !link.params.length) return null;
+  const cands = link.params
+    .map((k) => personaParam(p, k))
+    .filter((x) => x.from && x.strength >= PERSONA_MIN_STRENGTH);
+  if (!cands.length) return null;
+  /* 取强度最高的那个参数作为主要解释项，避免一段话里堆四个变量 */
+  const lead = cands.slice().sort((a, b) => b.strength - a.strength)[0];
+  const pct = lead.from.pct;
+  const letter = lead.from.letter;
+  const high = score >= 70;
+  const low = score < 65;
+
+  if (dimKey === "depth") {
+    if (high && lead.value > 0)
+      return { kind: "aligned", param: lead.label, pct, letter, text: `得分较高，与你偏 ${letter}（${pct}%）的举证偏好方向一致：你习惯用具体依据支撑结论。` };
+    if (low && lead.value > 0)
+      return { kind: "tension", param: lead.label, pct, letter, text: `你在测评里偏向 ${letter}（${pct}%），习惯用数据与细节说话，但本轮这一维得分偏低——更可能是这次回答没展开，而不是能力不足。` };
+    if (low && lead.value < 0)
+      return { kind: "note", param: lead.label, pct, letter, text: `你偏 ${letter}（${pct}%），更习惯讲影响与可能性；这一维考察的是量化与细节，属于可针对性补的部分。` };
+    return { kind: "note", param: lead.label, pct, letter, text: `得分处于中段，与你偏 ${letter}（${pct}%）的方向并不矛盾；要往上走还需要更前置的结论与更明确的量化。` };
+  }
+  if (dimKey === "logic") {
+    if (high && lead.value > 0)
+      return { kind: "aligned", param: lead.label, pct, letter, text: `得分较高，与你偏 ${letter}（${pct}%）的计划性倾向一致：先立框架再展开。` };
+    if (low && lead.value > 0)
+      return { kind: "tension", param: lead.label, pct, letter, text: `你自评偏 ${letter}（${pct}%），通常是有计划的人，但本轮结构得分偏低——更像临场组织没跟上，而不是规划能力问题。` };
+    if (low && lead.value < 0)
+      return { kind: "tension", param: lead.label, pct, letter, text: `你偏 ${letter}（${pct}%），习惯边想边说；这在面试里容易结构松散，建议开场先给结论。` };
+    return { kind: "note", param: lead.label, pct, letter, text: `得分处于中段，与你偏 ${letter}（${pct}%）的计划性倾向基本吻合；下一步是把「背景-目标-行动-结果」压成三段。` };
+  }
+  if (dimKey === "expression") {
+    if (high && lead.value > 0)
+      return { kind: "aligned", param: lead.label, pct, letter, text: `表达流畅，与你偏 ${letter}（${pct}%）的外向倾向一致。` };
+    if (low && lead.value < 0)
+      return { kind: "tension", param: lead.label, pct, letter, text: `你偏 ${letter}（${pct}%），在一对一高压表达中更容易出现停顿与自我修正——这是节奏问题，不是内容问题。` };
+    return { kind: "note", param: lead.label, pct, letter, text: `得分处于中段，与你偏 ${letter}（${pct}%）的表达节奏相符；减少口头禅比提升语速更有效。` };
+  }
+  if (dimKey === "stress") {
+    if (low && lead.value > 0)
+      return { kind: "tension", param: lead.label, pct, letter, text: `你偏 ${letter}（${pct}%），对质疑的情绪反应通常更明显；本轮抗压得分偏低可能与此有关——这不是缺陷，是可以练的领域。` };
+    if (high && lead.value < 0)
+      return { kind: "aligned", param: lead.label, pct, letter, text: `抗压表现稳定，与你偏 ${letter}（${pct}%）的「先处理问题、再处理情绪」方式一致。` };
+    return { kind: "none", param: lead.label, pct, letter, text: "这一维与人格参数无显著关联。" };
+  }
+  return null;
+}
+
+/**
+ * 生成「人格 - 表现关联」卡片。
+ * @param {Array<{key:string,dimension:string,score:number}>} dims 五维得分
+ * @param {object|null} p personaParams 的返回（可为 null → 引导先做测评）
+ * @returns {string} HTML
+ */
+function personaFitCard(dims, p) {
+  if (!p || !p.type) {
+    return `<div class="card persona-fit" id="report-persona" style="padding:14px 16px;margin-top:14px">
+      <div class="pane-title" style="margin-bottom:2px">🧬 人格 - 表现关联<span class="tag-demo">未启用</span></div>
+      <p class="hint" style="margin-bottom:0">还没有 MBTI 测评结果，因此无法做人格与表现的关联判断。<b>这里不会凭空推测你的人格</b>——去「MBTI 测评」花 2 分钟测一次，报告会多出这一块，面试官也会据此调整追问方式。</p>
+      <div style="margin-top:10px"><button class="btn btn-outline btn-sm" onclick="switchTab('mbti')">去做测评 →</button></div>
+    </div>`;
+  }
+  const strat = typeof personaStrategy === "function" ? personaStrategy(p) : null;
+  const rows = (dims || [])
+    .map((d) => {
+      const fit = personaFitFor(d.key, d.score, p);
+      const kindLabel = fit
+        ? { aligned: "一致", tension: "值得注意", note: "待补强", none: "无显著关联" }[fit.kind] || ""
+        : "无显著关联";
+      const kindCls = fit ? "pf-" + fit.kind : "pf-none";
+      const text = fit ? fit.text : "这一维与人格参数没有显著关联，主要取决于回答内容本身。";
+      return `<div class="pf-row ${kindCls}">
+        <div class="pf-head"><b>${escHtml(d.dimension)}</b><span class="pf-score">${d.score}</span><span class="pf-kind">${escHtml(kindLabel)}</span></div>
+        <div class="pf-text">${escHtml(text)}</div>
+      </div>`;
+    })
+    .join("");
+  const stratLine = strat
+    ? `本场提问策略：HR「${escHtml(strat.hr.label)}」· 技术「${escHtml(strat.tech.label)}」· 压力「${escHtml(strat.pressure.level)}」`
+    : "";
+  const weakNote = !p.significant
+    ? `<div class="notice notice-info" style="margin:10px 0 0;font-size:12.5px">你的四个维度都接近中线（典型度均低于 ${PERSONA_MIN_STRENGTH}），因此<b>不做关联推断</b>——用噪声贴标签比不贴更糟。</div>`
+    : "";
+  return `<div class="card persona-fit" id="report-persona" style="padding:14px 16px;margin-top:14px">
+      <div class="pane-title" style="margin-bottom:2px">🧬 人格 - 表现关联<span class="tag-demo">${escHtml(p.type)} · 自评量表</span></div>
+      <p class="hint" style="margin:2px 0 10px">${stratLine}　·　说明：人格参数<b>只改变提问方式</b>，从不参与打分。</p>
+      ${rows}
+      ${weakNote}
+      <p class="hint" style="margin:10px 0 0">相关性不等于因果：这里的判断基于「一场面试的 5 轮问答」与「一次 20 题自评」，样本极小。<b>它提供的是假设，不是结论</b>，也不构成能力或心理评价。</p>
+    </div>`;
+}
+
 function reportStatusCard(st) {
   const count = st && st.count ? st.count : 0;
   const pr = st && st.presence_rate != null ? st.presence_rate : null;
@@ -10768,6 +11133,7 @@ async function renderReport(force) {
         </div>`).join("")}</div></div>
     </div>
     ${reportStatusCard(camStatus)}
+    ${typeof personaFitCard === "function" ? personaFitCard(dims, typeof activePersona === "function" ? activePersona() : null) : ""}
     ${rhythmCard(rhythm)}
     ${narrative ? `<div class="notice-llm">🧭 教练总评：${esc(narrative)}</div>` : ""}
     <div class="pane-title" style="margin-top:18px">评分证据（引用你的真实回答）</div>
@@ -20121,6 +20487,42 @@ const MBTI_TYPES = {
 /* ---------- ③ 测评引擎 ---------- */
 let mbtiState = null;   // { i: 当前题序, answers: [{dim,dir,v}] }
 
+/* v43：断点续答——答到一半切走/刷新不该让 20 题从头再来 */
+function getMbtiDraft() {
+  try {
+    const d = store.get("fm_mbti_draft", null);
+    if (d && typeof d.i === "number" && Array.isArray(d.answers)) return d;
+    return null;
+  } catch (e) { return null; }
+}
+
+function saveMbtiDraft() {
+  if (!mbtiState) return;
+  try { store.set("fm_mbti_draft", { i: mbtiState.i, answers: mbtiState.answers, at: Date.now() }, true); } catch (e) {}
+}
+
+function clearMbtiDraft() {
+  try { store.set("fm_mbti_draft", null, true); } catch (e) {}
+}
+
+/* v43：按维度分组的进度——「维度 2/4 · 第 3/5 题」比「第 8/20 题」更能减少焦虑 */
+function mbtiDimProgress(idx) {
+  const item = MBTI_QUESTIONS[idx];
+  const gTotal = MBTI_DIMS.length;
+  if (!item) return { g: 0, gTotal, gName: "", inGroup: 1, inTotal: 5, done: idx };
+  const g = MBTI_DIMS.map((d) => d.key).indexOf(item.dim);
+  const inDim = MBTI_QUESTIONS.map((q, i) => (q.dim === item.dim ? i : -1)).filter((i) => i >= 0);
+  const dimMeta = MBTI_DIMS[g] || {};
+  return {
+    g: g < 0 ? 0 : g,
+    gTotal,
+    gName: dimMeta.name || "",
+    inGroup: inDim.indexOf(idx) + 1,
+    inTotal: inDim.length,
+    done: idx,
+  };
+}
+
 function getMbti() {
   try { return store.get("fm_mbti", null); } catch (e) { return null; }
 }
@@ -20130,12 +20532,14 @@ function saveMbti(result) {
   return result;
 }
 
-/* 计算：每维 5 题，v∈[-2,2] → 原始分 ∈[-10,10] → 偏向 a 的百分比 */
+/* 计算：每维 5 题，v∈[-2,2] → 原始分 ∈[-10,10] → 偏向 a 的百分比
+ * v43：同时产出 trace（逐题溯源）——「是哪几道题把你判成了 I」必须可查，
+ * 否则这套量表对外就是个黑盒，和「可解释」的整体叙事自相矛盾。 */
 function computeMbtiResult(answers) {
   const acc = {};
   MBTI_DIMS.forEach((d) => { acc[d.key] = 0; });
   (answers || []).forEach((a) => {
-    if (acc[a.dim] === undefined) return;
+    if (!a || acc[a.dim] === undefined) return;
     acc[a.dim] += a.v * a.dir;
   });
   const dims = MBTI_DIMS.map((d) => {
@@ -20145,16 +20549,47 @@ function computeMbtiResult(answers) {
     const strength = Math.abs(pctA - 50) * 2;         // 0-100，越大越典型
     return {
       key: d.key, name: d.name, a: d.a, b: d.b, aName: d.aName, bName: d.bName,
-      pctA, pctB: 100 - pctA, letter, strength,
+      pctA, pctB: 100 - pctA, letter, strength, raw,
     };
   });
   const type = dims.map((d) => d.letter).join("");
   const clarity = Math.round(dims.reduce((s, d) => s + d.strength, 0) / dims.length);
-  return { type, dims, clarity, at: Date.now() };
+  return { type, dims, clarity, at: Date.now(), trace: mbtiTrace(answers) };
+}
+
+/* v43：逐题溯源——题目 / 你的选择 / 贡献分（正=推向首选字母，负=推向次选字母） */
+function mbtiTrace(answers) {
+  const out = [];
+  (answers || []).forEach((a, i) => {
+    const q = MBTI_QUESTIONS[i];
+    if (!q || !a || typeof a.v !== "number") return;
+    const scale = MBTI_SCALE.filter((s) => s.v === a.v)[0];
+    const contrib = a.v * q.dir;
+    const dimMeta = MBTI_DIMS.filter((d) => d.key === q.dim)[0] || {};
+    out.push({
+      i, dim: q.dim, dimName: dimMeta.name || q.dim, q: q.q,
+      v: a.v, label: scale ? scale.label : String(a.v),
+      contrib, toward: contrib > 0 ? dimMeta.a : contrib < 0 ? dimMeta.b : "",
+    });
+  });
+  return out;
 }
 
 function startMbti() {
   mbtiState = { i: 0, answers: [] };
+  clearMbtiDraft();
+  openMbtiQuiz();
+}
+
+/* v43：继续上次进度（20 题在手机上被打断的概率很高） */
+function resumeMbti() {
+  const d = getMbtiDraft();
+  if (!d) { startMbti(); return; }
+  mbtiState = { i: Math.min(d.i, MBTI_QUESTIONS.length - 1), answers: d.answers || [] };
+  openMbtiQuiz();
+}
+
+function openMbtiQuiz() {
   const intro = $("mbti-intro");
   const quiz = $("mbti-quiz");
   const result = $("mbti-result");
@@ -20173,9 +20608,15 @@ function renderMbtiQuestion() {
   const total = MBTI_QUESTIONS.length;
   const pct = Math.round(idx / total * 100);
   const dimMeta = MBTI_DIMS.filter((d) => d.key === item.dim)[0];
+  /* v43：分段进度——先让用户知道「这一维还剩几题」，再谈总进度 */
+  const pg = mbtiDimProgress(idx);
   quiz.innerHTML = `
     <div class="mbti-progress-wrap">
-      <div class="hint" style="margin-top:0">第 ${idx + 1} / ${total} 题${dimMeta ? "　·　" + escHtml(dimMeta.name) : ""}　（${pct}%）</div>
+      <div class="mbti-step">
+        <span class="mbti-step-dim">维度 ${pg.g + 1}/${pg.gTotal}${pg.gName ? " · " + escHtml(pg.gName) : ""}</span>
+        <span class="mbti-step-q">第 ${pg.inGroup}/${pg.inTotal} 题</span>
+        <span class="mbti-step-all">已完成 ${idx}/${total}（${pct}%）</span>
+      </div>
       ${progressDotsSVG(total, idx, { cell: 13, gap: 4 })}
     </div>
     <div class="mbti-q-card">
@@ -20185,7 +20626,8 @@ function renderMbtiQuestion() {
       </div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-outline btn-sm" onclick="${idx > 0 ? "prevMbti()" : "cancelMbti()"}">${idx > 0 ? "← 上一题" : "取消测评"}</button>
+      ${idx > 0 ? `<button class="btn btn-outline btn-sm" onclick="prevMbti()">← 上一题</button>` : ""}
+      <button class="btn btn-ghost btn-sm" onclick="pauseMbti()">稍后继续</button>
     </div>`;
 }
 
@@ -20194,19 +20636,31 @@ function answerMbti(v) {
   const item = MBTI_QUESTIONS[mbtiState.i];
   mbtiState.answers[mbtiState.i] = { dim: item.dim, dir: item.dir, v };
   mbtiState.i++;
+  saveMbtiDraft();   // v43：每答一题落一次盘，被打断也能接上
   renderMbtiQuestion();
 }
 
 function prevMbti() {
   if (!mbtiState || mbtiState.i <= 0) return;
   mbtiState.i--;
+  saveMbtiDraft();
   renderMbtiQuestion();
 }
 
+/* v43：稍后继续——保留草稿，回到 intro 态（不丢已答的题） */
+function pauseMbti() {
+  saveMbtiDraft();
+  mbtiState = null;
+  const quiz = $("mbti-quiz");
+  if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
+  renderMbtiPage();
+  toast("进度已保存，下次可从断点继续");
+}
+
+/* v43：放弃本次测评（清空草稿） */
 function cancelMbti() {
   mbtiState = null;
-  const intro = $("mbti-intro");
-  if (intro) intro.hidden = false;
+  clearMbtiDraft();
   const quiz = $("mbti-quiz");
   if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
   renderMbtiPage();
@@ -20219,10 +20673,13 @@ function finishMbti() {
   saveMbti(r);
   syncMbtiToProfile(r);
   mbtiState = null;
+  clearMbtiDraft();   // v43：完成后清掉草稿，避免「继续上次」指向已结束的测评
   const quiz = $("mbti-quiz");
   if (quiz) { quiz.hidden = true; quiz.innerHTML = ""; }
   renderMbtiResult(r);
-  toast(`测评完成：${r.type}（已同步到个人中心）`);
+  /* v43：测评完成即刷新面试页的人格胶囊——结果要立刻能在面试里被看见 */
+  if (typeof renderPersonaCapsule === "function") { try { renderPersonaCapsule(); } catch (e) {} }
+  toast(`测评完成：${r.type}（已同步到个人中心与面试提问策略）`);
   try { logDev("info", `MBTI 测评完成：${r.type}`); } catch (e) {}
 }
 
@@ -20241,7 +20698,21 @@ function renderMbtiResult(r) {
   const box = $("mbti-result");
   if (!box) return;
   const t = MBTI_TYPES[r.type] || { nick: "", trait: "", fit: "", tip: "" };
-  const dimCards = r.dims.map((d) => `
+  const dimCards = r.dims.map((d) => {
+    /* v43：逐题溯源——每个维度都能展开看「哪几道题把你判成了这一极」 */
+    const rows = (r.trace || []).filter((t) => t.dim === d.key);
+    const rawTxt = typeof d.raw === "number" ? (d.raw > 0 ? "+" : "") + d.raw : "—";
+    const traceHtml = rows.length
+      ? `<details class="mbti-trace">
+        <summary>🔍 查看是哪 ${rows.length} 题导致的（原始分 ${rawTxt} / ±10）</summary>
+        ${rows.map((t) => `<div class="mt-row">
+          <span class="mt-q">${escHtml(t.q)}</span>
+          <span class="mt-a">${escHtml(t.label)}</span>
+          <span class="mt-c${t.contrib === 0 ? " mt-zero" : ""}">${t.contrib === 0 ? "中性" : (t.contrib > 0 ? "+" : "") + t.contrib + " → " + escHtml(t.toward)}</span>
+        </div>`).join("")}
+      </details>`
+      : `<div class="mbti-trace-none">本次结果由旧版本生成，重新测评可查看逐题溯源。</div>`;
+    return `
     <div class="mbti-dim-card">
       <div class="mbti-dim-name">${escHtml(d.name)}</div>
       <div class="mbti-dim-axis">
@@ -20250,7 +20721,9 @@ function renderMbtiResult(r) {
         <span class="${d.letter === d.b ? "on" : ""}">${escHtml(d.bName)}</span>
       </div>
       <div class="mbti-dim-pct">偏 ${escHtml(d.letter)}　·　典型度 ${d.strength}%</div>
-    </div>`).join("");
+      ${traceHtml}
+    </div>`;
+  }).join("");
   box.innerHTML = `
     <div class="mbti-hero fade-up">
       <div class="mbti-hero-left">
@@ -20283,6 +20756,7 @@ function renderMbtiResult(r) {
       </div>
     </div>
 
+    ${typeof personaBridgeHtml === "function" ? personaBridgeHtml(personaParams(r)) : ""}
     <div class="report-grid" style="margin-top:14px">
       <div>
         <div class="pane-title" style="font-size:14px">💬 面试提醒</div>
@@ -20295,7 +20769,7 @@ function renderMbtiResult(r) {
     </div>
 
     <div class="notice notice-info" style="margin-top:14px">
-      结果已同步到「个人中心」（fm_profile.mbti）。岗位推荐与面试建议会参考该结果。
+      结果已同步到「个人中心」（fm_profile.mbti），并作为<b>面试提问策略参数</b>生效：只改变面试官「怎么问」，<b>不参与评分</b>。
     </div>
     <div class="notice notice-info" style="margin-top:8px">⚠️ 本测评为端侧简易量表，<b>非专业心理测评</b>；结果仅供参考，不作为心理诊断或职业决策依据。</div>
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
@@ -20311,6 +20785,25 @@ function renderMbtiPage() {
   const result = $("mbti-result");
   if (!intro) return;
   const saved = getMbti();
+  const draft = getMbtiDraft();
+  /* v43：有草稿就先把「继续」摆在最前面——20 题被打断过的人不该从第 1 题重来 */
+  const resumeBox = $("mbti-resume");
+  if (resumeBox) {
+    if (draft && draft.i > 0 && (!saved || !saved.type)) {
+      resumeBox.hidden = false;
+      resumeBox.innerHTML = `
+        <div class="notice notice-info mbti-resume-box">
+          <span>上次答到第 <b>${draft.i}</b> / ${MBTI_QUESTIONS.length} 题（维度 ${mbtiDimProgress(Math.min(draft.i, MBTI_QUESTIONS.length - 1)).g + 1}/4）</span>
+          <span style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="resumeMbti()">继续测评 →</button>
+            <button class="btn btn-ghost btn-sm" onclick="cancelMbti()">重新开始</button>
+          </span>
+        </div>`;
+    } else {
+      resumeBox.hidden = true;
+      resumeBox.innerHTML = "";
+    }
+  }
   if (saved && saved.type) {
     intro.hidden = true;
     if (quiz) quiz.hidden = true;
@@ -20320,7 +20813,9 @@ function renderMbtiPage() {
   intro.hidden = false;
   if (quiz) quiz.hidden = true;
   if (result) {
-    result.innerHTML = `<div class="notice notice-info">还没有测评记录。点击上方「开始测评」，20 道题约需 2 分钟。</div>`;
+    result.innerHTML = draft && draft.i > 0
+      ? `<div class="notice notice-info">有一份未完成的测评（已答 ${draft.i} 题）。点上方「继续测评」接着答，或「重新开始」清空重来。</div>`
+      : `<div class="notice notice-info">还没有测评记录。点击上方「开始测评」，20 道题约需 2 分钟。</div>`;
   }
 }
 
@@ -20328,6 +20823,419 @@ function renderMbtiPage() {
 function currentMbti() {
   const s = getMbti();
   return s && s.type ? s : null;
+}
+/* ============================================================
+ * v43 · 人格参数化层（MBTI → 可检查的提问策略参数）
+ * ------------------------------------------------------------
+ * 为什么不是「贴标签」：
+ *   MBTI 结果如果只作为形容词写进提示词（「用户是 INTJ」），它对面试
+ *   行为的真实影响是不可观测的，也无法对外解释。这一层把它折算成
+ *   **五个带方向与强度的数值参数**，每个参数都能回溯到具体维度与
+ *   百分比；面试官怎么变、为什么变，都写在 personaTrace() 里。
+ *
+ *   ① PERSONA_PARAM_DEFS  参数定义（来源维度 / 两极语义 / 对提问的影响）
+ *   ② personaParams()     测评结果 → 参数（value ∈ [-1,1]，含来源）
+ *   ③ personaStrategy()   参数 → 三角色提问策略（HR / 技术 / 压力）
+ *   ④ personaPromptSuffix() 参数 → 系统提示词后缀（真实 LLM 通道生效）
+ *   ⑤ personaTrace()      审计表：维度 → 参数 → 影响（可对外展示）
+ *   ⑥ personaBridgeHtml() 结果页：把四个字母翻译成面试官会怎么变
+ *   ⑦ personaQuestionBias() Mock 通道的确定性偏置（同一回答不同追问）
+ *   ⑧ personaPressureNoteHtml() 压力强度适配的显性标注
+ *   ⑨ personaCapsuleText() 面试页头部的参数胶囊
+ *   ⑩ capturePersona()/activePersona() 开面时快照，报告端同口径读取
+ *
+ * 诚实边界：无测评结果、或清晰度太低时一律降级为通用策略，
+ * 不凭空推测人格；参数只影响**追问方式**，绝不进入评分。
+ * ============================================================ */
+
+/** 显著阈值：维度典型度 ≥ 20（约 60:40）才参与策略，避免噪声被当成倾向 */
+const PERSONA_MIN_STRENGTH = 20;
+
+/* ---------- ① 参数定义 ----------
+ * dim：来源维度；pos/neg：两极字母；posText/negText：该极对提问的影响。 */
+const PERSONA_PARAM_DEFS = [
+  {
+    key: "structure",
+    label: "结构化追问",
+    dim: "JP",
+    pos: "J",
+    neg: "P",
+    posText: "追问决策依据与备选方案（先把判断标准说清楚）",
+    negText: "追问条件突变时的应变（情境题权重上调）",
+  },
+  {
+    key: "openness",
+    label: "开放式施压",
+    dim: "EI",
+    pos: "E",
+    neg: "I",
+    posText: "保留开放式开场，允许展开叙述后再收敛",
+    negText: "先给框架再提问，单轮只问一件事，减少长时间开放式施压",
+  },
+  {
+    key: "empathy",
+    label: "情绪适配",
+    dim: "TF",
+    pos: "F",
+    neg: "T",
+    posText: "施压前先承认处境，压力强度下调一档并显性标注",
+    negText: "按标准强度施压，以证据与逻辑对撞为主",
+  },
+  {
+    key: "evidence",
+    label: "举证偏好",
+    dim: "TF",
+    pos: "T",
+    neg: "F",
+    posText: "追问数据、指标与取舍过程",
+    negText: "追问协作影响、团队反馈与沟通成本",
+  },
+  {
+    key: "concrete",
+    label: "细节偏好",
+    dim: "SN",
+    pos: "S",
+    neg: "N",
+    posText: "追问具体参数、阈值与实操经验",
+    negText: "追问模式迁移与未来可能性",
+  },
+];
+
+/* ---------- ② 测评结果 → 参数 ---------- */
+/**
+ * 把 MBTI 结果折算为可审计的行为参数。
+ * @param {object|null} r computeMbtiResult / currentMbti 的返回
+ * @returns {{type:string,clarity:number,at:number,significant:boolean,
+ *   params:Array<{key:string,label:string,value:number,strength:number,
+ *   from:{dim:string,name:string,letter:string,pct:number,polar:string}|null}>}|null}
+ */
+function personaParams(r) {
+  if (!r || !r.type || !Array.isArray(r.dims)) return null;
+  const byKey = {};
+  r.dims.forEach((d) => {
+    if (d && d.key) byKey[d.key] = d;
+  });
+  const params = PERSONA_PARAM_DEFS.map((def) => {
+    const d = byKey[def.dim];
+    if (!d || typeof d.pctA !== "number") {
+      return { key: def.key, label: def.label, value: 0, strength: 0, from: null };
+    }
+    /* 两个百分比含义不同，别混用：
+     *   posPct    = 偏向「本参数正极」的百分比 → 只用来算 value 的方向与强度
+     *   letterPct = 偏向「该维所选字母」的百分比 → 给用户看的那个数字
+     * 混用会出现「偏 T（0%）」这种自相矛盾的展示。 */
+    const posIsA = d.a === def.pos;
+    const posPct = posIsA ? d.pctA : 100 - d.pctA;
+    const letterPct = Math.max(d.pctA, 100 - d.pctA);
+    const value = Math.round((posPct - 50) / 50 * 100) / 100;
+    return {
+      key: def.key,
+      label: def.label,
+      value,
+      strength: typeof d.strength === "number" ? d.strength : Math.abs(letterPct - 50) * 2,
+      from: { dim: def.dim, name: d.name, letter: d.letter, pct: letterPct, posPct, polar: d.letter },
+    };
+  });
+  const significant = params.some((p) => p.strength >= PERSONA_MIN_STRENGTH);
+  return { type: r.type, clarity: r.clarity || 0, at: r.at || 0, significant, params };
+}
+
+/** 取单个参数（缺省返回中性值，调用侧不必判空） */
+function personaParam(p, key) {
+  if (!p || !Array.isArray(p.params)) return { key, label: key, value: 0, strength: 0, from: null };
+  return p.params.filter((x) => x.key === key)[0] || { key, label: key, value: 0, strength: 0, from: null };
+}
+
+/* ---------- ③ 参数 → 三角色策略 ---------- */
+/**
+ * @param {object|null} p personaParams 的返回
+ * @returns {{type:string,clarity:number,hr:object,tech:object,pressure:object,
+ *   adapted:boolean,significant:boolean}|null}
+ */
+function personaStrategy(p) {
+  if (!p) return null;
+  const structure = personaParam(p, "structure");
+  const openness = personaParam(p, "openness");
+  const empathy = personaParam(p, "empathy");
+  const evidence = personaParam(p, "evidence");
+  const concrete = personaParam(p, "concrete");
+  const sig = (x) => x.strength >= PERSONA_MIN_STRENGTH;
+
+  /* 压力档位：偏 F（情绪适配高）→ 温和；偏 T → 高强度；其余标准 */
+  let level = "标准";
+  if (sig(empathy) && empathy.value >= 0.2) level = "温和";
+  else if (sig(empathy) && empathy.value <= -0.2) level = "高强度";
+
+  const hrLabel = sig(openness) && openness.value <= -0.2 ? "结构化递进" : "开放式引导";
+  const techLabel =
+    sig(concrete) && concrete.value >= 0.2
+      ? "细节与经验"
+      : sig(concrete) && concrete.value <= -0.2
+        ? "模式与迁移"
+        : "原理与取舍";
+
+  return {
+    type: p.type,
+    clarity: p.clarity,
+    significant: p.significant,
+    adapted: level !== "标准",
+    hr: {
+      label: hrLabel,
+      detail:
+        hrLabel === "结构化递进"
+          ? "偏内向：先给框架再提问，单轮只问一件事，减少连续开放式施压"
+          : "偏外向：保留开放式开场，允许候选人展开叙述后再收敛",
+    },
+    tech: {
+      label: techLabel,
+      detail:
+        techLabel === "细节与经验"
+          ? "偏实感：优先追问具体参数、阈值与踩过的坑"
+          : techLabel === "模式与迁移"
+            ? "偏直觉：优先追问方案迁移、边界条件与未来可能性"
+            : "按原理 / 量化 / 取舍三件套追问",
+    },
+    pressure: {
+      level,
+      detail:
+        level === "温和"
+          ? "情绪适配：施压前先承认处境，强度下调一档，并在追问下方显性标注"
+          : level === "高强度"
+            ? "偏好证据对撞：按高强度施压，追问不可替代性与举证责任"
+            : "按标准强度施压",
+      /* 供 UI 显性标注使用 */
+      note:
+        level === "温和"
+          ? "本轮压力强度已按你的情绪偏好下调一档"
+          : level === "高强度"
+            ? "本轮按你偏好证据对撞的方式施压"
+            : "",
+    },
+    evidence: sig(evidence) ? evidence : null,
+    structure: sig(structure) ? structure : null,
+  };
+}
+
+/* ---------- ④ 系统提示词后缀 ---------- */
+/**
+ * 真实 LLM 通道使用：把参数写成可执行指令，而不是形容词。
+ * 无显著参数时返回空串（面试官按通用策略提问，不臆测人格）。
+ * @param {object|null} p personaParams 的返回
+ * @returns {string}
+ */
+function personaPromptSuffix(p) {
+  if (!p || !p.significant) return "";
+  const lines = [];
+  p.params.forEach((x) => {
+    if (!x.from || x.strength < PERSONA_MIN_STRENGTH) return;
+    const def = PERSONA_PARAM_DEFS.filter((d) => d.key === x.key)[0];
+    if (!def) return;
+    const text = x.value >= 0 ? def.posText : def.negText;
+    lines.push(`- 偏向 ${x.from.letter}（${x.from.pct}%，${x.from.name}）：${text}`);
+  });
+  if (!lines.length) return "";
+  return (
+    "\n\n【提问策略参数】以下参数来自候选人自评的端侧简易量表，只用于调整你的**追问方式**，" +
+    "不得在提问中提及人格类型或测评结果，也不得据此评价候选人。" +
+    (p.clarity < 40 ? "（测评清晰度偏低 " + p.clarity + "%，参数仅作弱参考）" : "") +
+    "\n" + lines.join("\n")
+  );
+}
+
+/* ---------- ⑤ 审计表 ---------- */
+/**
+ * 维度 → 参数 → 影响的逐行说明，供面试页与报告页对外展示。
+ * @param {object|null} p personaParams 的返回
+ * @returns {Array<{dim:string,dimName:string,letter:string,pct:number,param:string,paramLabel:string,effect:string,strong:boolean}>}
+ */
+function personaTrace(p) {
+  if (!p || !Array.isArray(p.params)) return [];
+  const rows = [];
+  const seen = {};
+  p.params.forEach((x) => {
+    if (!x.from) return;
+    const def = PERSONA_PARAM_DEFS.filter((d) => d.key === x.key)[0];
+    if (!def) return;
+    const strong = x.strength >= PERSONA_MIN_STRENGTH;
+    /* 同一维度可能派生两个参数（TF → empathy/evidence），合并成一行更好读 */
+    const rowKey = x.from.dim;
+    const effect = x.value >= 0 ? def.posText : def.negText;
+    if (seen[rowKey]) {
+      seen[rowKey].effect += "；" + effect;
+      seen[rowKey].paramLabel += " / " + x.label;
+      seen[rowKey].strong = seen[rowKey].strong || strong;
+      return;
+    }
+    const row = {
+      dim: x.from.dim,
+      dimName: x.from.name,
+      letter: x.from.letter,
+      pct: x.from.pct,
+      param: x.key,
+      paramLabel: x.label,
+      effect,
+      strong,
+    };
+    seen[rowKey] = row;
+    rows.push(row);
+  });
+  return rows;
+}
+
+/* ---------- ⑥ MBTI 结果页：参数如何进入面试 ---------- */
+/**
+ * 把「四个字母」翻译成「三位面试官会怎么变」，并给出可当场验证的入口。
+ * 这是 MBTI 从孤立测评变成面试输入的桥梁——没有它，参数只是我们内部的事。
+ * @param {object|null} p personaParams 的返回
+ * @returns {string} HTML 片段（无参数时返回空串）
+ */
+function personaBridgeHtml(p) {
+  const strat = personaStrategy(p);
+  if (!strat) return "";
+  const rows = [
+    ["💼 HR 面", strat.hr.label, strat.hr.detail],
+    ["⚙️ 技术面", strat.tech.label, strat.tech.detail],
+    ["🔥 压力面", strat.pressure.level, strat.pressure.detail],
+  ]
+    .map(
+      (r) =>
+        `<div class="pl-row"><span class="pl-who">${escHtml(r[0])}</span><span class="pl-tag">${escHtml(r[1])}</span><span class="pl-why">${escHtml(r[2])}</span></div>`
+    )
+    .join("");
+  const trace = personaTrace(p)
+    .filter((t) => t.strong)
+    .map(
+      (t) =>
+        `<div class="pl-trace"><span>${escHtml(t.dimName)}</span><b>偏 ${escHtml(t.letter)} ${t.pct}%</b><span>${escHtml(t.effect)}</span></div>`
+    )
+    .join("");
+  const weak = !p.significant
+    ? `<div class="pl-hint">你的四个维度都接近中线（典型度均低于 ${PERSONA_MIN_STRENGTH}），因此<b>不启用个性化策略</b>——面试官按通用策略提问，避免用噪声给你贴标签。</div>`
+    : "";
+  return `
+    <div class="persona-link" style="margin-top:16px">
+      <div class="pane-title" style="font-size:14px">🧬 这份结果怎么进入面试（只调提问方式，不参与评分）</div>
+      ${weak}
+      <div class="pl-grid">${rows}</div>
+      ${trace ? `<details class="pl-details"><summary>参数溯源：哪一维导致了什么</summary>${trace}</details>` : ""}
+      <div style="margin-top:10px">
+        <button class="btn btn-primary btn-sm" onclick="switchTab('interview')">去面试，验证它会怎么问 →</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- ⑦ Mock 通道的确定性偏置 ---------- */
+/* 与「贴标签」的区别：这里不生成人格话术，只改**问什么**。
+ * 同一句回答，参数不同 → 追问不同；规则确定，可被测试复现。 */
+const PERSONA_QUESTION_BANK = {
+  structure: [
+    (k) => `关于「${k}」，你当时的决策依据是什么？有哪些备选方案被排除了？`,
+    (k) => `如果重来一次，「${k}」你会改动哪一步？判断标准是什么？`,
+  ],
+  explore: [
+    (k) => `如果「${k}」的前提突然变了（预算砍半、周期缩短），你会怎么调整？`,
+    (k) => `「${k}」这个方向如果被整体否掉，你拿什么替代？`,
+  ],
+  empathy: [
+    (k) => `先说说「${k}」当时最让你为难的地方——不急着给结论。`,
+    (k) => `推动「${k}」时，团队里有没有人因此承压？你怎么处理的？`,
+  ],
+  evidence: [
+    (k) => `「${k}」有没有可量化的结果？比如延迟、QPS、错误率的变化。`,
+    (k) => `「${k}」在成本和效果之间，你当时怎么权衡的？`,
+  ],
+  premium: [
+    (k) => `「${k}」的关键参数（阈值、超时、并发数）具体是多少？依据是什么？`,
+    (k) => `「${k}」落地时踩过哪些具体的坑？是怎么发现的？`,
+  ],
+};
+
+/* 参数（按符号）→ 追问族。极性为正时走向正极语义，为负时走向负极语义。 */
+const PERSONA_BIAS_MAP = {
+  structure: (v) => (v > 0 ? "structure" : "explore"),
+  openness: (v) => (v > 0 ? "explore" : "structure"),
+  empathy: (v) => (v > 0 ? "empathy" : "evidence"),
+  evidence: (v) => (v > 0 ? "evidence" : "empathy"),
+  concrete: (v) => (v > 0 ? "premium" : "explore"),
+};
+
+/**
+ * 按轮次轮转显著参数，给出本轮的人格偏置追问（无偏置返回 null）。
+ * 只在奇数轮介入，把偶数轮留给题库原题与常规追问——避免「每句都被
+ * 人格参数接管」的机械感。
+ * @param {object|null} p personaParams 的返回
+ * @param {number} n 当前轮次
+ * @param {string} keyword 从回答中提取的关键词
+ * @returns {{question:string,param:string,paramLabel:string,effect:string}|null}
+ */
+function personaQuestionBias(p, n, keyword) {
+  if (!p || !p.significant) return null;
+  if (n % 2 === 0) return null; // 偶数轮交给常规出题
+  const strong = p.params.filter((x) => x.from && x.strength >= PERSONA_MIN_STRENGTH);
+  if (!strong.length) return null;
+  const pick = strong[n % strong.length];
+  const picker = PERSONA_BIAS_MAP[pick.key];
+  if (!picker) return null;
+  const family = picker(pick.value);
+  const bank = PERSONA_QUESTION_BANK[family];
+  if (!bank || !bank.length) return null;
+  const def = PERSONA_PARAM_DEFS.filter((d) => d.key === pick.key)[0];
+  const effect = pick.value >= 0 ? def.posText : def.negText;
+  return {
+    question: bank[n % bank.length](keyword),
+    param: pick.key,
+    paramLabel: pick.label,
+    effect,
+    polar: pick.from.letter,
+    pct: pick.from.pct,
+  };
+}
+
+/* ---------- ⑧ 压力强度显性标注 ---------- */
+/**
+ * 压力面试官「因人施面」的可见凭据：只在强度被适配时出现。
+ * 不适配 / 无测评时返回空串——不为了好看而伪造适配。
+ * @param {object|null} p personaParams 的返回
+ * @returns {string} 可直接插入 DOM 的 HTML 片段
+ */
+function personaPressureNoteHtml(p) {
+  const strat = personaStrategy(p);
+  if (!strat || !strat.adapted || !strat.pressure.note) return "";
+  const emp = personaParam(p, "empathy");
+  const pct = emp.from ? `（偏 ${emp.from.letter} ${emp.from.pct}%）` : "";
+  return `<span class="persona-fit-note">🫱 ${escHtml(strat.pressure.note)}${escHtml(pct)}</span>`;
+}
+
+/* ---------- ⑨ 面试页头部胶囊 ---------- */
+/**
+ * @param {object|null} p personaParams 的返回
+ * @returns {string} 胶囊文案（无测评时为空串）
+ */
+function personaCapsuleText(p) {
+  if (!p || !p.type) return "";
+  const strat = personaStrategy(p);
+  if (!p.significant) return "🧬 " + p.type + " · 参数不显著";
+  const bits = [];
+  if (strat) bits.push("压力" + strat.pressure.level);
+  const concrete = personaParam(p, "concrete");
+  if (concrete.from && concrete.strength >= PERSONA_MIN_STRENGTH) {
+    bits.push(concrete.value > 0 ? "细节向" : "模式向");
+  }
+  return "🧬 " + p.type + " · " + bits.join(" · ");
+}
+
+/* ---------- ⑩ 快照 ---------- */
+let personaSnapshot = null;
+
+/** 开面时快照，保证一场面试内参数稳定（中途重测不会改变本场策略） */
+function capturePersona() {
+  personaSnapshot = personaParams(currentMbti());
+  return personaSnapshot;
+}
+
+/** 本场生效的人格参数：优先快照，回落当前测评 */
+function activePersona() {
+  return personaSnapshot || personaParams(currentMbti());
 }
 /* ============================================================
  * v37 · 通用图表组件（蓝图编辑风 · 零第三方图表库）

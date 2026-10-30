@@ -1547,3 +1547,127 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
   .chat-head .answer-timer { margin-left: 0; }
   .chat-head > span:last-child { flex: 1 1 100%; }
 }
+
+/* ============================================================
+ * v43 · 人格参数化层
+ *   ① 面试页：参数胶囊 + 策略摘要面板 + 压力适配标注
+ *   ② MBTI 页：分段进度（骨架补充）与断点续答
+ *   ③ MBTI 结果页：逐题溯源 + 「参数如何进入面试」
+ *   ④ 报告页：人格 - 表现关联卡片
+ * 视觉沿用蓝图编辑风：零投影、直角、发丝线；朱红只用于「值得注意」。
+ * ============================================================ */
+
+/* ---------- ① 面试页：参数胶囊 ---------- */
+.persona-chip {
+  flex: 0 0 auto;
+  align-self: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: .02em;
+  padding: 5px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 0;
+  background: var(--chip-bg);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.persona-chip:hover { border-color: var(--ink); color: var(--ink); }
+.persona-chip[aria-expanded="true"] { border-color: var(--ink); color: var(--ink); background: var(--card); }
+
+.persona-brief {
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--ink);
+  background: var(--card);
+  padding: 10px 12px;
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.pb-head { font-family: var(--mono); font-size: 11px; color: var(--faint); letter-spacing: .04em; margin-bottom: 8px; }
+.pb-row { display: grid; grid-template-columns: 92px 1fr; gap: 4px 10px; padding: 5px 0; border-top: 1px dashed var(--line); }
+.pb-row:first-of-type { border-top: 0; }
+.pb-row b { color: var(--ink); font-weight: 600; }
+.pb-details { margin-top: 8px; }
+.pb-details summary { cursor: pointer; font-size: 12px; color: var(--brand); }
+.pb-trace { display: grid; grid-template-columns: 74px 92px 1fr; gap: 6px; padding: 4px 0; border-top: 1px dashed var(--line); font-size: 12px; }
+.pb-dim { color: var(--ink); }
+.pb-pct { font-family: var(--mono); color: var(--faint); }
+.pb-eff { color: var(--muted); }
+
+/* ---------- ① 面试页：压力强度适配标注（追问下方） ---------- */
+.persona-note-row { display: flex; align-self: flex-start; max-width: 92%; }
+.persona-fit-note {
+  display: inline-block;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  background: var(--chip-bg);
+  border-left: 2px solid var(--brand);
+  padding: 5px 9px;
+}
+
+/* ---------- ② MBTI 页：分段进度 + 断点续答 ---------- */
+.mbti-step { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-family: var(--mono); font-size: 11.5px; }
+.mbti-step-dim { color: var(--ink); letter-spacing: .03em; }
+.mbti-step-q { color: var(--brand); }
+.mbti-step-all { color: var(--faint); }
+.mbti-resume-box { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+
+/* ---------- ③ MBTI 结果页：逐题溯源 ---------- */
+.mbti-trace { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 6px; }
+.mbti-trace summary { cursor: pointer; font-size: 11.5px; color: var(--brand); }
+.mt-row {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 6px 8px;
+  align-items: baseline; padding: 5px 0; border-top: 1px dashed var(--line); font-size: 12px;
+}
+.mt-row:first-of-type { border-top: 0; }
+.mt-q { color: var(--muted); line-height: 1.6; }
+.mt-a { font-family: var(--mono); font-size: 11px; color: var(--faint); white-space: nowrap; }
+.mt-c { font-family: var(--mono); font-size: 11px; color: var(--ink); white-space: nowrap; }
+.mt-c.mt-zero { color: var(--faint); }
+.mbti-trace-none { font-size: 11.5px; color: var(--faint); margin-top: 6px; }
+
+/* ---------- ③ MBTI 结果页：参数如何进入面试 ---------- */
+.persona-link { border: 1px solid var(--line); border-top: 2px solid var(--ink); background: var(--card); padding: 12px 14px; }
+.pl-grid { display: grid; gap: 0; margin-top: 8px; }
+.pl-row {
+  display: grid; grid-template-columns: 88px 116px 1fr; gap: 4px 10px;
+  padding: 8px 0; border-top: 1px dashed var(--line); font-size: 12.5px; align-items: baseline;
+}
+.pl-row:first-child { border-top: 0; }
+.pl-who { color: var(--ink); font-weight: 600; }
+.pl-tag { font-family: var(--mono); font-size: 11px; color: var(--brand); }
+.pl-why { color: var(--muted); line-height: 1.65; }
+.pl-details { margin-top: 8px; }
+.pl-details summary { cursor: pointer; font-size: 12px; color: var(--brand); }
+.pl-trace { display: grid; grid-template-columns: 74px 92px 1fr; gap: 6px; padding: 5px 0; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); }
+.pl-trace b { font-family: var(--mono); font-size: 11px; color: var(--ink); font-weight: 500; }
+.pl-hint { font-size: 12px; color: var(--muted); line-height: 1.7; margin: 8px 0 0; padding: 7px 9px; background: var(--chip-bg); border-left: 2px solid var(--line-2); }
+
+/* ---------- ④ 报告页：人格 - 表现关联 ---------- */
+.persona-fit .pf-row { padding: 8px 0; border-top: 1px dashed var(--line); }
+.persona-fit .pf-row:first-of-type { border-top: 0; }
+.pf-head { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
+.pf-head b { color: var(--ink); font-weight: 600; }
+.pf-score { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+.pf-kind {
+  margin-left: auto; font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em;
+  padding: 2px 6px; border: 1px solid var(--line-2); color: var(--muted); white-space: nowrap;
+}
+.pf-aligned .pf-kind { color: var(--green); border-color: var(--green); background: var(--green-bg); }
+.pf-tension .pf-kind { color: var(--brand); border-color: var(--brand); background: var(--brand-bg); }
+.pf-none .pf-kind, .pf-note .pf-kind { color: var(--faint); }
+.pf-text { font-size: 12.5px; color: var(--muted); line-height: 1.75; margin-top: 5px; }
+
+/* 窄屏：溯源表格在手机上改为两行（题目一行、判定一行） */
+@media (max-width: 640px) {
+  .pb-row, .pl-row { grid-template-columns: 1fr; gap: 2px; }
+  .pl-tag { color: var(--brand); }
+  .mt-row { grid-template-columns: 1fr auto; }
+  .mt-q { grid-column: 1 / -1; }
+  .pb-trace, .pl-trace { grid-template-columns: 70px 1fr; }
+  .pb-eff, .pl-trace span:last-child { grid-column: 1 / -1; }
+}

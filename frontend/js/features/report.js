@@ -118,6 +118,126 @@ let lastReportStatus = null;
  * 只存维度得分 / 证据 / 学习路径等结构化结果，回答一律基于真实数据，不编造分数。 */
 let lastReportData = null;
 
+/* ============================================================
+ * v43 · 人格 - 表现关联（可解释，且明确承认「无关」）
+ * ------------------------------------------------------------
+ * MBTI 在此不是标签，而是**一条可验证的假设**：
+ *   若你自评偏 J（结构化），但「结构逻辑」得分偏低，
+ *   那么这个落差更可能来自临场组织，而不是规划能力——这比
+ *   「你是 INTJ，适合做架构」有用得多。
+ * 三种判定都必须说得出依据，也必须允许说「没有显著关联」：
+ *   aligned 一致 / tension 值得注意 / none 无显著关联
+ * 相关不等于因果；一场面试、一份 20 题自评，样本极小。
+ * ============================================================ */
+const PERSONA_DIM_LINKS = [
+  { key: "depth", params: ["evidence", "concrete"] },
+  { key: "logic", params: ["structure"] },
+  { key: "expression", params: ["openness"] },
+  { key: "fit", params: [] },
+  { key: "stress", params: ["empathy"] },
+];
+
+/**
+ * 单维关联判定。
+ * @param {string} dimKey 维度 key
+ * @param {number} score 该维得分
+ * @param {object|null} p personaParams 的返回
+ * @returns {{kind:string,text:string,param:string,pct:number,letter:string}|null}
+ */
+function personaFitFor(dimKey, score, p) {
+  if (!p || !p.significant) return null;
+  const link = PERSONA_DIM_LINKS.filter((l) => l.key === dimKey)[0];
+  if (!link || !link.params.length) return null;
+  const cands = link.params
+    .map((k) => personaParam(p, k))
+    .filter((x) => x.from && x.strength >= PERSONA_MIN_STRENGTH);
+  if (!cands.length) return null;
+  /* 取强度最高的那个参数作为主要解释项，避免一段话里堆四个变量 */
+  const lead = cands.slice().sort((a, b) => b.strength - a.strength)[0];
+  const pct = lead.from.pct;
+  const letter = lead.from.letter;
+  const high = score >= 70;
+  const low = score < 65;
+
+  if (dimKey === "depth") {
+    if (high && lead.value > 0)
+      return { kind: "aligned", param: lead.label, pct, letter, text: `得分较高，与你偏 ${letter}（${pct}%）的举证偏好方向一致：你习惯用具体依据支撑结论。` };
+    if (low && lead.value > 0)
+      return { kind: "tension", param: lead.label, pct, letter, text: `你在测评里偏向 ${letter}（${pct}%），习惯用数据与细节说话，但本轮这一维得分偏低——更可能是这次回答没展开，而不是能力不足。` };
+    if (low && lead.value < 0)
+      return { kind: "note", param: lead.label, pct, letter, text: `你偏 ${letter}（${pct}%），更习惯讲影响与可能性；这一维考察的是量化与细节，属于可针对性补的部分。` };
+    return { kind: "note", param: lead.label, pct, letter, text: `得分处于中段，与你偏 ${letter}（${pct}%）的方向并不矛盾；要往上走还需要更前置的结论与更明确的量化。` };
+  }
+  if (dimKey === "logic") {
+    if (high && lead.value > 0)
+      return { kind: "aligned", param: lead.label, pct, letter, text: `得分较高，与你偏 ${letter}（${pct}%）的计划性倾向一致：先立框架再展开。` };
+    if (low && lead.value > 0)
+      return { kind: "tension", param: lead.label, pct, letter, text: `你自评偏 ${letter}（${pct}%），通常是有计划的人，但本轮结构得分偏低——更像临场组织没跟上，而不是规划能力问题。` };
+    if (low && lead.value < 0)
+      return { kind: "tension", param: lead.label, pct, letter, text: `你偏 ${letter}（${pct}%），习惯边想边说；这在面试里容易结构松散，建议开场先给结论。` };
+    return { kind: "note", param: lead.label, pct, letter, text: `得分处于中段，与你偏 ${letter}（${pct}%）的计划性倾向基本吻合；下一步是把「背景-目标-行动-结果」压成三段。` };
+  }
+  if (dimKey === "expression") {
+    if (high && lead.value > 0)
+      return { kind: "aligned", param: lead.label, pct, letter, text: `表达流畅，与你偏 ${letter}（${pct}%）的外向倾向一致。` };
+    if (low && lead.value < 0)
+      return { kind: "tension", param: lead.label, pct, letter, text: `你偏 ${letter}（${pct}%），在一对一高压表达中更容易出现停顿与自我修正——这是节奏问题，不是内容问题。` };
+    return { kind: "note", param: lead.label, pct, letter, text: `得分处于中段，与你偏 ${letter}（${pct}%）的表达节奏相符；减少口头禅比提升语速更有效。` };
+  }
+  if (dimKey === "stress") {
+    if (low && lead.value > 0)
+      return { kind: "tension", param: lead.label, pct, letter, text: `你偏 ${letter}（${pct}%），对质疑的情绪反应通常更明显；本轮抗压得分偏低可能与此有关——这不是缺陷，是可以练的领域。` };
+    if (high && lead.value < 0)
+      return { kind: "aligned", param: lead.label, pct, letter, text: `抗压表现稳定，与你偏 ${letter}（${pct}%）的「先处理问题、再处理情绪」方式一致。` };
+    return { kind: "none", param: lead.label, pct, letter, text: "这一维与人格参数无显著关联。" };
+  }
+  return null;
+}
+
+/**
+ * 生成「人格 - 表现关联」卡片。
+ * @param {Array<{key:string,dimension:string,score:number}>} dims 五维得分
+ * @param {object|null} p personaParams 的返回（可为 null → 引导先做测评）
+ * @returns {string} HTML
+ */
+function personaFitCard(dims, p) {
+  if (!p || !p.type) {
+    return `<div class="card persona-fit" id="report-persona" style="padding:14px 16px;margin-top:14px">
+      <div class="pane-title" style="margin-bottom:2px">🧬 人格 - 表现关联<span class="tag-demo">未启用</span></div>
+      <p class="hint" style="margin-bottom:0">还没有 MBTI 测评结果，因此无法做人格与表现的关联判断。<b>这里不会凭空推测你的人格</b>——去「MBTI 测评」花 2 分钟测一次，报告会多出这一块，面试官也会据此调整追问方式。</p>
+      <div style="margin-top:10px"><button class="btn btn-outline btn-sm" onclick="switchTab('mbti')">去做测评 →</button></div>
+    </div>`;
+  }
+  const strat = typeof personaStrategy === "function" ? personaStrategy(p) : null;
+  const rows = (dims || [])
+    .map((d) => {
+      const fit = personaFitFor(d.key, d.score, p);
+      const kindLabel = fit
+        ? { aligned: "一致", tension: "值得注意", note: "待补强", none: "无显著关联" }[fit.kind] || ""
+        : "无显著关联";
+      const kindCls = fit ? "pf-" + fit.kind : "pf-none";
+      const text = fit ? fit.text : "这一维与人格参数没有显著关联，主要取决于回答内容本身。";
+      return `<div class="pf-row ${kindCls}">
+        <div class="pf-head"><b>${escHtml(d.dimension)}</b><span class="pf-score">${d.score}</span><span class="pf-kind">${escHtml(kindLabel)}</span></div>
+        <div class="pf-text">${escHtml(text)}</div>
+      </div>`;
+    })
+    .join("");
+  const stratLine = strat
+    ? `本场提问策略：HR「${escHtml(strat.hr.label)}」· 技术「${escHtml(strat.tech.label)}」· 压力「${escHtml(strat.pressure.level)}」`
+    : "";
+  const weakNote = !p.significant
+    ? `<div class="notice notice-info" style="margin:10px 0 0;font-size:12.5px">你的四个维度都接近中线（典型度均低于 ${PERSONA_MIN_STRENGTH}），因此<b>不做关联推断</b>——用噪声贴标签比不贴更糟。</div>`
+    : "";
+  return `<div class="card persona-fit" id="report-persona" style="padding:14px 16px;margin-top:14px">
+      <div class="pane-title" style="margin-bottom:2px">🧬 人格 - 表现关联<span class="tag-demo">${escHtml(p.type)} · 自评量表</span></div>
+      <p class="hint" style="margin:2px 0 10px">${stratLine}　·　说明：人格参数<b>只改变提问方式</b>，从不参与打分。</p>
+      ${rows}
+      ${weakNote}
+      <p class="hint" style="margin:10px 0 0">相关性不等于因果：这里的判断基于「一场面试的 5 轮问答」与「一次 20 题自评」，样本极小。<b>它提供的是假设，不是结论</b>，也不构成能力或心理评价。</p>
+    </div>`;
+}
+
 function reportStatusCard(st) {
   const count = st && st.count ? st.count : 0;
   const pr = st && st.presence_rate != null ? st.presence_rate : null;
@@ -282,6 +402,7 @@ async function renderReport(force) {
         </div>`).join("")}</div></div>
     </div>
     ${reportStatusCard(camStatus)}
+    ${typeof personaFitCard === "function" ? personaFitCard(dims, typeof activePersona === "function" ? activePersona() : null) : ""}
     ${rhythmCard(rhythm)}
     ${narrative ? `<div class="notice-llm">🧭 教练总评：${esc(narrative)}</div>` : ""}
     <div class="pane-title" style="margin-top:18px">评分证据（引用你的真实回答）</div>

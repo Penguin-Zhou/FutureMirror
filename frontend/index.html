@@ -888,6 +888,7 @@ try {
             <div class="chat-head">
               <span class="badge badge-green" id="chat-agent">提问规划</span>
               <span id="chat-mode-label">综合面 · 动态追问模式 · 题库 6 题</span>
+              <button class="persona-chip" id="persona-chip" hidden aria-expanded="false" aria-controls="persona-brief" onclick="togglePersonaBrief()" title="本场提问策略来自你的 MBTI 自评（只影响提问方式，不参与评分）">🧬</button>
               <div class="progress-wrap" title="面试进度（5 轮）"><div class="progress-bar" id="progress-bar"></div></div>
               <span class="answer-timer" id="answer-timer" title="本题答题倒计时（90 秒）——超时将记入「抗压表现」维度">⏱ 90s</span>
               <span style="margin-left:auto;display:flex;gap:6px">
@@ -897,6 +898,7 @@ try {
                 <button class="btn btn-ghost btn-sm" onclick="finishInterview()">结束面试 →</button>
               </span>
             </div>
+            <div class="persona-brief" id="persona-brief" hidden></div>
             <div class="cam-bar" id="cam-bar" hidden>
               <video id="cam-preview" autoplay muted playsinline aria-label="摄像头预览"></video>
               <div class="cam-meta">
@@ -1193,12 +1195,14 @@ try {
     </div>
     <div class="page-card">
       <div class="pane-title">🧠 MBTI 职业性格测评
-        <span class="tag-demo">v36 · 本地计算 · 结果仅存本地</span>
+        <span class="tag-demo">v43 · 端侧计算 · 结果仅存本地</span>
       </div>
       <p class="hint" style="margin-top:0;margin-bottom:12px">
-        答题约需 2 分钟。结果用于校准岗位推荐与面试建议，不会上传服务器。
+        答题约需 2 分钟。结果有两个去处：写入个人中心，以及作为<b>面试提问策略参数</b>——它只改变面试官「怎么问」，<b>不参与评分</b>。全部计算在本地完成，不上传服务器。
       </p>
       <div class="notice notice-info" style="margin-bottom:12px">⚠️ <b>本测评为端侧简易量表，不是专业心理测评</b>：结果仅作求职参考，不能作为心理诊断、职业决策或能力评价的依据。</div>
+
+      <div id="mbti-resume" hidden></div>
 
       <div id="mbti-intro">
         <div class="grid2">
@@ -1217,9 +1221,10 @@ try {
             <div class="pane-title" style="font-size:14px">🧭 结果怎么用</div>
             <div class="evidence">
               <p style="line-height:1.9">
-                · 自动写入「个人中心」，与求职信息合并展示<br>
-                · 岗位推荐会参考适配方向<br>
-                · 面试建议会给出该性格的应答提醒<br>
+                · <b>面试官按你的偏好调整追问方式</b>（结构化 / 开放式、施压强度、举证偏好）<br>
+                · 压力面会在追问下方<b>显性标注</b>强度是否被适配<br>
+                · 报告页给出「人格 - 表现关联」，并说明哪些维度其实无关<br>
+                · 每条倾向都可展开查看<b>是哪几道题</b>导致的<br>
                 · 随时可重新测评，历史结果保留在本地
               </p>
             </div>
@@ -1965,6 +1970,7 @@ try {
   <script src="js/core/skeleton.js"></script>
   <script src="js/core/media.js"></script>
   <script src="js/features/mbti.js"></script>
+  <script src="js/features/persona.js"></script>
   <script src="js/features/charts.js"></script>
 </body>
 </html>
