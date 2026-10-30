@@ -617,7 +617,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2081 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2154 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -640,7 +640,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **2081 项前端断言 + 44 项后端单测**，全部通过。
+合计 **2154 项前端断言 + 44 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -718,7 +718,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 44 项 + 前端 2081 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 44 项 + 前端 2154 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -909,6 +909,15 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v45：交互确定性层（2026.10.30）
+
+> 界面精致到一定程度之后，风险换了位置：不再是「有没有功能」，而是「点了之后多久有反应」。这一版不加功能，只把交互的确定性补齐——按下当帧可见、证据折不断、动画会看设备，并用可复现的测量替代手感判断。
+
+- **新增**：`core/perf.js`（设备分档 / `yieldToMain()` 让帧 / 长任务与交互时序记账，`window.__bpPerf.summary()` 可现场读数）｜`mountDimSheetShell()` + `fillDimSheet()`（面板轻壳同帧出现，内容下一个任务填充）｜`.ev-unit` 证据单元（引用原话与评分理由共用一条朱红左色条与同一底色）
+- **修复**：按下态被 `transition` 拖住，低端机上「点了没反应」→ 再点一次｜面板装配挤在输入帧里（10 倍 CPU 降速实测：处理器耗时 **60.2ms → 32.2ms**，首帧可见 **102.5ms → 74.1ms**）｜面板滚动传染底层页面（`overscroll-behavior: contain`）
+- **降级**：窄屏 / `prefers-reduced-motion` / 低端机（核心数 · 内存 · 省流量 · 慢网）三路判据，关闭雷达描边与维度条生长等装饰动画，**功能反馈一律保留**
+- **指标**：前端断言 2081 → **2154**｜jsdom 套件 35 → **36 套**｜前端模块 42 → **43**｜共享全局符号 **718**｜PDF **29 页**
 
 ### Beta 1.1.2 · 体验修复层：三个主流程缺陷修复 + 学习计划板块 + 全站图标（2026.10.24 当前版本）
 

@@ -1466,7 +1466,7 @@ img, svg, video, canvas { max-width: 100%; }
 .sheet-panel {
   position: absolute; left: 0; right: 0; bottom: 0;
   max-height: 62vh; display: flex; flex-direction: column;
-  background: var(--paper); border-top: 2px solid var(--ink);
+  background: var(--card); border-top: 2px solid var(--ink); /* v45：--paper 从未定义，面板此前一直是透明的 */
   padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
   box-shadow: none; animation: sheet-up .22s ease;
 }
@@ -1807,3 +1807,119 @@ body.mbti-quizzing .page-header h2 { font-size: 17px; }
   .degrade-log .dl-how { grid-column: 1 / -1; }
   .rp-row { grid-template-columns: 64px 1fr 28px; }
 }
+
+/* ============================================================
+ * v45 · 交互确定性层（按压确认 / 证据绑定 / 动效降级）
+ * 判断标准不是「好不好看」，而是「点了之后多久有反应」：
+ *   ① 所有按下反馈都绕开 transition，手指落下那一帧就变色；
+ *   ② 评分理由与引用原话共用一个色条与底色，折不断；
+ *   ③ 窄屏 / 减弱动效 / 低端机：装饰性描边一次性落位，功能反馈保留。
+ * ============================================================ */
+
+/* ---------- ① 按压确认：无过渡、当帧可见 ---------- */
+.mbti-opt,
+.dim-row,
+.sheet-close {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+/* 按下即变（:active 覆盖自身 transition，任何设备上都是当帧到位） */
+.mbti-opt:active,
+.mbti-opt.picked {
+  background: var(--brand-bg);
+  border-color: var(--brand);
+  color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--brand);
+  transition: none;
+}
+.dim-row:active,
+.dim-row.tapped {
+  background: var(--brand-bg);
+  box-shadow: inset 3px 0 0 var(--brand);
+  transition: none;
+}
+.dim-row.expanded {
+  box-shadow: inset 3px 0 0 var(--ink);
+}
+.dim-row.expanded:active,
+.dim-row.expanded.tapped {
+  box-shadow: inset 3px 0 0 var(--brand);
+}
+/* 键盘/读屏用户同样要看到「已展开」 */
+.dim-row.expanded .dim-more { color: var(--ink); }
+
+/* ---------- ② 证据单元：理由与引文绑成一块，中间不断开 ---------- */
+.dim-row.expanded .dim-summary,
+.dim-row.expanded .dim-full {
+  border-left: 2px solid var(--brand);
+  background: var(--brand-bg);
+}
+.dim-row.expanded .dim-summary {
+  margin: 8px 0 0;
+  padding: 7px 10px 6px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--brand) 34%, transparent);
+}
+.dim-row.expanded .dim-full {
+  margin: 0;
+  padding: 6px 10px 8px;
+}
+.dim-row.expanded .dim-comment { color: var(--ink); }
+.dim-row.expanded .dim-tip { display: none; }
+
+/* 半屏面板：同一套绑定（左色条贯穿「原话 → 理由」） */
+.ev-unit {
+  border-left: 2px solid var(--brand);
+  background: var(--brand-bg);
+  padding: 9px 11px 8px;
+  margin-top: 10px;
+}
+.ev-unit .sheet-quote {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-left: 0;
+}
+.ev-unit .ev-label { margin-top: 8px; color: var(--brand); }
+.ev-unit .sh-reason { margin: 0; color: var(--ink); }
+
+/* 面板内滚动不传染给底层页面（iOS 上「滑面板顺带滑背景」的根因） */
+.sheet-panel,
+.sheet-body { overscroll-behavior: contain; }
+.sheet-body { -webkit-overflow-scrolling: touch; }
+
+/* ---------- ③ 动效降级：装饰停用，功能反馈全留 ---------- */
+@media (prefers-reduced-motion: reduce), (max-width: 640px) {
+  .radar-pop { animation: none; stroke-dashoffset: 0; }
+  .radar-dot { transition: none; }
+  .dim-bar > div { transition: none; }
+  .mbti-progress-fill { transition: none; }
+  .sheet-panel { animation: none; }
+  .mbti-opt { transition: none; }
+}
+/* 低端机 / 省流量 / 慢网：与上面同一套停用（由 perf.js 挂类） */
+html.perf-low .radar-pop,
+html.perf-calm .radar-pop { animation: none; stroke-dashoffset: 0; }
+html.perf-low .radar-dot,
+html.perf-calm .radar-dot,
+html.perf-low .dim-bar > div,
+html.perf-calm .dim-bar > div,
+html.perf-low .mbti-progress-fill,
+html.perf-calm .mbti-progress-fill { transition: none; }
+html.perf-low .sheet-panel,
+html.perf-calm .sheet-panel { animation: none; }
+
+/* 面板「轻壳」的占位行：静态三条线，不做微光动画（动画会抢走这一帧的意义） */
+.sheet-ghost { display: grid; gap: 8px; padding: 4px 0 2px; }
+.sheet-ghost i { display: block; height: 10px; background: var(--line); }
+.sheet-ghost i:nth-child(2) { width: 88%; }
+.sheet-ghost i:nth-child(3) { width: 62%; }
+
+/* 面板滚动容器：证据单元与正文同处一个可滚区域，超出部分在面板内滚，
+ * 不再从面板边缘溢出去压住底下的页面（v45 实拍发现） */
+.sheet-panel { overflow: hidden; }
+.sheet-scroll {
+  flex: 1 1 auto; min-height: 0; margin-top: 10px;
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+}
+.sheet-scroll .ev-unit { margin-top: 0; }
+.sheet-scroll .sheet-body { overflow: visible; flex: none; margin-top: 10px; }

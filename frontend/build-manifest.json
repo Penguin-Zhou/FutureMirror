@@ -363,6 +363,14 @@
         17870
       ],
       "note": "v37 通用图表组件"
+    },
+    {
+      "file": "js/core/perf.js",
+      "lines": [
+        0,
+        0
+      ],
+      "note": "v45 · 交互确定性层（设备分档 / 让帧 / 长任务记账）"
     }
   ],
   "jsLoadOrder": [
@@ -407,7 +415,8 @@
     "js/core/media.js",
     "js/features/mbti.js",
     "js/features/persona.js",
-    "js/features/charts.js"
+    "js/features/charts.js",
+    "js/core/perf.js"
   ],
   "loadOrderNote": "与原区划顺序唯一差异：theme-variants 提前于 reveal（init() 加载期调用 syncAccentBtn，跨文件无函数提升）"
 }

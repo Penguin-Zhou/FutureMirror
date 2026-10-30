@@ -231,7 +231,7 @@ function renderMbtiQuestion() {
     <div class="mbti-q-card">
       <div class="mbti-q-text">${escHtml(item.q)}</div>
       <div class="mbti-opts">
-        ${MBTI_SCALE.map((s) => `<button class="mbti-opt" onclick="answerMbti(${s.v})">${escHtml(s.label)}</button>`).join("")}
+        ${MBTI_SCALE.map((s) => `<button class="mbti-opt" aria-pressed="false" onclick="answerMbti(${s.v}, this)">${escHtml(s.label)}</button>`).join("")}
       </div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -240,13 +240,41 @@ function renderMbtiQuestion() {
     </div>`;
 }
 
-function answerMbti(v) {
+/* v45：换题分两步走——按下先确认，重渲染让出一帧并合并。
+ * 之前是「点完立刻 innerHTML 重建整个答题区」：低端机上重建的十几毫秒里，
+ * 按钮的按下态根本来不及落屏，访客会以为没点中而再点一次。 */
+let mbtiRenderPending = false;
+
+function scheduleMbtiQuestion() {
+  if (mbtiRenderPending) return;
+  mbtiRenderPending = true;
+  const run = function () {
+    mbtiRenderPending = false;
+    renderMbtiQuestion();
+  };
+  try {
+    yieldToMain().then(run);
+  } catch (e) {
+    run();
+  }
+}
+
+function answerMbti(v, btn) {
   if (!mbtiState) return;
+  /* ① 按下态立刻落屏（CSS 上无过渡，不受动效偏好影响） */
+  try {
+    if (btn && btn.classList) {
+      btn.classList.add("picked");
+      btn.setAttribute("aria-pressed", "true");
+    }
+  } catch (e) {}
+  /* ② 状态更新是同步的，保证「每答一题即落盘」不受渲染节奏影响 */
   const item = MBTI_QUESTIONS[mbtiState.i];
   mbtiState.answers[mbtiState.i] = { dim: item.dim, dir: item.dir, v };
   mbtiState.i++;
   saveMbtiDraft();   // v43：每答一题落一次盘，被打断也能接上
-  renderMbtiQuestion();
+  /* ③ 换题让帧：同一帧内连点只重建一次 DOM */
+  scheduleMbtiQuestion();
 }
 
 function prevMbti() {

@@ -246,7 +246,10 @@ console.log("\n⑧ 报告页渲染（用真实 DOM 验收）");
   /* ---------- ⑨ 视觉规范不破 ---------- */
   console.log("\n⑨ 视觉规范（蓝图编辑风）");
   const pageCss = rd("frontend/css/pages.css");
-  const v44 = pageCss.slice(pageCss.indexOf("v44 · 感知密度层"));
+  const v44Start = pageCss.indexOf("v44 · 感知密度层");
+  /* v45 起样式层叠在后面，区块切片要按下一个横幅截止，否则会把 v45 的规则算进 v44 */
+  const v45Start = pageCss.indexOf("v45 · 交互确定性层");
+  const v44 = pageCss.slice(v44Start, v45Start > v44Start ? v45Start : pageCss.length);
   ok(v44.length > 200, "v44 样式区块存在");
   ok(!/box-shadow/.test(v44), "v44 未引入投影");
   ok(!/border-radius:\s*(?!0)[1-9]/.test(v44), "v44 未引入圆角");

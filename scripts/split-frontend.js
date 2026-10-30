@@ -130,6 +130,7 @@ const jsRules = [
   ["js/features/mbti.js", "v36 MBTI 职业性格测评", ["v36 · MBTI 职业性格测评"]],
   ["js/features/persona.js", "v43 人格参数化层", ["v43 · 人格参数化层"]],
   ["js/features/charts.js", "v37 通用图表组件", ["v37 · 通用图表组件"]],
+  ["js/core/perf.js", "v45 交互确定性层", ["v45 · 交互确定性层"]],
 ];
 
 /* 收集全部 JS 边界（标题行 → 起点），按出现位置排序 */

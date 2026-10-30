@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2081</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2154</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -512,6 +512,42 @@ body {
   </div>
 
   <!-- ========================================================
+       Beta 1.1.2 · v45 · 交互确定性层
+       ======================================================== -->
+  <div class="version" id="v45">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 交互确定性层（v45）</span>
+      <span class="v-title">从「设计得好看」到「在低端机上点得动」</span>
+      <span class="v-date">2026.10.30</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        界面精致到一定程度之后，掉分的地方换了位置：不再是「有没有功能」，而是「点了之后多久有反应」。
+        浏览器把这段等待量化为 <strong>INP</strong>，移动端的工程参考线是 200ms 以内。这一版不加功能，只把交互的确定性补齐：
+        <strong>① 按压必须当帧可见</strong>——选项与评分卡的按下态绕开所有过渡，手指落下那一帧就变色，不依赖随后几十毫秒的 DOM 重建；
+        <strong>② 评分理由与引用原话绑成一个折不断的证据单元</strong>——同一条朱红竖条贯通「原话 → 理由」，桌面展开态与手机半屏面板同一套；
+        <strong>③ 面板先挂轻壳再填内容</strong>——遮罩、标题与占位行同步挂出（这一帧就能看到面板），原话与理由放到下一帧填，输入帧里不夹带 innerHTML 重活；
+        <strong>④ 装饰动画按设备档位降级</strong>——窄屏、系统「减弱动效」、低端机（核心数 / 内存 / 省流量 / 慢网）三路判据，雷达描边与维度条生长一次性落位，功能性反馈（按下变色、展开态）全部保留；
+        <strong>⑤ 现场读数</strong>——<code>window.__bpPerf</code> 记录交互事件时序与长任务，把「快不快」变成可量出来的数字，不上报任何内容。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>点了就有反应</b>：按下态<b>无过渡</b>，任何设备上都在同一帧到位，不会「点了没反应→再点一次」</div>
+        <div class="vh-item"><b>证据折不断</b>：原话与理由共用一条左色条与同一底色，一眼看出「这句话导致了这个分」</div>
+        <div class="vh-item"><b>面板不晚到</b>：轻壳同帧出现，内容下一任务填充；只推迟整块面板反而会让它晚一帧</div>
+        <div class="vh-item"><b>动画会看设备</b>：窄屏 / 减弱动效 / 低端机自动停用装饰描边，功能反馈一个不减</div>
+        <div class="vh-item"><b>可现场核验</b>：<code>__bpPerf.summary()</code> 给出 p50 / p98 / 最差 / 长任务计数</div>
+        <div class="vh-item"><b>面板不拖着背景滚</b>：<code>overscroll-behavior: contain</code> 隔离面板与底层页面的滚动</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">73</div><div class="m-label">v45 新增断言</div></div>
+        <div class="metric"><div class="m-val">2154</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">43</div><div class="m-label">前端模块</div></div>
+        <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
        Beta 1.1.2 · v44 · 感知密度层
        ======================================================== -->
   <div class="version" id="v44">
@@ -551,7 +587,7 @@ body {
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">129</div><div class="m-label">v44 系列新增断言</div></div>
-        <div class="metric"><div class="m-val">2081</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2154</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">35</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">375</div><div class="m-label">窄屏实测宽度（px）</div></div>
       </div>

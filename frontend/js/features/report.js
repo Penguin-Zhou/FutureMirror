@@ -507,8 +507,8 @@ async function renderReport(force) {
             return `
         <div class="dim-row${d === weakest ? " lowest" : ""}" data-dim="${i}"
              role="button" tabindex="0" aria-expanded="false"
-             onclick="openDimSheet(${i})"
-             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDimSheet(${i});}">
+             onclick="openDimSheet(${i}, this)"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDimSheet(${i}, this);}">
           <div class="dim-head">
             <b>${d.dimension}${d === weakest ? " ⬅ 最弱" : ""}</b>
             ${dimDots(d.score)}
@@ -616,6 +616,20 @@ async function renderReport(force) {
  * ============================================================ */
 let lastDimEvidence = [];
 let dimSheetEl = null;
+let dimSheetIdx = -1; // v45：当前挂着的维度，连点同一张卡不重复装配
+
+/* v45：按压确认——先把手上的「已按下」画出来，再谈装配。
+ * 这一笔必须在事件处理函数的第一行发生：低端机上 DOM 重建要几十毫秒，
+ * 若等重建完才变色，访客会以为没点中而再点一次。 */
+function markTap(el) {
+  try {
+    if (!el || !el.classList) return;
+    el.classList.add("tapped");
+    setTimeout(function () {
+      try { el.classList.remove("tapped"); } catch (e) {}
+    }, 180);
+  } catch (e) {}
+}
 
 /**
  * 每个维度「最该引用哪一轮回答」。
@@ -727,19 +741,23 @@ function dimSheetHtml(idx) {
         </div>
         <button class="sheet-close" onclick="closeDimSheet()" aria-label="关闭">×</button>
       </div>
-      <div class="sheet-quote">
-        <div class="sq-lead">📌 引用你的原话</div>
-        <q>“${escHtml(ev.quote)}”</q>
+      <div class="sheet-scroll">
+      <div class="ev-unit">
+        <div class="sheet-quote">
+          <div class="sq-lead">📌 引用你的原话</div>
+          <q>“${escHtml(ev.quote)}”</q>
+        </div>
+        <div class="sh-label ev-label">评分理由 · 由上句得出</div>
+        <p class="sh-reason">${escHtml(d.comment)}</p>
       </div>
       <div class="sheet-body">
-        <div class="sh-label">评分理由</div>
-        <p class="sh-reason">${escHtml(d.comment)}</p>
         ${lv ? `<div class="sh-label">两位面试官的判断</div>
         <div class="sh-lens">
           <div class="sh-lens-row"><span class="sl-who">⚙️ 技术面</span><b>${lv.tech.score}</b><span class="sl-why">${escHtml(lv.tech.reason)}</span></div>
           <div class="sh-lens-row"><span class="sl-who">💼 HR 面</span><b>${lv.hr.score}</b><span class="sl-why">${escHtml(lv.hr.reason)}</span></div>
         </div>` : ""}
         ${uniq.length ? `<div class="sh-label">命中信号</div><div class="sh-signals">${uniq.map(s => `<span>${escHtml(s)}</span>`).join("")}</div>` : ""}
+      </div>
       </div>
       <div class="sheet-actions">
         <button class="btn btn-primary btn-sm" onclick="gotoTurn(${ev.turn - 1})">📍 定位到对话</button>
@@ -748,9 +766,50 @@ function dimSheetHtml(idx) {
     </div>`;
 }
 
-function openDimSheet(idx) {
+/* v45：先挂一个「轻壳」（遮罩 + 面板 + 维度名 + 占位行），同帧就能出现；
+ * 原话与理由这些真正要算的内容，推到下一个任务里填。
+ * 只做「整块推迟」的话，按下态是快了，但面板要晚一帧才出现——
+ * 实测（10 倍降速）里点击总时长反而从 104ms 涨到 144ms。壳与内容分开才是两头都要。 */
+function mountDimSheetShell(idx) {
   const host = document.body;
   if (!host) return;
+  const d = (lastReportData && lastReportData.dims || [])[idx] || {};
+  if (!dimSheetEl) {
+    dimSheetEl = document.createElement("div");
+    dimSheetEl.className = "sheet";
+    host.appendChild(dimSheetEl);
+  }
+  dimSheetEl.innerHTML = `<div class="sheet-mask" onclick="closeDimSheet()"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="${escHtml(d.dimension || "评分详情")}">
+      <div class="sheet-head">
+        <div>
+          <div class="sheet-dim">${escHtml(d.dimension || "评分详情")}</div>
+          <div class="sheet-sub">正在取这一段回答的原话…</div>
+        </div>
+        <button class="sheet-close" onclick="closeDimSheet()" aria-label="关闭">×</button>
+      </div>
+      <div class="sheet-body"><div class="sheet-ghost"><i></i><i></i><i></i></div></div>
+    </div>`;
+  dimSheetEl.hidden = false;
+  document.documentElement.classList.add("sheet-open");
+  const panel = dimSheetEl.querySelector(".sheet-panel");
+  if (panel && typeof panel.focus === "function") {
+    panel.setAttribute("tabindex", "-1");
+    panel.focus({ preventScroll: true });
+  }
+}
+
+/** 填充真实内容（引用 / 理由 / 双方判断），在壳出现后的下一个任务里执行 */
+function fillDimSheet(idx) {
+  if (!dimSheetEl || dimSheetEl.hidden || dimSheetIdx !== idx) return;
+  dimSheetEl.innerHTML = dimSheetHtml(idx);
+}
+
+function openDimSheet(idx, trigger) {
+  const host = document.body;
+  if (!host) return;
+  /* v45：第一件事是给出按压确认，而不是先去拼 DOM */
+  markTap(trigger);
   /* 桌面端不需要浮层：行内本来就是完整的，点击只做展开/收起 */
   let narrow = false;
   try { narrow = !!(window.matchMedia && window.matchMedia("(max-width: 640px)").matches); } catch (e) {}
@@ -764,20 +823,24 @@ function openDimSheet(idx) {
     }
     return;
   }
-  if (!dimSheetEl) {
-    dimSheetEl = document.createElement("div");
-    dimSheetEl.className = "sheet";
-    host.appendChild(dimSheetEl);
+  /* 同一张卡连点：面板已经在就不重装，免得重建造成闪一下 */
+  if (dimSheetEl && !dimSheetEl.hidden && dimSheetIdx === idx) return;
+  dimSheetIdx = idx;
+  /* ① 壳：同步、极轻，这一帧就能看到面板出现（不是先黑一下再弹） */
+  mountDimSheetShell(idx);
+  /* ② 内容：让出一帧再填，输入帧里不夹带 innerHTML 重活 */
+  try {
+    yieldToMain().then(function () {
+      fillDimSheet(idx);
+    });
+  } catch (e) {
+    fillDimSheet(idx);
   }
-  dimSheetEl.innerHTML = dimSheetHtml(idx);
-  dimSheetEl.hidden = false;
-  document.documentElement.classList.add("sheet-open");
-  const panel = dimSheetEl.querySelector(".sheet-panel");
-  if (panel && typeof panel.focus === "function") { panel.setAttribute("tabindex", "-1"); panel.focus({ preventScroll: true }); }
 }
 
 function closeDimSheet() {
   if (dimSheetEl) { dimSheetEl.hidden = true; dimSheetEl.innerHTML = ""; }
+  dimSheetIdx = -1;
   document.documentElement.classList.remove("sheet-open");
 }
 
