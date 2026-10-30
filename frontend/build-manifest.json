@@ -101,6 +101,14 @@
       "note": "v40 · 可解释性交互层（锚点 / 双镜头 / 节奏）"
     },
     {
+      "file": "js/features/asr.js",
+      "lines": [
+        0,
+        0
+      ],
+      "note": "v46 · 服务端语音转写（录音分段 / WAV 编码 / 上传降级）"
+    },
+    {
       "file": "js/features/interview.js",
       "lines": [
         7208,
@@ -383,6 +391,7 @@
     "js/core/router-pages.js",
     "js/features/match.js",
     "js/features/explain.js",
+    "js/features/asr.js",
     "js/features/interview.js",
     "js/data/kb.js",
     "js/features/report.js",

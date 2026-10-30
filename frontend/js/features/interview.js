@@ -835,6 +835,8 @@ let voiceCommitted = "", voiceInterim = "", voiceSegStart = 0, voiceSilenceTimer
  *   lastVoiceError —— 最近一次错误码，供开发者模式的自检面板读取
  */
 let voiceBase = "", voiceRestarts = 0, lastVoiceError = null;
+/* v46：服务端转写用独立的控制器与提交定时器，和浏览器接口那条链路互不干扰 */
+let serverAsrCtl = null, serverSubmitTimer = null;
 
 /* 浏览器抛出的错误码直接甩给访客没人看得懂，而且「没开口」根本不是错误。
  * 这里做一次分型：能给出可行动建议的给建议，正常的静音与主动停止静默处理。 */
@@ -842,7 +844,7 @@ const VOICE_ERR_HINT = {
   "not-allowed": "麦克风权限被拒绝：点地址栏左侧的锁形图标，允许麦克风后重试",
   "service-not-allowed": "浏览器或系统禁用了语音识别服务：请在权限设置中开启",
   "audio-capture": "没有检测到可用麦克风：确认设备已连接、未被其他程序占用",
-  network: "连不上浏览器内置的语音识别服务：可改用键盘输入，或换网络后重试",
+  network: "连不上语音识别服务：这条链路走厂商云端，境内网络常被拦。可直接用键盘输入，或改用服务端转写",
   "language-not-supported": "当前语言不被识别服务支持",
   "bad-grammar": "识别参数有误，请重试",
 };
@@ -860,12 +862,18 @@ function voiceErrorHint(code) {
 
 /** 按自检结果给一句「该修哪一环」，而不是只说失败 */
 function voiceCheckAdvice(r) {
-  if (r.engine === "不支持") return "当前浏览器没有语音识别接口：Chrome / Edge 可用，Firefox 不支持，可直接用键盘输入。";
   if (!r.secure) return "当前不是安全上下文（需 https 或 localhost），浏览器会拒绝麦克风。";
   if (r.pref === false) return "「个人中心 · 偏好设置」里关闭了语音输入，打开后再试。";
+  /* 只认显式的 false：读不到（旧调用方不传这个字段）不代表没有录音接口 */
+  if (r.micApi === false) return "当前浏览器没有录音接口，无法采集音频，可直接用键盘输入。";
+  if (r.link === "服务端转写")
+    return "当前走服务端转写：录音在本机编码后提交后端，由模型转写，境内可用，音频不落盘。";
+  if (r.engine === "不支持")
+    return "当前浏览器没有语音识别接口，后端也没有开启转写：Chrome / Edge 可用，现在可直接用键盘输入。";
   if (r.lastError === "not-allowed" || r.lastError === "service-not-allowed")
     return "麦克风权限被拒：点地址栏左侧锁形图标 → 网站设置 → 麦克风 → 允许，然后刷新页面。";
-  if (r.lastError === "network") return "识别服务连不上：这个接口走浏览器厂商的云端识别，网络受限时会失败，可改用键盘输入。";
+  if (r.lastError === "network")
+    return "浏览器接口连不上厂商云端（境内常见）。后端可用时会自动改走服务端转写；也可以用键盘输入。";
   if (r.lastError === "audio-capture") return "没有可用麦克风：检查设备连接，或是否被其他程序占用。";
   return "前置条件就绪。若仍无转写，按一次麦克风按钮后再回来这里看最近错误码。";
 }
@@ -876,6 +884,7 @@ function renderVoiceSelfCheck() {
   const r = voiceSelfCheck();
   const mark = b => (b ? "✅" : "❌");
   const rows = [
+    ["转写链路", `${r.link === "不可用" ? "❌" : "✅"} ${r.link}`],
     ["安全上下文", `${mark(r.secure)} ${r.protocol || "未知协议"}`],
     ["识别引擎", `${r.engine === "不支持" ? "❌" : "✅"} ${r.engine}`],
     ["麦克风接口", `${mark(r.micApi)} getUserMedia`],
@@ -920,6 +929,8 @@ function voiceSelfCheck() {
       : window.webkitSpeechRecognition
         ? "webkitSpeechRecognition"
         : "不支持",
+    /* v46：真正会用哪条链路——服务端可用时优先服务端，浏览器接口只在没有后端时兜底 */
+    link: asrEngine(),
     micApi: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
     pref,
     lastError: lastVoiceError ? lastVoiceError.code : "本次会话未触发",
@@ -975,10 +986,134 @@ function commitVoiceTurn() {
   setTimeout(() => { voiceAutoPending = false; sendMsg(); }, 220);
 }
 
+/* ---- v46：服务端转写链路 ----
+ * 浏览器接口在境内连不上厂商云端，所以「后端可用」时优先走这条：
+ * 录音 → 本地转 16k WAV → 每 6 秒提交一段 → 文本落进输入框。 */
+function micReset() {
+  listening = false;
+  const btn = $("mic-btn");
+  if (btn) {
+    btn.textContent = "🎤";
+    btn.classList.remove("btn-primary");
+  }
+}
+
+function serverVoiceMeta(text) {
+  const sum = rhythmSummary(session.voiceSegments);
+  return sum.hasData ? `${sum.cpm} 字/分 · 已转写 ${text.length} 字` : `已转写 ${text.length} 字`;
+}
+
+async function startServerVoice() {
+  voiceStartAt = Date.now();
+  voiceSegStart = Date.now();
+  voiceCommitted = "";
+  voiceInterim = "";
+  /* 开麦前手打的字要留在前面，转写结果接上去 */
+  voiceBase = ($("chat-input") ? $("chat-input").value : "").replace(/\s+/g, " ").trim();
+  voiceRestarts = 0;
+  lastVoiceError = null;
+  listening = true;
+  const btn = $("mic-btn");
+  if (btn) {
+    btn.textContent = "🔴";
+    btn.classList.add("btn-primary");
+  }
+  setVoiceLive("", "正在连接麦克风…", "on");
+  try {
+    serverAsrCtl = await startServerAsr({
+      onText(text) {
+        if (serverSubmitTimer) {
+          clearTimeout(serverSubmitTimer);
+          serverSubmitTimer = null;
+        }
+        voiceCommitted = (voiceCommitted + " " + text).replace(/\s+/g, " ").trim();
+        voiceSyncInput();
+        recordVoiceSegment(text, Date.now() - voiceSegStart);
+        voiceSegStart = Date.now();
+        setVoiceLive(voiceCommitted.slice(-70), serverVoiceMeta(voiceCommitted), "on");
+      },
+      onSilence() {
+        /* 静音后再给一段文本落地的时间：录音还在上传时立刻提交会截断最后半句 */
+        if (serverSubmitTimer) clearTimeout(serverSubmitTimer);
+        serverSubmitTimer = setTimeout(() => {
+          serverSubmitTimer = null;
+          if (voiceCommitted.trim().length >= 2) finishServerVoice(true);
+        }, 1400);
+      },
+      onError(err) {
+        const code = (err && err.message) || "asr_failed";
+        lastVoiceError = { code, at: Date.now() };
+        /* 权限失效 / 服务端没开转写：重试也没用，直接收手并说明 */
+        if (/asr_unauthorized|asr_http_503/.test(code)) {
+          toast("🎤 " + asrErrHint(err));
+          finishServerVoice(false);
+        }
+      },
+    });
+    addTimeline("系统", "🎤 语音输入已开启（服务端转写 · 边录边分段），请开始说话…", false);
+  } catch (err) {
+    micReset();
+    setVoiceLive(null);
+    const name = (err && err.name) || "";
+    toast(
+      name === "NotAllowedError"
+        ? "🎤 麦克风权限被拒绝：点地址栏左侧锁形图标，允许麦克风后重试（也可以直接打字）"
+        : name === "NotFoundError"
+          ? "🎤 没有检测到可用麦克风"
+          : "🎤 麦克风启动失败：" + ((err && err.message) || "未知原因")
+    );
+  }
+}
+
+/** 收尾：停录并把最后一段传完再判断成功与否（否则最后半句会丢） */
+async function finishServerVoice(auto) {
+  if (serverSubmitTimer) {
+    clearTimeout(serverSubmitTimer);
+    serverSubmitTimer = null;
+  }
+  const ctl = serverAsrCtl;
+  serverAsrCtl = null;
+  listening = false;
+  micReset();
+  if (!ctl) return;
+  setVoiceLive(voiceCommitted ? voiceCommitted.slice(-70) : "", "正在收尾…", "on");
+  try {
+    await ctl.stop();
+  } catch (e) {}
+  const heard = voiceCommitted.trim();
+  const left = ($("chat-input") ? $("chat-input").value : "").trim();
+  if (!heard) {
+    setVoiceLive(null);
+    return;
+  }
+  if (auto) {
+    voiceAutoPending = true;
+    setVoiceLive(left.slice(-70), "已转写 · 提交中", "done");
+    addTimeline("系统", `🎤 转写完成（${left.length} 字）→ 自动提交，面试官基于这段文本继续追问`, false);
+    try { analyzeVoiceInput(left, Date.now() - voiceStartAt); } catch (e) {}
+    setTimeout(() => {
+      voiceAutoPending = false;
+      sendMsg();
+    }, 220);
+    return;
+  }
+  setVoiceLive(left.slice(-70), "转写完成 · Enter 发送 / 点「发送」", "done");
+  toast("语音转写完成，已填入输入框");
+  setTimeout(() => {
+    if (!listening && !voiceAutoPending) setVoiceLive(null);
+  }, 2600);
+}
+
 function toggleVoice() {
   try { if (!getProfile().prefs.voice) { toast("语音输入已在「个人中心 · 偏好设置」中关闭"); return; } } catch (e) {}
+  /* 后端能转写就走服务端：浏览器接口在境内基本连不上，不该让访客先撞一次墙 */
+  if (listening && serverAsrCtl) { finishServerVoice(false); return; }
+  if (asrServerReady()) { startServerVoice(); return; }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { toast("当前浏览器不支持语音识别，推荐使用 Chrome / Edge"); return; }
+  if (!SR) {
+    toast("当前浏览器没有语音识别接口（Chrome / Edge 可用），可以直接键盘输入");
+    return;
+  }
   if (listening) { try { recognition.stop(); } catch (e) {} return; }
   recognition = new SR();
   recognition.lang = "zh-CN";
@@ -997,7 +1132,7 @@ function toggleVoice() {
   $("mic-btn").textContent = "🔴";
   $("mic-btn").classList.add("btn-primary");
   setVoiceLive("", "开始说话…", "on");
-  addTimeline("系统", "🎤 语音识别已开启（浏览器内置 ASR · 流式转写），请开始说话…", false);
+  addTimeline("系统", "🎤 语音识别已开启（浏览器接口 · 走厂商云端），请开始说话…", false);
   recognition.onresult = e => {
     let interim = "", finalText = "";
     for (let i = e.resultIndex; i < e.results.length; i++) {

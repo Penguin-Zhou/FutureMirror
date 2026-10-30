@@ -53,9 +53,17 @@ const fmApi = {
     try {
       const res = await fetch(this.base + "/api/health", { signal: ctrl.signal });
       const j = await res.json();
-      this.health = { ok: !!j.ok, llm_ready: !!j.llm_ready, model: j.model || null };
+      /* asr_ready 决定语音走服务端转写还是浏览器接口：浏览器接口在境内连不上厂商云端，
+       * 所以后端具备转写能力时要优先用后端。 */
+      this.health = {
+        ok: !!j.ok,
+        llm_ready: !!j.llm_ready,
+        model: j.model || null,
+        asr_ready: !!j.asr_ready,
+        asr_model: j.asr_model || null,
+      };
     } catch (e) {
-      this.health = { ok: false, llm_ready: false, model: null };
+      this.health = { ok: false, llm_ready: false, model: null, asr_ready: false, asr_model: null };
     } finally {
       clearTimeout(kill);
     }

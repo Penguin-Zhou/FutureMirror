@@ -89,6 +89,7 @@ const jsRules = [
   ["js/core/router-pages.js", "§4 应用内页面路由", ["4. 应用内页面路由"]],
   ["js/features/match.js", "§4 简历匹配", ["4. 简历匹配"]],
   ["js/features/explain.js", "v40 可解释性交互层", ["v40 · 可解释性交互层"]],
+  ["js/features/asr.js", "v46 服务端语音转写", ["v46 · 服务端语音转写"]],
   ["js/features/interview.js", "§5 模拟面试（含 QUESTION_BANK）", ["5. 模拟面试"]],
   ["js/data/kb.js", "§6 RAG 面经问答 + v10 知识库", ["6. RAG 面经问答", "v10 · 面经知识库扩充"]],
   ["js/features/report.js", "§7 评估报告", ["7. 评估报告"]],

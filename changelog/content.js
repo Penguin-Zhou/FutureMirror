@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2154</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2221</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -232,6 +232,39 @@ export const changelogHtml = `
         <div class="metric"><div class="m-val">32</div><div class="m-label">v33 新增断言</div></div>
         <div class="metric"><div class="m-val">1522</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v46 · 服务端语音转写
+       ======================================================== -->
+  <div class="version" id="v46">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 服务端语音转写（v46）</span>
+      <span class="v-title">语音输入从「基本连不上」修成「真的能听见」</span>
+      <span class="v-date">2026.10.30</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        浏览器自带的语音识别接口并不在本地跑，它把音频送到浏览器厂商的云端服务；在境内这段链路基本连不上，
+        于是每次开麦都会以 <code>network</code> 报错收场，而提示语还写着「不支持语音识别」——把网络问题说成了能力问题。
+        这一版不再依赖那条链路：<strong>点击麦克风后用浏览器录音，本地转成 16kHz 单声道 WAV，分段提交到本应用后端，由服务端调用同一条模型密钥完成转写</strong>。
+        音频只在请求里存在一次，不落盘、不写库、不进日志；浏览器自带接口保留为后备，两者都不通时才降级为键盘输入。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>境内可用</b>：不再经过浏览器厂商的云端，走应用自己的后端，镜像站与 Pages 同一套</div>
+        <div class="vh-item"><b>零新增依赖</b>：直接接收原始音频字节，不引入 multipart 解析库，线上镜像无需重装依赖</div>
+        <div class="vh-item"><b>分段而不是整段</b>：6 秒一段、停顿 1.6 秒提前收尾，先说出来的话先落进输入框</div>
+        <div class="vh-item"><b>不吞已输入内容</b>：开麦前打的字保留在原位，转写结果续在后面</div>
+        <div class="vh-item"><b>不行就说不行</b>：后端未配置转写时直接告知「可直接键盘输入」，不做无谓重试</div>
+        <div class="vh-item"><b>文案改实话</b>：删掉「浏览器内置识别」的说法，改为说明识别在哪里发生</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">67</div><div class="m-label">v46 新增断言</div></div>
+        <div class="metric"><div class="m-val">2221</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">57</div><div class="m-label">后端单测</div></div>
+        <div class="metric"><div class="m-val">0</div><div class="m-label">新增运行时依赖</div></div>
       </div>
     </div>
   </div>

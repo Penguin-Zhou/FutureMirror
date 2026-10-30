@@ -138,7 +138,10 @@ ok(/InvalidStateError/.test(interviewSrc), "麦克风忙时给出可理解的提
 }
 ok(/VOICE_FATAL\.indexOf\(e\.error\) >= 0\) listening = false/.test(interviewSrc), "遇到不可恢复错误立即停止续接");
 ok(/listening = false;[\s\S]{0,120}mic-btn/.test(interviewSrc), "启动失败会回滚按钮状态，不留在假录音态");
-ok(/浏览器内置 ASR/.test(interviewSrc) && !/浏览器本地 ASR/.test(interviewSrc), "文案不再声称识别是「本地」的");
+ok(
+  /走厂商云端/.test(interviewSrc) && !/浏览器内置 ASR|浏览器本地 ASR/.test(interviewSrc),
+  "文案不再把识别说成浏览器内完成"
+);
 ok(
   /const heard = \(voiceCommitted \+ voiceInterim\)\.trim\(\)/.test(interviewSrc),
   "收尾按「本次真的转写出内容」判断，而不是输入框有没有字"

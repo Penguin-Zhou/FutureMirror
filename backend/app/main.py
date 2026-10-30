@@ -11,7 +11,8 @@ from datetime import datetime, timedelta, timezone
 import asyncio
 import jwt
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Header, WebSocket, WebSocketDisconnect
+from fastapi import (Depends, FastAPI, HTTPException, Header, Request, WebSocket,
+                     WebSocketDisconnect)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -25,6 +26,7 @@ from .db import (Interview, InterviewStatusEvent, Report, Turn, User,  # noqa: E
                  SessionLocal, get_db,
                  hash_password, init_db, verify_password)
 from .llm import LLM_MODEL, llm_ready, sse_response                    # noqa: E402
+from .asr import ASR_MODEL, asr_ready, transcribe_audio                # noqa: E402
 from .scoring import score_session                                     # noqa: E402
 from .enrich import enrich_report                                       # noqa: E402
 
@@ -188,7 +190,32 @@ def me(user: User = Depends(current_user)):
 # ---------------- 健康检查（前端用它显示运行模式） ----------------
 @app.get("/api/health")
 def health():
-    return {"ok": True, "llm_ready": llm_ready(), "model": LLM_MODEL if llm_ready() else None}
+    return {"ok": True, "llm_ready": llm_ready(), "model": LLM_MODEL if llm_ready() else None,
+            "asr_ready": asr_ready(), "asr_model": ASR_MODEL if asr_ready() else None}
+
+
+# ---------------- 语音转写（v46） ----------------
+# 浏览器自带的语音识别走厂商云端，境内连不上；这里用同一条模型密钥在服务端转写。
+# 音频只在请求里存在一次，不落盘、不写库、不进日志。
+# 直接收原始音频字节而不是 multipart：少一个 python-multipart 依赖，
+# 部署端不必重装依赖也不会因为缺包起不来。
+@app.post("/api/asr")
+async def asr(request: Request, user: User = Depends(current_user)):
+    if not asr_ready():
+        raise HTTPException(503, "服务端未配置转写模型")
+    data = await request.body()
+    if not data:
+        raise HTTPException(400, "没有收到音频")
+    mime = (request.headers.get("content-type") or "audio/wav").split(";")[0].strip()
+    text, err = await transcribe_audio(data, filename="chunk.wav", mime=mime)
+    if err == "no_speech":
+        return {"text": "", "model": ASR_MODEL, "no_speech": True}
+    if err == "too_large":
+        raise HTTPException(413, "单段音频超出上限")
+    if err:
+        # 502 交给前端降级；错误码不带上游原始报文，避免把细节漏到客户端
+        raise HTTPException(502, f"转写失败：{err}")
+    return {"text": text, "model": ASR_MODEL}
 
 
 # ---------------- 大模型流式对话（Key 只在这一层） ----------------

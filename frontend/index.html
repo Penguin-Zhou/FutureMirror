@@ -90,7 +90,7 @@ try {
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>2154</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>2221</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>30</b> 页技术文档</span>
           </div>
         </div>
@@ -101,7 +101,7 @@ try {
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2154 ／ pytest 44</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2221 ／ pytest 44</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -147,7 +147,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2154 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2221 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -157,7 +157,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2154 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2221 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -1624,7 +1624,7 @@ try {
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2154 项前端断言 + 44 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2221 项前端断言 + 44 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -1717,7 +1717,7 @@ try {
     <!-- 5.6 语音输入自检：麦克风没反应时，把「卡在哪一环」摊开 -->
     <section class="eval-section" id="eval-voice">
       <h2 class="eval-section-title">🎤 语音输入自检</h2>
-      <p class="eval-section-sub">语音识别用的是浏览器内置接口（Chrome / Edge 走厂商云端识别，Firefox 不支持）。麦克风没反应时，点下面的按钮逐项确认：是浏览器没有接口、协议不安全、权限被拒，还是网络连不上。</p>
+      <p class="eval-section-sub">语音输入有两条链路：能连上本应用后端时走<strong>服务端转写</strong>（境内可用，录音只在请求里存在一次，不落盘）；没有后端时才退回浏览器自带接口（Chrome / Edge 走厂商云端，境内常连不上）。麦克风没反应时，点下面的按钮逐项确认是协议不安全、权限被拒、没有设备，还是链路不可用。</p>
       <div class="eval-actions">
         <button class="btn btn-outline btn-sm" onclick="renderVoiceSelfCheck()">运行自检</button>
         <span class="badge" id="voice-check-state">未运行</span>
@@ -1804,7 +1804,7 @@ try {
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（43 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2154 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2221 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -1951,6 +1951,7 @@ try {
   <script src="js/core/router-pages.js"></script>
   <script src="js/features/match.js"></script>
   <script src="js/features/explain.js"></script>
+  <script src="js/features/asr.js"></script>
   <script src="js/features/interview.js"></script>
   <script src="js/data/kb.js"></script>
   <script src="js/features/report.js"></script>
