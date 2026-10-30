@@ -21237,6 +21237,16 @@ function capturePersona() {
 function activePersona() {
   return personaSnapshot || personaParams(currentMbti());
 }
+
+/* 加载后补一次渲染：刷新页面时用户可能已经停在面试页，
+ * 胶囊不该等到下一次切页才出现（此时 DOM 容器已在 body 末尾就绪）。 */
+try {
+  if (typeof document !== "undefined" && document.getElementById("persona-chip")) {
+    renderPersonaCapsule();
+  }
+} catch (e) {
+  /* 启动早期失败不影响面试主流程 */
+}
 /* ============================================================
  * v37 · 通用图表组件（蓝图编辑风 · 零第三方图表库）
  *   设计约束（与全站视觉纪律一致）：

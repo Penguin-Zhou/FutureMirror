@@ -412,3 +412,13 @@ function capturePersona() {
 function activePersona() {
   return personaSnapshot || personaParams(currentMbti());
 }
+
+/* 加载后补一次渲染：刷新页面时用户可能已经停在面试页，
+ * 胶囊不该等到下一次切页才出现（此时 DOM 容器已在 body 末尾就绪）。 */
+try {
+  if (typeof document !== "undefined" && document.getElementById("persona-chip")) {
+    renderPersonaCapsule();
+  }
+} catch (e) {
+  /* 启动早期失败不影响面试主流程 */
+}
