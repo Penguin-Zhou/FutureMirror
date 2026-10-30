@@ -210,7 +210,7 @@ const LANDING_FOLD_TARGETS = [
   { sel: ".hero-mock", title: "面试实录样例", hint: "看一段真实追问与量化回答" },
   { sel: "#features", title: "功能矩阵", hint: "8 个业务模块 · 求职全流程闭环" },
   { sel: "#workflow", title: "四步流程", hint: "简历 → 面试 → 报告 → 计划" },
-  { sel: "#stats", title: "关键数字", hint: "5 Agent · 24 岗位 · 1815 断言" },
+  { sel: "#stats", title: "关键数字", hint: "5 Agent · 24 岗位 · 2081 断言" },
 ];
 
 function initMobileLandingFold() {

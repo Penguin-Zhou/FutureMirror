@@ -829,11 +829,114 @@ function restartInterview() {
  *   面试官基于流式文本继续提问。同时把每段语音的时长/字数记为时间戳，
  *   供报告做「语速 / 停顿 / 口头禅密度」的表达层分析（音频不出浏览器）。 */
 let voiceCommitted = "", voiceInterim = "", voiceSegStart = 0, voiceSilenceTimer = null, voiceAutoPending = false;
+/* v44.1 · 语音输入的三处修补位：
+ *   voiceBase      —— 开麦前已经打好的文字，不能被转写结果覆盖（之前会直接冲掉）
+ *   voiceRestarts  —— 浏览器会在静音或约 60s 后自行结束识别，记自动续接次数防死循环
+ *   lastVoiceError —— 最近一次错误码，供开发者模式的自检面板读取
+ */
+let voiceBase = "", voiceRestarts = 0, lastVoiceError = null;
+
+/* 浏览器抛出的错误码直接甩给访客没人看得懂，而且「没开口」根本不是错误。
+ * 这里做一次分型：能给出可行动建议的给建议，正常的静音与主动停止静默处理。 */
+const VOICE_ERR_HINT = {
+  "not-allowed": "麦克风权限被拒绝：点地址栏左侧的锁形图标，允许麦克风后重试",
+  "service-not-allowed": "浏览器或系统禁用了语音识别服务：请在权限设置中开启",
+  "audio-capture": "没有检测到可用麦克风：确认设备已连接、未被其他程序占用",
+  network: "连不上浏览器内置的语音识别服务：可改用键盘输入，或换网络后重试",
+  "language-not-supported": "当前语言不被识别服务支持",
+  "bad-grammar": "识别参数有误，请重试",
+};
+
+/* 这些错误重试也没用（权限、设备、参数、网络本身不通），
+ * 必须立刻停，不能交给后面的「自动续接」再试三次。 */
+const VOICE_FATAL = ["not-allowed", "service-not-allowed", "audio-capture", "language-not-supported", "bad-grammar", "network"];
+
+/** @param {string} code @returns {string} 中文提示；空串表示不必提示 */
+function voiceErrorHint(code) {
+  if (code === "no-speech") return ""; // 没开口，不是错误
+  if (code === "aborted") return ""; // 主动停止，不是错误
+  return VOICE_ERR_HINT[code] || "语音识别中断，可改用键盘输入";
+}
+
+/** 按自检结果给一句「该修哪一环」，而不是只说失败 */
+function voiceCheckAdvice(r) {
+  if (r.engine === "不支持") return "当前浏览器没有语音识别接口：Chrome / Edge 可用，Firefox 不支持，可直接用键盘输入。";
+  if (!r.secure) return "当前不是安全上下文（需 https 或 localhost），浏览器会拒绝麦克风。";
+  if (r.pref === false) return "「个人中心 · 偏好设置」里关闭了语音输入，打开后再试。";
+  if (r.lastError === "not-allowed" || r.lastError === "service-not-allowed")
+    return "麦克风权限被拒：点地址栏左侧锁形图标 → 网站设置 → 麦克风 → 允许，然后刷新页面。";
+  if (r.lastError === "network") return "识别服务连不上：这个接口走浏览器厂商的云端识别，网络受限时会失败，可改用键盘输入。";
+  if (r.lastError === "audio-capture") return "没有可用麦克风：检查设备连接，或是否被其他程序占用。";
+  return "前置条件就绪。若仍无转写，按一次麦克风按钮后再回来这里看最近错误码。";
+}
+
+function renderVoiceSelfCheck() {
+  const box = $("voice-check-out");
+  if (!box) return;
+  const r = voiceSelfCheck();
+  const mark = b => (b ? "✅" : "❌");
+  const rows = [
+    ["安全上下文", `${mark(r.secure)} ${r.protocol || "未知协议"}`],
+    ["识别引擎", `${r.engine === "不支持" ? "❌" : "✅"} ${r.engine}`],
+    ["麦克风接口", `${mark(r.micApi)} getUserMedia`],
+    ["偏好开关", r.pref == null ? "— 读取失败" : `${mark(r.pref)} ${r.pref ? "已开启" : "已关闭"}`],
+    ["最近错误码", r.lastError],
+  ];
+  box.innerHTML =
+    rows.map(([k, v]) => `<div class="vc-row"><span class="vc-k">${k}</span><span class="vc-v">${escHtml(v)}</span></div>`).join("") +
+    `<p class="hint" style="margin:10px 0 0">${escHtml(voiceCheckAdvice(r))}</p>`;
+  const st = $("voice-check-state");
+  if (st) {
+    /* 徽标要看得懂结论：引擎缺失 / 协议受限 / 权限被拒 / 网络受限 / 条件就绪。
+     * 之前只看引擎与协议，权限被拒时仍显示「条件就绪」，自相矛盾。 */
+    const err = r.lastError;
+    st.textContent =
+      r.engine === "不支持"
+        ? "引擎缺失"
+        : !r.secure
+          ? "协议受限"
+          : err === "not-allowed" || err === "service-not-allowed"
+            ? "权限被拒"
+            : err === "network"
+              ? "网络受限"
+              : err === "audio-capture"
+                ? "无可用设备"
+                : "条件就绪";
+  }
+}
+function voiceSelfCheck() {
+  let pref = null;
+  try {
+    const p = getProfile();
+    pref = !!(p && p.prefs && p.prefs.voice);
+  } catch (e) {
+    /* 读不到偏好就保持 null，自检面板会显示「读取失败」而不是假装已开启 */
+  }
+  return {
+    secure: !!window.isSecureContext,
+    protocol: (typeof location !== "undefined" && location.protocol) || "",
+    engine: window.SpeechRecognition
+      ? "SpeechRecognition"
+      : window.webkitSpeechRecognition
+        ? "webkitSpeechRecognition"
+        : "不支持",
+    micApi: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+    pref,
+    lastError: lastVoiceError ? lastVoiceError.code : "本次会话未触发",
+  };
+}
 
 function setVoiceLive(text, meta, state) {
   const bar = $("voice-live");
   if (!bar) return;
-  if (text == null) { bar.hidden = true; bar.className = "voice-live"; return; }
+  if (text == null) {
+    bar.hidden = true;
+    bar.className = "voice-live";
+    const et = $("voice-live-text"), em = $("voice-live-meta");
+    if (et) et.textContent = "";
+    if (em) em.textContent = "";
+    return;
+  }
   bar.hidden = false;
   bar.className = "voice-live" + (state ? " " + state : "");
   const t = $("voice-live-text"), m = $("voice-live-meta");
@@ -844,7 +947,10 @@ function setVoiceLive(text, meta, state) {
 function voiceSyncInput() {
   const input = $("chat-input");
   if (!input) return;
-  input.value = (voiceCommitted + voiceInterim).replace(/\s+/g, " ").trim();
+  const said = (voiceCommitted + voiceInterim).replace(/\s+/g, " ").trim();
+  /* v44.1：开麦前已经打好的文字要先留住。之前直接赋值，
+   * 访客先写两句再补语音，一开口原文就被整段吞掉。 */
+  input.value = voiceBase ? (said ? voiceBase + " " + said : voiceBase) : said;
 }
 
 /** 记一段语音的时长与字数（时间戳留在本地，只用于表达节奏统计） */
@@ -883,11 +989,15 @@ function toggleVoice() {
   voiceSegStart = Date.now();
   voiceCommitted = "";
   voiceInterim = "";
+  /* 记住开麦前输入框里已有的内容，转写结果接在它后面而不是替换它 */
+  voiceBase = ($("chat-input") ? $("chat-input").value : "").replace(/\s+/g, " ").trim();
+  voiceRestarts = 0;
+  lastVoiceError = null;
   listening = true;
   $("mic-btn").textContent = "🔴";
   $("mic-btn").classList.add("btn-primary");
   setVoiceLive("", "开始说话…", "on");
-  addTimeline("系统", "🎤 语音识别已开启（浏览器本地 ASR · 流式转写），请开始说话…", false);
+  addTimeline("系统", "🎤 语音识别已开启（浏览器内置 ASR · 流式转写），请开始说话…", false);
   recognition.onresult = e => {
     let interim = "", finalText = "";
     for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -910,24 +1020,74 @@ function toggleVoice() {
     voiceSilenceTimer = setTimeout(commitVoiceTurn, 1600);
   };
   recognition.onerror = e => {
-    toast("语音识别出错：" + (e.error === "not-allowed" ? "麦克风权限被拒绝" : e.error));
+    lastVoiceError = { code: e.error, at: Date.now() };
+    /* 不可恢复的错误直接收手：之前权限被拒后 onend 还会自动续接，
+     * 连试三次全失败，按钮闪三下、日志刷三条，用户只觉得更坏了。 */
+    if (VOICE_FATAL.indexOf(e.error) >= 0) listening = false;
+    /* 「没开口」与「主动停止」不是故障，弹红色报错只会让人以为功能坏了 */
+    if (e.error === "no-speech") {
+      setVoiceLive("", "没听到声音，请再说一次（或直接键盘输入）", "on");
+      return;
+    }
+    const hint = voiceErrorHint(e.error);
+    if (!hint) return;
+    setVoiceLive(null);
+    toast("🎤 " + hint);
+    try {
+      logDev("warn", `语音识别失败：${e.error}`);
+    } catch (err) {}
   };
   recognition.onend = () => {
+    if (voiceSilenceTimer) {
+      clearTimeout(voiceSilenceTimer);
+      voiceSilenceTimer = null;
+    }
+    /* 浏览器会在静音或约 60s 后自行结束识别。长回答不该因此中断，
+     * 只要没在自动提交、也没超过续接上限，就悄悄接上，并把状态说清楚。 */
+    if (listening && !voiceAutoPending && voiceRestarts < 3) {
+      voiceRestarts++;
+      try {
+        recognition.start();
+        const said = (voiceCommitted + voiceInterim).trim();
+        setVoiceLive(said.slice(-70), `仍在听（自动续接 ${voiceRestarts}/3）`, "on");
+        return;
+      } catch (err) {
+        /* 续接失败就走正常收尾 */
+      }
+    }
     listening = false;
-    if (voiceSilenceTimer) { clearTimeout(voiceSilenceTimer); voiceSilenceTimer = null; }
     $("mic-btn").textContent = "🎤";
     $("mic-btn").classList.remove("btn-primary");
-    if (voiceAutoPending) return;      // 自动提交链路自己收尾
+    if (voiceAutoPending) return; // 自动提交链路自己收尾
+    /* 只有本次真的转写出内容才算「转写完成」。之前看的是输入框有没有字，
+     * 于是权限被拒、一个字都没识别出来时也会弹「语音转写完成」，是假成功。 */
+    const heard = (voiceCommitted + voiceInterim).trim();
     const left = ($("chat-input") ? $("chat-input").value : "").trim();
-    if (left) {
+    if (heard) {
       setVoiceLive(left.slice(-70), "转写完成 · Enter 发送 / 点「发送」", "done");
       toast("语音转写完成，已填入输入框");
-      setTimeout(() => { if (!listening && !voiceAutoPending) setVoiceLive(null); }, 2600);
+      setTimeout(() => {
+        if (!listening && !voiceAutoPending) setVoiceLive(null);
+      }, 2600);
     } else {
       setVoiceLive(null);
     }
   };
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (e) {
+    /* 上一次识别还没完全释放时 start 会抛 InvalidStateError，
+     * 之前会停在「🔴 正在录」的假状态里，按钮看起来坏了。 */
+    listening = false;
+    $("mic-btn").textContent = "🎤";
+    $("mic-btn").classList.remove("btn-primary");
+    setVoiceLive(null);
+    toast(
+      e && e.name === "InvalidStateError"
+        ? "麦克风正忙，请稍等一秒再按一次"
+        : "麦克风启动失败：" + ((e && e.message) || "未知原因")
+    );
+  }
 }
 
 /* ---- TTS 朗读 / 停止（speechSynthesis，零成本） ---- */

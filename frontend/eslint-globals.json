@@ -107,6 +107,8 @@
   "USERS_KEY": "writable",
   "VEC_CFG": "writable",
   "VIEW_KEY": "writable",
+  "VOICE_ERR_HINT": "writable",
+  "VOICE_FATAL": "writable",
   "__bpApp": "writable",
   "__bpCmd": "writable",
   "__bpFx": "writable",
@@ -520,6 +522,7 @@
   "renderUserMenu": "writable",
   "renderVecBar": "writable",
   "renderVipCard": "writable",
+  "renderVoiceSelfCheck": "writable",
   "reportDiagnosis": "writable",
   "reportFollowupCard": "writable",
   "reportStatusCard": "writable",
@@ -691,6 +694,10 @@
   "vecIndex": "writable",
   "vecProviderLabel": "writable",
   "visibleFill": "writable",
+  "voiceBase": "writable",
+  "voiceCheckAdvice": "writable",
   "voiceCommitted": "writable",
+  "voiceErrorHint": "writable",
+  "voiceSelfCheck": "writable",
   "voiceSyncInput": "writable"
 }

@@ -1760,6 +1760,15 @@ q { quotes: none; }
   margin-bottom: 12px;
 }
 
+/* ---------- ③b 语音自检：把「卡在哪一环」摊成可扫读的清单 ---------- */
+.voice-check { margin-top: 12px; }
+.voice-check .vc-row {
+  display: grid; grid-template-columns: 96px 1fr; gap: 10px;
+  padding: 6px 0; border-top: 1px dashed var(--line); font-size: 12.5px;
+}
+.voice-check .vc-k { color: var(--muted); }
+.voice-check .vc-v { color: var(--ink); font-family: var(--mono); font-size: 12px; word-break: break-all; }
+
 /* ---------- ④ 报告页：降级账本 ---------- */
 .degrade-log .dl-row {
   display: grid; grid-template-columns: 62px 1fr auto; gap: 4px 10px;

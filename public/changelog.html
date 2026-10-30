@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2026</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2081</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -314,7 +314,7 @@ body {
   <ul class="cl-toc-list">
     <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
     <li><a href="#vbeta1-12"><span class="cl-toc-tag">Beta 1.1.2</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
-    <li><a href="#v44"><span class="cl-toc-tag">Beta 1.1.2 · v44</span><span class="cl-toc-title-txt">感知密度层 · 报告首屏一句诊断 + 点阵/分歧标记 + MBTI 策略前置 + 两处真实缺陷修复</span></a></li>
+    <li><a href="#v44"><span class="cl-toc-tag">Beta 1.1.2 · v44</span><span class="cl-toc-title-txt">感知密度层 · 报告首屏一句诊断 + 点阵/分歧标记 + MBTI 策略前置 + 语音链路错误分型 + 四处真实缺陷修复</span></a></li>
     <li><a href="#v41"><span class="cl-toc-tag">Beta 1.1.2 · v41</span><span class="cl-toc-title-txt">移动端适配层 · 窄屏单栏任务流 + 导航收敛 5 格 + 对话区自适应 + 交互去 hover 化</span></a></li>
     <li><a href="#v42"><span class="cl-toc-tag">Beta 1.1.2 · v42</span><span class="cl-toc-title-txt">移动端信息优先级裁剪 · 首屏单 CTA + 圆桌 chips + 报告渐进披露 + 键盘可见</span></a></li>
     <li><a href="#v43"><span class="cl-toc-tag">Beta 1.1.2 · v43</span><span class="cl-toc-title-txt">人格参数化层 · MBTI 从「孤岛测评」变成面试的输入参数 + 报告的关联维度</span></a></li>
@@ -538,10 +538,21 @@ body {
         <div class="vh-item"><b>修缺陷一</b>：锚定标签此前先 insertBefore 后入 DOM，参考节点不在父节点 → 抛错被吞，标签从未出现（v42 遗留）</div>
         <div class="vh-item"><b>修缺陷二</b>：窄屏顶栏固定 56px + 允许换行 → 内容溢出压住底部导航；改为高度自适应并回写 --hdr-h</div>
       </div>
+      <div class="cat" style="margin-top:18px">
+        <div class="cat-title"><span class="cat-improve">v44.1</span> 语音输入链路：把「坏了」拆成「卡在哪一环」</div>
+        <ul>
+          <li><b>错误不再原样甩给访客</b>：此前任何异常都弹同一句「语音识别出错：xxx」，把浏览器错误码直接摆到脸上。现在按错误码分型——权限被拒给地址栏的具体操作路径，没有麦克风指向设备，网络不通说明这个接口走厂商云端识别并给出键盘输入替代；<b>「没开口」与「主动停止」属于正常状态</b>，不再弹红字。</li>
+          <li><b>转写不再吞掉已经打好的字</b>：开麦前先记下输入框里的内容，转写接在后面；此前是直接赋值覆盖，先打字再补语音，原文会被整段清掉。</li>
+          <li><b>浏览器自己结束识别时会自动续接</b>：静音或约 60 秒后浏览器会结束识别，此前麦克风就此熄灭、访客以为坏了。现在只要还在听、且未超过上限，就悄悄接上，并把「自动续接 n/3」写在状态条上。权限 / 设备 / 网络这类不可恢复的错误立即停止，不再做三次无意义重试。</li>
+          <li><b>不再假成功</b>：收尾判断从「输入框有没有字」改成「本次是否真的转写出内容」。权限被拒时输入框里若还留着原文，此前会提示「语音转写完成」，是假成功。</li>
+          <li><b>开发者模式新增「语音输入自检」</b>：一键列出安全上下文、识别引擎、麦克风接口、偏好开关、最近错误码，并给出「该修哪一环」的结论；状态徽标从笼统的「条件就绪」细分为引擎缺失 / 协议受限 / 权限被拒 / 网络受限 / 无可用设备。</li>
+          <li><b>文案诚信修正</b>：不再把这条链路称作「本地 ASR」——Chrome / Edge 的该接口走厂商云端识别，音频虽不出浏览器内嵌的对话面板，但并非端侧推理，说成本地并不准确。</li>
+        </ul>
+      </div>
       <div class="v-metrics">
-        <div class="metric"><div class="m-val">67</div><div class="m-label">v44 新增断言</div></div>
-        <div class="metric"><div class="m-val">2026</div><div class="m-label">前端断言总数</div></div>
-        <div class="metric"><div class="m-val">34</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">129</div><div class="m-label">v44 系列新增断言</div></div>
+        <div class="metric"><div class="m-val">2081</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">35</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">375</div><div class="m-label">窄屏实测宽度（px）</div></div>
       </div>
     </div>

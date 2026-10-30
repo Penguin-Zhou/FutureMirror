@@ -617,7 +617,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2026 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2081 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -640,7 +640,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **2026 项前端断言 + 44 项后端单测**，全部通过。
+合计 **2081 项前端断言 + 44 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -718,7 +718,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 44 项 + 前端 2026 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 44 项 + 前端 2081 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
