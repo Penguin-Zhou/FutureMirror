@@ -287,15 +287,23 @@ function personaBridgeHtml(p) {
   const weak = !p.significant
     ? `<div class="pl-hint">你的四个维度都接近中线（典型度均低于 ${PERSONA_MIN_STRENGTH}），因此<b>不启用个性化策略</b>——面试官按通用策略提问，避免用噪声给你贴标签。</div>`
     : "";
+  /* v50 修复：标题原来写死「你的面试策略已调整」。
+   * 典型度不足时同一块里又写着「不启用个性化策略」——自相矛盾，
+   * 等于先承诺「已调整」再当场否认。按实际是否启用分两套说法。 */
+  const head = p.significant ? "🎯 你的面试策略已调整" : "🎯 本次按通用策略提问";
+  const lead = p.significant
+    ? "这是一份「参数」而不是标签：同一句回答，三位面试官会因为下面三条改问别的问题。"
+    : "典型度不足，因此不据此改写提问方式；下面三条是本次实际使用的通用策略。";
+  const cta = p.significant ? "去面试，验证它会怎么问 →" : "去面试，看看通用策略怎么问 →";
   return `
     <div class="persona-link" style="margin-top:16px">
-      <div class="pane-title" style="font-size:14px">🎯 你的面试策略已调整 <span class="tag-demo">只调提问方式 · 不参与评分</span></div>
-      <p class="pl-lead">这是一份「参数」而不是标签：同一句回答，三位面试官会因为下面三条改问别的问题。</p>
+      <div class="pane-title" style="font-size:14px">${head} <span class="tag-demo">只调提问方式 · 不参与评分</span></div>
+      <p class="pl-lead">${lead}</p>
       ${weak}
       <div class="pl-grid">${rows}</div>
       ${trace ? `<details class="pl-details"><summary>参数溯源：哪一维导致了什么</summary>${trace}</details>` : ""}
       <div style="margin-top:10px">
-        <button class="btn btn-primary btn-sm" onclick="switchTab('interview')">去面试，验证它会怎么问 →</button>
+        <button class="btn btn-primary btn-sm" onclick="switchTab('interview')">${cta}</button>
       </div>
     </div>`;
 }

@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2352</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2393</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -312,6 +312,12 @@ body {
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v50"><span class="cl-toc-tag">Beta 1.1.2 · v50</span><span class="cl-toc-title-txt">检测修复 · 计划与指挥台同源 / 重开竞态 / 暗色仪表 / 坏数据防御 / 策略卡口径</span></a></li>
+    <li><a href="#v49"><span class="cl-toc-tag">Beta 1.1.2 · v49</span><span class="cl-toc-title-txt">视觉升级 · 工作台指挥台（5 段仪表 + 4 格指标 + 下一步）+ 版式降噪</span></a></li>
+    <li><a href="#v48"><span class="cl-toc-tag">Beta 1.1.2 · v48</span><span class="cl-toc-title-txt">弹窗按钮不再被拖拽逻辑夺走点击（回车能进 / 鼠标点不进）</span></a></li>
+    <li><a href="#v47"><span class="cl-toc-tag">Beta 1.1.2 · v47</span><span class="cl-toc-title-txt">启动守卫 · 「点了没反应」变成明确载入提示 + 就绪补发</span></a></li>
+    <li><a href="#v46"><span class="cl-toc-tag">Beta 1.1.2 · v46</span><span class="cl-toc-title-txt">服务端语音转写 · 从「连不上」修成「真的能听见」</span></a></li>
+    <li><a href="#v45"><span class="cl-toc-tag">Beta 1.1.2 · v45</span><span class="cl-toc-title-txt">交互确定性层 · 按压当帧可见 + 证据单元绑定 + 设备档位降级</span></a></li>
     <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
     <li><a href="#vbeta1-12"><span class="cl-toc-tag">Beta 1.1.2</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
     <li><a href="#v44"><span class="cl-toc-tag">Beta 1.1.2 · v44</span><span class="cl-toc-title-txt">感知密度层 · 报告首屏一句诊断 + 点阵/分歧标记 + MBTI 策略前置 + 语音链路错误分型 + 四处真实缺陷修复</span></a></li>
@@ -512,6 +518,41 @@ body {
   </div>
 
   <!-- ========================================================
+  <!-- ========================================================
+       Beta 1.1.2 · v50 · 全面检测：把「说得通」改成「对得上」
+       ======================================================== -->
+  <div class="version" id="v50">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 检测修复（v50）</span>
+      <span class="v-title">五处「界面说的和实际状态不一致」</span>
+      <span class="v-date">2026.10.31</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        这一版不加功能，只做检测后的修复：把 12 个页面在 1280 / 375 两个宽度下走了一遍，
+        逐页点过按钮，并把主流程真实跑通（5 轮面试 → 报告、MBTI 20 题、题库模考、投递看板、计划打卡、面经问答、命令面板）。
+        发现的都不是「功能缺失」，而是<strong>同一件事有两种说法</strong>——
+        计划页写着 0/21 项任务，工作台却说没有计划；面试界面写 0/5，存储里却是 1/5；
+        策略卡标题说「已调整」，正文说「不启用」。逐条对齐，并补 41 项断言守住。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>计划只有一份真相</b>：基线计划首次读取即落盘，指挥台与计划页读同一份数据（不再出现「0/21 项任务」旁边的「--」）</div>
+        <div class="vh-item"><b>重新面试真正作废上一轮</b>：轮次世代号 + 中止在途请求；真实通道与 Mock 通道同时生效，旧回复不再算进新会话</div>
+        <div class="vh-item"><b>策略卡不再自相矛盾</b>：典型度不足时标题改为「本次按通用策略提问」，导语与按钮一并改口径</div>
+        <div class="vh-item"><b>暗色主题仪表可辨</b>：空弧描边由 <code>--line</code> 换成 <code>--line-2</code>（#322D23 → #4B4433）</div>
+        <div class="vh-item"><b>坏数据不炸整块</b>：<code>days</code> / <code>tasks</code> 逐层校验，坏项跳过、好项照常计数，指挥台不再只剩空壳</div>
+        <div class="vh-item"><b>版本索引补齐</b>：v45–v50 六个版本此前未进「版本索引」，现已可点击跳转</div>
+        <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2；零投影 / 零圆角 / 零玻璃拟态 / 单一朱红，一条没破</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">41</div><div class="m-label">v50 新增断言</div></div>
+        <div class="metric"><div class="m-val">2393</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">41</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">5</div><div class="m-label">修复项</div></div>
+      </div>
+    </div>
+  </div>
+
        Beta 1.1.2 · v49 · 视觉升级：工程规格书质感
        ======================================================== -->
   <div class="version" id="v49">
@@ -540,7 +581,7 @@ body {
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">52</div><div class="m-label">v49 新增断言</div></div>
-        <div class="metric"><div class="m-val">2352</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2393</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">40</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">新增运行时依赖</div></div>
       </div>

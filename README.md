@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2352 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2393 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -639,9 +639,12 @@ node scripts/test-v30-jsdom.js            # 完整性补全层：骨架屏/媒�
 node scripts/test-v31-jsdom.js            # 体验修复层：文档诚信守卫/学习计划/看板同源/图标系统（110 项）
 node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向量/缓存/融合/UI/权重源（99 项）
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
+node scripts/test-v32-jsdom.js … test-v44b-jsdom.js # v32–v44 增量批次（语音/可解释/人格/密度层）
+node scripts/test-v45-jsdom.js … test-v49-jsdom.js # v45–v49 交互确定性 / 启动守卫 / 拖拽修复 / 视觉升级
+node scripts/test-v50-jsdom.js          # 检测修复：计划同源 / 重开竞态 / 暗色仪表 / 坏数据 / 口径（41 项）
 ```
 
-合计 **2352 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2393 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -719,7 +722,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2352 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2393 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -910,6 +913,20 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v50：全面检测，修复五处「界面说的和实际状态不一致」（2026.10.31）
+
+> 这一版不加功能。把 12 个页面在 1280 / 375 两个宽度下巡检了一遍（横向溢出、console 异常），逐页点过按钮，
+> 并把主流程真实跑通（5 轮面试 → 报告、MBTI 20 题、题库模考、投递看板、计划打卡、面经问答、命令面板）。
+> 找出来的问题都不是「功能缺失」，而是**同一件事有两种说法**——计划页与工作台、界面与存储、标题与正文互相对不上。
+
+- **计划只有一份真相**：基线计划原本只在内存里生成、从不落盘，计划页写「0/21 项任务」而工作台「学习任务」显示 `--`；改为首次读取即落盘，指挥台经 `lpGet()` 取计划（取不到才回落 `fm_plan`）
+- **重新面试真正作废上一轮**：模型回复是异步流式（最长 60s），等待期间点重开只清了轮次、没作废请求，旧回复仍会写进新会话（界面 0/5、存储 1/5，报告还会给一条没显示过的回答打分）；加轮次世代号 `roundGen` + 中止在途请求，真实与 Mock 两个通道都校验
+- **策略卡不再自相矛盾**：MBTI 结果页标题写死「你的面试策略已调整」，典型度不足时正文又说「不启用个性化策略」；改为按 `significant` 分两套标题 / 导语 / 按钮
+- **暗色主题仪表可辨**：空弧描边 `--line` 在暗色下几乎不可见，换 `--line-2`（#322D23 → #4B4433）
+- **坏数据不炸整块**：`days` / `tasks` 逐层做类型校验，坏项跳过、好项照常计数
+- **更新日志版本索引补齐**：v45–v50 六个版本此前未进「版本索引」，现在可点击跳转
+- **指标**：前端断言 2352 → **2393**（新增 v50 套件 41 项）｜jsdom 套件 40 → **41 套**｜前端模块 44（不变）｜共享全局符号 736 → **738**｜PDF **29 页**
 
 ### Beta 1.1.2 · 增量 v49：视觉升级，从「后台模板」到「一张工程规格书」（2026.10.31）
 

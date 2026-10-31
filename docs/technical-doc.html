@@ -432,7 +432,7 @@
     <li><a href="#ch3"><span class="toc-t">系统架构设计</span><span class="toc-d">整体架构 / 模块 / 数据流 / 降级 / 选型论证</span></a></li>
     <li><a href="#ch4"><span class="toc-t">AI 技术方案</span><span class="toc-d">LLM / Agent / RAG / 多模态 / 安全 / MCP / 评估闭环</span></a></li>
     <li><a href="#ch5"><span class="toc-t">核心功能实现</span><span class="toc-d">8 个业务模块</span></a></li>
-    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">2352 + 57 项测试 / 3 种部署</span></a></li>
+    <li><a href="#ch6"><span class="toc-t">测试与部署</span><span class="toc-d">2393 + 57 项测试 / 3 种部署</span></a></li>
     <li><a href="#ch7"><span class="toc-t">核心算法详解与原创性论证</span><span class="toc-d">三大算法 / 校准实证 / 模板差异化</span></a></li>
     <li><a href="#ch8"><span class="toc-t">总结与展望</span><span class="toc-d">已完成 / 边界 / 规划</span></a></li>
     <li><a href="#ch9"><span class="toc-t">附录</span><span class="toc-d">配置 / 账号 / 代码索引 / 交付清单</span></a></li>
@@ -502,7 +502,7 @@
       <tr><td>面经知识库</td><td>40 条</td><td>全部人工合成，含 <code>source</code> 字段可溯源</td></tr>
       <tr><td>题库</td><td>24 题 / 5 分类</td><td>SQL / 网络 / 操作系统 / 算法 / STAR</td></tr>
       <tr><td>MCP 工具</td><td>3 个</td><td><code>search_job_db</code> / <code>fetch_interview_experience</code> / <code>schedule_mock</code></td></tr>
-      <tr><td>前端自动化断言</td><td>2352 项</td><td>单文件版 + 模块版 jsdom 测试（40 套）</td></tr>
+      <tr><td>前端自动化断言</td><td>2393 项</td><td>单文件版 + 模块版 jsdom 测试（41 套）</td></tr>
       <tr><td>后端单元测试</td><td>37 项</td><td>pytest 冒烟 + 评分引擎 + LLM 增强</td></tr>
       <tr><td>部署形态</td><td>3 种</td><td>单文件 / 模块版 / FastAPI 同源后端</td></tr>
     </tbody>
@@ -717,7 +717,7 @@
       <tr><td>组件化 / 模块边界</td><td>42 个模块按「core / data / features / dev」四层划分，由 <code>build-manifest.json</code> 声明加载顺序</td><td><code>npm run build:demo</code></td></tr>
       <tr><td>代码规范（ESLint）</td><td>ESLint 10 扁平配置；因模块共享同一全局作用域，用 <code>gen-eslint-globals.js</code> 从源码自动提取 718 个共享符号做白名单，<code>no-undef</code> 仍然有效</td><td><code>npm run lint</code> → 0 error</td></tr>
       <tr><td>格式化（Prettier）</td><td>Prettier 3 托管脚本层与配置层；前端源码因 <code>build-manifest</code> 行号基准与格式敏感断言而不纳入重排，理由写在 <code>.prettierignore</code> 注释里</td><td><code>npm run format:check</code></td></tr>
-      <tr><td>类型约束（TypeScript）</td><td>不引入编译步骤，改用 <code>jsconfig.json</code> + JSDoc + <code>types/models.d.ts</code>：编辑器内获得补全与跳转，运行时契约由 2352 条断言与后端 Pydantic 模型双向保证</td><td><code>npm run verify</code></td></tr>
+      <tr><td>类型约束（TypeScript）</td><td>不引入编译步骤，改用 <code>jsconfig.json</code> + JSDoc + <code>types/models.d.ts</code>：编辑器内获得补全与跳转，运行时契约由 2393 条断言与后端 Pydantic 模型双向保证</td><td><code>npm run verify</code></td></tr>
       <tr><td>状态管理（Zustand 等）</td><td>自研 <code>store</code>（约 30 行）：<code>sessionStorage</code> 优先、<code>localStorage</code> 回落，键名按用户 id 加前缀实现数据隔离</td><td>切换账号后数据不串号</td></tr>
     </tbody>
   </table>
@@ -735,7 +735,7 @@
   </ul>
 
   <div class="callout">
-    <strong>结论</strong>：技术选型的判断标准是「能否把作品的核心价值稳定交付给访客」，而非「是否命中推荐列表」。本作品的核心价值是<strong>可解释的评分过程 + 端侧可独立运行 + 全部代码可还原可解释</strong>，这三点恰好与重框架的方向相反，因此选择原生栈，并用 ESLint / Prettier / JSDoc / 2352 条断言把工程规范补齐到可审查的水平。
+    <strong>结论</strong>：技术选型的判断标准是「能否把作品的核心价值稳定交付给访客」，而非「是否命中推荐列表」。本作品的核心价值是<strong>可解释的评分过程 + 端侧可独立运行 + 全部代码可还原可解释</strong>，这三点恰好与重框架的方向相反，因此选择原生栈，并用 ESLint / Prettier / JSDoc / 2393 条断言把工程规范补齐到可审查的水平。
   </div>
 
   <div class="chapter-footer">
@@ -1143,7 +1143,7 @@
       </tr>
       <tr>
         <td><strong>L2 回归防线</strong></td>
-        <td>2352 + 57 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
+        <td>2393 + 57 项自动化断言；<code>npm run validate</code> / <code>pytest -q</code> 任一失败返回非零退出码</td>
         <td>任何 Prompt / 规则 / 检索参数变更，先过测试再合入</td>
       </tr>
       <tr>
@@ -1269,10 +1269,10 @@
       <tr><td>代码规范</td><td>ESLint 10</td><td>0 error</td><td>44 个前端模块 + 14 个构建校验工具 + 37 个测试文件；共享作用域白名单由 <code>gen-eslint-globals.js</code> 从源码生成</td></tr>
       <tr><td>代码格式</td><td>Prettier 3</td><td>—</td><td>脚本层与配置层全部通过 <code>format:check</code>（前端源码的豁免理由写在 <code>.prettierignore</code>）</td></tr>
       <tr><td>无头逻辑测试</td><td>Node</td><td>217 项</td><td>store / 用户系统 / 简历优化 / 职业探索 / 主题 / 报告</td></tr>
-      <tr><td>jsdom 集成测试</td><td>jsdom</td><td>40 文件 / 2352 项</td><td>v15–v49 + beta1 向量检索，覆盖所有功能模块、体验层 UX Kit、动态层、可解释性层与移动端适配</td></tr>
+      <tr><td>jsdom 集成测试</td><td>jsdom</td><td>41 文件 / 2393 项</td><td>v15–v50 + beta1 向量检索，覆盖所有功能模块、体验层 UX Kit、动态层、可解释性层与移动端适配</td></tr>
       <tr><td>模块版启动测试</td><td>jsdom</td><td>28 项</td><td>拆分后的模块版能否独立启动</td></tr>
       <tr><td>后端集成测试</td><td>TestClient</td><td>—</td><td>API 契约一致性</td></tr>
-      <tr><td><strong>合计</strong></td><td>—</td><td><strong>2352 + 57</strong></td><td>全部通过</td></tr>
+      <tr><td><strong>合计</strong></td><td>—</td><td><strong>2393 + 57</strong></td><td>全部通过</td></tr>
     </tbody>
   </table>
 
@@ -1647,7 +1647,7 @@ cd frontend && python -m http.server 5173
     <li><strong>BM25 + 端侧向量混合检索</strong>的 RAG 层，含缓存、降级、可解释得分；</li>
     <li><strong>可解释评分 + 证据链 + 动态学习路径</strong>的报告引擎；</li>
     <li><strong>三级降级</strong>的完整链路（后端 → 直连 → Mock），演示不中断；</li>
-    <li><strong>2352 + 57 项自动化测试</strong>，覆盖所有功能；</li>
+    <li><strong>2393 + 57 项自动化测试</strong>，覆盖所有功能；</li>
     <li><strong>开发者模式</strong>作为面向访客的技术透明度工具。</li>
   </ul>
 
@@ -1774,7 +1774,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <tr><td>README（架构 / 安装 / 测试）</td><td>✅</td><td>本仓库根目录</td></tr>
       <tr><td><code>.env.example</code>（无真实密钥）</td><td>✅</td><td><code>backend/.env.example</code></td></tr>
       <tr><td>Git 真实提交历史</td><td>✅</td><td>分阶段提交，非一次性推送</td></tr>
-      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>2352 + 57</td></tr>
+      <tr><td>单元测试 + 演示版测试体系</td><td>✅</td><td>2393 + 57</td></tr>
       <tr><td>单文件静态演示页</td><td>✅</td><td><code>public/futuremirror-demo.html</code></td></tr>
       <tr><td>演示视频 5-8 分钟 1080p</td><td>⬜</td><td>录制中</td></tr>
       <tr><td>技术文档（HTML 在线版）</td><td>✅</td><td><a href="https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html" target="_blank" rel="noopener">penguin-zhou.github.io/FutureMirror/docs/technical-doc.html</a>（仓库内 <code>docs/technical-doc.html</code>）</td></tr>
@@ -1910,7 +1910,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <td>42MB</td>
     </tr></tbody>
   </table>
-                  <h3>Beta 1.1.2 · 体验修复层 + 增量批次 v33–v49：缺陷修复 / 学习计划 / 图标 / 摄像头状态 / 求职闭环 / 可视化 / 反馈闭环 / 移动端裁剪（2026.10.30 当前版本）</h3>
+                  <h3>Beta 1.1.2 · 体验修复层 + 增量批次 v33–v50：缺陷修复 / 学习计划 / 图标 / 摄像头状态 / 求职闭环 / 可视化 / 反馈闭环 / 移动端裁剪（2026.10.30 当前版本）</h3>
   <div class="callout">收集一轮真实使用反馈，修掉 3 个影响主流程的缺陷（面试无法重面 / 题库页滚动粘滞 / 能力分布看板数据冻结），新增「学习计划」板块与「十字鼠标追踪」偏好开关，并用 36 枚自制蓝图风线性 SVG 图标替换全站 63 处模板化 emoji。新增 v31 测试套件 110 项断言锁定全部行为。</div>
   <div class="callout info"><strong>本版收口：</strong>在体验修复之外完成全栈收口——移除未部署的 Next.js 平行实验，统一到已验证的单栈（原生 JS + FastAPI）；接入 LLM 混合评分增强（<strong>分数仍由确定性规则引擎给出</strong>，LLM 仅生成逐维度质性评语与教练总评，任一环节失败自动回退规则结果，杜绝分数幻觉）；并清理文档中未落地的学术化表述（一致性系数校准、schema 强约束、多阶段调参叙事），使材料与代码逐条对齐。工程规范同步补齐：ESLint 10 + Prettier 3 + <code>jsconfig.json</code>/JSDoc 类型契约，<code>npm run verify</code> 一条命令串联「符号表 → 规范 → 格式 → 全量前端断言」四道闸门；技术选型理由见 3.5。</div>
   <h4><strong>✨ 修复清单</strong></h4>
@@ -1925,7 +1925,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     <li><strong>偏好设置「十字鼠标追踪」开关</strong>：<code>prefs.crosshair</code> 默认 true；appfx.js 准线重构为「监听器只绑一次、元素随开关创建 / 撤除」，关闭即时生效、开启即时恢复</li>
     <li><strong>全站图标系统</strong>（<code>icons.js</code>）：36 枚 24×24 线性 SVG（<code>stroke=currentColor</code> 继承文字色、方头方角直角语言、每枚仅一枚朱红 accent），<code>data-ic</code> 声明式换装覆盖侧栏 11 / 底 Tab 10 / 页头 10 / 快速入口 7 / 统计卡 4 / 落地页 10 / 主题钮 3 / 主题色钮 2 / 用户菜单 4 / AI 悬浮球 / 开发者模式徽章共 63 处；favicon 升级为蓝图取景器（墨板 + 纸色括线 + 朱红瞳点）；保留 emoji 作无 JS 兜底</li>
   </ul>
-  <h4><strong>🔄 增量批次 v33–v49（同属 Beta 1.1.2，不升版；2026.10.24 → 10.31）</strong></h4>
+  <h4><strong>🔄 增量批次 v33–v50（同属 Beta 1.1.2，不升版；2026.10.24 → 10.31）</strong></h4>
   <ul>
     <li><strong>v33 · 摄像头面试状态监测</strong>：面试页 chat-head 新增 📷 按钮，<code>face-api.js@0.22.2</code>（自托管同源 + CDN 兜底）在浏览器本地识别「人脸是否在场 / 是否专注」，仅把结构化结果（<code>face_present</code> / <code>attentive</code> / <code>label</code>）发给后端 <code>InterviewStatusEvent</code> 聚合在场率 / 专注率，原始视频帧不出浏览器；后端提供 <code>POST/GET /api/interviews/{id}/status</code></li>
     <li><strong>v34 · 评估报告纳入面试状态</strong>：<code>gen_report</code> 随报告返回 <code>status</code> 聚合（与 <code>/status</code> 同口径），报告页增「面试状态（摄像头在场检测）」区块（在场率 / 专注率 / 采样次数 + 最近状态），<code>copyReportMarkdown</code> 与系统分享同步带出；后端无采样时回退本地最近聚合并诚实归因（已开启但无采样 ≠ 未开启）</li>
@@ -1944,7 +1944,7 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
     <li><strong>v46 · 服务端语音转写（把「连不上」修成「能听见」）</strong>：浏览器自带的 <code>SpeechRecognition</code> 并不在端侧推理，而是把音频送往浏览器厂商的云端服务；境内这段链路基本不可达，开麦必然以 <code>network</code> 收场，而当时的提示语写的是「浏览器不支持语音识别」——把网络问题误报成能力问题。① <b>链路换向</b>：点击麦克风后由 <code>features/asr.js</code> 用 <code>MediaRecorder</code> 录音，<code>OfflineAudioContext</code> 解码并重采样为 16kHz 单声道 16bit WAV，分段 <code>POST /api/asr</code>（原始字节，非 multipart），后端 <code>app/asr.py</code> 复用同一条模型密钥调用转写接口。② <b>零新增依赖</b>：路由用 <code>await request.body()</code> 直接读原始音频，不引入 <code>python-multipart</code>，避免线上镜像未重装依赖时启动失败；音频只在请求生命周期内存在，不落盘、不写库、不进日志。③ <b>分段与收尾</b>：单段上限 6 秒（<code>ASR_SEG_MS</code>），换段时先开新段再停旧段以免丢帧；<code>AnalyserNode</code> 监测 RMS，静音持续 1.6 秒即提前收尾，<code>AudioContext</code> 在用户手势后 <code>resume</code> 再取音量，取不到就退回纯定时分段（<b>不假装静音检测在工作</b>）。④ <b>修一个真实并发缺陷</b>：<code>ondataavailable</code> 原先闭包引用共享变量 <code>seg</code>，换段重赋值后录音块被推进下一段的数组，导致首段恒空、后续错位；改为每段自带容器（<code>makeSeg()</code> 返回独立对象）。⑤ <b>失败分型</b>：后端未配置模型返回 503 → 前端直接告知「可键盘输入」且不再重试；上游失败以 502 透出通用原因，<b>不复述上游原始报文</b>，避免把密钥相关细节漏给客户端；浏览器接口保留为后备链路，仅在两条链路都不可用时降级键盘输入。⑥ <b>文案对齐事实</b>：删除「浏览器内置 ASR」与「连不上浏览器内置的语音识别服务」两处失实表述，开发者模式自检面板增加「服务端转写」一项。新增 v46 测试套件 67 项断言（前端）+ 13 项后端单测，覆盖 WAV 头与重采样、分段容器隔离、链路选择优先级、错误码映射与鉴权。真机验证：以真实中文语音样本作为假麦克风输入，浏览器端录音 → 转 WAV → 上传 → 返回文本落进输入框，四段结果均为正确中文。</li>
     <li><strong>v47 · 启动守卫（把「点了没反应」修成「明确告诉你还在载入」）</strong>：反馈是「开发者模式进不去」，复现后确认功能本身没坏——演示页为单文件交付，约 0.9 MB 的样式与逻辑全部内联、主程序位于文档末尾；网络较慢时（GitHub Pages 冷启动实测约 20 秒）HTML 已经把按钮画出来了，主程序却还没执行，此时点击走的是内联 <code>onclick</code>，函数尚未定义即抛 <code>ReferenceError</code>，用户侧表现就是「点了毫无反应」。① <b>状态外化</b>：守卫写在 <code>&lt;head&gt;</code> 内、先于主程序执行，把状态写到 <code>html[data-boot]</code>（<code>loading</code> / <code>wait</code> / <code>slow</code> / <code>ready</code>），样式据此渲染顶部 2px 进度条与底部一句话，<b>不新增任何 DOM 节点与 id</b>（不触碰演示包的 id 白名单）。② <b>拦截而不是吞掉</b>：捕获阶段拦下落在 <code>[onclick]</code> 上的点击（<code>preventDefault</code> + <code>stopPropagation</code>），状态切 <code>wait</code> 并提示「这次点击已记下，就绪后自动执行」；不依赖主程序的元素（纯链接、无 onclick 的原生按钮）一律放行。③ <b>就绪补发</b>：<code>DOMContentLoaded</code> 与 <code>load</code> 双路解除且互为幂等，解除时摘掉监听、撤下提示，并把被拦下的那个元素 <code>.click()</code> 补发一次（元素已离开 DOM 则跳过），用户不必点第二遍。④ <b>慢网有话说</b>：20 秒仍未就绪则切 <code>slow</code>，提示可刷新页面或改用国内镜像，而不是让人干等。⑤ <b>尊重动效偏好</b>：<code>prefers-reduced-motion</code> 与窄屏下进度条不再呼吸，提示文字保留。新增 v47 套件 48 项断言：守卫位置与幂等语义、三态文案与「提示条不吃点击」，以及「未就绪点击被拦 → 就绪后补发恰好一次 → 就绪后不再干预」的行为回放；并在整包环境下回归「开发者模式仍能正常进入」，确保修复没有把入口一起挡住。</li>
     <li><strong>v48 · 弹窗内的按钮不再被拖拽逻辑夺走点击</strong>：v47 之后反馈仍是「进不去」。继续定位到第二个、也是真正卡住的原因——<b>弹窗里的按钮收不到点击</b>。弹窗的可拖拽「抓手」在没有 <code>.modal-head</code> 时会回退成整个 <code>.modal-box</code>，而拖拽实现用了指针捕获：在弹窗内任意位置按下（包括「进入」按钮）都会触发 <code>setPointerCapture</code>，后续 <code>pointerup</code> / <code>mouseup</code> / <code>click</code> 被整体重定向到弹窗本身，按钮上的内联 <code>onclick</code> 永远收不到事件；<b>键盘回车提交不受影响</b>，因此同一台机器上出现「回车能进、鼠标点不进」的怪异组合，也容易被误判为网络或密码问题。① <b>去掉指针捕获</b>：拖动改由 document 级 <code>pointermove</code> / <code>pointerup</code> 驱动，指针移出弹窗也不中断，同时不再改变事件的命中目标。② <b>可交互元素不拖</b>：<code>button / a / input / select / textarea / label / [role=button]</code> 上按下时直接不启动拖拽，把点击完整交还给控件本身。③ <b>拖拽能力保住</b>：在弹窗空白处按住仍可拖动；顺带解除入场动画（<code>fill: both</code> 会一直压住内联 <code>transform</code>），此前「能拖但看不出位移」的问题一并修掉。④ <b>影响面核查</b>：开发者门禁（进入 / 取消）与 Prompt 查看器（关闭）两处弹窗，鼠标点击全部恢复；键盘路径不变。新增 v48 套件 30 项断言：结构上禁止再引入指针捕获、白名单覆盖六类控件，并在迷你 DOM 里回放「按钮上按下不拖拽 / 空白处按下可拖拽 / 松手即停 / 按钮仍能收到 click」。</li>
-    <li><strong>v49 · 视觉升级：从「后台模板」到「一张工程规格书」</strong>：功能够用之后，界面反而更像通用后台——卡片各自浮动、强调色到处出现、数字与标签同一字号、空态只有一段灰字，<b>没有一个地方回答「我现在到哪一步」</b>。这一版不加装饰（不引入投影 / 圆角 / 玻璃拟态 / 渐变，四类都有断言守着），只做三件事：① <b>版式</b>：等宽小标签对衬线大标题、数字统一 <code>tabular-nums</code> 竖排对齐、页头一条 56px 短墨规配贯通发丝线、面包屑与侧栏分组标签等宽化，并把字号/间距收敛成 <code>--fs-*</code> / <code>--sp-*</code> 令牌。② <b>结构</b>：四个数字瓦片并成一张有分区的规格条；7 张入口卡编号 01–07、hover 出左上角标，第 7 张补满整行不留半排空格；演示横幅从粉色告示牌收成图纸标题栏；空态改成虚线图框 + 去色图标（此前在聊天起始位会读成「无数据」，已改回角标）。③ <b>数据</b>：工作台首位新增<b>指挥台</b>——<code>cmdGaugeSVG</code> 画 5 段仪表（对应 5 轮画像，<code>stroke-dasharray</code> 按段切弧）、4 格指标（最近总分 / 学习任务 / 简历状态 / 人格类型）、右侧一步建议；仪表读数<b>随状态切换</b>：面试进行中读本轮答题数，否则读已完成轮次，避免「有 3 次报告却显示 0」的错位；有历史分数时在「最近总分」下画迷你趋势条（<b>仅 ≥2 次记录才画</b>，一个点不是趋势），学习任务按完成率填进度条；无数据一律显示 <code>--</code> 占位而不是 0 分。渲染挂在 <code>appfx</code> 的 <code>renderCmdBand()</code>，由 <code>applyRoute</code> 在进入工作台时刷新，未新增模块与全局符号。新增 v49 套件 52 项断言：纪律（无投影/圆角/玻璃/位移 hover）、版式与结构、编号连续性，并在迷你 DOM 中回放「空态不写 0 分 / 3 次记录画 3 根趋势条 / 面试中改读答题数 / 单次记录不画趋势 / 点按钮跳对页」。</li>
+    <li><strong>v49 · 视觉升级：从「后台模板」到「一张工程规格书」</strong>：功能够用之后，界面反而更像通用后台——卡片各自浮动、强调色到处出现、数字与标签同一字号、空态只有一段灰字，<b>没有一个地方回答「我现在到哪一步」</b>。这一版不加装饰（不引入投影 / 圆角 / 玻璃拟态 / 渐变，四类都有断言守着），只做三件事：① <b>版式</b>：等宽小标签对衬线大标题、数字统一 <code>tabular-nums</code> 竖排对齐、页头一条 56px 短墨规配贯通发丝线、面包屑与侧栏分组标签等宽化，并把字号/间距收敛成 <code>--fs-*</code> / <code>--sp-*</code> 令牌。② <b>结构</b>：四个数字瓦片并成一张有分区的规格条；7 张入口卡编号 01–07、hover 出左上角标，第 7 张补满整行不留半排空格；演示横幅从粉色告示牌收成图纸标题栏；空态改成虚线图框 + 去色图标（此前在聊天起始位会读成「无数据」，已改回角标）。③ <b>数据</b>：工作台首位新增<b>指挥台</b>——<code>cmdGaugeSVG</code> 画 5 段仪表（对应 5 轮画像，<code>stroke-dasharray</code> 按段切弧）、4 格指标（最近总分 / 学习任务 / 简历状态 / 人格类型）、右侧一步建议；仪表读数<b>随状态切换</b>：面试进行中读本轮答题数，否则读已完成轮次，避免「有 3 次报告却显示 0」的错位；有历史分数时在「最近总分」下画迷你趋势条（<b>仅 ≥2 次记录才画</b>，一个点不是趋势），学习任务按完成率填进度条；无数据一律显示 <code>--</code> 占位而不是 0 分。渲染挂在 <code>appfx</code> 的 <code>renderCmdBand()</code>，由 <code>applyRoute</code> 在进入工作台时刷新，未新增模块与全局符号。新增 v49 套件 52 项断言：纪律（无投影/圆角/玻璃/位移 hover）、版式与结构、编号连续性，并在迷你 DOM 中回放「空态不写 0 分 / 3 次记录画 3 根趋势条 / 面试中改读答题数 / 单次记录不画趋势 / 点按钮跳对页」。</li><li><strong>v50 · 全面检测：把「说得通」改成「对得上」</strong>：这一版不加功能。用巡检脚本把 12 个页面在 1280 / 375 两个宽度下走了一遍（记录横向溢出与 console 异常）、逐页点过按钮，并把主流程真实跑通（5 轮面试 → 报告、MBTI 20 题、题库模考、投递看板、计划打卡、面经问答、命令面板），找出五处<b>界面说的和实际状态不一致</b>的地方：① <b>计划只有一份真相</b>——基线计划原本只在 <code>renderPlanPage()</code> 时于内存里生成、从不写入 <code>fm_plan</code>，于是计划页写着「0/21 项任务」，工作台 <code>cmdState()</code> 读到的却是空对象、「学习任务」显示 <code>--</code>；改为 <code>lpGet()</code> 首次读取即落盘（<code>lpCreate</code> → <code>lpSave</code>），指挥台优先经 <code>lpGet()</code> 取计划、拿不到才回落 <code>fm_plan</code>。② <b>重新面试的竞态</b>——模型回复是异步流式（最长 60s），等待期间点「重新面试」只清了 <code>turns</code> / <code>turn</code>，没有作废在途请求；旧回复回来仍会 <code>push</code> 一条 turn 并写 <code>fm_session</code>，界面显示 <code>0/5</code>、存储却是 <code>1/5</code>，报告还会给一条从未显示过的回答打分；加入轮次世代号 <code>roundGen</code>（重开时自增）与 <code>inflightCtrl</code> 中止在途流，真实通道在流结束与 <code>catch</code> 分支各校验一次世代号，Mock 通道的 4 处时间线回调与打字机 <code>interval</code> 同样校验。③ <b>暗色仪表可辨</b>——空弧描边用 <code>--line</code>，暗色下 <code>#322D23</code> 压在 <code>#1D1A15</code> 上几乎不可见，整只仪表像没画出来；改用 <code>--line-2</code>（亮 <code>#B9B29A</code> / 暗 <code>#4B4433</code>）。④ <b>坏数据不炸整块</b>——<code>fm_plan</code> 中混进 <code>null</code> 天或 <code>tasks</code> 非数组会让 <code>cmdState()</code> 抛错、整块指挥台只剩空壳；改为逐层 <code>Array.isArray</code> 与对象校验，坏项跳过、好项照常计数。⑤ <b>策略卡不再自相矛盾</b>——标题原写死「你的面试策略已调整」，而典型度不足时同一块里又写着「不启用个性化策略」；改为按 <code>p.significant</code> 分两套标题 / 导语 / 按钮（「本次按通用策略提问」+「看看通用策略怎么问」）。新增 v50 套件 41 项断言，覆盖行为回放（计划 3/4 → 75%、<code>lpGet</code> 抛错回落、坏数据跳过、仪表 5 段与描边色）、结构约束（世代号先自增再清会话、两通道共 6 处世代校验、句柄清理）与口径（弱人格不得出现「已调整」、强人格不得出现「通用策略」）。本地起后端实测：重开 16 秒后 <code>live-turn</code> 仍为 <code>0/5</code>、会话 0 轮、AI 气泡 0；计划页与指挥台同为 <code>0/21</code>；暗色弧色为 <code>#4B4433</code>。</li>
 
   </ul>
   <h4><strong>📊 数据指标</strong></h4>
@@ -1957,9 +1957,9 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
       <th>PDF 页数</th>
     </tr></thead>
     <tbody><tr>
-      <td>2352</td>
-      <td>40 套</td>
-      <td>110（v31）+ 增量（v33–v49，v44 计 74 + v44b 计 55 + v45 计 73 + v46 计 67 + v47 计 48 + v48 计 30 + v49 计 52）</td>
+      <td>2393</td>
+      <td>41 套</td>
+      <td>110（v31）+ 增量（v33–v50，v44 计 74 + v44b 计 55 + v45 计 73 + v46 计 67 + v47 计 48 + v48 计 30 + v49 计 52 + v50 计 41）</td>
       <td>36 枚</td>
       <td>29 页</td>
     </tr></tbody>

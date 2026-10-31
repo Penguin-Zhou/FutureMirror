@@ -440,8 +440,11 @@
     let arcs = "";
     for (let i = 0; i < T; i++) {
       const on = i < n;
+      /* v50：空弧不再用 --line。暗色主题下 --line(#322D23) 落在 --card(#1D1A15) 上
+       * 几乎不可见，整只仪表看起来「没画出来」。改用 --line-2（亮 #B9B29A / 暗 #4B4433），
+       * 两种主题下都能看出「一共几段、点亮了几段」。 */
       arcs += `<circle cx="${c}" cy="${c}" r="${r}" fill="none"
-        stroke="${on ? "var(--brand)" : "var(--line)"}" stroke-width="${sw}"
+        stroke="${on ? "var(--brand)" : "var(--line-2)"}" stroke-width="${sw}"
         stroke-dasharray="${(seg - gap).toFixed(2)} ${(C - seg + gap).toFixed(2)}"
         transform="rotate(${(i * (360 / T) - 90).toFixed(2)} ${c} ${c})"/>`;
     }
@@ -473,8 +476,25 @@
     const hist = g("fm_history", []) || [];
     const last = hist.length ? Number(hist[hist.length - 1].total) : null;
     let planDone = 0, planTotal = 0;
-    const plan = g("fm_plan", null);
-    if (plan && plan.days) plan.days.forEach(d => (d.tasks || []).forEach(t => { planTotal++; if (t.done) planDone++; }));
+    /* v50 修复：计划只有一份真相。计划页会为首次访问者生成基线计划，
+     * 但历史版本里基线不落盘，指挥台读 fm_plan 拿到空值 → 显示「--」，
+     * 与计划页的「0/21 项任务」互相打架。这里统一走 lpGet()（内部会落盘），
+     * 并对畸形数据做防御：任何一天不是对象、tasks 不是数组都跳过，不让整块仪表消失。 */
+    let plan;
+    try {
+      plan = typeof lpGet === "function" ? lpGet() : g("fm_plan", null);
+    } catch (e) {
+      plan = g("fm_plan", null);
+    }
+    if (plan && Array.isArray(plan.days)) {
+      plan.days.forEach(d => {
+        if (!d || typeof d !== "object" || !Array.isArray(d.tasks)) return;
+        d.tasks.forEach(t => {
+          planTotal++;
+          if (t && t.done) planDone++;
+        });
+      });
+    }
     const mbti = g("fm_mbti", null);
     const mbtiType = mbti && (mbti.type || mbti.result) ? String(mbti.type || mbti.result) : "";
     const totals = hist.map(h => Number(h.total)).filter(v => isFinite(v)).slice(-8);

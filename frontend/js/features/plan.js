@@ -107,8 +107,17 @@ function lpCreate(source) {
 function lpGet() {
   let p = null;
   try { p = store.get(LP_KEY, null); } catch (e) { p = null; }
-  if (!p || !Array.isArray(p.days) || p.days.length !== 7) return lpCreate("baseline");
+  if (!p || !Array.isArray(p.days) || p.days.length !== 7) {
+    /* v50 修复：基线计划也是「真计划」。
+     * 之前这里只返回对象不落盘，导致计划页写着「0/21 项任务」，
+     * 而工作台指挥台读 fm_plan 得到空 → 学习任务显示「--」。
+     * 同一份数据出现两个说法，用户会以为进度丢了。首次读取即落盘。 */
+    const seed = lpCreate("baseline");
+    lpSave(seed);
+    return seed;
+  }
   p.days.forEach(d => {
+    if (!d || typeof d !== "object") return;
     if (!d.mix) d.mix = LP_SKELETON[0].mix;
     if (!d.alloc) d.alloc = lpAlloc(d.mix, lpBudget(p.budget).min);
     if (!Array.isArray(d.tasks)) d.tasks = [];

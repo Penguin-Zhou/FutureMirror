@@ -193,6 +193,14 @@ function pickQuestion(mode, n, keyword, speaker) {
 
 let session = { mode: "general", turns: [] };   // 在 bootApp() 中按当前用户加载
 let turn = 0;
+/* v50 · 轮次世代号：每次「重新面试」+1。
+ * 模型回复是异步的（流式 + 最长 60s），若用户在等待期间点了重新面试，
+ * 旧回复回来时会把一轮问答写进刚刚清空的新会话——界面显示「新一轮 0/5」，
+ * 实际 turn 已经是 1/5，报告还会给一条从没显示过的回答打分。
+ * 发送前记下世代号，落盘前比对；不一致就整条丢弃（气泡、时间线、计分一并作废）。 */
+let roundGen = 0;
+/* 在途请求句柄：重新面试时主动 abort，既省一次无用的计费，也避免旧流继续写 DOM */
+let inflightCtrl = null;
 /* v43：本次出题是否命中了人格参数偏置（供时间线如实说明「为什么问这个」） */
 let lastPersonaBias = null;
 let recognition = null, listening = false, voiceStartAt = 0;
@@ -531,6 +539,7 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
   const body = $("chat-body");
   $("chat-send").disabled = true;
   const mode = session.mode;
+  const gen = roundGen;   // v50：与真实通道同一套世代校验，Mock 也被「重新面试」作废
 
   // v18：连环追问概率——检测到技术关键词时，有机会连续 2 轮深挖同一点（而非固定轮转）
   const dive = maybeStartDeepDive(keyword, mode);
@@ -544,12 +553,15 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
   }, 320);
 
   setTimeout(() => {
+    if (gen !== roundGen) return;   // v50：本轮已作废
     if (mode === "tech" || (mode === "general" && turn % 2 === 0)) {
       const tool = KB_QUERY_TOOL[turn % KB_QUERY_TOOL.length];
       addTimeline(speaker.name, "准备调用工具…", false);
       setTimeout(() => {
+        if (gen !== roundGen) return;
         addTimeline(speaker.name, `⏳ search_kb("${keyword} ${tool}") 调用中…`, "tool");
         setTimeout(() => {
+          if (gen !== roundGen) return;
           addTimeline(speaker.name, `✅ 命中 2 条（合成面经 / 合成题库）· 耗时 12ms · 开始生成追问…`, "tool");
         }, 420);
       }, 280);
@@ -557,11 +569,13 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
   }, 420);
 
   setTimeout(() => {
+    if (gen !== roundGen) return;   // v50
     addTimeline(speaker.name, "💭 正在基于检索结果生成追问…", false);
     showTyping("生成追问中");   // v24：等待期墨点反馈
   }, 900);
 
   setTimeout(() => {
+    if (gen !== roundGen) { hideTyping(); return; }   // v50：新一轮已开始，别再冒气泡
     hideTyping();               // v24：流式气泡接管
     const question = pickQuestion(mode, turn, keyword, speaker);
     const bubble = document.createElement("div");
@@ -575,6 +589,12 @@ function sendMsgMock(text, speaker, keyword, notes, anchors) {
     chatAutoScroll(true);
     let i = 0;
     const timer = setInterval(() => {
+      /* v50：打字机中途被「重新面试」打断 → 停表、撤掉半截气泡，绝不落盘 */
+      if (gen !== roundGen) {
+        clearInterval(timer);
+        try { bubble.remove(); } catch (e) {}
+        return;
+      }
       /* 用 textContent 逐字推进再挂光标，避免把问题文本当 HTML 解析
        * （innerHTML 拼接会让文本里的标签改变 DOM 结构） */
       bubble.textContent = question.slice(0, ++i);
@@ -697,6 +717,8 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   chatAutoScroll(true);
 
   const ctrl = new AbortController();
+  inflightCtrl = ctrl;                 // v50：登记在途请求，供「重新面试」中止
+  const gen = roundGen;                // v50：本次发送所属的轮次世代
   const killTimer = setTimeout(() => ctrl.abort(), 60000);
   let full = "";
   let streamStarted = false;
@@ -715,6 +737,13 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
       bubble.textContent = full;
       chatAutoScroll();
     }, ctrl.signal);
+    /* v50：回复回来时这一轮可能已经被「重新面试」作废——直接丢弃，不写时间线、不写会话 */
+    if (gen !== roundGen) {
+      clearTimeout(killTimer);
+      hideTyping();
+      try { bubble.remove(); } catch (e) {}
+      return;
+    }
     addTimeline("模型调用", `✅ 流式输出完成（${full.length} 字）`, "tool");
     // v40：模型流式输出结束后，把「锚定你哪句话」回挂到追问气泡
     refHits = annotateAnchorRef(bubble, full, anchors, turn - 1);
@@ -730,6 +759,12 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
   } catch (e) {
     clearTimeout(killTimer);
     hideTyping();
+    /* v50：这一轮已被重新面试作废 → 静默收场。
+     * 不能走降级分支：那会往新会话里塞一条失败横幅、一条 Mock 追问和一条证据。 */
+    if (gen !== roundGen) {
+      try { bubble.remove(); } catch (err) {}
+      return;
+    }
     /* v42：连锚定标签一起移除，避免「降级到 Mock」后留下一条无主的锚定提示 */
     const staleTag = bubble.previousElementSibling;
     if (staleTag && staleTag.classList && staleTag.classList.contains("anchor-ref-host")) staleTag.remove();
@@ -751,6 +786,7 @@ async function sendMsgReal(text, speaker, keyword, notes, anchors) {
     return;
   }
   clearTimeout(killTimer);
+  if (inflightCtrl === ctrl) inflightCtrl = null;
   addTimeline("观察员", `记录证据 #${turn}（置信度 ${Math.min(95, 55 + Math.round(text.length / 12))}%）→ 写入评估上下文：${notes}`, "note");
   startAnswerTimer();
   session.turns.push({ agent: speaker.name, question: full, answer: text, notes, mode: session.mode, anchors, anchorRef: refHits });
@@ -773,6 +809,13 @@ function finishInterview() {
 
 function restartInterview() {
   if (!requireLogin()) return;
+  /* v50：先把上一轮的在途回复掐掉，再清状态。
+   * 顺序很重要——先 ++ 世代号，让任何已返回的回调在落盘前就判定为过期。 */
+  roundGen++;
+  if (inflightCtrl) {
+    try { inflightCtrl.abort(); } catch (e) {}
+    inflightCtrl = null;
+  }
   try { stopCamera(); } catch (e) {}   // 重置前收掉摄像头，避免悬挂设备占用
   // v29 撤销支持：重置前留存会话快照（turns 内含 v28 批注 notes）
   const bpSnap = { turns: session.turns.slice(), mode: session.mode, interviewId: session.interviewId || null, voiceSegments: (session.voiceSegments || []).slice() };
