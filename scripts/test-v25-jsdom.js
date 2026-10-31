@@ -153,11 +153,26 @@ async function runTests() {
     wA.__bpLanding && wA.__bpLanding.rotator === true && wA.__bpLanding.phrases === 5,
     "__bpLanding.rotator = true（5 条文案）"
   );
-  await wait(820);
-  const t1 = hr.textContent;
+  /* 首字出现的时间跟着页面加载走（脚本要等 650ms 才起跑），固定等 820ms 会偶发拿到空串。
+   * 改成最多等 2.4s 的第一个非空样本——语义仍是「逐字敲出首句」，只是不再赌加载耗时。 */
+  let t1 = "";
+  for (let i = 0; i < 20 && !t1; i++) {
+    await wait(120);
+    if (hr.textContent) t1 = hr.textContent;
+  }
   ok(t1.length >= 1 && "多 AGENT 圆桌协同追问".startsWith(t1), "打字机逐字敲出首句（「" + t1 + "」）");
-  await wait(900);
-  ok(hr.textContent.length > t1.length, "轮播持续打字（「" + hr.textContent + "」）");
+  /* 轮播节奏是「打字 68ms/字 → 满句停留 1700ms → 删除 34ms/字 → 换句」，
+   * 单看某个固定时刻「是否变长」会踩进停留期：页面加载快慢差 200ms，
+   * 采样点就从「正在打字」滑到「停留」或「删除」，断言随机翻红。
+   * 改成在一个足够长的窗口里等「文案发生变化」——打字、删除、换句都算在轮播，
+   * 真卡死时仍然会失败。 */
+  let changed = "";
+  for (let i = 0; i < 30 && !changed; i++) {
+    await wait(150);
+    const now = hr.textContent;
+    if (now !== t1) changed = now;
+  }
+  ok(!!changed, "轮播持续推进（文案在变：「" + t1 + "」→「" + changed + "」）");
   ok(
     /@keyframes caretBlink/.test(cssA) && /\.hero-rotator \.hr-caret\s*\{[^}]*animation:\s*caretBlink/.test(cssA),
     "CSS：方块光标硬切闪烁"

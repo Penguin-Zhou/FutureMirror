@@ -328,7 +328,18 @@ function runTests() {
             "移动端 Tab 栏 fixed 定位于顶栏下方（top:58px）"
           );
           ok(/\.tabbar-item \{[^}]*flex-direction:\s*row/.test(mediaText), "移动端 Tab 条目横向排列");
-          ok(/\.app-main \{[^}]*padding:\s*108px/.test(mediaText), "主内容区为顶部双栏留位（108px）");
+          /* v51 修正：原来断言「主内容区为顶部双栏留位（108px）」。
+           * 那个 108px 的前提是顶栏也浮在内容之上，实际顶栏是 sticky、本就在流里占位，
+           * 等于把顶栏高度算了两次 → 首屏多出 76px 空白。顶部让位改为由 header 之后
+           * 第一个流内块承担，主内容区只留常规内边距。 */
+          ok(
+            /\.app-main \{[^}]*padding:\s*16px 12px 24px/.test(mediaText),
+            "主内容区只留常规内边距（v51 起不再补顶栏高度）"
+          );
+          ok(
+            /#view-app > \.wrap \{[^}]*padding-top:\s*calc\(16px \+ var\(--navstrip-h/.test(mediaText),
+            "顶部让位由 header 之后的第一个流内块承担（按导航条实测高度）"
+          );
           ok(/\.ai-fab \{[^}]*top:\s*112px/.test(mediaText), "AI 悬浮按钮避开顶部导航（top:112px）");
           const cssText = [...document.styleSheets]
             .map((s) => {

@@ -680,6 +680,7 @@
   "syncJobseekForm": "writable",
   "syncMbtiToProfile": "writable",
   "syncMobileMore": "writable",
+  "syncNavStrip": "writable",
   "syncPlanFromReport": "writable",
   "syncSidebarBadge": "writable",
   "syncStatusPill": "writable",
@@ -736,5 +737,6 @@
   "voiceErrorHint": "writable",
   "voiceSelfCheck": "writable",
   "voiceSyncInput": "writable",
+  "watchChromeMetrics": "writable",
   "yieldToMain": "writable"
 }

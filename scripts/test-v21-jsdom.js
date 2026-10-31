@@ -196,7 +196,9 @@ function runTests() {
       /\.ai-panel-foot \{[^}]*padding-bottom:\s*calc\(10px \+ env\(safe-area-inset-bottom\)\)/.test(m900),
       "输入区预留底部安全区"
     );
-    ok(/\.app-main \{[^}]*padding:\s*104px 14px 32px/.test(m900), "主内容区为顶部双栏留位（104px）");
+    /* v51 修正：这里原来断言 104px「为顶部双栏留位」。顶栏是 sticky、在流里已占位，
+     * 再加 104px 等于把顶栏算两次，窄屏首屏凭空多 76px 空白。 */
+    ok(/\.app-main \{[^}]*padding:\s*16px 14px 32px/.test(m900), "主内容区只留常规内边距（v51 起不再补顶栏高度）");
     ok(
       /\.page-card \{[^}]*border-top:\s*2px solid var\(--ink\)/.test(flat) &&
         /\.page-card \{[^}]*border-radius:\s*0/.test(cssMedia("(max-width: 640px)")),

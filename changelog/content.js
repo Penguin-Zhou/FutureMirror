@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2393</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2432</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -37,6 +37,7 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v51"><span class="cl-toc-tag">Beta 1.1.2 · v51</span><span class="cl-toc-title-txt">窄屏首屏 76px 空白 · 顶部让位按下层元素算，不再把顶栏数两遍</span></a></li>
     <li><a href="#v50"><span class="cl-toc-tag">Beta 1.1.2 · v50</span><span class="cl-toc-title-txt">检测修复 · 计划与指挥台同源 / 重开竞态 / 暗色仪表 / 坏数据防御 / 策略卡口径</span></a></li>
     <li><a href="#v49"><span class="cl-toc-tag">Beta 1.1.2 · v49</span><span class="cl-toc-title-txt">视觉升级 · 工作台指挥台（5 段仪表 + 4 格指标 + 下一步）+ 版式降噪</span></a></li>
     <li><a href="#v48"><span class="cl-toc-tag">Beta 1.1.2 · v48</span><span class="cl-toc-title-txt">弹窗按钮不再被拖拽逻辑夺走点击（回车能进 / 鼠标点不进）</span></a></li>
@@ -246,6 +247,41 @@ export const changelogHtml = `
   <!-- ========================================================
        Beta 1.1.2 · v50 · 全面检测：把「说得通」改成「对得上」
        ======================================================== -->
+  <!-- ========================================================
+       Beta 1.1.2 · v51 · 窄屏顶部让位：一份高度只算一次
+       ======================================================== -->
+  <div class="version" id="v51">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 布局修正（v51）</span>
+      <span class="v-title">首屏那 76px 空白，是把顶栏高度数了两遍</span>
+      <span class="v-date">2026.10.31</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        375px 下导航条下沿停在 100px，正文却从 176px 才开始，中间 76px 什么都没有。
+        往上翻样式，答案是一行 <code>padding-top: calc(var(--hdr-h) + 50px)</code>——
+        它假设「顶栏和导航条都浮在内容之上」。可顶栏是 <code>position: sticky</code>，
+        本来就在文档流里占掉自己的高度，于是顶栏被算了两次。
+        同一份错误假设还漏掉了另一半：641–900px 才出现的演示横幅，流内起点就在导航条底下，
+        被压住 29px（顶栏算多了，横幅却没人管）。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>让位交给下层元素</b>：顶部留白统一由 header 之后的第一个流内块承担（<code>#view-app &gt; .wrap</code>），主内容区只保留常规内边距；横幅与正文谁在下面都不会被盖</div>
+        <div class="vh-item"><b>导航条占用高度改成实测</b>：新增 <code>--navstrip-h</code>，由 <code>syncNavStrip()</code> 量出高度（桌面端写 0，让位自然退化为原来的 16px）——写死数值迟早和实际排版对不上</div>
+        <div class="vh-item"><b>演示横幅不再被压</b>：641–900px 下横幅顶部 29px 此前藏在导航条背后，标题行整行看不见，现在完整可读</div>
+        <div class="vh-item"><b><code>--hdr-h</code> 不再过期</b>：顶栏高度会随页面换行变化（320px 下从计划页切到面试页，81px → 55px），只在启动/切页量一次会留下旧值，导航条浮在顶栏下方 26px 的空中；改用 <code>ResizeObserver</code> 盯住顶栏与导航条</div>
+        <div class="vh-item"><b>四个贴顶定位一并改为两级</b>：降级横幅、断网/慢网横幅、键盘态固定对话卡片此前只按「顶栏」算高度，窄屏会停在导航条背后或被它盖住</div>
+        <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2；零投影 / 零圆角 / 零玻璃拟态 / 单一朱红，一条没破</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">38</div><div class="m-label">v51 新增断言</div></div>
+        <div class="metric"><div class="m-val">2432</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">42</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">76 → 16</div><div class="m-label">首屏空白（px，375 宽）</div></div>
+      </div>
+    </div>
+  </div>
+
   <div class="version" id="v50">
     <div class="version-head">
       <span class="v-tag">Beta 1.1.2 · 检测修复（v50）</span>
@@ -271,7 +307,7 @@ export const changelogHtml = `
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">41</div><div class="m-label">v50 新增断言</div></div>
-        <div class="metric"><div class="m-val">2393</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2432</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">41</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">5</div><div class="m-label">修复项</div></div>
       </div>
@@ -306,7 +342,7 @@ export const changelogHtml = `
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">52</div><div class="m-label">v49 新增断言</div></div>
-        <div class="metric"><div class="m-val">2393</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2432</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">40</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">新增运行时依赖</div></div>
       </div>

@@ -195,6 +195,9 @@ function applyRoute() {
    * 否则 --hdr-h 会停留在隐藏时的旧值，导航条压住顶栏。
    * 这里不用 rAF：布局测量不需要等动画帧，且要避开 reduced-motion 的零 rAF 断言。 */
   try { if (typeof syncHeaderHeight === "function") syncHeaderHeight(); } catch (e) {}
+  /* v51：导航条占用高度同样要在切页后重测——落地页/登录页里它是隐藏的（高度 0），
+   * 回到应用内若不重测，顶部让位会停在 0，第一屏就被导航条盖住。 */
+  try { if (typeof syncNavStrip === "function") syncNavStrip(); } catch (e) {}
 
   // 3) 面包屑
   const bc = $("bc-current");

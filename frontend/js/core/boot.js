@@ -11,8 +11,57 @@ function syncHeaderHeight() {
     /* 顶栏在落地页/登录页会被隐藏（offsetHeight = 0）。此时不能写 0——
      * 否则回到应用内时导航条会压在顶栏上、内容被盖住，故回落到安全默认值。 */
     const v = Math.round(h.offsetHeight) || 58;
-    document.documentElement.style.setProperty("--hdr-h", v + "px");
+    const root = document.documentElement;
+    /* 值没变就不写：避免 ResizeObserver 回写自定义属性再触发一次观察 */
+    if (root.style.getPropertyValue("--hdr-h") !== v + "px") {
+      root.style.setProperty("--hdr-h", v + "px");
+    }
   } catch (e) { /* 自定义属性不可用时保持 CSS 兜底值 */ }
+}
+
+/* v51：把顶部导航条的实测占用高度写进 --navstrip-h。
+ * 这条导航条（≤900px 可见，v20 由底部 Tab 顶部化而来）是 fixed，会盖住 header 之下的一段。
+ * 之前没人给它让位，只有 .app-main 用一个写死的 104/108px 补顶部——
+ * 可 header 是 sticky、在流里已经占了高度，于是一并算进去，首屏多出 76px 空白；
+ * 而 641–900px 才出现的演示横幅反倒被导航条压住 29px。
+ * 现在让位交给 header 之后的第一个流内块（CSS: #view-app > .wrap），
+ * 它需要的唯一未知量就是这条导航条的真实高度，在这里量。
+ * 桌面端导航条 display:none → 写 0px，让位退化为原来的 16px 留白。 */
+function syncNavStrip() {
+  const el = document.querySelector(".app-tabbar");
+  if (!el) return;
+  try {
+    let h = 0;
+    const cs = typeof getComputedStyle === "function" ? getComputedStyle(el) : null;
+    if (cs && cs.display !== "none") h = Math.round(el.offsetHeight) || 0;
+    const root = document.documentElement;
+    if (root.style.getPropertyValue("--navstrip-h") !== h + "px") {
+      root.style.setProperty("--navstrip-h", h + "px");
+    }
+  } catch (e) { /* 自定义属性不可用时保持 CSS 兜底值 45px */ }
+}
+
+/* v51：顶栏和导航条的高度都会随内容换行变化——换到别的页面、状态胶囊出现、
+ * 字体或可用宽度变化，都会让它们一两个像素到二十几像素地变。
+ * 只在启动 / 切页 / resize 时量一次会留下旧值：320px 下从计划页切到面试页，
+ * 顶栏从 81px 缩到 55px，--hdr-h 却还停在 81px，导航条于是浮在顶栏下方 26px 的空中，
+ * 主内容反倒被它压住一截。
+ * 用 ResizeObserver 盯着这两个元素，尺寸一变就重量——这比在每处改动后手动补一次可靠。 */
+function watchChromeMetrics() {
+  if (typeof ResizeObserver !== "function") return;
+  try {
+    const root = document.documentElement;
+    if (root.dataset.chromeRo) return;        // 只挂一次（bootApp 可能被重复调用）
+    const ro = new ResizeObserver(() => {
+      syncHeaderHeight();
+      syncNavStrip();
+    });
+    const h = document.querySelector("header");
+    const n = document.querySelector(".app-tabbar");
+    if (h) ro.observe(h);
+    if (n) ro.observe(n);
+    root.dataset.chromeRo = "1";
+  } catch (e) { /* 老浏览器没有 ResizeObserver：保持切页/resize 时的实测量 */ }
 }
 
 /* v41：窄屏把「辅助工具」折叠成一行——演示时先看到对话，需要时点开。
@@ -274,7 +323,10 @@ function bootApp() {
   initMobileCompact();
   initMobileLandingFold();
   syncHeaderHeight();
+  syncNavStrip();
+  watchChromeMetrics();
   window.addEventListener("resize", syncHeaderHeight);
+  window.addEventListener("resize", syncNavStrip);
   window.addEventListener("resize", applyMobileLandingFold);
   // v42：键盘/视口守卫（visualViewport 变化时重算可视高度与对话区）
   initKeyboardGuards();

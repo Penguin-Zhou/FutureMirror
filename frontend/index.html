@@ -510,7 +510,9 @@ try {
 </header>
 
 <!-- ===== 游客模式提示条（未登录时显示） ===== -->
-<div class="wrap" style="padding-top:16px">
+<!-- v51：这里原来用内联 style="padding-top:16px" 定顶部留白，窄屏还要按导航条高度追加让位，
+     内联样式压过样式表只能用 !important，所以改由 #view-app > .wrap 统一管（见 pages.css §9）。 -->
+<div class="wrap">
   <div class="guest-banner" id="guest-banner" hidden>
     <span>🔒 你正在以<b>游客模式</b>浏览 — AI 功能需要登录后解锁</span>
     <button class="btn btn-primary btn-sm" onclick="showView('auth')">登录 / 注册 →</button>

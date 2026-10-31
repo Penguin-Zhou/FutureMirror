@@ -613,12 +613,12 @@ futuremirror/
 
 ```bash
 # 后端
-cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM 评语增强（37 项）
+cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM 评语增强（57 项）
 
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2393 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2432 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -642,9 +642,10 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 node scripts/test-v32-jsdom.js … test-v44b-jsdom.js # v32–v44 增量批次（语音/可解释/人格/密度层）
 node scripts/test-v45-jsdom.js … test-v49-jsdom.js # v45–v49 交互确定性 / 启动守卫 / 拖拽修复 / 视觉升级
 node scripts/test-v50-jsdom.js          # 检测修复：计划同源 / 重开竞态 / 暗色仪表 / 坏数据 / 口径（41 项）
+node scripts/test-v51-jsdom.js          # 窄屏顶部让位：一份高度只算一次（38 项）
 ```
 
-合计 **2393 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2432 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -722,7 +723,7 @@ node scripts/test-v50-jsdom.js          # 检测修复：计划同源 / 重开�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2393 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2432 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -913,6 +914,20 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v51：窄屏顶部让位——一份高度只算一次（2026.10.31）
+
+> 375px 下导航条下沿停在 100px，正文却从 176px 才开始，中间 76px 什么都没有。
+> 往上翻样式，答案是一行 `padding-top: calc(var(--hdr-h) + 50px)`：它假设「顶栏和导航条都浮在内容之上」。
+> 可顶栏是 `position: sticky`，本来就在文档流里占掉 55px，于是**顶栏高度被算了两次**。
+> 同一份错误假设还漏掉了另一半——641–900px 才出现的演示横幅，流内起点就在导航条底下，被压住 29px。
+
+- **让位交给下层元素**：顶部留白统一由 header 之后的第一个流内块承担（`#view-app > .wrap`），`.app-main` 只保留常规内边距；`104px` / `108px` / `calc(--hdr-h + 50px)` 三处旧口径全部清除（v20 / v21 两套断言同步改为新契约）
+- **导航条占用高度改为实测**：新增 `--navstrip-h` 与 `syncNavStrip()`，按 `offsetHeight` 写入；桌面端导航条不显示时写 `0px`，让位自然退化为原来的 16px。CSS 兜底 45px，保证脚本执行前不漏让位
+- **`--hdr-h` 不再过期**：顶栏高度随页面换行变化（320px 下由计划页切到面试页，81px → 55px），只在启动 / 切页 / resize 时量一次会留下旧值，导航条浮在顶栏下方 26px 的空中；改用 `ResizeObserver` 盯住顶栏与导航条，写值前先比对、值相同不重写
+- **四个贴顶定位改为两级**：降级横幅、断网 / 慢网横幅、键盘态固定对话卡片此前只按「顶栏」算高度，窄屏会停在导航条背后或被它盖住
+- **实测**：9 个宽度（320–1280）× 11 个页面 = 99 组，导航条下沿到首个内容块一律 16px，无一元素落入导航条所在的那一条；641–900px 演示横幅标题行恢复可见
+- **指标**：前端断言 2393 → **2432**（新增 v51 套件 38 项）｜jsdom 套件 41 → **42 套**｜前端模块 44（不变）｜共享全局符号 738 → **740**｜PDF **29 页**
 
 ### Beta 1.1.2 · 增量 v50：全面检测，修复五处「界面说的和实际状态不一致」（2026.10.31）
 

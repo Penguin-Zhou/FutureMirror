@@ -4120,6 +4120,13 @@ try {
 }
 
 /* ---------- 9) 移动端导航栏顶部化（v20） ---------- */
+/* v51：header 之后的第一个流内块（游客提示条容器）固定 16px 顶部留白；
+ * 窄屏再把导航条占的那一段加进来，见下面的让位规则。
+ * --navstrip-h 是导航条的占用高度：桌面端 0（导航条不显示），窄屏兜底 45px，
+ * 运行时由 boot.js 的 syncNavStrip() 用实测值覆盖——写死数值迟早和实际排版对不上。 */
+:root { --navstrip-h: 0px; }
+@media (max-width: 900px) { :root { --navstrip-h: 45px; } }
+#view-app > .wrap { padding-top: 16px; }
 @media (max-width: 900px) {
   .app-tabbar {
     position: fixed; top: 58px; left: 0; right: 0; bottom: auto;
@@ -4139,8 +4146,16 @@ try {
     top: auto; bottom: 0; left: 0; right: 0; width: auto; height: 2px;
     border-radius: 0 3px 0 0;
   }
-  /* 主内容区为「顶栏 58px + 导航栏约 42px」留位；底部不再需要为 Tab 栏留空间 */
-  .app-main { padding: 108px 12px 24px; }
+  /* v51：这里原来写「主内容区为顶栏 58 + 导航栏 42 留位」，于是 .app-main 顶部补 108px。
+   * 但这个 108 的前提是「顶栏和导航条都浮在内容之上」。实际顶栏是 sticky，
+   * 本来就在文档流里占掉自己的高度——顶栏高度被算了两次，
+   * 首屏于是凭空多出 76px 空白（375px 下内容起点 176px，导航条下沿只有 100px）。
+   * 真正需要的让位只有导航条那一段，见下面的 #view-app > .wrap。 */
+  .app-main { padding: 16px 12px 24px; }
+  /* 导航条是 fixed，会盖住 header 之下的一段。让位放在 header 之后的第一个流内块上，
+   * 这样后面无论是演示横幅还是主内容，都不会被盖住；导航条实测高度由
+   * boot.js 的 syncNavStrip() 写进 --navstrip-h（桌面端为 0px，此处退化为原来的 16px）。 */
+  #view-app > .wrap { padding-top: calc(16px + var(--navstrip-h, 45px)); }
   /* AI 悬浮按钮避开顶部导航栏 */
   .ai-fab { top: 112px; bottom: auto; right: 14px; width: 44px; height: 44px; font-size: 20px; }
 }
@@ -4185,8 +4200,8 @@ body.ai-open .ai-fab { opacity: 0; pointer-events: none; transform: scale(.5); }
   html { -webkit-text-size-adjust: 100%; }
   body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
 
-  /* 布局节奏：顶部双栏（顶栏 58 + 导航 44）之下留呼吸感 */
-  .app-main { padding: 104px 14px 32px; }
+  /* 布局节奏：顶部让位统一由 #view-app > .wrap 承担（v51），这里只留常规内边距 */
+  .app-main { padding: 16px 14px 32px; }
   .page-header { padding: 4px 0 18px; }
   .page-header h2 { font-size: 23px; }
   .page-header p { font-size: 13px; margin-top: 6px; }
@@ -4724,7 +4739,8 @@ input.invalid, textarea.invalid, select.invalid {
 @media (max-width: 900px) {
   header { padding-top: env(safe-area-inset-top, 0px); }
   .app-tabbar { top: calc(58px + env(safe-area-inset-top, 0px)); }
-  .app-main { padding-top: calc(104px + env(safe-area-inset-top, 0px)); }
+  /* v51：刘海屏安全区已由 header 自己的 padding-top 承担，内容区不再重复补 104px */
+  .app-main { padding-top: 16px; }
 }
 
 /* ---------- 2) 媒体与自适应容器不撑破视口 ---------- */
@@ -4810,8 +4826,9 @@ img, svg, video, canvas { max-width: 100%; }
 
 /* ---------- 7) 慢网 / 降级横幅：非阻塞，贴顶不遮内容 ---------- */
 /* v42b：横幅在所有断点都贴顶常驻——降级这件事必须「看得见」，
- * 但不能弹窗、不能锁输入，用户忽略它也能把面试做完。 */
-.fallback-banner { position: sticky; top: calc(var(--hdr-h, 58px) + 4px); z-index: 48; }
+ * 但不能弹窗、不能锁输入，用户忽略它也能把面试做完。
+ * v51：贴顶位置要跳过「顶栏 + 导航条」两级，否则窄屏下横幅会停在导航条背后。 */
+.fallback-banner { position: sticky; top: calc(var(--hdr-h, 58px) + var(--navstrip-h, 0px) + 4px); z-index: 48; }
 .fallback-banner[hidden] { display: none; }
 .fb-dot {
   width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%;
@@ -4825,7 +4842,10 @@ img, svg, video, canvas { max-width: 100%; }
 }
 @media (max-width: 640px) {
   .fallback-banner { font-size: 12px; padding: 7px 10px; gap: 6px; }
-  .offline-banner, .net-banner { position: sticky; top: 0; z-index: 48; }
+  .offline-banner, .net-banner {
+    /* v51：原来贴 0 会被 sticky 顶栏（z 50）整条盖住，等于断网提示看不见 */
+    position: sticky; top: calc(var(--hdr-h, 58px) + var(--navstrip-h, 0px)); z-index: 48;
+  }
 }
 
 /* ---------- 8) 面试页窄屏：把辅助工具折叠，让对话先出现 ---------- */
@@ -4872,11 +4892,17 @@ img, svg, video, canvas { max-width: 100%; }
 }
 
 /* ---------- 9) 顶栏与导航条对齐：不再假设 header 恰好 56px ---------- */
-/* 窄屏顶栏内容多，实测高度可能 >56px；导航条与主内容区一律跟随 --hdr-h，
- * 避免「导航条压在顶栏下沿」或「首屏被顶栏盖住」。 */
+/* 窄屏顶栏内容多，实测高度可能 >56px；导航条跟随 --hdr-h，
+ * 避免「导航条压在顶栏下沿」。
+ * v51：这一行原来是 .app-main { padding-top: calc(var(--hdr-h) + 50px) }，
+ * 即把 header 高度和导航条高度一次性补进内容区顶部。可 header 是 sticky、
+ * 在文档流里已经占了自己的高度，于是 header 被算两次 →
+ * 375px 下内容从 176px 才开始，而导航条下沿在 100px，中间 76px 是纯空白。
+ * 现在顶部让位统一交给 header 之后的第一个流内块（见上面 §9 v20 那段），
+ * 主内容区只保留常规内边距。 */
 @media (max-width: 900px) {
   .app-tabbar { top: var(--hdr-h, 58px); }
-  .app-main { padding-top: calc(var(--hdr-h, 58px) + 50px); }
+  .app-main { padding-top: 16px; }
 }
 @media (max-width: 640px) {
   /* ⌘K 在手机上无意义（没有 ⌘ 键），其入口由底栏「更多」承担 */
@@ -5123,7 +5149,8 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
    * 让上方辅助 chrome（页面头 / 模式条 / 时间线）暂时让位，
    * 保证「发送按钮 + 最近 2–3 条对话」同时可见。
    * 代码沙盒刻意不隐藏——代码题需要在键盘上敲代码。 */
-  html.kb-chat .app-main { padding-top: calc(var(--hdr-h, 58px) + 6px); }
+  /* v51：header 在流里占位，键盘态只需极小的贴顶内边距；原来补 --hdr-h 会多出一整条顶栏高度 */
+  html.kb-chat .app-main { padding-top: 6px; }
   html.kb-chat body[data-page="interview"] .page-header,
   html.kb-chat body[data-page="interview"] .mode-bar,
   html.kb-chat body[data-page="interview"] .chat-aside,
@@ -5135,7 +5162,8 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
   .chat-main.kb-pinned {
     position: fixed !important;
     left: 8px; right: 8px;
-    top: calc(var(--hdr-h, 58px) + 6px);
+    /* v51：固定定位必须同时避开顶栏与导航条两级，否则对话卡片会盖在导航条上 */
+    top: calc(var(--hdr-h, 58px) + var(--navstrip-h, 45px) + 6px);
     bottom: calc(var(--kb-h, 0px) + 8px);
     height: auto !important;
     z-index: 55;
@@ -6575,7 +6603,9 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
 </header>
 
 <!-- ===== 游客模式提示条（未登录时显示） ===== -->
-<div class="wrap" style="padding-top:16px">
+<!-- v51：这里原来用内联 style="padding-top:16px" 定顶部留白，窄屏还要按导航条高度追加让位，
+     内联样式压过样式表只能用 !important，所以改由 #view-app > .wrap 统一管（见 pages.css §9）。 -->
+<div class="wrap">
   <div class="guest-banner" id="guest-banner" hidden>
     <span>🔒 你正在以<b>游客模式</b>浏览 — AI 功能需要登录后解锁</span>
     <button class="btn btn-primary btn-sm" onclick="showView('auth')">登录 / 注册 →</button>
@@ -8310,6 +8340,9 @@ function applyRoute() {
    * 否则 --hdr-h 会停留在隐藏时的旧值，导航条压住顶栏。
    * 这里不用 rAF：布局测量不需要等动画帧，且要避开 reduced-motion 的零 rAF 断言。 */
   try { if (typeof syncHeaderHeight === "function") syncHeaderHeight(); } catch (e) {}
+  /* v51：导航条占用高度同样要在切页后重测——落地页/登录页里它是隐藏的（高度 0），
+   * 回到应用内若不重测，顶部让位会停在 0，第一屏就被导航条盖住。 */
+  try { if (typeof syncNavStrip === "function") syncNavStrip(); } catch (e) {}
 
   // 3) 面包屑
   const bc = $("bc-current");
@@ -13307,8 +13340,57 @@ function syncHeaderHeight() {
     /* 顶栏在落地页/登录页会被隐藏（offsetHeight = 0）。此时不能写 0——
      * 否则回到应用内时导航条会压在顶栏上、内容被盖住，故回落到安全默认值。 */
     const v = Math.round(h.offsetHeight) || 58;
-    document.documentElement.style.setProperty("--hdr-h", v + "px");
+    const root = document.documentElement;
+    /* 值没变就不写：避免 ResizeObserver 回写自定义属性再触发一次观察 */
+    if (root.style.getPropertyValue("--hdr-h") !== v + "px") {
+      root.style.setProperty("--hdr-h", v + "px");
+    }
   } catch (e) { /* 自定义属性不可用时保持 CSS 兜底值 */ }
+}
+
+/* v51：把顶部导航条的实测占用高度写进 --navstrip-h。
+ * 这条导航条（≤900px 可见，v20 由底部 Tab 顶部化而来）是 fixed，会盖住 header 之下的一段。
+ * 之前没人给它让位，只有 .app-main 用一个写死的 104/108px 补顶部——
+ * 可 header 是 sticky、在流里已经占了高度，于是一并算进去，首屏多出 76px 空白；
+ * 而 641–900px 才出现的演示横幅反倒被导航条压住 29px。
+ * 现在让位交给 header 之后的第一个流内块（CSS: #view-app > .wrap），
+ * 它需要的唯一未知量就是这条导航条的真实高度，在这里量。
+ * 桌面端导航条 display:none → 写 0px，让位退化为原来的 16px 留白。 */
+function syncNavStrip() {
+  const el = document.querySelector(".app-tabbar");
+  if (!el) return;
+  try {
+    let h = 0;
+    const cs = typeof getComputedStyle === "function" ? getComputedStyle(el) : null;
+    if (cs && cs.display !== "none") h = Math.round(el.offsetHeight) || 0;
+    const root = document.documentElement;
+    if (root.style.getPropertyValue("--navstrip-h") !== h + "px") {
+      root.style.setProperty("--navstrip-h", h + "px");
+    }
+  } catch (e) { /* 自定义属性不可用时保持 CSS 兜底值 45px */ }
+}
+
+/* v51：顶栏和导航条的高度都会随内容换行变化——换到别的页面、状态胶囊出现、
+ * 字体或可用宽度变化，都会让它们一两个像素到二十几像素地变。
+ * 只在启动 / 切页 / resize 时量一次会留下旧值：320px 下从计划页切到面试页，
+ * 顶栏从 81px 缩到 55px，--hdr-h 却还停在 81px，导航条于是浮在顶栏下方 26px 的空中，
+ * 主内容反倒被它压住一截。
+ * 用 ResizeObserver 盯着这两个元素，尺寸一变就重量——这比在每处改动后手动补一次可靠。 */
+function watchChromeMetrics() {
+  if (typeof ResizeObserver !== "function") return;
+  try {
+    const root = document.documentElement;
+    if (root.dataset.chromeRo) return;        // 只挂一次（bootApp 可能被重复调用）
+    const ro = new ResizeObserver(() => {
+      syncHeaderHeight();
+      syncNavStrip();
+    });
+    const h = document.querySelector("header");
+    const n = document.querySelector(".app-tabbar");
+    if (h) ro.observe(h);
+    if (n) ro.observe(n);
+    root.dataset.chromeRo = "1";
+  } catch (e) { /* 老浏览器没有 ResizeObserver：保持切页/resize 时的实测量 */ }
 }
 
 /* v41：窄屏把「辅助工具」折叠成一行——演示时先看到对话，需要时点开。
@@ -13570,7 +13652,10 @@ function bootApp() {
   initMobileCompact();
   initMobileLandingFold();
   syncHeaderHeight();
+  syncNavStrip();
+  watchChromeMetrics();
   window.addEventListener("resize", syncHeaderHeight);
+  window.addEventListener("resize", syncNavStrip);
   window.addEventListener("resize", applyMobileLandingFold);
   // v42：键盘/视口守卫（visualViewport 变化时重算可视高度与对话区）
   initKeyboardGuards();
