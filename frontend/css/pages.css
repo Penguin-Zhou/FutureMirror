@@ -1968,3 +1968,536 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
   html[data-boot="slow"]::after,
   html[data-boot="wait"]::after { animation: none; transform: scaleX(1); }
 }
+
+/* ============================================================
+ * v49 · 视觉升级：工程规格书质感
+ * ------------------------------------------------------------
+ * 上一版之后界面功能已经够用，问题变成了「看起来像后台模板」：
+ * 卡片各自浮动、强调色到处出现、数字与标签同一字号、空态只有一行灰字。
+ * 这一版不加装饰（不引入投影/圆角/玻璃/渐变），只做三件事：
+ *   ① 版式：等宽小标签 + 衬线大标题 + 表格数字（tabular），建立清晰层级；
+ *   ② 结构：把零散卡片合成「一张规格表」，用发丝线分区，页头加短墨规；
+ *   ③ 数据：工作台顶部加指挥台（5 段仪表 + 4 格指标 + 下一步），
+ *      让首页第一屏是「我的进度」而不是「品牌口号重复一遍」。
+ * 纪律不变：零投影、零圆角、零玻璃拟态、单一朱红、hover 只变描边。
+ * ============================================================ */
+
+/* ---------- ① 排版令牌 ---------- */
+:root {
+  --fs-2xs: 10px; --fs-xs: 11px; --fs-sm: 12px; --fs-md: 13px;
+  --fs-base: 14px; --fs-lg: 15px; --fs-xl: 17px;
+  --ls-label: .14em;
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+}
+
+/* 所有数字走等宽数字，竖排对齐后才有「表格感」 */
+.stat-num, .cmd-v, .spec-row dd, .chart-svg text, .dim-score,
+.dash-metric b, .report-total, .eval-table td {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- ② 页头：短墨规 + 细线，标题上提一号 ---------- */
+.page-header {
+  position: relative;
+  padding-bottom: 18px;
+  margin-bottom: 24px;
+}
+.page-header::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 1px; background: var(--line-2);
+}
+.page-header::before {
+  content: "";
+  position: absolute; left: 0; bottom: 0; z-index: 1;
+  width: 56px; height: 2px; background: var(--ink);
+}
+.page-header h2 { font-size: 30px; line-height: 1.15; letter-spacing: -.022em; }
+.page-header p { margin-top: 8px; font-size: 13.5px; color: var(--muted); line-height: 1.75; }
+
+/* 面包屑：等宽路径感，弱化到辅助层 */
+.breadcrumb {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding-bottom: 10px;
+}
+.breadcrumb a { color: var(--muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--ink); }
+.breadcrumb .bc-sep { opacity: .45; margin: 0 7px; }
+.breadcrumb .bc-current { color: var(--ink); font-weight: 600; }
+
+/* ---------- ③ 侧栏：轻一档的隔断 + 分组细线 ---------- */
+.app-sidebar { background: var(--card); border-right: 1px solid var(--line-2); }
+.sb-group-label {
+  position: relative;
+  margin: 16px 14px 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .2em;
+}
+.sb-item {
+  font-size: var(--fs-md);
+  letter-spacing: .01em;
+  color: var(--muted);
+  min-height: 38px;
+}
+.sb-item:hover { background: var(--chip-bg); color: var(--ink); }
+.sb-item.active {
+  background: var(--bg-deep);
+  color: var(--ink);
+  font-weight: 700;
+}
+.sb-item.active::before { width: 2px; background: var(--brand); }
+.sb-badge {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  padding: 1px 6px;
+}
+.sb-footer {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  font-size: 10px;
+  letter-spacing: .03em;
+  color: var(--faint);
+}
+
+/* ---------- ④ 横幅：从「粉色告示牌」收成「图纸标题栏」 ---------- */
+.banner {
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--line-2);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  letter-spacing: .01em;
+}
+.banner b {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-right: 8px;
+}
+.banner .btn-primary {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--brand) 42%, var(--line));
+  color: var(--brand);
+  font-size: var(--fs-xs);
+  letter-spacing: .04em;
+  padding: 4px 10px;
+}
+.banner .btn-primary:hover:not(:disabled) {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.guest-banner {
+  background: var(--amber-bg);
+  border: 1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
+  border-left: 3px solid var(--amber);
+  color: var(--ink);
+  font-size: var(--fs-md);
+  padding: 10px 14px;
+}
+.guest-banner .btn-primary { padding: 5px 12px; font-size: var(--fs-sm); }
+
+/* ---------- ⑤ 工作台 Hero：编辑版式（左对齐成「文档」而非「营销页」） ---------- */
+.hero { padding: 34px 0 30px; text-align: left; }
+.hero h1 {
+  font-size: clamp(30px, 3.4vw, 42px);
+  line-height: 1.06;
+  letter-spacing: -.028em;
+}
+.hero h1 span { font-style: italic; letter-spacing: -.03em; }
+.hero p {
+  max-width: 660px;
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+.hero > .badge {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+}
+.hero-actions { margin-top: 22px; gap: 10px; justify-content: flex-start; }
+.hero-actions .btn { padding: 12px 22px; font-size: var(--fs-base); letter-spacing: .02em; }
+
+/* ---------- ⑥ 指挥台（新） ---------- */
+.cmd-band {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr) minmax(240px, 300px);
+  align-items: stretch;
+  border: 1px solid var(--ink);
+  border-top-width: 2px;
+  background: var(--card);
+  position: relative;
+  margin: 22px 0 6px;
+}
+/* 取景器角标：只标右下 + 左上，与落地页 .bp-crop 呼应但不抢 */
+.cmd-band::before,
+.cmd-band::after {
+  content: ""; position: absolute; width: 9px; height: 9px;
+  pointer-events: none; z-index: 2;
+}
+.cmd-band::before { top: -1px; left: -1px; border-top: 2px solid var(--brand); border-left: 2px solid var(--brand); }
+.cmd-band::after { bottom: -1px; right: -1px; border-bottom: 2px solid var(--brand); border-right: 2px solid var(--brand); }
+
+.cmd-gauge {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  border-right: 1px solid var(--line);
+}
+.cmd-gauge svg { width: 92px; height: 92px; display: block; flex: 0 0 auto; }
+.cmd-gauge-txt { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.cmd-k {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .07em;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.cmd-hint { font-size: 11.5px; line-height: 1.55; color: var(--muted); }
+
+.cmd-metrics { display: grid; grid-template-columns: 1fr 1fr; }
+.cmd-metric {
+  display: flex; flex-direction: column; gap: 4px;
+  justify-content: center;
+  padding: 12px 16px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  min-width: 0;
+}
+.cmd-metric:nth-child(even) { border-right: 0; }
+.cmd-metric:nth-last-child(-n + 2) { border-bottom: 0; }
+.cmd-v {
+  font-family: var(--serif);
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+.cmd-v i {
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: .06em;
+  color: var(--faint);
+  margin-left: 3px;
+}
+.cmd-v-txt { font-size: 17px; font-family: var(--serif); }
+.cmd-v-empty {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--line-2);
+}
+
+.cmd-spark {
+  display: flex; align-items: flex-end; gap: 2px; height: 16px; margin-top: 4px;
+}
+.cmd-spark i { display: block; width: 4px; background: var(--line-2); }
+.cmd-bar {
+  display: block; height: 2px; background: var(--line); margin-top: 6px; width: 100%;
+}
+.cmd-bar i { display: block; height: 100%; background: var(--brand); }
+
+.cmd-next {
+  display: flex; flex-direction: column; justify-content: center; gap: 7px;
+  padding: 14px 18px;
+  border-left: 1px solid var(--line);
+  background: var(--bg-deep);
+  min-width: 0;
+}
+.cmd-next-t { font-size: 12px; line-height: 1.65; color: var(--muted); }
+.cmd-next .btn { align-self: flex-start; margin-top: 2px; font-size: var(--fs-sm); padding: 7px 12px; }
+
+/* ---------- ⑦ 快捷入口：从「浮动卡」改成「编号索引卡」 ---------- */
+.quick-entries-hero .quick-entry {
+  padding: 20px 18px 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  transition: border-color .18s, background .18s;
+}
+/* 去掉中心光晕：靠线框与编号表达层级，不靠发光 */
+.quick-entries-hero .quick-entry::before { display: none; }
+.quick-entries-hero .quick-entry::after {
+  content: "";
+  position: absolute; top: 0; left: 0;
+  width: 10px; height: 10px;
+  border-top: 2px solid var(--brand);
+  border-left: 2px solid var(--brand);
+  opacity: 0;
+  transition: opacity .18s;
+  pointer-events: none;
+}
+.quick-entries-hero .quick-entry:hover {
+  border-color: var(--ink);
+  background: var(--card-2);
+}
+.quick-entries-hero .quick-entry:hover::after { opacity: 1; }
+.qe-no {
+  position: absolute; top: 12px; right: 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--line-2);
+  transition: color .18s;
+}
+.quick-entries-hero .quick-entry:hover .qe-no { color: var(--brand); }
+.quick-entries-hero .qe-icon {
+  font-size: 26px;
+  margin-bottom: 10px;
+  line-height: 1;
+  color: var(--ink);
+  transition: color .18s;
+}
+.quick-entries-hero .quick-entry:hover .qe-icon { transform: none; color: var(--brand); }
+.quick-entries-hero .qe-title {
+  font-family: var(--serif);
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+.quick-entries-hero .qe-desc { font-size: 11.5px; color: var(--faint); line-height: 1.65; }
+.quick-entries-hero .qe-arrow {
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  color: var(--brand);
+  opacity: 1;
+  transform: none;
+}
+.quick-entries-hero .quick-entry:hover .qe-arrow { opacity: 1; transform: none; }
+.quick-entries-hero .qe-featured { border-left: 3px solid var(--brand); }
+
+/* ---------- ⑧ 数据瓦片：四块并成一张有分区的规格条 ---------- */
+.stats-row.stats-row-clickable {
+  gap: 0;
+  max-width: 920px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+}
+.stats-row-clickable .stat-card {
+  border: 0;
+  border-top: 2px solid var(--ink);
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  padding: 16px 18px 14px;
+}
+.stats-row-clickable .stat-card:last-child { border-right: 0; }
+.stats-row-clickable .stat-card::before { display: none; }
+.stats-row-clickable .stat-card:hover { background: var(--card-2); border-color: transparent; border-top-color: var(--brand); }
+.stats-row-clickable .stat-icon {
+  position: absolute; top: 14px; right: 14px;
+  margin: 0; font-size: 15px; opacity: .5;
+}
+.stats-row-clickable .stat-card:hover .stat-icon { opacity: 1; }
+.stats-row-clickable .stat-arrow {
+  top: auto; bottom: 12px; right: 14px;
+  font-size: 11px;
+}
+.stat-num { font-size: 34px; letter-spacing: -.03em; }
+.stat-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-top: 6px;
+}
+
+/* ---------- ⑨ 落地页规格卡：印章不再旋出卡片 ---------- */
+.spec-foot .bp-stamp {
+  transform: none;
+  outline: none;
+  border-width: 1px;
+  padding: 3px 8px;
+  font-size: 9.5px;
+  letter-spacing: .16em;
+  color: var(--brand);
+}
+.spec-foot { padding: 10px 14px; }
+.hero-spec { border-color: var(--ink); }
+.spec-head { letter-spacing: .18em; }
+.spec-row dd { letter-spacing: -.01em; }
+
+/* ---------- ⑩ 卡片与区块的通用收口 ---------- */
+.section-title { letter-spacing: -.02em; }
+.card { background: var(--card); }
+.today-title, .section h2 { letter-spacing: -.018em; }
+
+/* ---------- ⑪ 窄屏 ---------- */
+@media (max-width: 1000px) {
+  .cmd-band { grid-template-columns: 220px minmax(0, 1fr); }
+  .cmd-next {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+  }
+  .cmd-next .cmd-k { width: 100%; }
+  .cmd-next-t { flex: 1 1 220px; }
+}
+@media (max-width: 720px) {
+  .cmd-band { grid-template-columns: 1fr; margin-top: 16px; }
+  .cmd-gauge { border-right: 0; border-bottom: 1px solid var(--line); }
+  .cmd-gauge svg { width: 76px; height: 76px; }
+  .cmd-v { font-size: 21px; }
+  .cmd-v-txt { font-size: 15px; }
+  .page-header h2 { font-size: 22px; }
+  .page-header { padding-bottom: 12px; margin-bottom: 16px; }
+  .stats-row.stats-row-clickable { border-left: 0; border-right: 0; }
+  .stats-row-clickable .stat-card { border-top-width: 1px; padding: 12px 14px; }
+  .stat-num { font-size: 26px; }
+}
+/* 手机上仍保持 2×2：四行竖排会让指挥台高过半屏，反而更难扫读 */
+@media (max-width: 420px) {
+  .cmd-metric { padding: 10px 12px; }
+  .cmd-v { font-size: 19px; }
+  .cmd-v-txt { font-size: 14px; }
+  .cmd-gauge { padding: 12px 14px; gap: 10px; }
+  .cmd-gauge svg { width: 64px; height: 64px; }
+  .cmd-next { padding: 12px 14px; }
+}
+
+/* 减弱动效：本层无动画，仅确保过渡关闭 */
+@media (prefers-reduced-motion: reduce) {
+  .quick-entries-hero .quick-entry,
+  .quick-entries-hero .quick-entry::after,
+  .qe-no, .quick-entries-hero .qe-icon { transition: none; }
+}
+
+/* ---------- ⑫ 第 7 张入口：补满整行，不留半排空格 ---------- */
+.quick-entries-hero .quick-entry:last-child {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+}
+.quick-entries-hero .quick-entry:last-child .qe-icon { margin: 0; font-size: 22px; }
+.quick-entries-hero .quick-entry:last-child .qe-title { margin: 0; flex: 0 0 auto; }
+.quick-entries-hero .quick-entry:last-child .qe-desc {
+  margin: 0; flex: 1 1 auto; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.quick-entries-hero .quick-entry:last-child .qe-arrow { margin: 0; flex: 0 0 auto; }
+@media (max-width: 560px) {
+  .quick-entries-hero .quick-entry:last-child { flex-wrap: wrap; }
+  .quick-entries-hero .quick-entry:last-child .qe-desc { flex-basis: 100%; white-space: normal; }
+}
+
+/* ---------- ⑬ 首次引导卡：与纸面同一套语言 ---------- */
+.onboarding-card {
+  border: 1px solid var(--line-2);
+  border-left: 3px solid var(--brand);
+  background: var(--card);
+  padding: 16px 18px;
+}
+.onboarding-card > b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+.onboarding-card p { font-size: 13px; line-height: 1.8; color: var(--muted); margin-top: 8px; }
+.onboarding-card p b { color: var(--ink); font-weight: 600; }
+.onboarding-card .btn { padding: 7px 14px; font-size: 12.5px; }
+.onboarding-card .btn-primary { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.onboarding-card .btn-primary:hover:not(:disabled) { background: var(--brand); border-color: var(--brand); }
+.quick-entries-hero .quick-entry:last-child .qe-no {
+  position: static;
+  order: -1;
+  margin-right: 2px;
+}
+
+/* ---------- ⑭ 空态：从「居中一段灰字」改成「图框占位」 ---------- */
+.empty-state {
+  position: relative;
+  border: 1px dashed var(--line-2);
+  background: var(--card);
+  padding: 38px 26px 30px;
+  text-align: center;
+}
+/* 角标代替文字标签：同一套框法在聊天起始位也不会读成「无数据」 */
+.empty-state::before {
+  content: "";
+  position: absolute; top: -1px; left: -1px;
+  width: 10px; height: 10px;
+  border-top: 1px solid var(--line-2);
+  border-left: 1px solid var(--line-2);
+}
+.empty-state .ic {
+  font-size: 26px;
+  line-height: 1;
+  margin-bottom: 14px;
+  filter: grayscale(1);
+  opacity: .5;
+}
+.empty-state p {
+  max-width: 560px;
+  margin: 0 auto;
+  font-size: 13.5px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.empty-state p b { color: var(--ink); font-weight: 600; }
+.empty-state .btn { margin-top: 16px; font-size: 12.5px; padding: 8px 14px; }
+
+/* ---------- ⑮ 求职看板的 KPI：与工作台规格瓦片同一套 ---------- */
+.board-stat {
+  background: var(--card);
+  border: 1px solid var(--line-2);
+  border-top: 2px solid var(--ink);
+  padding: 14px 16px;
+}
+.bs-num {
+  font-family: var(--serif);
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.bs-label {
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .12em;
+  color: var(--faint);
+}
+
+/* ---------- ⑯ 落地页首屏的三行小字：拉开层级，别挤成一片 ---------- */
+.hero-rotator {
+  margin: 10px 0 6px;
+  font-size: 11px;
+  letter-spacing: .06em;
+  color: var(--faint);
+}
+.hero-rotator .hr-prefix { color: var(--brand); }
+.eyebrow { margin-top: 6px; }
+.hero-sub { margin-top: 16px; }

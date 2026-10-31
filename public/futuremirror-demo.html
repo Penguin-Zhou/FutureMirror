@@ -5562,6 +5562,539 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
   html[data-boot="slow"]::after,
   html[data-boot="wait"]::after { animation: none; transform: scaleX(1); }
 }
+
+/* ============================================================
+ * v49 · 视觉升级：工程规格书质感
+ * ------------------------------------------------------------
+ * 上一版之后界面功能已经够用，问题变成了「看起来像后台模板」：
+ * 卡片各自浮动、强调色到处出现、数字与标签同一字号、空态只有一行灰字。
+ * 这一版不加装饰（不引入投影/圆角/玻璃/渐变），只做三件事：
+ *   ① 版式：等宽小标签 + 衬线大标题 + 表格数字（tabular），建立清晰层级；
+ *   ② 结构：把零散卡片合成「一张规格表」，用发丝线分区，页头加短墨规；
+ *   ③ 数据：工作台顶部加指挥台（5 段仪表 + 4 格指标 + 下一步），
+ *      让首页第一屏是「我的进度」而不是「品牌口号重复一遍」。
+ * 纪律不变：零投影、零圆角、零玻璃拟态、单一朱红、hover 只变描边。
+ * ============================================================ */
+
+/* ---------- ① 排版令牌 ---------- */
+:root {
+  --fs-2xs: 10px; --fs-xs: 11px; --fs-sm: 12px; --fs-md: 13px;
+  --fs-base: 14px; --fs-lg: 15px; --fs-xl: 17px;
+  --ls-label: .14em;
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+}
+
+/* 所有数字走等宽数字，竖排对齐后才有「表格感」 */
+.stat-num, .cmd-v, .spec-row dd, .chart-svg text, .dim-score,
+.dash-metric b, .report-total, .eval-table td {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- ② 页头：短墨规 + 细线，标题上提一号 ---------- */
+.page-header {
+  position: relative;
+  padding-bottom: 18px;
+  margin-bottom: 24px;
+}
+.page-header::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 1px; background: var(--line-2);
+}
+.page-header::before {
+  content: "";
+  position: absolute; left: 0; bottom: 0; z-index: 1;
+  width: 56px; height: 2px; background: var(--ink);
+}
+.page-header h2 { font-size: 30px; line-height: 1.15; letter-spacing: -.022em; }
+.page-header p { margin-top: 8px; font-size: 13.5px; color: var(--muted); line-height: 1.75; }
+
+/* 面包屑：等宽路径感，弱化到辅助层 */
+.breadcrumb {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding-bottom: 10px;
+}
+.breadcrumb a { color: var(--muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--ink); }
+.breadcrumb .bc-sep { opacity: .45; margin: 0 7px; }
+.breadcrumb .bc-current { color: var(--ink); font-weight: 600; }
+
+/* ---------- ③ 侧栏：轻一档的隔断 + 分组细线 ---------- */
+.app-sidebar { background: var(--card); border-right: 1px solid var(--line-2); }
+.sb-group-label {
+  position: relative;
+  margin: 16px 14px 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .2em;
+}
+.sb-item {
+  font-size: var(--fs-md);
+  letter-spacing: .01em;
+  color: var(--muted);
+  min-height: 38px;
+}
+.sb-item:hover { background: var(--chip-bg); color: var(--ink); }
+.sb-item.active {
+  background: var(--bg-deep);
+  color: var(--ink);
+  font-weight: 700;
+}
+.sb-item.active::before { width: 2px; background: var(--brand); }
+.sb-badge {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  padding: 1px 6px;
+}
+.sb-footer {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  font-size: 10px;
+  letter-spacing: .03em;
+  color: var(--faint);
+}
+
+/* ---------- ④ 横幅：从「粉色告示牌」收成「图纸标题栏」 ---------- */
+.banner {
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--line-2);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  letter-spacing: .01em;
+}
+.banner b {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-right: 8px;
+}
+.banner .btn-primary {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--brand) 42%, var(--line));
+  color: var(--brand);
+  font-size: var(--fs-xs);
+  letter-spacing: .04em;
+  padding: 4px 10px;
+}
+.banner .btn-primary:hover:not(:disabled) {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.guest-banner {
+  background: var(--amber-bg);
+  border: 1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
+  border-left: 3px solid var(--amber);
+  color: var(--ink);
+  font-size: var(--fs-md);
+  padding: 10px 14px;
+}
+.guest-banner .btn-primary { padding: 5px 12px; font-size: var(--fs-sm); }
+
+/* ---------- ⑤ 工作台 Hero：编辑版式（左对齐成「文档」而非「营销页」） ---------- */
+.hero { padding: 34px 0 30px; text-align: left; }
+.hero h1 {
+  font-size: clamp(30px, 3.4vw, 42px);
+  line-height: 1.06;
+  letter-spacing: -.028em;
+}
+.hero h1 span { font-style: italic; letter-spacing: -.03em; }
+.hero p {
+  max-width: 660px;
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+.hero > .badge {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+}
+.hero-actions { margin-top: 22px; gap: 10px; justify-content: flex-start; }
+.hero-actions .btn { padding: 12px 22px; font-size: var(--fs-base); letter-spacing: .02em; }
+
+/* ---------- ⑥ 指挥台（新） ---------- */
+.cmd-band {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr) minmax(240px, 300px);
+  align-items: stretch;
+  border: 1px solid var(--ink);
+  border-top-width: 2px;
+  background: var(--card);
+  position: relative;
+  margin: 22px 0 6px;
+}
+/* 取景器角标：只标右下 + 左上，与落地页 .bp-crop 呼应但不抢 */
+.cmd-band::before,
+.cmd-band::after {
+  content: ""; position: absolute; width: 9px; height: 9px;
+  pointer-events: none; z-index: 2;
+}
+.cmd-band::before { top: -1px; left: -1px; border-top: 2px solid var(--brand); border-left: 2px solid var(--brand); }
+.cmd-band::after { bottom: -1px; right: -1px; border-bottom: 2px solid var(--brand); border-right: 2px solid var(--brand); }
+
+.cmd-gauge {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  border-right: 1px solid var(--line);
+}
+.cmd-gauge svg { width: 92px; height: 92px; display: block; flex: 0 0 auto; }
+.cmd-gauge-txt { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.cmd-k {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .07em;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.cmd-hint { font-size: 11.5px; line-height: 1.55; color: var(--muted); }
+
+.cmd-metrics { display: grid; grid-template-columns: 1fr 1fr; }
+.cmd-metric {
+  display: flex; flex-direction: column; gap: 4px;
+  justify-content: center;
+  padding: 12px 16px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  min-width: 0;
+}
+.cmd-metric:nth-child(even) { border-right: 0; }
+.cmd-metric:nth-last-child(-n + 2) { border-bottom: 0; }
+.cmd-v {
+  font-family: var(--serif);
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+.cmd-v i {
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: .06em;
+  color: var(--faint);
+  margin-left: 3px;
+}
+.cmd-v-txt { font-size: 17px; font-family: var(--serif); }
+.cmd-v-empty {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--line-2);
+}
+
+.cmd-spark {
+  display: flex; align-items: flex-end; gap: 2px; height: 16px; margin-top: 4px;
+}
+.cmd-spark i { display: block; width: 4px; background: var(--line-2); }
+.cmd-bar {
+  display: block; height: 2px; background: var(--line); margin-top: 6px; width: 100%;
+}
+.cmd-bar i { display: block; height: 100%; background: var(--brand); }
+
+.cmd-next {
+  display: flex; flex-direction: column; justify-content: center; gap: 7px;
+  padding: 14px 18px;
+  border-left: 1px solid var(--line);
+  background: var(--bg-deep);
+  min-width: 0;
+}
+.cmd-next-t { font-size: 12px; line-height: 1.65; color: var(--muted); }
+.cmd-next .btn { align-self: flex-start; margin-top: 2px; font-size: var(--fs-sm); padding: 7px 12px; }
+
+/* ---------- ⑦ 快捷入口：从「浮动卡」改成「编号索引卡」 ---------- */
+.quick-entries-hero .quick-entry {
+  padding: 20px 18px 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  transition: border-color .18s, background .18s;
+}
+/* 去掉中心光晕：靠线框与编号表达层级，不靠发光 */
+.quick-entries-hero .quick-entry::before { display: none; }
+.quick-entries-hero .quick-entry::after {
+  content: "";
+  position: absolute; top: 0; left: 0;
+  width: 10px; height: 10px;
+  border-top: 2px solid var(--brand);
+  border-left: 2px solid var(--brand);
+  opacity: 0;
+  transition: opacity .18s;
+  pointer-events: none;
+}
+.quick-entries-hero .quick-entry:hover {
+  border-color: var(--ink);
+  background: var(--card-2);
+}
+.quick-entries-hero .quick-entry:hover::after { opacity: 1; }
+.qe-no {
+  position: absolute; top: 12px; right: 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--line-2);
+  transition: color .18s;
+}
+.quick-entries-hero .quick-entry:hover .qe-no { color: var(--brand); }
+.quick-entries-hero .qe-icon {
+  font-size: 26px;
+  margin-bottom: 10px;
+  line-height: 1;
+  color: var(--ink);
+  transition: color .18s;
+}
+.quick-entries-hero .quick-entry:hover .qe-icon { transform: none; color: var(--brand); }
+.quick-entries-hero .qe-title {
+  font-family: var(--serif);
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+.quick-entries-hero .qe-desc { font-size: 11.5px; color: var(--faint); line-height: 1.65; }
+.quick-entries-hero .qe-arrow {
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  color: var(--brand);
+  opacity: 1;
+  transform: none;
+}
+.quick-entries-hero .quick-entry:hover .qe-arrow { opacity: 1; transform: none; }
+.quick-entries-hero .qe-featured { border-left: 3px solid var(--brand); }
+
+/* ---------- ⑧ 数据瓦片：四块并成一张有分区的规格条 ---------- */
+.stats-row.stats-row-clickable {
+  gap: 0;
+  max-width: 920px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+}
+.stats-row-clickable .stat-card {
+  border: 0;
+  border-top: 2px solid var(--ink);
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  padding: 16px 18px 14px;
+}
+.stats-row-clickable .stat-card:last-child { border-right: 0; }
+.stats-row-clickable .stat-card::before { display: none; }
+.stats-row-clickable .stat-card:hover { background: var(--card-2); border-color: transparent; border-top-color: var(--brand); }
+.stats-row-clickable .stat-icon {
+  position: absolute; top: 14px; right: 14px;
+  margin: 0; font-size: 15px; opacity: .5;
+}
+.stats-row-clickable .stat-card:hover .stat-icon { opacity: 1; }
+.stats-row-clickable .stat-arrow {
+  top: auto; bottom: 12px; right: 14px;
+  font-size: 11px;
+}
+.stat-num { font-size: 34px; letter-spacing: -.03em; }
+.stat-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-top: 6px;
+}
+
+/* ---------- ⑨ 落地页规格卡：印章不再旋出卡片 ---------- */
+.spec-foot .bp-stamp {
+  transform: none;
+  outline: none;
+  border-width: 1px;
+  padding: 3px 8px;
+  font-size: 9.5px;
+  letter-spacing: .16em;
+  color: var(--brand);
+}
+.spec-foot { padding: 10px 14px; }
+.hero-spec { border-color: var(--ink); }
+.spec-head { letter-spacing: .18em; }
+.spec-row dd { letter-spacing: -.01em; }
+
+/* ---------- ⑩ 卡片与区块的通用收口 ---------- */
+.section-title { letter-spacing: -.02em; }
+.card { background: var(--card); }
+.today-title, .section h2 { letter-spacing: -.018em; }
+
+/* ---------- ⑪ 窄屏 ---------- */
+@media (max-width: 1000px) {
+  .cmd-band { grid-template-columns: 220px minmax(0, 1fr); }
+  .cmd-next {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+  }
+  .cmd-next .cmd-k { width: 100%; }
+  .cmd-next-t { flex: 1 1 220px; }
+}
+@media (max-width: 720px) {
+  .cmd-band { grid-template-columns: 1fr; margin-top: 16px; }
+  .cmd-gauge { border-right: 0; border-bottom: 1px solid var(--line); }
+  .cmd-gauge svg { width: 76px; height: 76px; }
+  .cmd-v { font-size: 21px; }
+  .cmd-v-txt { font-size: 15px; }
+  .page-header h2 { font-size: 22px; }
+  .page-header { padding-bottom: 12px; margin-bottom: 16px; }
+  .stats-row.stats-row-clickable { border-left: 0; border-right: 0; }
+  .stats-row-clickable .stat-card { border-top-width: 1px; padding: 12px 14px; }
+  .stat-num { font-size: 26px; }
+}
+/* 手机上仍保持 2×2：四行竖排会让指挥台高过半屏，反而更难扫读 */
+@media (max-width: 420px) {
+  .cmd-metric { padding: 10px 12px; }
+  .cmd-v { font-size: 19px; }
+  .cmd-v-txt { font-size: 14px; }
+  .cmd-gauge { padding: 12px 14px; gap: 10px; }
+  .cmd-gauge svg { width: 64px; height: 64px; }
+  .cmd-next { padding: 12px 14px; }
+}
+
+/* 减弱动效：本层无动画，仅确保过渡关闭 */
+@media (prefers-reduced-motion: reduce) {
+  .quick-entries-hero .quick-entry,
+  .quick-entries-hero .quick-entry::after,
+  .qe-no, .quick-entries-hero .qe-icon { transition: none; }
+}
+
+/* ---------- ⑫ 第 7 张入口：补满整行，不留半排空格 ---------- */
+.quick-entries-hero .quick-entry:last-child {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+}
+.quick-entries-hero .quick-entry:last-child .qe-icon { margin: 0; font-size: 22px; }
+.quick-entries-hero .quick-entry:last-child .qe-title { margin: 0; flex: 0 0 auto; }
+.quick-entries-hero .quick-entry:last-child .qe-desc {
+  margin: 0; flex: 1 1 auto; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.quick-entries-hero .quick-entry:last-child .qe-arrow { margin: 0; flex: 0 0 auto; }
+@media (max-width: 560px) {
+  .quick-entries-hero .quick-entry:last-child { flex-wrap: wrap; }
+  .quick-entries-hero .quick-entry:last-child .qe-desc { flex-basis: 100%; white-space: normal; }
+}
+
+/* ---------- ⑬ 首次引导卡：与纸面同一套语言 ---------- */
+.onboarding-card {
+  border: 1px solid var(--line-2);
+  border-left: 3px solid var(--brand);
+  background: var(--card);
+  padding: 16px 18px;
+}
+.onboarding-card > b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+.onboarding-card p { font-size: 13px; line-height: 1.8; color: var(--muted); margin-top: 8px; }
+.onboarding-card p b { color: var(--ink); font-weight: 600; }
+.onboarding-card .btn { padding: 7px 14px; font-size: 12.5px; }
+.onboarding-card .btn-primary { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.onboarding-card .btn-primary:hover:not(:disabled) { background: var(--brand); border-color: var(--brand); }
+.quick-entries-hero .quick-entry:last-child .qe-no {
+  position: static;
+  order: -1;
+  margin-right: 2px;
+}
+
+/* ---------- ⑭ 空态：从「居中一段灰字」改成「图框占位」 ---------- */
+.empty-state {
+  position: relative;
+  border: 1px dashed var(--line-2);
+  background: var(--card);
+  padding: 38px 26px 30px;
+  text-align: center;
+}
+/* 角标代替文字标签：同一套框法在聊天起始位也不会读成「无数据」 */
+.empty-state::before {
+  content: "";
+  position: absolute; top: -1px; left: -1px;
+  width: 10px; height: 10px;
+  border-top: 1px solid var(--line-2);
+  border-left: 1px solid var(--line-2);
+}
+.empty-state .ic {
+  font-size: 26px;
+  line-height: 1;
+  margin-bottom: 14px;
+  filter: grayscale(1);
+  opacity: .5;
+}
+.empty-state p {
+  max-width: 560px;
+  margin: 0 auto;
+  font-size: 13.5px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.empty-state p b { color: var(--ink); font-weight: 600; }
+.empty-state .btn { margin-top: 16px; font-size: 12.5px; padding: 8px 14px; }
+
+/* ---------- ⑮ 求职看板的 KPI：与工作台规格瓦片同一套 ---------- */
+.board-stat {
+  background: var(--card);
+  border: 1px solid var(--line-2);
+  border-top: 2px solid var(--ink);
+  padding: 14px 16px;
+}
+.bs-num {
+  font-family: var(--serif);
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.bs-label {
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .12em;
+  color: var(--faint);
+}
+
+/* ---------- ⑯ 落地页首屏的三行小字：拉开层级，别挤成一片 ---------- */
+.hero-rotator {
+  margin: 10px 0 6px;
+  font-size: 11px;
+  letter-spacing: .06em;
+  color: var(--faint);
+}
+.hero-rotator .hr-prefix { color: var(--brand); }
+.eyebrow { margin-top: 6px; }
+.hero-sub { margin-top: 16px; }
 </style>
 <script>
 /* ============================================================
@@ -5676,7 +6209,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>2299</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>2352</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>30</b> 页技术文档</span>
           </div>
         </div>
@@ -5687,7 +6220,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2299 ／ pytest 57</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2352 ／ pytest 57</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -5733,7 +6266,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2299 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2352 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -5743,7 +6276,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2299 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2352 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -6132,13 +6665,33 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
        ======================================================== -->
   <div class="app-page active" data-page="dashboard">
 
+  <!-- ===== 指挥台（v49：准备度仪表 + 规格指标 + 下一步；由 appfx 填充） ===== -->
+  <section class="cmd-band" aria-label="准备度总览">
+    <div class="cmd-gauge">
+      <div class="cmd-gauge-txt">
+        <span class="cmd-k">模拟面试进度</span>
+        <span class="cmd-hint">正在读取本地状态…</span>
+      </div>
+    </div>
+    <div class="cmd-metrics">
+      <div class="cmd-metric"><span class="cmd-k">最近总分</span><span class="cmd-v">—</span></div>
+      <div class="cmd-metric"><span class="cmd-k">学习任务</span><span class="cmd-v">—</span></div>
+      <div class="cmd-metric"><span class="cmd-k">简历状态</span><span class="cmd-v cmd-v-txt">—</span></div>
+      <div class="cmd-metric"><span class="cmd-k">人格类型</span><span class="cmd-v cmd-v-txt">—</span></div>
+    </div>
+    <div class="cmd-next">
+      <span class="cmd-k">建议下一步</span>
+      <p class="cmd-next-t">读取进度后给出下一步建议。</p>
+    </div>
+  </section>
+
   <!-- ===== 首次访问引导（本地记住，可关闭） ===== -->
   <div class="onboarding-card fade-up" id="onboarding" hidden>
-    <b style="font-size:15px">👋 欢迎来到面镜</b>
+    <b>ONBOARDING · 欢迎来到面镜</b>
     <p>建议按这个顺序体验：<b>简历匹配 → 简历优化 → 模拟面试 → 评估报告</b>，3 分钟走完求职全流程。左侧栏可随时切换 8 个功能页（移动端在底部 Tab 栏）。</p>
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-primary btn-sm" onclick="switchTab('match')">从简历匹配开始 →</button>
-      <button class="btn btn-outline btn-sm" onclick="dismissOnboarding();switchTab('profile')">👤 先完善个人资料</button>
+      <button class="btn btn-outline btn-sm" onclick="dismissOnboarding();switchTab('profile')">先完善个人资料</button>
       <button class="btn btn-outline btn-sm" onclick="dismissOnboarding()">我知道了</button>
     </div>
   </div>
@@ -6149,49 +6702,56 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
     <h1>面镜 <span>FutureMirror</span></h1>
     <p>上传简历与目标岗位 JD，由 AI 面试官团队（HR / 技术 / 压力面 / 观察员）完成模拟面试，生成可解释的评分报告、能力雷达图与个性化学习路径。</p>
     <div class="hero-actions">
-      <button class="btn btn-primary" onclick="switchTab('match')">🎯 开始体验 Demo →</button>
-      <button class="btn btn-outline" onclick="document.getElementById('agents').scrollIntoView({behavior:'smooth'})">👥 认识面试圆桌</button>
+      <button class="btn btn-primary" onclick="switchTab('match')">开始体验 Demo →</button>
+      <button class="btn btn-outline" onclick="document.getElementById('agents').scrollIntoView({behavior:'smooth'})">认识面试圆桌</button>
     </div>
 
     <!-- 快速入口（美化 · 互动） -->
     <div class="quick-entries quick-entries-hero">
       <button class="quick-entry card qe-featured" onclick="switchTab('match')">
+        <span class="qe-no" aria-hidden="true">01</span>
         <div class="qe-icon" data-ic="match">📄</div>
         <div class="qe-title">简历匹配</div>
         <div class="qe-desc">上传简历 + 选岗位，一键生成匹配度分析</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('resume')">
+        <span class="qe-no" aria-hidden="true">02</span>
         <div class="qe-icon" data-ic="resume">✍️</div>
         <div class="qe-title">简历优化</div>
         <div class="qe-desc">6 维诊断 + 逐条改写建议，支持 LLM 深度改写</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('career')">
+        <span class="qe-no" aria-hidden="true">03</span>
         <div class="qe-icon" data-ic="career">🧭</div>
         <div class="qe-title">职业探索</div>
         <div class="qe-desc">按专业 + 技能 + 兴趣，匹配 24 个热门岗位</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card qe-featured" onclick="switchTab('interview')">
+        <span class="qe-no" aria-hidden="true">04</span>
         <div class="qe-icon" data-ic="interview">🎙️</div>
         <div class="qe-title">模拟面试</div>
         <div class="qe-desc">HR / 技术 / 压力面实时追问，含代码沙盒</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('rag')">
+        <span class="qe-no" aria-hidden="true">05</span>
         <div class="qe-icon" data-ic="rag">📖</div>
         <div class="qe-title">面经问答</div>
         <div class="qe-desc">RAG 检索 40+ 条合成面经，答案强制引用</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('report')">
+        <span class="qe-no" aria-hidden="true">06</span>
         <div class="qe-icon" data-ic="report">📊</div>
         <div class="qe-title">评估报告</div>
         <div class="qe-desc">五维雷达 + 可解释评分 + 7 天学习路径</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('plan')">
+        <span class="qe-no" aria-hidden="true">07</span>
         <div class="qe-icon" data-ic="plan">🗓</div>
         <div class="qe-title">学习计划</div>
         <div class="qe-desc">7 天路径落成每日任务 + 时间分配 + 完成打卡</div>
@@ -7210,7 +7770,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2299 项前端断言 + 57 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2352 项前端断言 + 57 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -7390,7 +7950,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2299 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2352 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -7769,6 +8329,7 @@ function applyRoute() {
     if (typeof renderPersonaCapsule === "function") { try { renderPersonaCapsule(); } catch (e) {} }
   }
   if (page === "report") { try { renderReport(); } catch (e) {} }
+  if (page === "dashboard") { try { if (window.__bpApp && window.__bpApp.renderCmdBand) window.__bpApp.renderCmdBand(); } catch (e) {} }
   if (page === "profile") { try { renderProfile(); } catch (e) {} }
   if (page === "jobs") { try { renderJobsPage(); } catch (e) {} }
   if (page === "quiz") { try { renderQuizPage(); } catch (e) {} }
@@ -13952,6 +14513,7 @@ function revealScan() {
   // v39：暴露给顶栏「⌘K」入口按钮（无障碍 / 触屏也可达）
   window.__openCommandPalette = open;
 })();
+"use strict";
 /* ============================================================
  * v27 · 全站交互层（Blueprint App Kit）
  * 设计要点（动态全部长在蓝图语言上，可感知但不抢戏）：
@@ -14381,6 +14943,119 @@ function revealScan() {
     FX.annotate = true;
   }
 
+  /* ---------- ⑨ v49 · 工作台指挥台（准备度仪表 / 规格指标 / 下一步） ----------
+   * 全部取自本地已有状态（本轮答题数、历史报告、学习任务、简历、人格），
+   * 不新增存储键、不发任何请求；缺数据一律显示「—」或「未测」，不编造分值。 */
+  function cmdGaugeSVG(n, total) {
+    const T = Math.max(1, total || 5);
+    const c = 50, r = 38, sw = 8;
+    const C = 2 * Math.PI * r;
+    const seg = C / T;
+    const gap = 6;
+    let arcs = "";
+    for (let i = 0; i < T; i++) {
+      const on = i < n;
+      arcs += `<circle cx="${c}" cy="${c}" r="${r}" fill="none"
+        stroke="${on ? "var(--brand)" : "var(--line)"}" stroke-width="${sw}"
+        stroke-dasharray="${(seg - gap).toFixed(2)} ${(C - seg + gap).toFixed(2)}"
+        transform="rotate(${(i * (360 / T) - 90).toFixed(2)} ${c} ${c})"/>`;
+    }
+    return `<svg viewBox="0 0 100 100" role="img" aria-label="已完成 ${n} / ${T} 轮">
+      ${arcs}
+      <text x="${c}" y="${c + 4}" text-anchor="middle" font-size="26" font-weight="700"
+        fill="var(--ink)" style="font-family:var(--serif);letter-spacing:-.02em">${n}</text>
+      <text x="${c}" y="${c + 17}" text-anchor="middle" font-size="9"
+        fill="var(--faint)" style="font-family:var(--mono);letter-spacing:.1em">/ ${T}</text>
+    </svg>`;
+  }
+  /* 历史总分趋势：只在有 ≥2 次记录时画，条高按区间归一；
+   * 单次记录不画——一个点不是趋势，画出来就是假信息。 */
+  function cmdSpark(totals) {
+    if (!totals || totals.length < 2) return "";
+    const lo = Math.min.apply(null, totals);
+    const hi = Math.max.apply(null, totals);
+    const span = hi - lo || 1;
+    const bars = totals.map((v, i) => {
+      const h = Math.round(4 + (v - lo) / span * 12);
+      const last = i === totals.length - 1;
+      return `<i style="height:${h}px;background:${last ? "var(--brand)" : "var(--line-2)"}"></i>`;
+    }).join("");
+    return `<span class="cmd-spark" aria-label="历史总分趋势">${bars}</span>`;
+  }
+  function cmdState() {
+    const g = (k, d) => { try { const v = store.get(k, d); return v == null ? d : v; } catch (e) { return d; } };
+    const turns = (typeof session !== "undefined" && session && session.turns) ? session.turns.length : 0;
+    const hist = g("fm_history", []) || [];
+    const last = hist.length ? Number(hist[hist.length - 1].total) : null;
+    let planDone = 0, planTotal = 0;
+    const plan = g("fm_plan", null);
+    if (plan && plan.days) plan.days.forEach(d => (d.tasks || []).forEach(t => { planTotal++; if (t.done) planDone++; }));
+    const mbti = g("fm_mbti", null);
+    const mbtiType = mbti && (mbti.type || mbti.result) ? String(mbti.type || mbti.result) : "";
+    const totals = hist.map(h => Number(h.total)).filter(v => isFinite(v)).slice(-8);
+    return {
+      turns, total: 5, rounds: hist.length, totals,
+      lastTotal: isFinite(last) ? last : null,
+      planDone, planTotal,
+      hasResume: !!String(g("fm_resume", "") || "").trim(),
+      mbtiType,
+    };
+  }
+  function cmdNext(s) {
+    if (!s.hasResume) return { t: "先上传简历与目标岗位 JD，拿到可解释的匹配结论。", b: "去简历匹配", go: "match" };
+    if (s.turns === 0 && s.rounds === 0) return { t: "简历已就绪。开始第一场模拟面试，5 位面试官会依次追问。", b: "开始模拟面试", go: "interview" };
+    if (s.turns > 0 && s.turns < 5) return { t: "本轮已答 " + s.turns + " 题，还差 " + (5 - s.turns) + " 题即可生成报告。", b: "继续本轮面试", go: "interview" };
+    if (s.rounds > 0) return { t: "已有报告。按最弱维度打开 7 天计划，把弱项练成可复述的答案。", b: "打开学习计划", go: "plan" };
+    return { t: "继续完成一轮面试，报告与能力画像才会更准。", b: "进入模拟面试", go: "interview" };
+  }
+  function renderCmdBand() {
+    const box = document.querySelector(".cmd-band");
+    if (!box) return;
+    const s = cmdState();
+    const nx = cmdNext(s);
+    const esc = v => (typeof escHtml === "function" ? escHtml(v) : String(v));
+    const num = v => (v == null || !isFinite(v)
+      ? '<span class="cmd-v-empty">--</span>'
+      : String(v));
+    /* 仪表读什么：正在面试时读本轮答题数，否则读已完成轮次——
+     * 两种状态都能对上号，不会出现「有 3 次报告却显示 0」的错位。 */
+    const live = s.turns > 0;
+    const gN = live ? s.turns : Math.min(s.rounds, s.total);
+    const gLabel = live ? "本轮答题进度" : "已完成模拟轮次";
+    const gHint = live
+      ? "答完 " + (s.total - s.turns) + " 题生成本轮报告"
+      : "完成 " + s.total + " 轮解锁完整能力画像";
+    box.innerHTML =
+      '<div class="cmd-gauge">' + cmdGaugeSVG(gN, s.total) +
+        '<div class="cmd-gauge-txt">' +
+          '<span class="cmd-k">' + gLabel + '</span>' +
+          '<span class="cmd-hint">' + gHint + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="cmd-metrics">' +
+        '<div class="cmd-metric"><span class="cmd-k">最近总分</span>' +
+          '<span class="cmd-v">' + num(s.lastTotal) + (s.lastTotal == null ? "" : "<i>/100</i>") + '</span>' +
+          cmdSpark(s.totals) + '</div>' +
+        '<div class="cmd-metric"><span class="cmd-k">学习任务</span>' +
+          '<span class="cmd-v">' + (s.planTotal ? s.planDone + "<i>/" + s.planTotal + "</i>" : '<span class="cmd-v-empty">--</span>') + '</span>' +
+          (s.planTotal ? '<span class="cmd-bar"><i style="width:' + Math.round(s.planDone / s.planTotal * 100) + '%"></i></span>' : '') + '</div>' +
+        '<div class="cmd-metric"><span class="cmd-k">简历状态</span>' +
+          '<span class="cmd-v cmd-v-txt">' + (s.hasResume ? "已就绪" : "待上传") + '</span></div>' +
+        '<div class="cmd-metric"><span class="cmd-k">人格类型</span>' +
+          '<span class="cmd-v cmd-v-txt">' + (s.mbtiType ? esc(s.mbtiType) : "未测") + '</span></div>' +
+      '</div>' +
+      '<div class="cmd-next">' +
+        '<span class="cmd-k">建议下一步</span>' +
+        '<p class="cmd-next-t">' + esc(nx.t) + '</p>' +
+        '<button class="btn btn-primary btn-sm" type="button" data-go="' + nx.go + '">' + nx.b + ' →</button>' +
+      '</div>';
+    Array.prototype.forEach.call(box.querySelectorAll("[data-go]"), b => {
+      b.addEventListener("click", () => { try { switchTab(b.dataset.go); } catch (e) {} });
+    });
+  }
+
+  FX.renderCmdBand = renderCmdBand;
+
   /* ---------- 入口 ---------- */
   function boot() {
     try { initAuthFx(); } catch (e) {}
@@ -14390,6 +15065,7 @@ function revealScan() {
     try { initEvalDraw(); } catch (e) {}
     try { initFormFx(); } catch (e) {}
     try { initAnnotation(); } catch (e) {}
+    try { renderCmdBand(); } catch (e) {}
     // 初始视图编舞（登录用户刷新后直接落在 app / auth 也生效）
     try {
       const active = document.querySelector(".view.active");

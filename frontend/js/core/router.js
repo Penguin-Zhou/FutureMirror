@@ -214,6 +214,7 @@ function applyRoute() {
     if (typeof renderPersonaCapsule === "function") { try { renderPersonaCapsule(); } catch (e) {} }
   }
   if (page === "report") { try { renderReport(); } catch (e) {} }
+  if (page === "dashboard") { try { if (window.__bpApp && window.__bpApp.renderCmdBand) window.__bpApp.renderCmdBand(); } catch (e) {} }
   if (page === "profile") { try { renderProfile(); } catch (e) {} }
   if (page === "jobs") { try { renderJobsPage(); } catch (e) {} }
   if (page === "quiz") { try { renderQuizPage(); } catch (e) {} }

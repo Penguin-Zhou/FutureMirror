@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2299 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2352 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -641,7 +641,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **2299 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2352 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -719,7 +719,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2299 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2352 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -910,6 +910,16 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v49：视觉升级，从「后台模板」到「一张工程规格书」（2026.10.31）
+
+> 功能已经够用之后，界面反而更像通用后台：卡片各自浮动、强调色到处出现、数字与标签同一字号、空态只有一段灰字，**没有一个地方回答「我现在到哪一步」**。这一版不加装饰——不引入投影、圆角、玻璃拟态、渐变（这四类都有断言守着），只把「高级感」放回版式与信息结构：等宽小标签对衬线大标题、数字统一表格对齐、页头一条短墨规、零散卡片合并成有分区的规格表。
+
+- **新增**：工作台首位「指挥台」——5 段仪表（对应 5 轮画像）+ 4 格指标（最近总分 / 学习任务 / 简历状态 / 人格类型）+ 下一步建议｜历史分数迷你趋势条｜学习任务完成率进度条
+- **口径**：无数据一律显示 `--` 而非 0 分｜趋势条仅 ≥2 次记录才画（一个点不是趋势）｜仪表读数随状态切换（面试中读本轮答题数，否则读已完成轮次），杜绝「有 3 次报告却显示 0」
+- **版式**：页头换成 56px 短墨规 + 贯通发丝线 + 30px 衬线标题｜面包屑与侧栏分组标签等宽化｜字号/间距收敛为 `--fs-*` / `--sp-*` 令牌
+- **结构**：四个数字瓦片并成一张有分区的规格条｜7 张入口卡编号 01–07、hover 出左上角标、第 7 张补满整行｜演示横幅从粉色告示牌收成图纸标题栏｜空态改虚线图框 + 去色图标
+- **指标**：前端断言 2299 → **2352**（新增 v49 套件 52 项）｜jsdom 套件 39 → **40 套**｜前端模块 44（不变）｜共享全局符号 736（不变）｜PDF **29 页**
 
 ### Beta 1.1.2 · 增量 v48：弹窗按钮不再被拖拽逻辑夺走点击（2026.10.31）
 

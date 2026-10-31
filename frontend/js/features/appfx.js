@@ -428,6 +428,119 @@
     FX.annotate = true;
   }
 
+  /* ---------- ⑨ v49 · 工作台指挥台（准备度仪表 / 规格指标 / 下一步） ----------
+   * 全部取自本地已有状态（本轮答题数、历史报告、学习任务、简历、人格），
+   * 不新增存储键、不发任何请求；缺数据一律显示「—」或「未测」，不编造分值。 */
+  function cmdGaugeSVG(n, total) {
+    const T = Math.max(1, total || 5);
+    const c = 50, r = 38, sw = 8;
+    const C = 2 * Math.PI * r;
+    const seg = C / T;
+    const gap = 6;
+    let arcs = "";
+    for (let i = 0; i < T; i++) {
+      const on = i < n;
+      arcs += `<circle cx="${c}" cy="${c}" r="${r}" fill="none"
+        stroke="${on ? "var(--brand)" : "var(--line)"}" stroke-width="${sw}"
+        stroke-dasharray="${(seg - gap).toFixed(2)} ${(C - seg + gap).toFixed(2)}"
+        transform="rotate(${(i * (360 / T) - 90).toFixed(2)} ${c} ${c})"/>`;
+    }
+    return `<svg viewBox="0 0 100 100" role="img" aria-label="已完成 ${n} / ${T} 轮">
+      ${arcs}
+      <text x="${c}" y="${c + 4}" text-anchor="middle" font-size="26" font-weight="700"
+        fill="var(--ink)" style="font-family:var(--serif);letter-spacing:-.02em">${n}</text>
+      <text x="${c}" y="${c + 17}" text-anchor="middle" font-size="9"
+        fill="var(--faint)" style="font-family:var(--mono);letter-spacing:.1em">/ ${T}</text>
+    </svg>`;
+  }
+  /* 历史总分趋势：只在有 ≥2 次记录时画，条高按区间归一；
+   * 单次记录不画——一个点不是趋势，画出来就是假信息。 */
+  function cmdSpark(totals) {
+    if (!totals || totals.length < 2) return "";
+    const lo = Math.min.apply(null, totals);
+    const hi = Math.max.apply(null, totals);
+    const span = hi - lo || 1;
+    const bars = totals.map((v, i) => {
+      const h = Math.round(4 + (v - lo) / span * 12);
+      const last = i === totals.length - 1;
+      return `<i style="height:${h}px;background:${last ? "var(--brand)" : "var(--line-2)"}"></i>`;
+    }).join("");
+    return `<span class="cmd-spark" aria-label="历史总分趋势">${bars}</span>`;
+  }
+  function cmdState() {
+    const g = (k, d) => { try { const v = store.get(k, d); return v == null ? d : v; } catch (e) { return d; } };
+    const turns = (typeof session !== "undefined" && session && session.turns) ? session.turns.length : 0;
+    const hist = g("fm_history", []) || [];
+    const last = hist.length ? Number(hist[hist.length - 1].total) : null;
+    let planDone = 0, planTotal = 0;
+    const plan = g("fm_plan", null);
+    if (plan && plan.days) plan.days.forEach(d => (d.tasks || []).forEach(t => { planTotal++; if (t.done) planDone++; }));
+    const mbti = g("fm_mbti", null);
+    const mbtiType = mbti && (mbti.type || mbti.result) ? String(mbti.type || mbti.result) : "";
+    const totals = hist.map(h => Number(h.total)).filter(v => isFinite(v)).slice(-8);
+    return {
+      turns, total: 5, rounds: hist.length, totals,
+      lastTotal: isFinite(last) ? last : null,
+      planDone, planTotal,
+      hasResume: !!String(g("fm_resume", "") || "").trim(),
+      mbtiType,
+    };
+  }
+  function cmdNext(s) {
+    if (!s.hasResume) return { t: "先上传简历与目标岗位 JD，拿到可解释的匹配结论。", b: "去简历匹配", go: "match" };
+    if (s.turns === 0 && s.rounds === 0) return { t: "简历已就绪。开始第一场模拟面试，5 位面试官会依次追问。", b: "开始模拟面试", go: "interview" };
+    if (s.turns > 0 && s.turns < 5) return { t: "本轮已答 " + s.turns + " 题，还差 " + (5 - s.turns) + " 题即可生成报告。", b: "继续本轮面试", go: "interview" };
+    if (s.rounds > 0) return { t: "已有报告。按最弱维度打开 7 天计划，把弱项练成可复述的答案。", b: "打开学习计划", go: "plan" };
+    return { t: "继续完成一轮面试，报告与能力画像才会更准。", b: "进入模拟面试", go: "interview" };
+  }
+  function renderCmdBand() {
+    const box = document.querySelector(".cmd-band");
+    if (!box) return;
+    const s = cmdState();
+    const nx = cmdNext(s);
+    const esc = v => (typeof escHtml === "function" ? escHtml(v) : String(v));
+    const num = v => (v == null || !isFinite(v)
+      ? '<span class="cmd-v-empty">--</span>'
+      : String(v));
+    /* 仪表读什么：正在面试时读本轮答题数，否则读已完成轮次——
+     * 两种状态都能对上号，不会出现「有 3 次报告却显示 0」的错位。 */
+    const live = s.turns > 0;
+    const gN = live ? s.turns : Math.min(s.rounds, s.total);
+    const gLabel = live ? "本轮答题进度" : "已完成模拟轮次";
+    const gHint = live
+      ? "答完 " + (s.total - s.turns) + " 题生成本轮报告"
+      : "完成 " + s.total + " 轮解锁完整能力画像";
+    box.innerHTML =
+      '<div class="cmd-gauge">' + cmdGaugeSVG(gN, s.total) +
+        '<div class="cmd-gauge-txt">' +
+          '<span class="cmd-k">' + gLabel + '</span>' +
+          '<span class="cmd-hint">' + gHint + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="cmd-metrics">' +
+        '<div class="cmd-metric"><span class="cmd-k">最近总分</span>' +
+          '<span class="cmd-v">' + num(s.lastTotal) + (s.lastTotal == null ? "" : "<i>/100</i>") + '</span>' +
+          cmdSpark(s.totals) + '</div>' +
+        '<div class="cmd-metric"><span class="cmd-k">学习任务</span>' +
+          '<span class="cmd-v">' + (s.planTotal ? s.planDone + "<i>/" + s.planTotal + "</i>" : '<span class="cmd-v-empty">--</span>') + '</span>' +
+          (s.planTotal ? '<span class="cmd-bar"><i style="width:' + Math.round(s.planDone / s.planTotal * 100) + '%"></i></span>' : '') + '</div>' +
+        '<div class="cmd-metric"><span class="cmd-k">简历状态</span>' +
+          '<span class="cmd-v cmd-v-txt">' + (s.hasResume ? "已就绪" : "待上传") + '</span></div>' +
+        '<div class="cmd-metric"><span class="cmd-k">人格类型</span>' +
+          '<span class="cmd-v cmd-v-txt">' + (s.mbtiType ? esc(s.mbtiType) : "未测") + '</span></div>' +
+      '</div>' +
+      '<div class="cmd-next">' +
+        '<span class="cmd-k">建议下一步</span>' +
+        '<p class="cmd-next-t">' + esc(nx.t) + '</p>' +
+        '<button class="btn btn-primary btn-sm" type="button" data-go="' + nx.go + '">' + nx.b + ' →</button>' +
+      '</div>';
+    Array.prototype.forEach.call(box.querySelectorAll("[data-go]"), b => {
+      b.addEventListener("click", () => { try { switchTab(b.dataset.go); } catch (e) {} });
+    });
+  }
+
+  FX.renderCmdBand = renderCmdBand;
+
   /* ---------- 入口 ---------- */
   function boot() {
     try { initAuthFx(); } catch (e) {}
@@ -437,6 +550,7 @@
     try { initEvalDraw(); } catch (e) {}
     try { initFormFx(); } catch (e) {}
     try { initAnnotation(); } catch (e) {}
+    try { renderCmdBand(); } catch (e) {}
     // 初始视图编舞（登录用户刷新后直接落在 app / auth 也生效）
     try {
       const active = document.querySelector(".view.active");

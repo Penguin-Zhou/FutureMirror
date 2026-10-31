@@ -144,7 +144,7 @@ try {
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>2299</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>2352</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>30</b> 页技术文档</span>
           </div>
         </div>
@@ -155,7 +155,7 @@ try {
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2299 ／ pytest 57</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2352 ／ pytest 57</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -201,7 +201,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2299 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2352 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -211,7 +211,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2299 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2352 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -600,13 +600,33 @@ try {
        ======================================================== -->
   <div class="app-page active" data-page="dashboard">
 
+  <!-- ===== 指挥台（v49：准备度仪表 + 规格指标 + 下一步；由 appfx 填充） ===== -->
+  <section class="cmd-band" aria-label="准备度总览">
+    <div class="cmd-gauge">
+      <div class="cmd-gauge-txt">
+        <span class="cmd-k">模拟面试进度</span>
+        <span class="cmd-hint">正在读取本地状态…</span>
+      </div>
+    </div>
+    <div class="cmd-metrics">
+      <div class="cmd-metric"><span class="cmd-k">最近总分</span><span class="cmd-v">—</span></div>
+      <div class="cmd-metric"><span class="cmd-k">学习任务</span><span class="cmd-v">—</span></div>
+      <div class="cmd-metric"><span class="cmd-k">简历状态</span><span class="cmd-v cmd-v-txt">—</span></div>
+      <div class="cmd-metric"><span class="cmd-k">人格类型</span><span class="cmd-v cmd-v-txt">—</span></div>
+    </div>
+    <div class="cmd-next">
+      <span class="cmd-k">建议下一步</span>
+      <p class="cmd-next-t">读取进度后给出下一步建议。</p>
+    </div>
+  </section>
+
   <!-- ===== 首次访问引导（本地记住，可关闭） ===== -->
   <div class="onboarding-card fade-up" id="onboarding" hidden>
-    <b style="font-size:15px">👋 欢迎来到面镜</b>
+    <b>ONBOARDING · 欢迎来到面镜</b>
     <p>建议按这个顺序体验：<b>简历匹配 → 简历优化 → 模拟面试 → 评估报告</b>，3 分钟走完求职全流程。左侧栏可随时切换 8 个功能页（移动端在底部 Tab 栏）。</p>
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-primary btn-sm" onclick="switchTab('match')">从简历匹配开始 →</button>
-      <button class="btn btn-outline btn-sm" onclick="dismissOnboarding();switchTab('profile')">👤 先完善个人资料</button>
+      <button class="btn btn-outline btn-sm" onclick="dismissOnboarding();switchTab('profile')">先完善个人资料</button>
       <button class="btn btn-outline btn-sm" onclick="dismissOnboarding()">我知道了</button>
     </div>
   </div>
@@ -617,49 +637,56 @@ try {
     <h1>面镜 <span>FutureMirror</span></h1>
     <p>上传简历与目标岗位 JD，由 AI 面试官团队（HR / 技术 / 压力面 / 观察员）完成模拟面试，生成可解释的评分报告、能力雷达图与个性化学习路径。</p>
     <div class="hero-actions">
-      <button class="btn btn-primary" onclick="switchTab('match')">🎯 开始体验 Demo →</button>
-      <button class="btn btn-outline" onclick="document.getElementById('agents').scrollIntoView({behavior:'smooth'})">👥 认识面试圆桌</button>
+      <button class="btn btn-primary" onclick="switchTab('match')">开始体验 Demo →</button>
+      <button class="btn btn-outline" onclick="document.getElementById('agents').scrollIntoView({behavior:'smooth'})">认识面试圆桌</button>
     </div>
 
     <!-- 快速入口（美化 · 互动） -->
     <div class="quick-entries quick-entries-hero">
       <button class="quick-entry card qe-featured" onclick="switchTab('match')">
+        <span class="qe-no" aria-hidden="true">01</span>
         <div class="qe-icon" data-ic="match">📄</div>
         <div class="qe-title">简历匹配</div>
         <div class="qe-desc">上传简历 + 选岗位，一键生成匹配度分析</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('resume')">
+        <span class="qe-no" aria-hidden="true">02</span>
         <div class="qe-icon" data-ic="resume">✍️</div>
         <div class="qe-title">简历优化</div>
         <div class="qe-desc">6 维诊断 + 逐条改写建议，支持 LLM 深度改写</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('career')">
+        <span class="qe-no" aria-hidden="true">03</span>
         <div class="qe-icon" data-ic="career">🧭</div>
         <div class="qe-title">职业探索</div>
         <div class="qe-desc">按专业 + 技能 + 兴趣，匹配 24 个热门岗位</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card qe-featured" onclick="switchTab('interview')">
+        <span class="qe-no" aria-hidden="true">04</span>
         <div class="qe-icon" data-ic="interview">🎙️</div>
         <div class="qe-title">模拟面试</div>
         <div class="qe-desc">HR / 技术 / 压力面实时追问，含代码沙盒</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('rag')">
+        <span class="qe-no" aria-hidden="true">05</span>
         <div class="qe-icon" data-ic="rag">📖</div>
         <div class="qe-title">面经问答</div>
         <div class="qe-desc">RAG 检索 40+ 条合成面经，答案强制引用</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('report')">
+        <span class="qe-no" aria-hidden="true">06</span>
         <div class="qe-icon" data-ic="report">📊</div>
         <div class="qe-title">评估报告</div>
         <div class="qe-desc">五维雷达 + 可解释评分 + 7 天学习路径</div>
         <div class="qe-arrow">开始 →</div>
       </button>
       <button class="quick-entry card" onclick="switchTab('plan')">
+        <span class="qe-no" aria-hidden="true">07</span>
         <div class="qe-icon" data-ic="plan">🗓</div>
         <div class="qe-title">学习计划</div>
         <div class="qe-desc">7 天路径落成每日任务 + 时间分配 + 完成打卡</div>
@@ -1678,7 +1705,7 @@ try {
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2299 项前端断言 + 57 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2352 项前端断言 + 57 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -1858,7 +1885,7 @@ try {
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2299 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2352 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
