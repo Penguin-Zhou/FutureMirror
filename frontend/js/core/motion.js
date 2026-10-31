@@ -131,21 +131,33 @@
   }
 
   /* ⑧ 可拖拽 / 可调整大小弹窗（transform 平移，不破坏居中布局） */
+  /* v48：两处修正。
+     ① 不再用指针捕获（pointer capture）—— 抓手就是整个 .modal-box 时，捕获会把后续
+        pointerup / mouseup / click 全部重定向到弹窗本身，里面按钮的 onclick
+        永远收不到事件（键盘 Enter 正常，鼠标点「进入」毫无反应）。
+     ② 在按钮、输入框等可交互元素上按下时不启动拖拽，避免拖拽抢走点击。 */
+  const DRAG_SKIP = 'button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]';
+  function inInteractive(el) {
+    return !!(el && el.closest && el.closest(DRAG_SKIP));
+  }
   function makeDraggable(box, grip) {
     let on = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    const stop = () => { on = false; };
     grip.addEventListener("pointerdown", e => {
       if (e.button) return;
+      if (inInteractive(e.target)) return;
       on = true; sx = e.clientX; sy = e.clientY;
       const m = /translate3d\((-?[\d.]+)px,\s*(-?[\d.]+)px/.exec(box.style.transform || "");
       ox = m ? parseFloat(m[1]) : 0; oy = m ? parseFloat(m[2]) : 0;
-      if (grip.setPointerCapture) { try { grip.setPointerCapture(e.pointerId); } catch (err) {} }
+      /* 入场动画用的 fill:both 会一直压着内联 transform，先解除动画才拖得动 */
+      box.style.animation = "none";
     });
-    grip.addEventListener("pointermove", e => {
+    doc.addEventListener("pointermove", e => {
       if (!on) return;
       box.style.transform = "translate3d(" + (ox + e.clientX - sx) + "px," + (oy + e.clientY - sy) + "px,0)";
     });
-    grip.addEventListener("pointerup", () => { on = false; });
-    grip.addEventListener("pointercancel", () => { on = false; });
+    doc.addEventListener("pointerup", stop);
+    doc.addEventListener("pointercancel", stop);
   }
   function makeResizable(box, handle) {
     let on = false, sw = 0, sh = 0, sx = 0, sy = 0;

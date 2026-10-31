@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2269</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2299</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -507,6 +507,41 @@ body {
         <div class="metric"><div class="m-val">32</div><div class="m-label">v33 新增断言</div></div>
         <div class="metric"><div class="m-val">1522</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v48 · 弹窗按钮不再被拖拽逻辑夺走点击
+       ======================================================== -->
+  <div class="version" id="v48">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 弹窗点击修复（v48）</span>
+      <span class="v-title">密码输完了，点「进入」却没反应</span>
+      <span class="v-date">2026.10.31</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        上一版把「慢网时按钮比程序先到」修好了，但反馈依旧是「进不去」。
+        继续复现才发现是第二个、也是真正卡住的那一个：<strong>弹窗里的按钮收不到点击</strong>。
+        弹窗支持拖动，抓手在没有 <code>.modal-head</code> 时会回退成<strong>整个弹窗</strong>；
+        于是按下任何位置（包括「进入」按钮）都会触发指针捕获，后续的 <code>pointerup</code> / <code>mouseup</code> / <code>click</code>
+        被整体重定向到弹窗本身，按钮上的 <code>onclick</code> 永远收不到事件。
+        <strong>键盘回车提交反而正常</strong>——这正是它容易被误判成「网络慢」或「密码错」的原因。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>去掉指针捕获</b>：拖动改用 document 级监听，不再把弹窗内的事件「关在弹窗里」</div>
+        <div class="vh-item"><b>可交互元素不拖</b>：在按钮、输入框、链接、标签上按下时直接不启动拖拽</div>
+        <div class="vh-item"><b>拖拽本身保住</b>：在弹窗空白处按住仍可拖动，顺带修掉入场动画压住位移的老问题</div>
+        <div class="vh-item"><b>影响面已核查</b>：开发者门禁与 Prompt 查看器两处弹窗，取消 / 进入 / 关闭均恢复鼠标可点</div>
+        <div class="vh-item"><b>键盘兜底不变</b>：回车提交照旧，鼠标失效时仍有一条路进得去</div>
+        <div class="vh-item"><b>回归有护栏</b>：新增 30 项断言，结构上禁止再引入指针捕获</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">30</div><div class="m-label">v48 新增断言</div></div>
+        <div class="metric"><div class="m-val">2299</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">39</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">0</div><div class="m-label">新增运行时依赖</div></div>
       </div>
     </div>
   </div>

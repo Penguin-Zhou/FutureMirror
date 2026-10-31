@@ -5676,7 +5676,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>2269</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>2299</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>30</b> 页技术文档</span>
           </div>
         </div>
@@ -5687,7 +5687,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2269 ／ pytest 57</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2299 ／ pytest 57</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -5733,7 +5733,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2269 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2299 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -5743,7 +5743,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2269 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2299 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -7210,7 +7210,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2269 项前端断言 + 57 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2299 项前端断言 + 57 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -7390,7 +7390,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2269 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2299 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -20290,21 +20290,33 @@ function refreshBackendUi() {
   }
 
   /* ⑧ 可拖拽 / 可调整大小弹窗（transform 平移，不破坏居中布局） */
+  /* v48：两处修正。
+     ① 不再用指针捕获（pointer capture）—— 抓手就是整个 .modal-box 时，捕获会把后续
+        pointerup / mouseup / click 全部重定向到弹窗本身，里面按钮的 onclick
+        永远收不到事件（键盘 Enter 正常，鼠标点「进入」毫无反应）。
+     ② 在按钮、输入框等可交互元素上按下时不启动拖拽，避免拖拽抢走点击。 */
+  const DRAG_SKIP = 'button, a, input, select, textarea, label, [role="button"], [contenteditable="true"]';
+  function inInteractive(el) {
+    return !!(el && el.closest && el.closest(DRAG_SKIP));
+  }
   function makeDraggable(box, grip) {
     let on = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    const stop = () => { on = false; };
     grip.addEventListener("pointerdown", e => {
       if (e.button) return;
+      if (inInteractive(e.target)) return;
       on = true; sx = e.clientX; sy = e.clientY;
       const m = /translate3d\((-?[\d.]+)px,\s*(-?[\d.]+)px/.exec(box.style.transform || "");
       ox = m ? parseFloat(m[1]) : 0; oy = m ? parseFloat(m[2]) : 0;
-      if (grip.setPointerCapture) { try { grip.setPointerCapture(e.pointerId); } catch (err) {} }
+      /* 入场动画用的 fill:both 会一直压着内联 transform，先解除动画才拖得动 */
+      box.style.animation = "none";
     });
-    grip.addEventListener("pointermove", e => {
+    doc.addEventListener("pointermove", e => {
       if (!on) return;
       box.style.transform = "translate3d(" + (ox + e.clientX - sx) + "px," + (oy + e.clientY - sy) + "px,0)";
     });
-    grip.addEventListener("pointerup", () => { on = false; });
-    grip.addEventListener("pointercancel", () => { on = false; });
+    doc.addEventListener("pointerup", stop);
+    doc.addEventListener("pointercancel", stop);
   }
   function makeResizable(box, handle) {
     let on = false, sw = 0, sh = 0, sx = 0, sy = 0;

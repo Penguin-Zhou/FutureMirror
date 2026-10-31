@@ -185,7 +185,7 @@ npm run test:demo
 | --------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | 页面显示「未连接」，报告无「已落库」          | 后端未启动 / 端口不对 / CORS 拒绝                        | 确认 `uvicorn` 在 8000；页面用 `http://localhost:5173` 打开；`CORS_ORIGINS` 与前端端口一致                   |
 | 登录后提示「邮箱或密码不正确」             | 后端在线但该账号只在本地注册过，或未注册                          | 用演示账号一键登录，或先在后端注册（注册即写 SQLite）                                                              |
-| 点了按钮没反应（如「开发者模式」） | 演示页为单文件全内联，主程序位于文档末尾；网络较慢时页面先画出来、程序尚未执行，此期间的点击会因函数未定义而无效 | v47 起已在页面底部提示「载入中 · 交互稍后可用」，被拦下的点击会在就绪后自动补发；若超过 20 秒仍显示「载入较慢」，刷新或改用国内镜像 |
+| 点了按钮没反应（如「开发者模式」） | ① 演示页为单文件全内联，主程序位于文档末尾，网络较慢时页面先画出来、程序尚未执行，此时点击因函数未定义而无效；② v48 之前弹窗的拖拽逻辑会夺走按钮点击，表现为密码输完点「进入」毫无反应（回车反而正常） | ① v47 起页面底部提示「载入中 · 交互稍后可用」，被拦下的点击就绪后自动补发；② v48 起弹窗内按钮可正常点击，旧版本可用回车提交 |
 | 后端启动报 `ModuleNotFoundError` | 依赖未装到当前解释器                                    | 确认已激活 `.venv` 后重新 `pip install -r requirements.txt`                                         |
 | 对话不走模型、只要 Mock              | `.env` 的 `LLM_API_KEY` 为空或 Key 无效             | 填 Key 后重启 uvicorn；`/api/health` 的 `llm_ready` 应为 `true`                                     |
 | 「⚡ 加载端侧模型 MiniLM」一直转圈/失败    | 站点上缺 `models/` 目录（未随站点发布），回落到外网源后又被 CORS/网络挡住 | 线上两个站点已自托管权重，正常可直接加载；本地自建站点先跑 `npm run model:fetch` 再发布。失败时属预期降级：状态条会逐源列出失败原因并继续用离线 hash 向量 |
@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2269 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2299 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -641,7 +641,7 @@ node scripts/test-beta1-vector-jsdom.js # 端侧向量检索：分词/BM25/向�
 node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项）
 ```
 
-合计 **2269 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2299 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -719,7 +719,7 @@ node scripts/test-frontend-modules.js   # 模块版独立启动验证（28 项�
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2269 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2299 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -910,6 +910,14 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v48：弹窗按钮不再被拖拽逻辑夺走点击（2026.10.31）
+
+> v47 修好了「慢网时按钮比程序先到」，但反馈仍是「进不去」。继续复现发现第二个、也是真正卡住的原因：**弹窗里的按钮收不到点击**。弹窗支持拖动，抓手在没有 `.modal-head` 时会回退成整个弹窗，于是按下任何位置（包括「进入」按钮）都会触发指针捕获，后续 `pointerup` / `mouseup` / `click` 被整体重定向到弹窗本身，按钮的 `onclick` 永远收不到事件。**键盘回车提交反而正常**——这正是它容易被误判成「网络慢」或「密码错」的原因。
+
+- **修复**：拖拽不再使用指针捕获，改用 document 级 `pointermove` / `pointerup` 监听｜在按钮、输入框、链接、label 等可交互元素上按下时不启动拖拽｜拖动前解除入场动画，避免 `fill:both` 压住内联 `transform`
+- **影响面**：开发者门禁（进入 / 取消）与 Prompt 查看器（关闭）两处弹窗，鼠标点击全部恢复；键盘回车路径不变
+- **指标**：前端断言 2269 → **2299**（新增 v48 套件 30 项）｜jsdom 套件 38 → **39 套**｜前端模块 44（不变）｜共享全局符号 736（不变）
 
 ### Beta 1.1.2 · 增量 v47：启动守卫（2026.10.31）
 
