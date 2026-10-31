@@ -103,7 +103,7 @@
 | 主站（GitHub Pages） | <https://penguin-zhou.github.io/FutureMirror/>  | 与仓库同源，随 `gh-pages` 分支更新；构建时注入后端地址，跨域连接真实 API       |
 | 国内直连镜像           | <https://futuremirror-demo.app.workbuddy.host/> | 由 FastAPI 后端同源托管（页面 + API + 文档 + 模型同一域名），国内网络直连更快；github.io 打不开时用这个 |
 
-**方式 2（本地离线）**：打开仓库内的 `public/futuremirror-demo.html`（约 499KB，所有 CSS/JS 内联，默认零外部请求）。
+**方式 2（本地离线）**：打开仓库内的 `public/futuremirror-demo.html`（约 1.1MB，所有 CSS/JS 内联，默认零外部请求）。
 
 ```bash
 # 本地离线演示（自动走本地 Mock 降级）：直接双击 public/futuremirror-demo.html
@@ -521,8 +521,8 @@ FastAPI 后端（backend/）── JWT 鉴权 ── SQLite 持久化（面试�
 | 形态              | 位置                              | 定位                                                                                |
 | --------------- | ------------------------------- | --------------------------------------------------------------------------------- |
 | **FastAPI 后端**  | `backend/`                      | 演示版的后端适配层：JWT 鉴权、SQLite 持久化、GLM SSE 流式代理（API Key 只存服务端环境变量）、可解释评分引擎               |
-| **模块版前端**       | `frontend/`                     | 由单文件演示版机械拆分而成（38 个 JS 模块 + 3 层 CSS），行为与单文件版逐字节等价                                  |
-| **单文件演示版**      | `public/futuremirror-demo.html` | 零依赖、可离线运行的演示页（约 499KB，所有 CSS/JS 内联，默认零外部请求；仅主动点「加载端侧模型」时才从**同源 `models/`** 取一次权重） |
+| **模块版前端**       | `frontend/`                     | 由单文件演示版机械拆分而成（44 个 JS 模块 + 3 层 CSS），行为与单文件版逐字节等价                                  |
+| **单文件演示版**      | `public/futuremirror-demo.html` | 零依赖、可离线运行的演示页（约 1.1MB，所有 CSS/JS 内联，默认零外部请求；仅主动点「加载端侧模型」时才从**同源 `models/`** 取一次权重） |
 
 - **演示版与后端的关系**：演示版检测 `http://localhost:8000` 后端；在线则对话 / 登录 / 报告生成全部走后端（Key 零接触），离线则自动回退「浏览器直连 Key → 本地 Mock」，功能不减。
 - **单文件版与模块版的关系**：`scripts/split-frontend.js` 从单文件版按「版本横幅」机械拆分出 `frontend/`；`scripts/build-demo.js` 反向合并回单文件（除一行 hashchange 监听注册随 handler 归位外**逐字节一致**）。`scripts/test-frontend-modules.js` 用 jsdom 真实加载模块版验证独立启动（28 项）。
@@ -576,7 +576,7 @@ futuremirror/
 │   ├── requirements.txt            # 后端依赖清单（版本固定）
 │   └── .env.example                # 复制为 .env 填 Key；.env 永不进仓库
 ├── frontend/                       # 模块版前端（由单文件版拆分，行为逐字节等价）
-│   ├── index.html                  # 骨架 + 3 张 link + 38 个 script（按依赖序）
+│   ├── index.html                  # 骨架 + 3 张 link + 44 个 script（按依赖序）
 │   ├── css/                        # tokens / theme / app 三层
 │   ├── js/
 │   │   ├── core/                   # store / auth / theme / router / api / boot / reveal …
@@ -586,7 +586,7 @@ futuremirror/
 │   ├── eslint-globals.json         # 共享全局符号表（生成后入库，保证 lint 可复现）
 │   └── build-manifest.json         # 拆分清单（build-demo.js 依据）
 ├── public/
-│   ├── futuremirror-demo.html      # 单文件演示版（build-demo.js 产物，648KB 自包含）
+│   ├── futuremirror-demo.html      # 单文件演示版（build-demo.js 产物，1.1MB 自包含）
 │   ├── changelog.html              # 更新日志页（build-changelog.js 产物）
 │   └── models/                     # 端侧模型权重（fetch-model.js 下载，已 gitignore）
 ├── changelog/                      # 更新日志源（content.js + changelog.css）
