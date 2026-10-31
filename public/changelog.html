@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2221</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2269</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -507,6 +507,41 @@ body {
         <div class="metric"><div class="m-val">32</div><div class="m-label">v33 新增断言</div></div>
         <div class="metric"><div class="m-val">1522</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">ESLint 错误</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v47 · 启动守卫
+       ======================================================== -->
+  <div class="version" id="v47">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 启动守卫（v47）</span>
+      <span class="v-title">「点了没反应」不是坏了，是按钮比程序先到</span>
+      <span class="v-date">2026.10.31</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        反馈是「开发者模式进不去」。复现后发现问题不在开发者模式本身：
+        演示页是单文件交付，约 0.9 MB 的样式与逻辑全部内联，主程序位于文档末尾；
+        网络较慢时（GitHub Pages 冷启动实测约 20 秒）<strong>HTML 已经把按钮画出来了，主程序却还没执行</strong>，
+        此时点击走的是内联 <code>onclick</code>，函数尚未定义——浏览器抛一条没人看得见的报错，界面纹丝不动。
+        这一版加一层<strong>启动守卫</strong>：脚本未就绪时把状态写在 <code>html[data-boot]</code> 上，顶部给进度条、底部给一句实话；
+        这段时间内的点击被拦下来并明确回一句「已记下」，主程序就绪后<strong>自动补发那一次点击</strong>，用户不必点第二遍。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>不再静默失败</b>：点下去要么生效，要么明确告诉你还在载入，不存在「点了像没点」</div>
+        <div class="vh-item"><b>不用点第二遍</b>：被拦下的那一次点击会被记住，就绪后自动补发</div>
+        <div class="vh-item"><b>慢网有话说</b>：20 秒仍未就绪则提示可刷新或改用国内镜像，而不是干等着</div>
+        <div class="vh-item"><b>只拦该拦的</b>：仅拦截依赖主程序的 <code>onclick</code> 元素，普通链接与原生按钮照常</div>
+        <div class="vh-item"><b>就绪即退场</b>：解除后摘掉监听、撤下提示，不参与任何后续交互</div>
+        <div class="vh-item"><b>零依赖零体积</b>：守卫是 <code>&lt;head&gt;</code> 里一段内联逻辑，不新增文件、不新增请求</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">48</div><div class="m-label">v47 新增断言</div></div>
+        <div class="metric"><div class="m-val">2269</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">38</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">0</div><div class="m-label">新增运行时依赖</div></div>
       </div>
     </div>
   </div>

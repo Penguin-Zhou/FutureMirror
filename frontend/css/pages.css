@@ -1923,3 +1923,48 @@ html.perf-calm .sheet-panel { animation: none; }
 }
 .sheet-scroll .ev-unit { margin-top: 0; }
 .sheet-scroll .sheet-body { overflow: visible; flex: none; margin-top: 10px; }
+
+/* ============================================================
+ * v47 · 启动守卫的可见反馈（脚本未就绪期间）
+ *   单文件演示包较大：HTML 渲染完成、按钮可见，但主程序还在网络上传送。
+ *   这段时间内点击会「毫无反应」，所以给出顶部进度条与底部提示，
+ *   让用户知道是还在载入，而不是功能坏了。就绪后 data-boot=ready，全部撤下。
+ * ============================================================ */
+html[data-boot="loading"]::after,
+html[data-boot="slow"]::after,
+html[data-boot="wait"]::after {
+  content: "";
+  position: fixed; left: 0; top: 0; right: 0; height: 2px;
+  z-index: 9998; background: var(--brand);
+  transform-origin: left center;
+  animation: fm-boot-bar 1.4s ease-in-out infinite;
+}
+html[data-boot="wait"]::after { opacity: 1; }
+@keyframes fm-boot-bar {
+  0% { transform: scaleX(.05); }
+  55% { transform: scaleX(.7); }
+  100% { transform: scaleX(1); }
+}
+html[data-boot="loading"]::before,
+html[data-boot="slow"]::before,
+html[data-boot="wait"]::before {
+  content: "页面载入中 · 交互稍后可用";
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+  z-index: 9999; max-width: min(92vw, 480px);
+  padding: 6px 12px; border: 1px solid var(--ink);
+  background: var(--ink); color: var(--bg);
+  font-family: var(--mono); font-size: 12px; line-height: 1.45;
+  letter-spacing: .04em; text-align: center;
+  pointer-events: none;
+}
+html[data-boot="wait"]::before {
+  content: "仍在载入 · 这次点击已记下，就绪后自动执行";
+  background: var(--brand); border-color: var(--brand); color: var(--card);
+}
+html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或改用国内镜像访问"; }
+/* 尊重减弱动效与低端设备：提示保留，进度条不再呼吸 */
+@media (prefers-reduced-motion: reduce), (max-width: 640px) {
+  html[data-boot="loading"]::after,
+  html[data-boot="slow"]::after,
+  html[data-boot="wait"]::after { animation: none; transform: scaleX(1); }
+}
