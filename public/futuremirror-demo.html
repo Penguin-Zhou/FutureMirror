@@ -1830,6 +1830,22 @@ try {
   font-style: normal;
   font-display: swap;
 }
+
+/* ------------------------------------------------------------
+ * v57 · 引子行字型：霞鹜文楷（LXGW WenKai）子集
+ * ------------------------------------------------------------
+ * 主行是宋体的「论断」，引子行要的是「人说的话」——文楷带笔锋起收，
+ * 放大后看得出是写出来的，与宋体的印刷感形成对照。
+ * 同样只含标语用到的字，woff2 约 5 KB，base64 内联，不发额外请求。
+ * 文案若改动同样要重跑 node scripts/fetch-title-font.js。
+ * ------------------------------------------------------------ */
+@font-face {
+  font-family: "FM Kai";
+  src: url(data:font/woff2;base64,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) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
   /* ============================================================
    * v21 · 蓝图编辑风（Blueprint Editorial）视觉重构
    * ------------------------------------------------------------
@@ -2160,12 +2176,12 @@ try {
     display: grid; grid-template-columns: 1.4fr 0.6fr; gap: 44px; align-items: start;
   }
   @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 28px; } }
-  .hero-main .eyebrow { margin-bottom: 20px; }
+  .hero-main .eyebrow { margin-bottom: 26px; }
   .landing h1.hero-title {
     font-size: clamp(40px, 5.8vw, 74px); font-weight: 800;
     letter-spacing: -.01em; line-height: 1; text-align: left; margin: 0; max-width: 660px;
   }
-  .landing .hero-sub { margin: 20px 0 0; text-align: left; max-width: 520px; font-size: 16px; }
+  .landing .hero-sub { margin: 30px 0 0; text-align: left; max-width: 520px; font-size: 16px; }
   .landing .hero-cta { justify-content: flex-start; margin-top: 26px; }
   .landing .hero-cta .btn { padding: 12px 26px; font-size: 14px; border-radius: 0; }
   .hero-meta-row {
@@ -3801,28 +3817,45 @@ try {
   font-feature-settings: "palt" 1;      /* 比例标点：句号不占满格，行尾收得紧 */
   letter-spacing: -.005em; color: var(--ink);
 }
-/* 一句话拆两行，但两行不等长：引子行压到主行的 0.44，句子从左上向右下张开成楔形。
- * 灰不是因为它次要，而是要把全部重量让给墨色那七个字。 */
+/* 一句话拆两行，两行不等长，也不「同体」：
+ * 引子行用霞鹜文楷——带笔锋起收，放大后看得出是写出来的，是「人说的话」；
+ * 主行用思源宋体 800——横细竖粗，是「印上去的论断」。
+ * 人写的一句 → 印出来的一句，正好是这款产品的意思：经历变成可量化的结论。
+ * 引子行压到主行的 0.46，字距放开；灰一点不是因为它次要，
+ * 而是把全部重量让给墨色那七个字。 */
 .hero-title .ht-l1 {
-  font-size: .44em; font-weight: 500; line-height: 1.55;
-  letter-spacing: .18em; color: color-mix(in srgb, var(--ink) 66%, transparent);
+  font-family: "FM Kai", var(--serif);
+  font-size: .48em; font-weight: 400; line-height: 1.5;
+  letter-spacing: .1em; color: color-mix(in srgb, var(--ink) 80%, transparent);
 }
 /* 主行：满字号 + 800 实例；负字距让大字咬紧，宋体的横细竖粗才立得起来 */
 .hero-title .ht-l2 {
-  font-size: 1em; font-weight: 800; line-height: 1.08;
-  margin-top: .05em; letter-spacing: -.025em;
+  font-size: 1em; font-weight: 800; line-height: 1.06;
+  margin-top: .13em; letter-spacing: -.025em;
 }
 
 /* 逐字本体：inline-block 才能各自裁切 */
 .hero-title .ch { display: inline-block; }
-/* 每个字自左缘向右描出——墨色先落到位，笔锋再从字身上扫过去。
- * 引子行步进 22ms、主行 34ms：小字走快、大字走慢，像同一支笔先疾后顿；
- * 主行提前到 420ms 起笔，两行是同时在写，不是写完一行再写下一行。 */
-#view-landing.landing-enter .hero-title .ch {
-  animation: chBrush .42s cubic-bezier(.22,1,.36,1) both;
-  animation-delay: calc(var(--i, 0) * 22ms + 300ms);
+
+/* ---- 两行两种写法：手写的渗进去，印刷的压上去 ----
+ *
+ * 引子行走「墨渗」：从 4px 的虚影沉到实处，顺带 3px 落定——
+ * 像笔尖触纸后墨往纤维里吃，边缘先糊后清。没有裁切，所以不会有半个字。 */
+#view-landing.landing-enter .hero-title .ht-l1 .ch {
+  animation: inkBleed .58s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--i, 0) * 22ms + 220ms);
 }
+@keyframes inkBleed {
+  0% { opacity: 0; filter: blur(4px); transform: translateY(3px); }
+  55% { opacity: 1; }
+  100% { opacity: 1; filter: blur(0); transform: none; }
+}
+
+/* 主行走「描出」：墨色先在 16% 处到满，笔锋再从字身上扫过去——
+ * 先有墨、后见笔锋，不是整字淡入。步进 34ms，比引子行慢，大字本来该慢。
+ * 主行 420ms 起笔，不等引子行写完：两行是同一支笔同时在写。 */
 #view-landing.landing-enter .hero-title .ht-l2 .ch {
+  animation: chBrush .42s cubic-bezier(.22,1,.36,1) both;
   animation-delay: calc((var(--i, 0) - var(--l2b, 9)) * 34ms + 420ms);
 }
 @keyframes chBrush {
@@ -3830,13 +3863,14 @@ try {
   16% { opacity: 1; }
   100% { opacity: 1; clip-path: inset(0 0 0 0); }
 }
-/* 引子行另给一条字距收敛：.34em → .18em，字像是从远处聚拢到这一行 */
+
+/* 引子行另给一条字距收敛：.26em → .1em，字像从远处聚到这一行 */
 #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split {
   animation: l1Track .92s cubic-bezier(.22,1,.36,1) both;
 }
 @keyframes l1Track {
-  from { letter-spacing: .34em; }
-  to { letter-spacing: .18em; }
+  from { letter-spacing: .26em; }
+  to { letter-spacing: .1em; }
 }
 /* 拆字没跑到（旧包 / 脚本报错）时，仍走 v54 的整行揭载 */
 #view-landing.landing-enter .hero-title .ht-inner:not(.is-split) {
@@ -3939,18 +3973,18 @@ try {
   .ht-frame .hf-c { width: 11px; height: 11px; }
   /* 窄屏把整句顶到接近满宽：主行七个字 × 0.975em 要落在可用宽度内 */
   .landing h1.hero-title { font-size: clamp(30px, 11.6vw, 46px); }
-  /* 引子行在小屏按 0.44 会掉到 14px，读不清；抬到 0.5 并收一点字距 */
-  .hero-title .ht-l1 { font-size: .5em; letter-spacing: .14em; }
+  /* 引子行在小屏按 0.46 会掉到 14px，文楷笔画细，读不清；抬到 0.52 并收一点字距 */
+  .hero-title .ht-l1 { font-size: .52em; letter-spacing: .08em; }
   #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation-name: l1TrackSm; }
 }
-@keyframes l1TrackSm { from { letter-spacing: .3em; } to { letter-spacing: .14em; } }
+@keyframes l1TrackSm { from { letter-spacing: .24em; } to { letter-spacing: .08em; } }
 /* 平板（641–900）是单列，标题按窄屏那套走会明显偏小 */
 @media (min-width: 641px) and (max-width: 900px) {
   .landing h1.hero-title { font-size: clamp(44px, 8vw, 68px); }
-  .hero-title .ht-l1 { font-size: .48em; letter-spacing: .16em; }
+  .hero-title .ht-l1 { font-size: .5em; letter-spacing: .1em; }
   #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation-name: l1TrackMd; }
 }
-@keyframes l1TrackMd { from { letter-spacing: .32em; } to { letter-spacing: .16em; } }
+@keyframes l1TrackMd { from { letter-spacing: .26em; } to { letter-spacing: .1em; } }
 /* 关键词是一个词组，拆到两行就不成词组了：宁可整块掉到下一行 */
 .hero-title .grad { white-space: nowrap; }
 
@@ -3970,7 +4004,8 @@ try {
   .radar-orbit { animation: none; }
   .bp-ticker:hover .bp-ticker-track { animation-play-state: running; }
   /* v55：字已拆开，静态时必须是「全部可见 + 高亮铺满 + 角标不出现」 */
-  #view-landing.landing-enter .hero-title .ch { animation: none; clip-path: none; opacity: 1; }
+  /* 引子行的墨渗靠 filter + translate 起手，降级时要一并抹掉 */
+  #view-landing.landing-enter .hero-title .ch { animation: none; clip-path: none; filter: none; transform: none; opacity: 1; }
   #view-landing.landing-enter .hero-title .gw { background-size: 100% .1em; transition: none; }
   /* 引子行的字距收敛是独立选择器，得单独关掉，否则减少动效时还在偷偷收字距 */
   #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation: none; }
@@ -6629,7 +6664,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>2674</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>2708</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>30</b> 页技术文档</span>
           </div>
         </div>
@@ -6640,7 +6675,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2674 ／ pytest 57</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2708 ／ pytest 57</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -6697,7 +6732,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2674 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2708 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -6707,7 +6742,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2674 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2708 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -8203,7 +8238,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2674 项前端断言 + 57 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2708 项前端断言 + 57 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -8383,7 +8418,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2674 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2708 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>

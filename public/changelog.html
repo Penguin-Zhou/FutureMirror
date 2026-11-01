@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2674</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2708</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -312,6 +312,7 @@ body {
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v57"><span class="cl-toc-tag">Beta 1.1.2 · v57</span><span class="cl-toc-title-txt">主标语两种笔性 · 文楷引子 / 墨渗入场 / 断点字距收敛</span></a></li>
     <li><a href="#v56"><span class="cl-toc-tag">Beta 1.1.2 · v56</span><span class="cl-toc-title-txt">主标语字型重构 · 自托管可变宋体 / 楔形版式 / 朱红退回划痕</span></a></li>
     <li><a href="#v55"><span class="cl-toc-tag">Beta 1.1.2 · v55</span><span class="cl-toc-title-txt">主标语焦点层 · 逐字落笔 / 四角取景 / 关键词逐字涂红 / 入场节奏重排</span></a></li>
     <li><a href="#v54"><span class="cl-toc-tag">Beta 1.1.2 · v54</span><span class="cl-toc-title-txt">落地页动态层 · 尺寸线落笔 / 标题揭载 / 右侧标尺 / 跨行裁字</span></a></li>
@@ -562,6 +563,39 @@ body {
   </div>
 
   <!-- ========================================================
+       Beta 1.1.2 · v57 · 主标语两种笔性：手写的渗进去，印刷的压上去
+       ======================================================== -->
+  <div class="version" id="v57">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 体验增强（v57）</span>
+      <span class="v-title">引子行换成霞鹜文楷，两行用两种写法入场</span>
+      <span class="v-date">2026.11.01</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        v56 把字换成了真宋体，但整句只有<strong>一种笔性</strong>：两行同体、同一种揭载方式。
+        这一版给引子行换一款带笔锋的字，并让两行用两种写法入场——
+        引子行是「墨渗」，主行是「描出」。一句话里，人说的部分和印出来的部分，动起来也不该一样。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>引子行换文楷</b>：霞鹜文楷（LXGW WenKai）同样按当前文案取子集，只含这句话用到的 16 个字符，woff2 <strong>4.5 KB</strong> 内联进样式层。文楷带笔锋起收，放大后看得出是写出来的；主行仍是思源宋体 800，横细竖粗，是印上去的——两种笔性并置，正好对上「经历 → 可量化的结论」</div>
+        <div class="vh-item"><b>墨渗而不是裁切</b>：引子行每字从 4px 虚影沉到实处、顺带 3px 落定，像笔尖触纸后墨往纤维里吃，边缘先糊后清。不用 <code>clip-path</code>——裁切会在中途切出半个字，而在 34px 的字上尤其像渲染错误</div>
+        <div class="vh-item"><b>主行仍走描出</b>：墨色先在 16% 处到满，笔锋再从字身上扫过去（先有墨、后见笔锋）；步进 <code>34ms</code>，比引子行的 <code>22ms</code> 慢——大字本来该慢。两行同时在写，不是写完一行再写下一行</div>
+        <div class="vh-item"><b>字距收敛的终值必须是静态值</b>：引子行入场时字距从 <code>.26em</code> 收到 <code>.1em</code>，字像从远处聚到这一行；窄屏与平板各有对应关键帧，终值分别等于 <code>.08em</code> 与 <code>.1em</code>。终值写错会在动画结束那一下跳一格，v57 套件把三条都钉住了</div>
+        <div class="vh-item"><b>留白让位</b>：标题到正文从 20px 放宽到 30px，抬头到标题从 20px 放宽到 26px，引子行从 <code>0.44em</code> 抬到 <code>0.48em</code>——一句话需要一块完整的空气，才站得住</div>
+        <div class="vh-item"><b>维护成本不变</b>：<code>scripts/fetch-title-font.js</code> 现在同时管两款字体，改文案一条命令重取；<code>--check</code> 只核对不写盘。漏掉任何一款，屏幕上就会出现「一半文楷、一半系统楷」的混排，套件里有守卫</div>
+        <div class="vh-item"><b>降级不变</b>：无 JS 时标题就是 HTML 里的完整两行；reduced-motion 下切片全部可见，模糊与位移一并抹掉（否则会永久发虚）</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">34</div><div class="m-label">v57 新增断言</div></div>
+        <div class="metric"><div class="m-val">2708</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">48</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">4.5KB</div><div class="m-label">文楷子集</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
        Beta 1.1.2 · v56 · 主标语字型与版式重构：让这句话自己站住
        ======================================================== -->
   <div class="version" id="v56">
@@ -589,7 +623,7 @@ body {
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">42</div><div class="m-label">v56 新增断言</div></div>
-        <div class="metric"><div class="m-val">2674</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2674</div><div class="m-label">前端断言总数（v56 当时口径）</div></div>
         <div class="metric"><div class="m-val">47</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">7KB</div><div class="m-label">内联字体子集</div></div>
       </div>

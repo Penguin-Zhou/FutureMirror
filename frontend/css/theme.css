@@ -328,12 +328,12 @@
     display: grid; grid-template-columns: 1.4fr 0.6fr; gap: 44px; align-items: start;
   }
   @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 28px; } }
-  .hero-main .eyebrow { margin-bottom: 20px; }
+  .hero-main .eyebrow { margin-bottom: 26px; }
   .landing h1.hero-title {
     font-size: clamp(40px, 5.8vw, 74px); font-weight: 800;
     letter-spacing: -.01em; line-height: 1; text-align: left; margin: 0; max-width: 660px;
   }
-  .landing .hero-sub { margin: 20px 0 0; text-align: left; max-width: 520px; font-size: 16px; }
+  .landing .hero-sub { margin: 30px 0 0; text-align: left; max-width: 520px; font-size: 16px; }
   .landing .hero-cta { justify-content: flex-start; margin-top: 26px; }
   .landing .hero-cta .btn { padding: 12px 26px; font-size: 14px; border-radius: 0; }
   .hero-meta-row {
@@ -1969,28 +1969,45 @@
   font-feature-settings: "palt" 1;      /* 比例标点：句号不占满格，行尾收得紧 */
   letter-spacing: -.005em; color: var(--ink);
 }
-/* 一句话拆两行，但两行不等长：引子行压到主行的 0.44，句子从左上向右下张开成楔形。
- * 灰不是因为它次要，而是要把全部重量让给墨色那七个字。 */
+/* 一句话拆两行，两行不等长，也不「同体」：
+ * 引子行用霞鹜文楷——带笔锋起收，放大后看得出是写出来的，是「人说的话」；
+ * 主行用思源宋体 800——横细竖粗，是「印上去的论断」。
+ * 人写的一句 → 印出来的一句，正好是这款产品的意思：经历变成可量化的结论。
+ * 引子行压到主行的 0.46，字距放开；灰一点不是因为它次要，
+ * 而是把全部重量让给墨色那七个字。 */
 .hero-title .ht-l1 {
-  font-size: .44em; font-weight: 500; line-height: 1.55;
-  letter-spacing: .18em; color: color-mix(in srgb, var(--ink) 66%, transparent);
+  font-family: "FM Kai", var(--serif);
+  font-size: .48em; font-weight: 400; line-height: 1.5;
+  letter-spacing: .1em; color: color-mix(in srgb, var(--ink) 80%, transparent);
 }
 /* 主行：满字号 + 800 实例；负字距让大字咬紧，宋体的横细竖粗才立得起来 */
 .hero-title .ht-l2 {
-  font-size: 1em; font-weight: 800; line-height: 1.08;
-  margin-top: .05em; letter-spacing: -.025em;
+  font-size: 1em; font-weight: 800; line-height: 1.06;
+  margin-top: .13em; letter-spacing: -.025em;
 }
 
 /* 逐字本体：inline-block 才能各自裁切 */
 .hero-title .ch { display: inline-block; }
-/* 每个字自左缘向右描出——墨色先落到位，笔锋再从字身上扫过去。
- * 引子行步进 22ms、主行 34ms：小字走快、大字走慢，像同一支笔先疾后顿；
- * 主行提前到 420ms 起笔，两行是同时在写，不是写完一行再写下一行。 */
-#view-landing.landing-enter .hero-title .ch {
-  animation: chBrush .42s cubic-bezier(.22,1,.36,1) both;
-  animation-delay: calc(var(--i, 0) * 22ms + 300ms);
+
+/* ---- 两行两种写法：手写的渗进去，印刷的压上去 ----
+ *
+ * 引子行走「墨渗」：从 4px 的虚影沉到实处，顺带 3px 落定——
+ * 像笔尖触纸后墨往纤维里吃，边缘先糊后清。没有裁切，所以不会有半个字。 */
+#view-landing.landing-enter .hero-title .ht-l1 .ch {
+  animation: inkBleed .58s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--i, 0) * 22ms + 220ms);
 }
+@keyframes inkBleed {
+  0% { opacity: 0; filter: blur(4px); transform: translateY(3px); }
+  55% { opacity: 1; }
+  100% { opacity: 1; filter: blur(0); transform: none; }
+}
+
+/* 主行走「描出」：墨色先在 16% 处到满，笔锋再从字身上扫过去——
+ * 先有墨、后见笔锋，不是整字淡入。步进 34ms，比引子行慢，大字本来该慢。
+ * 主行 420ms 起笔，不等引子行写完：两行是同一支笔同时在写。 */
 #view-landing.landing-enter .hero-title .ht-l2 .ch {
+  animation: chBrush .42s cubic-bezier(.22,1,.36,1) both;
   animation-delay: calc((var(--i, 0) - var(--l2b, 9)) * 34ms + 420ms);
 }
 @keyframes chBrush {
@@ -1998,13 +2015,14 @@
   16% { opacity: 1; }
   100% { opacity: 1; clip-path: inset(0 0 0 0); }
 }
-/* 引子行另给一条字距收敛：.34em → .18em，字像是从远处聚拢到这一行 */
+
+/* 引子行另给一条字距收敛：.26em → .1em，字像从远处聚到这一行 */
 #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split {
   animation: l1Track .92s cubic-bezier(.22,1,.36,1) both;
 }
 @keyframes l1Track {
-  from { letter-spacing: .34em; }
-  to { letter-spacing: .18em; }
+  from { letter-spacing: .26em; }
+  to { letter-spacing: .1em; }
 }
 /* 拆字没跑到（旧包 / 脚本报错）时，仍走 v54 的整行揭载 */
 #view-landing.landing-enter .hero-title .ht-inner:not(.is-split) {
@@ -2107,18 +2125,18 @@
   .ht-frame .hf-c { width: 11px; height: 11px; }
   /* 窄屏把整句顶到接近满宽：主行七个字 × 0.975em 要落在可用宽度内 */
   .landing h1.hero-title { font-size: clamp(30px, 11.6vw, 46px); }
-  /* 引子行在小屏按 0.44 会掉到 14px，读不清；抬到 0.5 并收一点字距 */
-  .hero-title .ht-l1 { font-size: .5em; letter-spacing: .14em; }
+  /* 引子行在小屏按 0.46 会掉到 14px，文楷笔画细，读不清；抬到 0.52 并收一点字距 */
+  .hero-title .ht-l1 { font-size: .52em; letter-spacing: .08em; }
   #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation-name: l1TrackSm; }
 }
-@keyframes l1TrackSm { from { letter-spacing: .3em; } to { letter-spacing: .14em; } }
+@keyframes l1TrackSm { from { letter-spacing: .24em; } to { letter-spacing: .08em; } }
 /* 平板（641–900）是单列，标题按窄屏那套走会明显偏小 */
 @media (min-width: 641px) and (max-width: 900px) {
   .landing h1.hero-title { font-size: clamp(44px, 8vw, 68px); }
-  .hero-title .ht-l1 { font-size: .48em; letter-spacing: .16em; }
+  .hero-title .ht-l1 { font-size: .5em; letter-spacing: .1em; }
   #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation-name: l1TrackMd; }
 }
-@keyframes l1TrackMd { from { letter-spacing: .32em; } to { letter-spacing: .16em; } }
+@keyframes l1TrackMd { from { letter-spacing: .26em; } to { letter-spacing: .1em; } }
 /* 关键词是一个词组，拆到两行就不成词组了：宁可整块掉到下一行 */
 .hero-title .grad { white-space: nowrap; }
 
@@ -2138,7 +2156,8 @@
   .radar-orbit { animation: none; }
   .bp-ticker:hover .bp-ticker-track { animation-play-state: running; }
   /* v55：字已拆开，静态时必须是「全部可见 + 高亮铺满 + 角标不出现」 */
-  #view-landing.landing-enter .hero-title .ch { animation: none; clip-path: none; opacity: 1; }
+  /* 引子行的墨渗靠 filter + translate 起手，降级时要一并抹掉 */
+  #view-landing.landing-enter .hero-title .ch { animation: none; clip-path: none; filter: none; transform: none; opacity: 1; }
   #view-landing.landing-enter .hero-title .gw { background-size: 100% .1em; transition: none; }
   /* 引子行的字距收敛是独立选择器，得单独关掉，否则减少动效时还在偷偷收字距 */
   #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation: none; }

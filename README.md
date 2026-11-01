@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2674 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2708 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -648,7 +648,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2674 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2708 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -726,7 +726,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2674 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2708 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -917,6 +917,20 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v57：主标语两种笔性——手写的渗进去，印刷的压上去（2026.11.01）
+
+> v56 把字换成了真宋体，但整句只有**一种笔性**：两行同体、同一种揭载方式。
+> 这一版给引子行换一款带笔锋的字，并让两行用两种写法入场。
+
+- **引子行换霞鹜文楷**：按当前文案取 `LXGW WenKai` 子集（Google 上以 `LXGW WenKai TC` 发布，字集含简体），16 个字符、woff2 **4.5 KB**（base64 约 6 KB）内联；主行仍是思源宋体 800——一个"人说的"，一个"印出来的"
+- **墨渗而不是裁切**：引子行每字从 `blur(4px)` 沉到实处、顺带 3px 落定；刻意不用 `clip-path`，因为裁切会在中途切出半个字，34px 的字上尤其像渲染错误
+- **主行仍走描出**：`clip-path` 自左扫过，墨色 16% 处先到满；步进 34ms 比引子行的 22ms 慢，两行同时起笔（220ms / 420ms）
+- **字距收敛终值 = 静态值**：`.26em → .1em`；窄屏 `.08em`、平板 `.1em` 各有关键帧，终值写错会在动画结束那一下横向跳一格
+- **留白与字号**：标题到正文 20 → 30px，抬头到标题 20 → 26px，引子行 `0.44em` → `0.48em`（窄屏 `.52em`、平板 `.5em`）
+- **维护口径统一**：`scripts/fetch-title-font.js` 改成 `FACES` 表，两款字体一起取、一起比对，`--check` 任一不一致即返回非零
+- **口径未变**：仍是 Beta 1.1.2，不引入运行时依赖；无 JS 与 reduced-motion 下都是完整一句（模糊与位移一并抹掉）
+- **指标**：前端断言 2674 → **2708**（新增 v57 套件 34 项）｜jsdom 套件 47 → **48 套**｜共享全局符号 **745**（不变）
 
 ### Beta 1.1.2 · 增量 v56：主标语字型与版式重构——让这句话自己站住（2026.11.01）
 

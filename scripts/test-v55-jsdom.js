@@ -128,12 +128,12 @@ function boot(extra) {
     "落笔初态自左缘裁出（横向描，不是自上而下砸下来）"
   );
   ok(
-    /#view-landing\.landing-enter \.hero-title \.ch \{[^}]*animation: chBrush \.42s/.test(themeCss),
-    "逐字动画 420ms（单字不再是闪一下，墨色先落位、笔锋再扫过）"
+    /#view-landing\.landing-enter \.hero-title \.ht-l2 \.ch \{[^}]*animation: chBrush \.42s/.test(themeCss),
+    "主行逐字动画 420ms（单字不再是闪一下，墨色先落位、笔锋再扫过）"
   );
   ok(
-    /animation-delay: calc\(var\(--i, 0\) \* 22ms \+ 300ms\)/.test(themeCss),
-    "步进 22ms、起点 300ms（先让图纸抬头亮起来）"
+    /animation-delay: calc\(var\(--i, 0\) \* 22ms \+ 220ms\)/.test(themeCss),
+    "步进 22ms、起点 220ms（先让图纸抬头亮起来）"
   );
   const chBase = rule(themeCss, ".hero-title .ch");
   ok(!/opacity:\s*0|clip-path/.test(chBase), "切片基础态不带隐藏（删掉 JS 也是完整可见的）");
@@ -237,8 +237,10 @@ function boot(extra) {
     "reduced-motion：角标与针不出现（静态页不留半截装饰）"
   );
   ok(
-    /#view-landing\.landing-enter \.hero-title \.ch \{ animation: none; clip-path: none; opacity: 1; \}/.test(themeCss),
-    "reduced-motion：切片兜底为全可见（万一有类也读得到）"
+    /#view-landing\.landing-enter \.hero-title \.ch \{ animation: none; clip-path: none; filter: none; transform: none; opacity: 1; \}/.test(
+      themeCss
+    ),
+    "reduced-motion：切片兜底为全可见（连墨渗的模糊与位移也抹掉）"
   );
   w2.close();
 

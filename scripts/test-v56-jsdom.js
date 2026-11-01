@@ -95,9 +95,9 @@ function boot(opts) {
   ok(/font-feature-settings: "palt" 1/.test(h1), "开启比例标点（句号不占满格）");
   const l1 = rule(themeCss, ".hero-title .ht-l1");
   const l2 = rule(themeCss, ".hero-title .ht-l2");
-  ok(/font-size: \.44em/.test(l1), "引子行 0.44em（整句的话头，不跟主行抢）");
-  ok(/letter-spacing: \.18em/.test(l1), "引子行放开字距（小字要呼吸）");
-  ok(/font-weight: 500/.test(l1), "引子行 500，与主行 800 拉开笔重");
+  ok(/font-size: \.48em/.test(l1), "引子行 0.48em（整句的话头，不跟主行抢）");
+  ok(/letter-spacing: \.1em/.test(l1), "引子行放开字距（小字要呼吸）");
+  ok(/font-weight: 400/.test(l1) && /font-family: "FM Kai"/.test(l1), "引子行文楷 400，与主行宋体 800 两种笔性");
   ok(/font-size: 1em/.test(l2) && /font-weight: 800/.test(l2), "主行满字号 + 800");
   ok(/letter-spacing: -\.025em/.test(l2), "主行负字距（大字要咬紧，否则松垮）");
   ok(/font-size: clamp\(40px, 5\.8vw, 74px\)/.test(themeCss), "桌面字号 clamp(40, 5.8vw, 74)");
@@ -126,14 +126,12 @@ function boot(opts) {
     /animation-delay: calc\(\(var\(--i, 0\) - var\(--l2b, 9\)\) \* 34ms \+ 420ms\)/.test(themeCss),
     "主行步进 34ms、420ms 起笔"
   );
-  ok(/animation-delay: calc\(var\(--i, 0\) \* 22ms \+ 300ms\)/.test(themeCss), "引子行步进 22ms、300ms 起笔");
+  ok(/animation-delay: calc\(var\(--i, 0\) \* 22ms \+ 220ms\)/.test(themeCss), "引子行步进 22ms、220ms 起笔");
   /* 最后落定的字：主行第 6 个 = 420 + 5×34 + 420(时长) = 1010ms，必须早于正文 1.48s */
   const lastEnd = 420 + 5 * 34 + 420;
   ok(lastEnd < 1480, "最后一个字 " + lastEnd + "ms 落定，早于正文 1.48s（不倒挂）");
   ok(
-    /#view-landing\.landing-enter \.hero-title \.ht-main|#view-landing\.landing-enter \.hero-title \.ht-l2 \.ch \{\s*animation-delay/.test(
-      themeCss.replace(/\n/g, " ")
-    ),
+    /#view-landing\.landing-enter \.hero-title \.ht-l2 \.ch \{[^}]*animation-delay/.test(themeCss.replace(/\n/g, " ")),
     "主行节奏是独立规则（不被通用 .ch 的 delay 覆盖）"
   );
 
