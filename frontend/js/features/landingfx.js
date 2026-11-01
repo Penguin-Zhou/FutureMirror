@@ -98,7 +98,7 @@
     FX.overture = true;
     const grad = view.querySelector(".hero-title .grad");
     if (grad && grad.classList) {
-      setTimeout(() => { grad.classList.add("inked"); }, 820);  // 等最后一个字落定再涂红
+      setTimeout(() => { grad.classList.add("inked"); }, 1050);  // 等最后一个字立定再涂红
     }
   }
   FX.enter = enterLanding;
@@ -212,6 +212,11 @@
       FX.split = false;
       return 0;
     }
+    /* 主行的逐字节奏从引子行结束处接上：--l2b 记引子行的实际切片数，
+     * 文案改了也不用回来改 CSS 里的常数 */
+    const l1n = title.querySelectorAll(".ht-l1 .ch").length;
+    const l2 = title.querySelector(".ht-l2");
+    if (l2 && l1n) l2.style.setProperty("--l2b", String(l1n));
     /* 以 DOM 实际切片数为准：句号那个 .ch 建完就被并进末字，计数器会比实际多 1 */
     FX.chars = title.querySelectorAll(".ch").length;
     FX.split = true;

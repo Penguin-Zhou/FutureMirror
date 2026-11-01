@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2632 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2674 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -648,7 +648,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2632 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2674 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -726,7 +726,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2632 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2674 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -917,6 +917,20 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v56：主标语字型与版式重构——让这句话自己站住（2026.11.01）
+
+> v55 解决了「注意力给谁」，但没有动**字本身**：标题走在 `Georgia, Songti SC, SimSun` 上，
+> 中文实际落到点数很小的宋体，`font-weight: 800` 全靠浏览器合成加粗。这一版换字体、重排版式、给动效加重量。
+
+- **自托管可变衬线**：按当前文案取思源宋体（Noto Serif SC）子集，只含这句话的 16 个字符，woff2 **7 KB**（base64 约 9 KB）内联进 `tokens.css`；`font-weight: 200 900` 走可变轴，`font-synthesis: none` 关掉合成加粗
+- **版式改成楔形**：引子行「让每一次面试，都成为」压到 `0.44em`、字距 `.18em`、颜色 66%；主行「可量化的成长。」满字号 + 800 + 负字距独占重量，两行宽度比约 **0.66 : 1**，先给前提、再落结论
+- **三档字号**：桌面 `clamp(40px, 5.8vw, 74px)`｜平板 `clamp(44px, 8vw, 68px)`｜窄屏 `clamp(30px, 11.6vw, 46px)`（平板是单列，沿用桌面比例会缩成小标题）
+- **朱红退回划痕**：关键词不再整块红字（红面积超过全站 ≤5% 的调色纪律），改为墨色大字 + 一条 `.1em` 粗、贴住基线的划线，逐字 56ms 递进；整句只有一个地方是红的
+- **动效加重而不是加快**：单字 420ms、16% 处先到满墨再继续描出（先有墨、后见笔锋）；主行 420ms 起笔，两行是同一支笔同时在写；引子行字距 `.34em → .18em` 收敛
+- **文案漂移守卫**：字体子集只含这 16 个字，改文案没重取子集就会出现「一半思源、一半宋体」。断言把标题字符集与子集字符集对齐比较；另配 `scripts/fetch-title-font.js`（`--check` 只核对不写盘）
+- **口径未变**：仍是 Beta 1.1.2，不引入运行时依赖
+- **指标**：前端断言 2632 → **2674**（新增 v56 套件 42 项）｜jsdom 套件 46 → **47 套**｜共享全局符号 **745**（不变）
 
 ### Beta 1.1.2 · 增量 v55：主标语焦点层——首屏只讲一句话（2026.11.01）
 

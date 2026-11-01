@@ -1813,7 +1813,23 @@ try {
   .tabbar-item .tb-icon { font-size: 17px; }
 }
 
-
+/* ============================================================
+ * v56 · 主标语字型：思源宋体（Noto Serif SC）可变字体子集
+ * ------------------------------------------------------------
+ * 只含标语用到的 16 个不同字符（「让每一次面试，都成为可量化的成长。」），
+ * woff2 直接内联（约 7 KB），不额外发请求，单文件演示包也能带上。
+ * font-weight 声明为区间 200–900：这是可变字体，大字用真实字重，
+ * 不靠浏览器合成加粗——宋体的横细竖粗才立得住。
+ * 文案若改动必须重新取子集（缺失字符会回落到系统宋体，出现混排）。
+ * 取子集：node scripts/fetch-title-font.js
+ * ============================================================ */
+@font-face {
+  font-family: "FM Serif Poster";
+  src: url(data:font/woff2;base64,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) format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
   /* ============================================================
    * v21 · 蓝图编辑风（Blueprint Editorial）视觉重构
    * ------------------------------------------------------------
@@ -2146,8 +2162,8 @@ try {
   @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 28px; } }
   .hero-main .eyebrow { margin-bottom: 20px; }
   .landing h1.hero-title {
-    font-size: clamp(38px, 5vw, 62px); font-weight: 700;
-    letter-spacing: -.01em; line-height: 1.14; text-align: left; margin: 0; max-width: 620px;
+    font-size: clamp(40px, 5.8vw, 74px); font-weight: 800;
+    letter-spacing: -.01em; line-height: 1; text-align: left; margin: 0; max-width: 660px;
   }
   .landing .hero-sub { margin: 20px 0 0; text-align: left; max-width: 520px; font-size: 16px; }
   .landing .hero-cta { justify-content: flex-start; margin-top: 26px; }
@@ -2170,7 +2186,7 @@ try {
     display: flex; justify-content: space-between; align-items: center; gap: 10px;
     padding: 8px 14px; border-bottom: 1px solid var(--ink); background: var(--bg-deep);
     font-family: var(--mono); font-size: 10.5px; font-weight: 700;
-    letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
   }
   .hero-mock-head .hmh-live { color: var(--brand); }
   .hero-mock-head .hmh-live::before { content: "■ "; }
@@ -2271,7 +2287,7 @@ try {
     display: inline-flex; align-items: center; gap: 9px;
     border: 1px solid var(--ink); background: var(--card); color: var(--ink);
     border-radius: 0; padding: 6px 14px; margin-bottom: 18px;
-    font-size: 10.5px; letter-spacing: .14em; font-weight: 700;
+    font-size: 10.5px; letter-spacing: .1em; font-weight: 700;
   }
   .landing .landing-tagline::before {
     content: ""; width: 7px; height: 7px; border-radius: 0;
@@ -3225,7 +3241,7 @@ try {
     background: var(--brand-bg); padding: 12px 14px;
   }
   .bp-wc-eyebrow {
-    font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
     color: var(--brand); margin-bottom: 7px;
   }
   .bp-wc-body { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -3644,12 +3660,12 @@ try {
     color-mix(in srgb, var(--brand) 24%, transparent)
   );
   background-repeat: no-repeat;
-  background-position: 0 90%;
-  background-size: 100% .17em;
+  background-position: 0 calc(100% - 1px);
+  background-size: 100% .1em;
 }
-#view-landing.landing-enter .hero-title .grad { background-size: 0% .17em; }
+#view-landing.landing-enter .hero-title .grad { background-size: 0% .1em; }
 #view-landing.landing-enter .hero-title .grad.inked {
-  background-size: 100% .17em;
+  background-size: 100% .1em;
   transition: background-size .9s cubic-bezier(.22,1,.36,1);
 }
 
@@ -3775,21 +3791,52 @@ try {
  * 渐进增强：所有初态挂在 .landing-enter 下；拆字失败退回整行揭载。
  * ============================================================ */
 
-/* ---------- ⑪ 标题容器：角标与游标的定位基准 ---------- */
+/* ---------- ⑪ 主标语：字型 / 版式 / 拆字（v56 重构） ---------- */
 /* 宽度收到字宽：角标要贴住「写出来的这段字」，而不是贴住 620px 的格子 */
-.landing h1.hero-title { position: relative; width: fit-content; max-width: 100%; }
+.landing h1.hero-title {
+  position: relative; width: fit-content; max-width: 100%;
+  font-family: "FM Serif Poster", var(--serif);
+  font-weight: 800;                     /* 可变字体：真实的特粗，不靠浏览器合成加粗 */
+  font-synthesis: none;
+  font-feature-settings: "palt" 1;      /* 比例标点：句号不占满格，行尾收得紧 */
+  letter-spacing: -.005em; color: var(--ink);
+}
+/* 一句话拆两行，但两行不等长：引子行压到主行的 0.44，句子从左上向右下张开成楔形。
+ * 灰不是因为它次要，而是要把全部重量让给墨色那七个字。 */
+.hero-title .ht-l1 {
+  font-size: .44em; font-weight: 500; line-height: 1.55;
+  letter-spacing: .18em; color: color-mix(in srgb, var(--ink) 66%, transparent);
+}
+/* 主行：满字号 + 800 实例；负字距让大字咬紧，宋体的横细竖粗才立得起来 */
+.hero-title .ht-l2 {
+  font-size: 1em; font-weight: 800; line-height: 1.08;
+  margin-top: .05em; letter-spacing: -.025em;
+}
 
 /* 逐字本体：inline-block 才能各自裁切 */
 .hero-title .ch { display: inline-block; }
-/* 每个字自左缘向右描出——与 --i 递进叠在一起，整体就像一支笔从左往右写过去。
- * 单个字 300ms、步进 26ms：笔锋约 10 个字宽，读起来是墨在走，不是字在闪。 */
+/* 每个字自左缘向右描出——墨色先落到位，笔锋再从字身上扫过去。
+ * 引子行步进 22ms、主行 34ms：小字走快、大字走慢，像同一支笔先疾后顿；
+ * 主行提前到 420ms 起笔，两行是同时在写，不是写完一行再写下一行。 */
 #view-landing.landing-enter .hero-title .ch {
-  animation: chBrush .3s cubic-bezier(.22,1,.36,1) both;
-  animation-delay: calc(var(--i, 0) * 26ms + 260ms);
+  animation: chBrush .42s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--i, 0) * 22ms + 300ms);
+}
+#view-landing.landing-enter .hero-title .ht-l2 .ch {
+  animation-delay: calc((var(--i, 0) - var(--l2b, 9)) * 34ms + 420ms);
 }
 @keyframes chBrush {
-  from { opacity: 0; clip-path: inset(0 100% 0 0); }
-  to { opacity: 1; clip-path: inset(0 0 0 0); }
+  0% { opacity: 0; clip-path: inset(0 100% 0 0); }
+  16% { opacity: 1; }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+/* 引子行另给一条字距收敛：.34em → .18em，字像是从远处聚拢到这一行 */
+#view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split {
+  animation: l1Track .92s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes l1Track {
+  from { letter-spacing: .34em; }
+  to { letter-spacing: .18em; }
 }
 /* 拆字没跑到（旧包 / 脚本报错）时，仍走 v54 的整行揭载 */
 #view-landing.landing-enter .hero-title .ht-inner:not(.is-split) {
@@ -3797,27 +3844,29 @@ try {
 }
 #view-landing.landing-enter .hero-title .ht-line:nth-child(2) .ht-inner:not(.is-split) { animation-delay: .12s; }
 
-/* ---------- ⑫ 关键词：整块背景交还给每个字 ---------- */
+/* ---------- ⑫ 关键词：墨字压在朱红粗涂上 ---------- */
+/* 字保持墨色，朱红只做「划过的痕」——整句只有一个红的地方，才叫点睛 */
+.landing h1.hero-title .grad { color: var(--ink); }
 .landing h1.hero-title .grad.is-chunked { background-image: none; }
 .hero-title .gw {
   background-image: linear-gradient(
-    color-mix(in srgb, var(--brand) 24%, transparent),
-    color-mix(in srgb, var(--brand) 24%, transparent)
+    color-mix(in srgb, var(--brand) 54%, transparent),
+    color-mix(in srgb, var(--brand) 54%, transparent)
   );
   background-repeat: no-repeat;
-  background-position: 0 94%;
-  background-size: 100% .17em;
+  background-position: 0 calc(100% - 1px);
+  background-size: 100% .1em;
 }
-#view-landing.landing-enter .hero-title .gw { background-size: 0% .17em; }
-/* 句号并进了最后一个字：底色只画到字尾，别把下划线拖到句号后面 1em */
-.hero-title .gw.gw-end { background-size: calc(100% - 1em) .17em; }
+#view-landing.landing-enter .hero-title .gw { background-size: 0% .1em; }
+/* 句号并进了最后一个字：底色只画到字尾，别把朱红拖到句号后面 1em */
+.hero-title .gw.gw-end { background-size: calc(100% - 1em) .1em; }
 #view-landing.landing-enter .hero-title .grad.inked .gw {
-  background-size: 100% .17em;
-  transition: background-size .44s cubic-bezier(.22,1,.36,1);
-  transition-delay: calc((var(--i, 0) - var(--gw0, 0)) * 66ms);
+  background-size: 100% .1em;
+  transition: background-size .5s cubic-bezier(.22,1,.36,1);
+  transition-delay: calc((var(--i, 0) - var(--gw0, 0)) * 56ms);
 }
 #view-landing.landing-enter .hero-title .grad.inked .gw.gw-end {
-  background-size: calc(100% - 1em) .17em;
+  background-size: calc(100% - 1em) .1em;
 }
 
 /* ---------- ⑬ 取景角标：四段 L 形线从角点画出，落定后合焦呼吸 ---------- */
@@ -3876,20 +3925,32 @@ try {
 #view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(2) { animation-delay: .02s; }
 #view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(3) { animation-delay: .08s; }
 #view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(4) { animation-delay: .14s; }
-#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(6) { animation-delay: 1.18s; }
-#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(7) { animation-delay: 1.26s; }
-#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(8) { animation-delay: 1.33s; }
-#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(9) { animation-delay: 1.4s; }
-#view-landing.landing-enter .hero-spec { animation-delay: 1.52s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(6) { animation-delay: 1.48s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(7) { animation-delay: 1.56s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(8) { animation-delay: 1.63s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(9) { animation-delay: 1.7s; }
+#view-landing.landing-enter .hero-spec { animation-delay: 1.82s; }
 
 /* 标题在窄屏会折到第三行，角标退到 9px 并缩小，别把横向撑出滚动条。
  * 字号也要跟着收：第二行「都成为可量化的成长。」是 10 个字，按 38px 算要 380px，
  * 390 屏只有 342px —— 不收就会把「成长」劈成「成」+「长。」两行。 */
 @media (max-width: 640px) {
-  .ht-frame { top: -11px; right: -9px; bottom: -9px; left: -9px; }
+  .ht-frame { top: -11px; right: -13px; bottom: -9px; left: -13px; }
   .ht-frame .hf-c { width: 11px; height: 11px; }
-  .landing h1.hero-title { font-size: clamp(26px, 8.4vw, 38px); }
+  /* 窄屏把整句顶到接近满宽：主行七个字 × 0.975em 要落在可用宽度内 */
+  .landing h1.hero-title { font-size: clamp(30px, 11.6vw, 46px); }
+  /* 引子行在小屏按 0.44 会掉到 14px，读不清；抬到 0.5 并收一点字距 */
+  .hero-title .ht-l1 { font-size: .5em; letter-spacing: .14em; }
+  #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation-name: l1TrackSm; }
 }
+@keyframes l1TrackSm { from { letter-spacing: .3em; } to { letter-spacing: .14em; } }
+/* 平板（641–900）是单列，标题按窄屏那套走会明显偏小 */
+@media (min-width: 641px) and (max-width: 900px) {
+  .landing h1.hero-title { font-size: clamp(44px, 8vw, 68px); }
+  .hero-title .ht-l1 { font-size: .48em; letter-spacing: .16em; }
+  #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation-name: l1TrackMd; }
+}
+@keyframes l1TrackMd { from { letter-spacing: .32em; } to { letter-spacing: .16em; } }
 /* 关键词是一个词组，拆到两行就不成词组了：宁可整块掉到下一行 */
 .hero-title .grad { white-space: nowrap; }
 
@@ -3902,7 +3963,7 @@ try {
   #view-landing.landing-enter .hero-main > *,
   #view-landing.landing-enter .hero-spec,
   #view-landing.landing-enter .hero-title .grad.inked { animation: none; transition: none; }
-  #view-landing.landing-enter .hero-title .grad { background-size: 100% .17em; }
+  #view-landing.landing-enter .hero-title .grad { background-size: 100% .1em; }
   .bp-rail .ri-txt { transition: none; }
   .feature-block::before, .feature-block h3::after, .feature-block .fb-icon { transition: none; }
   .landing-stat.ticks-on .ls-scale i { animation: none; }
@@ -3910,7 +3971,9 @@ try {
   .bp-ticker:hover .bp-ticker-track { animation-play-state: running; }
   /* v55：字已拆开，静态时必须是「全部可见 + 高亮铺满 + 角标不出现」 */
   #view-landing.landing-enter .hero-title .ch { animation: none; clip-path: none; opacity: 1; }
-  #view-landing.landing-enter .hero-title .gw { background-size: 100% .17em; transition: none; }
+  #view-landing.landing-enter .hero-title .gw { background-size: 100% .1em; transition: none; }
+  /* 引子行的字距收敛是独立选择器，得单独关掉，否则减少动效时还在偷偷收字距 */
+  #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation: none; }
   .ht-frame, .bp-sheet .bs-needle { display: none; }
 }
   /* ============ v18 · 求职管理 / 答题计时 / 语音反馈 / 玻璃拟态可读性修正 / Bento Grid ============ */
@@ -6551,8 +6614,8 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="hero-rotator" aria-live="polite"><span class="hr-prefix">&gt;_</span><span class="hr-text" id="hr-text"></span><i class="hr-caret" aria-hidden="true"></i></div>
           <div class="eyebrow"><span class="eyebrow-no">VOL.1</span>AI NATIVE · 多 AGENT 模拟面试平台</div>
           <h1 class="hero-title">
-            <span class="ht-line"><span class="ht-inner">让每一次面试，</span></span>
-            <span class="ht-line"><span class="ht-inner">都成为<span class="grad">可量化的成长</span>。</span></span>
+            <span class="ht-line ht-l1"><span class="ht-inner">让每一次面试，都成为</span></span>
+            <span class="ht-line ht-l2"><span class="ht-inner"><span class="grad">可量化的成长</span>。</span></span>
           </h1>
           <p class="hero-sub">
             上传简历与目标岗位 JD，由 AI 面试官团队（HR / 技术 / 压力面 / 观察员）完成模拟面试，
@@ -6566,7 +6629,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>2632</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>2674</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>30</b> 页技术文档</span>
           </div>
         </div>
@@ -6577,7 +6640,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2632 ／ pytest 57</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2674 ／ pytest 57</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -6634,7 +6697,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2632 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2674 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -6644,7 +6707,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2632 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2674 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -8140,7 +8203,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2632 项前端断言 + 57 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2674 项前端断言 + 57 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -8320,7 +8383,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2632 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2674 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -14866,7 +14929,7 @@ function revealScan() {
     FX.overture = true;
     const grad = view.querySelector(".hero-title .grad");
     if (grad && grad.classList) {
-      setTimeout(() => { grad.classList.add("inked"); }, 820);  // 等最后一个字落定再涂红
+      setTimeout(() => { grad.classList.add("inked"); }, 1050);  // 等最后一个字立定再涂红
     }
   }
   FX.enter = enterLanding;
@@ -14980,6 +15043,11 @@ function revealScan() {
       FX.split = false;
       return 0;
     }
+    /* 主行的逐字节奏从引子行结束处接上：--l2b 记引子行的实际切片数，
+     * 文案改了也不用回来改 CSS 里的常数 */
+    const l1n = title.querySelectorAll(".ht-l1 .ch").length;
+    const l2 = title.querySelector(".ht-l2");
+    if (l2 && l1n) l2.style.setProperty("--l2b", String(l1n));
     /* 以 DOM 实际切片数为准：句号那个 .ch 建完就被并进末字，计数器会比实际多 1 */
     FX.chars = title.querySelectorAll(".ch").length;
     FX.split = true;

@@ -124,21 +124,21 @@ function boot(extra) {
   /* ③ CSS 契约：逐字落笔 */
   ok(/\.hero-title \.ch \{ display: inline-block/.test(themeCss), "切片为 inline-block（clip-path 才能各自生效）");
   ok(
-    /@keyframes chBrush \{\s*from \{ opacity: 0; clip-path: inset\(0 100% 0 0\); \}/.test(themeCss),
+    /@keyframes chBrush \{\s*0% \{ opacity: 0; clip-path: inset\(0 100% 0 0\); \}/.test(themeCss),
     "落笔初态自左缘裁出（横向描，不是自上而下砸下来）"
   );
   ok(
-    /#view-landing\.landing-enter \.hero-title \.ch \{[^}]*animation: chBrush \.3s/.test(themeCss),
-    "逐字动画 300ms（短于步进，笔锋才连得上）"
+    /#view-landing\.landing-enter \.hero-title \.ch \{[^}]*animation: chBrush \.42s/.test(themeCss),
+    "逐字动画 420ms（单字不再是闪一下，墨色先落位、笔锋再扫过）"
   );
   ok(
-    /animation-delay: calc\(var\(--i, 0\) \* 26ms \+ 260ms\)/.test(themeCss),
-    "步进 26ms、起点 260ms（先让图纸抬头亮起来）"
+    /animation-delay: calc\(var\(--i, 0\) \* 22ms \+ 300ms\)/.test(themeCss),
+    "步进 22ms、起点 300ms（先让图纸抬头亮起来）"
   );
   const chBase = rule(themeCss, ".hero-title .ch");
   ok(!/opacity:\s*0|clip-path/.test(chBase), "切片基础态不带隐藏（删掉 JS 也是完整可见的）");
   ok(
-    /\.landing h1\.hero-title \{ position: relative; width: fit-content/.test(themeCss),
+    /\.landing h1\.hero-title \{\s*position: relative; width: fit-content/.test(themeCss),
     "标题宽收到字宽（角标贴字，不贴 620px 的格子）"
   );
   ok(!/translateY\(-/.test(themeCss), "仍然没有负向位移（沿用全站禁上浮）");
@@ -167,28 +167,28 @@ function boot(extra) {
 
   /* ⑤ CSS 契约：关键词涂红 */
   const gwBase = rule(themeCss, ".hero-title .gw");
-  ok(/background-size: 100% \.17em/.test(gwBase), "关键词基础态铺满（完成态）");
+  ok(/background-size: 100% \.1em/.test(gwBase), "关键词基础态铺满（完成态）");
   ok(
-    /\.hero-title \.gw\.gw-end \{ background-size: calc\(100% - 1em\) \.17em/.test(themeCss),
+    /\.hero-title \.gw\.gw-end \{ background-size: calc\(100% - 1em\) \.1em/.test(themeCss),
     "末字下划线扣掉句号那 1em（不拖出句尾）"
   );
   ok(
-    /#view-landing\.landing-enter \.hero-title \.grad\.inked \.gw \{[^}]*transition-delay: calc\(\(var\(--i, 0\) - var\(--gw0, 0\)\) \* 66ms\)/.test(
+    /#view-landing\.landing-enter \.hero-title \.grad\.inked \.gw \{[^}]*transition-delay: calc\(\(var\(--i, 0\) - var\(--gw0, 0\)\) \* 56ms\)/.test(
       themeCss
     ),
-    "涂红逐字递进 66ms（从左往右批注过去）"
+    "涂红逐字递进 56ms（从左往右批注过去）"
   );
 
   /* ⑥ 节奏：delay 必须压得过 animation 简写 */
   ok(
-    /#view-landing\.landing-enter \.hero-main > \*:not\(\.hero-title\):not\(\.bp-sheet\):nth-child\(6\) \{[^}]*animation-delay: 1\.18s/.test(
+    /#view-landing\.landing-enter \.hero-main > \*:not\(\.hero-title\):not\(\.bp-sheet\):nth-child\(6\) \{[^}]*animation-delay: 1\.48s/.test(
       themeCss
     ),
-    "正文延后到 1.18s（字落完才解释）"
+    "正文延后到 1.48s（字落完才解释）"
   );
   ok(
-    /:nth-child\(9\) \{[^}]*animation-delay: 1\.4s/.test(themeCss) &&
-      /hero-spec \{ animation-delay: 1\.52s/.test(themeCss),
+    /:nth-child\(9\) \{[^}]*animation-delay: 1\.7s/.test(themeCss) &&
+      /hero-spec \{ animation-delay: 1\.82s/.test(themeCss),
     "数据行/规格卡最后落位"
   );
   ok(
@@ -247,7 +247,7 @@ function boot(extra) {
   ok(demoHtml.includes("bs-needle"), "演示包已同步绘图针");
   ok(/function splitTitle\(/.test(landingSrc), "拆字逻辑在落地页动态层里");
   ok(/is-split/.test(themeCss) && /:not\(\.is-split\)/.test(themeCss), "拆字失败仍退回整行揭载（htReveal 兜底还在）");
-  ok(/\.ht-frame \{ top: -11px; right: -9px/.test(themeCss), "窄屏角标收到 9px（不撑出横向滚动）");
+  ok(/\.ht-frame \{ top: -11px; right: -13px/.test(themeCss), "窄屏角标收到 13px（不撑出横向滚动）");
   ok(/SCALE_TICKS = 12/.test(landingSrc), "v54 的刻度常量未被动到");
   ok(/enterLanding/.test(landingSrc) && /dressTitle/.test(landingSrc), "开场链路：拆字 → 角标 → 进入");
 

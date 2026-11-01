@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2632</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2674</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -37,6 +37,7 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v56"><span class="cl-toc-tag">Beta 1.1.2 · v56</span><span class="cl-toc-title-txt">主标语字型重构 · 自托管可变宋体 / 楔形版式 / 朱红退回划痕</span></a></li>
     <li><a href="#v55"><span class="cl-toc-tag">Beta 1.1.2 · v55</span><span class="cl-toc-title-txt">主标语焦点层 · 逐字落笔 / 四角取景 / 关键词逐字涂红 / 入场节奏重排</span></a></li>
     <li><a href="#v54"><span class="cl-toc-tag">Beta 1.1.2 · v54</span><span class="cl-toc-title-txt">落地页动态层 · 尺寸线落笔 / 标题揭载 / 右侧标尺 / 跨行裁字</span></a></li>
     <li><a href="#v53"><span class="cl-toc-tag">Beta 1.1.2 · v53</span><span class="cl-toc-title-txt">对话式匹配答满 4 问后没有落点 · 分数涨了缺口没变</span></a></li>
@@ -286,6 +287,41 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
+       Beta 1.1.2 · v56 · 主标语字型与版式重构：让这句话自己站住
+       ======================================================== -->
+  <div class="version" id="v56">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 体验增强（v56）</span>
+      <span class="v-title">换掉字体、重排版式：一句话拆成前提与结论，朱红退回去只做划痕</span>
+      <span class="v-date">2026.11.01</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        v55 解决了「注意力给谁」，但没有动<strong>字本身</strong>。标题仍走在
+        <code>Georgia, Songti SC, SimSun</code> 这条栈上，中文实际落到点数很小的宋体，
+        <code>font-weight: 800</code> 全靠浏览器合成加粗——放大到 60px 以上，笔画就糊成一片。
+        这一版换字体、重排版式、给动效加重量，三件事一起做。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>自托管可变衬线</b>：按当前文案取思源宋体（Noto Serif SC）子集，只含这句话用到的 <strong>16 个字符</strong>，woff2 <strong>7 KB</strong>（base64 约 9 KB）内联进样式层，不发额外请求，单文件演示包也带得上；<code>font-weight: 200 900</code> 走可变轴，<code>font-synthesis: none</code> 关掉合成加粗——800 是字体里真实的特粗实例</div>
+        <div class="vh-item"><b>版式改成楔形</b>：原先两行等长同字号，读完不知道重心在哪。现在「让每一次面试，都成为」压到主行的 <code>0.44em</code>、字距 <code>.18em</code>、颜色收到 66%，主行「可量化的成长。」满字号 + 800 + 负字距独占重量；两行宽度比约 <strong>0.66 : 1</strong>，从左上向右下张开，先给前提、再落结论</div>
+        <div class="vh-item"><b>三档字号</b>：桌面 <code>clamp(40px, 5.8vw, 74px)</code>、平板 <code>clamp(44px, 8vw, 68px)</code>、窄屏 <code>clamp(30px, 11.6vw, 46px)</code>。平板上是单列布局，沿用桌面比例会缩成一个小标题，必须单独给一档</div>
+        <div class="vh-item"><b>朱红从「字色」退回「划痕」</b>：v55 里关键词七个大字整块是朱红，红面积超过了全站 ≤5% 的调色纪律，也把字压成色块。现在字保持墨色，朱红只做一条 <code>.1em</code> 粗、贴住基线的划线，逐字 56ms 递进涂过去——整句只有一个地方是红的</div>
+        <div class="vh-item"><b>动效加重而不是加快</b>：单字从 300ms 提到 <strong>420ms</strong>，16% 处先到满墨再继续描出（先有墨、后见笔锋，不是整字淡入）；引子行步进 22ms、主行 34ms，主行 <strong>420ms</strong> 起笔——两行是同一支笔同时在写，不是写完一行再写下一行</div>
+        <div class="vh-item"><b>字距收敛</b>：引子行入场时 <code>letter-spacing</code> 从 <code>.34em</code> 收到 <code>.18em</code>，字像从远处聚拢到这一行；窄屏与平板各有一条对应关键帧，收的终值恰是各自的静态值，不会在动画结束那一下跳一格</div>
+        <div class="vh-item"><b>文案漂移守卫</b>：字体子集只含这 16 个字，改了文案却没重取子集，屏幕上就会出现「一半思源、一半系统宋体」。断言里把标题字符集与子集字符集对齐比较，缺一个就红；另配 <code>scripts/fetch-title-font.js</code>，一条命令重取，<code>--check</code> 只核对不写盘</div>
+        <div class="vh-item"><b>降级不变</b>：无 JS 时标题就是 HTML 里的完整两行；reduced-motion 下切片全部可见、划线直接铺满、角标与针不出现</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">42</div><div class="m-label">v56 新增断言</div></div>
+        <div class="metric"><div class="m-val">2674</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">47</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">7KB</div><div class="m-label">内联字体子集</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
        Beta 1.1.2 · v55 · 主标语焦点层：首屏只讲一句话
        ======================================================== -->
   <div class="version" id="v55">
@@ -313,7 +349,7 @@ export const changelogHtml = `
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">71</div><div class="m-label">v55 新增断言</div></div>
-        <div class="metric"><div class="m-val">2632</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2632</div><div class="m-label">前端断言总数（v55 当时口径）</div></div>
         <div class="metric"><div class="m-val">46</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">2</div><div class="m-label">顺带修掉的真实缺陷</div></div>
       </div>

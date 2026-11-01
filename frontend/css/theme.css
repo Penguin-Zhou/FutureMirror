@@ -330,8 +330,8 @@
   @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 28px; } }
   .hero-main .eyebrow { margin-bottom: 20px; }
   .landing h1.hero-title {
-    font-size: clamp(38px, 5vw, 62px); font-weight: 700;
-    letter-spacing: -.01em; line-height: 1.14; text-align: left; margin: 0; max-width: 620px;
+    font-size: clamp(40px, 5.8vw, 74px); font-weight: 800;
+    letter-spacing: -.01em; line-height: 1; text-align: left; margin: 0; max-width: 660px;
   }
   .landing .hero-sub { margin: 20px 0 0; text-align: left; max-width: 520px; font-size: 16px; }
   .landing .hero-cta { justify-content: flex-start; margin-top: 26px; }
@@ -354,7 +354,7 @@
     display: flex; justify-content: space-between; align-items: center; gap: 10px;
     padding: 8px 14px; border-bottom: 1px solid var(--ink); background: var(--bg-deep);
     font-family: var(--mono); font-size: 10.5px; font-weight: 700;
-    letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
   }
   .hero-mock-head .hmh-live { color: var(--brand); }
   .hero-mock-head .hmh-live::before { content: "■ "; }
@@ -455,7 +455,7 @@
     display: inline-flex; align-items: center; gap: 9px;
     border: 1px solid var(--ink); background: var(--card); color: var(--ink);
     border-radius: 0; padding: 6px 14px; margin-bottom: 18px;
-    font-size: 10.5px; letter-spacing: .14em; font-weight: 700;
+    font-size: 10.5px; letter-spacing: .1em; font-weight: 700;
   }
   .landing .landing-tagline::before {
     content: ""; width: 7px; height: 7px; border-radius: 0;
@@ -1409,7 +1409,7 @@
     background: var(--brand-bg); padding: 12px 14px;
   }
   .bp-wc-eyebrow {
-    font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
     color: var(--brand); margin-bottom: 7px;
   }
   .bp-wc-body { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -1828,12 +1828,12 @@
     color-mix(in srgb, var(--brand) 24%, transparent)
   );
   background-repeat: no-repeat;
-  background-position: 0 90%;
-  background-size: 100% .17em;
+  background-position: 0 calc(100% - 1px);
+  background-size: 100% .1em;
 }
-#view-landing.landing-enter .hero-title .grad { background-size: 0% .17em; }
+#view-landing.landing-enter .hero-title .grad { background-size: 0% .1em; }
 #view-landing.landing-enter .hero-title .grad.inked {
-  background-size: 100% .17em;
+  background-size: 100% .1em;
   transition: background-size .9s cubic-bezier(.22,1,.36,1);
 }
 
@@ -1959,21 +1959,52 @@
  * 渐进增强：所有初态挂在 .landing-enter 下；拆字失败退回整行揭载。
  * ============================================================ */
 
-/* ---------- ⑪ 标题容器：角标与游标的定位基准 ---------- */
+/* ---------- ⑪ 主标语：字型 / 版式 / 拆字（v56 重构） ---------- */
 /* 宽度收到字宽：角标要贴住「写出来的这段字」，而不是贴住 620px 的格子 */
-.landing h1.hero-title { position: relative; width: fit-content; max-width: 100%; }
+.landing h1.hero-title {
+  position: relative; width: fit-content; max-width: 100%;
+  font-family: "FM Serif Poster", var(--serif);
+  font-weight: 800;                     /* 可变字体：真实的特粗，不靠浏览器合成加粗 */
+  font-synthesis: none;
+  font-feature-settings: "palt" 1;      /* 比例标点：句号不占满格，行尾收得紧 */
+  letter-spacing: -.005em; color: var(--ink);
+}
+/* 一句话拆两行，但两行不等长：引子行压到主行的 0.44，句子从左上向右下张开成楔形。
+ * 灰不是因为它次要，而是要把全部重量让给墨色那七个字。 */
+.hero-title .ht-l1 {
+  font-size: .44em; font-weight: 500; line-height: 1.55;
+  letter-spacing: .18em; color: color-mix(in srgb, var(--ink) 66%, transparent);
+}
+/* 主行：满字号 + 800 实例；负字距让大字咬紧，宋体的横细竖粗才立得起来 */
+.hero-title .ht-l2 {
+  font-size: 1em; font-weight: 800; line-height: 1.08;
+  margin-top: .05em; letter-spacing: -.025em;
+}
 
 /* 逐字本体：inline-block 才能各自裁切 */
 .hero-title .ch { display: inline-block; }
-/* 每个字自左缘向右描出——与 --i 递进叠在一起，整体就像一支笔从左往右写过去。
- * 单个字 300ms、步进 26ms：笔锋约 10 个字宽，读起来是墨在走，不是字在闪。 */
+/* 每个字自左缘向右描出——墨色先落到位，笔锋再从字身上扫过去。
+ * 引子行步进 22ms、主行 34ms：小字走快、大字走慢，像同一支笔先疾后顿；
+ * 主行提前到 420ms 起笔，两行是同时在写，不是写完一行再写下一行。 */
 #view-landing.landing-enter .hero-title .ch {
-  animation: chBrush .3s cubic-bezier(.22,1,.36,1) both;
-  animation-delay: calc(var(--i, 0) * 26ms + 260ms);
+  animation: chBrush .42s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--i, 0) * 22ms + 300ms);
+}
+#view-landing.landing-enter .hero-title .ht-l2 .ch {
+  animation-delay: calc((var(--i, 0) - var(--l2b, 9)) * 34ms + 420ms);
 }
 @keyframes chBrush {
-  from { opacity: 0; clip-path: inset(0 100% 0 0); }
-  to { opacity: 1; clip-path: inset(0 0 0 0); }
+  0% { opacity: 0; clip-path: inset(0 100% 0 0); }
+  16% { opacity: 1; }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+/* 引子行另给一条字距收敛：.34em → .18em，字像是从远处聚拢到这一行 */
+#view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split {
+  animation: l1Track .92s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes l1Track {
+  from { letter-spacing: .34em; }
+  to { letter-spacing: .18em; }
 }
 /* 拆字没跑到（旧包 / 脚本报错）时，仍走 v54 的整行揭载 */
 #view-landing.landing-enter .hero-title .ht-inner:not(.is-split) {
@@ -1981,27 +2012,29 @@
 }
 #view-landing.landing-enter .hero-title .ht-line:nth-child(2) .ht-inner:not(.is-split) { animation-delay: .12s; }
 
-/* ---------- ⑫ 关键词：整块背景交还给每个字 ---------- */
+/* ---------- ⑫ 关键词：墨字压在朱红粗涂上 ---------- */
+/* 字保持墨色，朱红只做「划过的痕」——整句只有一个红的地方，才叫点睛 */
+.landing h1.hero-title .grad { color: var(--ink); }
 .landing h1.hero-title .grad.is-chunked { background-image: none; }
 .hero-title .gw {
   background-image: linear-gradient(
-    color-mix(in srgb, var(--brand) 24%, transparent),
-    color-mix(in srgb, var(--brand) 24%, transparent)
+    color-mix(in srgb, var(--brand) 54%, transparent),
+    color-mix(in srgb, var(--brand) 54%, transparent)
   );
   background-repeat: no-repeat;
-  background-position: 0 94%;
-  background-size: 100% .17em;
+  background-position: 0 calc(100% - 1px);
+  background-size: 100% .1em;
 }
-#view-landing.landing-enter .hero-title .gw { background-size: 0% .17em; }
-/* 句号并进了最后一个字：底色只画到字尾，别把下划线拖到句号后面 1em */
-.hero-title .gw.gw-end { background-size: calc(100% - 1em) .17em; }
+#view-landing.landing-enter .hero-title .gw { background-size: 0% .1em; }
+/* 句号并进了最后一个字：底色只画到字尾，别把朱红拖到句号后面 1em */
+.hero-title .gw.gw-end { background-size: calc(100% - 1em) .1em; }
 #view-landing.landing-enter .hero-title .grad.inked .gw {
-  background-size: 100% .17em;
-  transition: background-size .44s cubic-bezier(.22,1,.36,1);
-  transition-delay: calc((var(--i, 0) - var(--gw0, 0)) * 66ms);
+  background-size: 100% .1em;
+  transition: background-size .5s cubic-bezier(.22,1,.36,1);
+  transition-delay: calc((var(--i, 0) - var(--gw0, 0)) * 56ms);
 }
 #view-landing.landing-enter .hero-title .grad.inked .gw.gw-end {
-  background-size: calc(100% - 1em) .17em;
+  background-size: calc(100% - 1em) .1em;
 }
 
 /* ---------- ⑬ 取景角标：四段 L 形线从角点画出，落定后合焦呼吸 ---------- */
@@ -2060,20 +2093,32 @@
 #view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(2) { animation-delay: .02s; }
 #view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(3) { animation-delay: .08s; }
 #view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(4) { animation-delay: .14s; }
-#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(6) { animation-delay: 1.18s; }
-#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(7) { animation-delay: 1.26s; }
-#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(8) { animation-delay: 1.33s; }
-#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(9) { animation-delay: 1.4s; }
-#view-landing.landing-enter .hero-spec { animation-delay: 1.52s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(6) { animation-delay: 1.48s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(7) { animation-delay: 1.56s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(8) { animation-delay: 1.63s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(9) { animation-delay: 1.7s; }
+#view-landing.landing-enter .hero-spec { animation-delay: 1.82s; }
 
 /* 标题在窄屏会折到第三行，角标退到 9px 并缩小，别把横向撑出滚动条。
  * 字号也要跟着收：第二行「都成为可量化的成长。」是 10 个字，按 38px 算要 380px，
  * 390 屏只有 342px —— 不收就会把「成长」劈成「成」+「长。」两行。 */
 @media (max-width: 640px) {
-  .ht-frame { top: -11px; right: -9px; bottom: -9px; left: -9px; }
+  .ht-frame { top: -11px; right: -13px; bottom: -9px; left: -13px; }
   .ht-frame .hf-c { width: 11px; height: 11px; }
-  .landing h1.hero-title { font-size: clamp(26px, 8.4vw, 38px); }
+  /* 窄屏把整句顶到接近满宽：主行七个字 × 0.975em 要落在可用宽度内 */
+  .landing h1.hero-title { font-size: clamp(30px, 11.6vw, 46px); }
+  /* 引子行在小屏按 0.44 会掉到 14px，读不清；抬到 0.5 并收一点字距 */
+  .hero-title .ht-l1 { font-size: .5em; letter-spacing: .14em; }
+  #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation-name: l1TrackSm; }
 }
+@keyframes l1TrackSm { from { letter-spacing: .3em; } to { letter-spacing: .14em; } }
+/* 平板（641–900）是单列，标题按窄屏那套走会明显偏小 */
+@media (min-width: 641px) and (max-width: 900px) {
+  .landing h1.hero-title { font-size: clamp(44px, 8vw, 68px); }
+  .hero-title .ht-l1 { font-size: .48em; letter-spacing: .16em; }
+  #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation-name: l1TrackMd; }
+}
+@keyframes l1TrackMd { from { letter-spacing: .32em; } to { letter-spacing: .16em; } }
 /* 关键词是一个词组，拆到两行就不成词组了：宁可整块掉到下一行 */
 .hero-title .grad { white-space: nowrap; }
 
@@ -2086,7 +2131,7 @@
   #view-landing.landing-enter .hero-main > *,
   #view-landing.landing-enter .hero-spec,
   #view-landing.landing-enter .hero-title .grad.inked { animation: none; transition: none; }
-  #view-landing.landing-enter .hero-title .grad { background-size: 100% .17em; }
+  #view-landing.landing-enter .hero-title .grad { background-size: 100% .1em; }
   .bp-rail .ri-txt { transition: none; }
   .feature-block::before, .feature-block h3::after, .feature-block .fb-icon { transition: none; }
   .landing-stat.ticks-on .ls-scale i { animation: none; }
@@ -2094,6 +2139,8 @@
   .bp-ticker:hover .bp-ticker-track { animation-play-state: running; }
   /* v55：字已拆开，静态时必须是「全部可见 + 高亮铺满 + 角标不出现」 */
   #view-landing.landing-enter .hero-title .ch { animation: none; clip-path: none; opacity: 1; }
-  #view-landing.landing-enter .hero-title .gw { background-size: 100% .17em; transition: none; }
+  #view-landing.landing-enter .hero-title .gw { background-size: 100% .1em; transition: none; }
+  /* 引子行的字距收敛是独立选择器，得单独关掉，否则减少动效时还在偷偷收字距 */
+  #view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split { animation: none; }
   .ht-frame, .bp-sheet .bs-needle { display: none; }
 }
