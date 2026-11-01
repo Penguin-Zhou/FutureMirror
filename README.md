@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2561 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2632 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -648,7 +648,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2561 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2632 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -726,7 +726,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2561 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2632 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -917,6 +917,21 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v55：主标语焦点层——首屏只讲一句话（2026.11.01）
+
+> v54 把「图纸绘制」铺到了整页，但首屏本身仍是一次性到位的：标题整行揭载、高亮整块铺满，
+> 放完就静止。这一版不减内容、不换版式，只改**注意力的分配**。
+
+- **逐字落笔**：标题拆成 15 个 `inline-block`（句号并进「长」），每个字自左缘用 `clip-path` 描出，单字 300ms、步进 26ms——笔锋跨约 10 个字宽，读起来是墨在走而不是字在闪
+- **四角取景**：四段 L 形 1px 发丝线各从角点画开（0 / 70 / 140 / 210ms），落定后每 8s 合焦呼吸；用裁切而非缩放，线宽全程 1px
+- **关键词逐字涂红**：整块 `background-size` 扫过换成 6 个字块依次 66ms 递进，跨行天然正确；末字下划线扣掉句号那 1em
+- **入场节奏**：抬头先亮 → 标题 0.26s 起笔 → 正文 1.18s / 按钮 1.26s / 数据 1.4s / 规格卡 1.52s 依次落位；标题宽收成 `fit-content`，角标贴字不贴格子
+- **持续动效**：图幅尺寸线上加一枚 1px 朱红绘图针，7.6s 走一趟；鼠标划过标题可立即重扫批注，另有 12s 自动重扫（出视口或后台标签页时空转）
+- **真缺陷 ①：错帧从未生效**：`animation` 简写会连同 delay 一起重置，v54 那批 `:nth-child` 延迟规则权重低于简写，全部被静默改回 0s——看着有错帧设计，实际所有元素同时出现。改用带 `:nth-child` 的高权重选择器后才真正错开，断言里钉住「不许再出现裸 `:nth-child` 延迟规则」
+- **真缺陷 ②：窄屏劈词**：38px 下第二行「都成为可量化的成长。」要 380px，390 屏只有 342px，把「成长」劈成「成」+「长。」两行。窄屏字号收到 `8.4vw`（≤38px）并把关键词设为不拆行，375 / 390 / 768 复验均为两行且无横向溢出
+- **口径未变**：仍是 Beta 1.1.2；不引入运行时依赖，动画全部落在 CSS 与既有动态层内
+- **指标**：前端断言 2561 → **2632**（新增 v55 套件 71 项）｜jsdom 套件 45 → **46 套**｜共享全局符号 **745**（不变）
 
 ### Beta 1.1.2 · 增量 v54：落地页动态层——把「图纸绘制」做成开场（2026.11.01）
 

@@ -1840,14 +1840,9 @@
 /* ---------- ④ 首屏其余元素：错帧落位（30–60ms 递进，不逐字抢戏） ---------- */
 #view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet),
 #view-landing.landing-enter .hero-spec { animation: hfIn .62s cubic-bezier(.22,1,.36,1) both; }
-#view-landing.landing-enter .hero-main > :nth-child(2) { animation-delay: .04s; }
-#view-landing.landing-enter .hero-main > :nth-child(3) { animation-delay: .1s; }
-#view-landing.landing-enter .hero-main > :nth-child(4) { animation-delay: .16s; }
-#view-landing.landing-enter .hero-main > :nth-child(6) { animation-delay: .3s; }
-#view-landing.landing-enter .hero-main > :nth-child(7) { animation-delay: .37s; }
-#view-landing.landing-enter .hero-main > :nth-child(8) { animation-delay: .43s; }
-#view-landing.landing-enter .hero-main > :nth-child(9) { animation-delay: .49s; }
-#view-landing.landing-enter .hero-spec { animation-delay: .5s; }
+/* 注意：animation 这个简写会连同 delay 一起重置，所以下面这些 delay 必须写到
+ * 比上面那条更高的选择器权重上（多加 :nth-child），否则全是 0s——v54 那批就是
+ * 这么静默失效的，看上去「错帧」其实所有元素同时出现。 */
 @keyframes hfIn {
   from { opacity: 0; clip-path: inset(0 0 10px 0); }
   to { opacity: 1; clip-path: inset(0 0 0 0); }
@@ -1951,6 +1946,137 @@
 /* ---------- ⑨ Hero 雷达：外圈虚线轨道反向自转（仪器感，不抢视线） ---------- */
 .radar-orbit { transform-origin: 100px 100px; animation: radarSpin 26s linear infinite reverse; }
 
+/* ============================================================
+ * v55 · 主标语焦点层（Focus Overture）
+ * 首屏要讲清楚的只有一句话，入场就把全部预算压在它身上：
+ *   ① 逐字落笔：每个字一个 inline-block，clip-path 自下而上露出，
+ *      --i × 22ms 递进，像笔尖顺着基线一路写过去；
+ *   ② 取景角标：四段 L 形发丝线从各自角点向外画（clip-path 不改线宽），
+ *      落定后每 8s 对焦呼吸一次，像取景器在合焦；
+ *   ③ 关键词逐字涂红：整块背景扫过换成逐字 100%，跨行天然正确；
+ *   ④ 标题下缘游标：1px 短线 6.8s 走一趟，只在字下面、不上字面。
+ * 纪律不变：零投影、全直角、只走 clip-path / scaleX / X 轴位移。
+ * 渐进增强：所有初态挂在 .landing-enter 下；拆字失败退回整行揭载。
+ * ============================================================ */
+
+/* ---------- ⑪ 标题容器：角标与游标的定位基准 ---------- */
+/* 宽度收到字宽：角标要贴住「写出来的这段字」，而不是贴住 620px 的格子 */
+.landing h1.hero-title { position: relative; width: fit-content; max-width: 100%; }
+
+/* 逐字本体：inline-block 才能各自裁切 */
+.hero-title .ch { display: inline-block; }
+/* 每个字自左缘向右描出——与 --i 递进叠在一起，整体就像一支笔从左往右写过去。
+ * 单个字 300ms、步进 26ms：笔锋约 10 个字宽，读起来是墨在走，不是字在闪。 */
+#view-landing.landing-enter .hero-title .ch {
+  animation: chBrush .3s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--i, 0) * 26ms + 260ms);
+}
+@keyframes chBrush {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+/* 拆字没跑到（旧包 / 脚本报错）时，仍走 v54 的整行揭载 */
+#view-landing.landing-enter .hero-title .ht-inner:not(.is-split) {
+  animation: htReveal .88s cubic-bezier(.22,1,.36,1) both;
+}
+#view-landing.landing-enter .hero-title .ht-line:nth-child(2) .ht-inner:not(.is-split) { animation-delay: .12s; }
+
+/* ---------- ⑫ 关键词：整块背景交还给每个字 ---------- */
+.landing h1.hero-title .grad.is-chunked { background-image: none; }
+.hero-title .gw {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--brand) 24%, transparent),
+    color-mix(in srgb, var(--brand) 24%, transparent)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 94%;
+  background-size: 100% .17em;
+}
+#view-landing.landing-enter .hero-title .gw { background-size: 0% .17em; }
+/* 句号并进了最后一个字：底色只画到字尾，别把下划线拖到句号后面 1em */
+.hero-title .gw.gw-end { background-size: calc(100% - 1em) .17em; }
+#view-landing.landing-enter .hero-title .grad.inked .gw {
+  background-size: 100% .17em;
+  transition: background-size .44s cubic-bezier(.22,1,.36,1);
+  transition-delay: calc((var(--i, 0) - var(--gw0, 0)) * 66ms);
+}
+#view-landing.landing-enter .hero-title .grad.inked .gw.gw-end {
+  background-size: calc(100% - 1em) .17em;
+}
+
+/* ---------- ⑬ 取景角标：四段 L 形线从角点画出，落定后合焦呼吸 ---------- */
+.ht-frame {
+  position: absolute; top: -15px; right: -18px; bottom: -13px; left: -18px;
+  pointer-events: none;
+}
+.ht-frame .hf-c { position: absolute; width: 15px; height: 15px; border: 0 solid var(--brand); }
+.ht-frame .hf-tl { left: 0; top: 0; border-left-width: 1px; border-top-width: 1px; }
+.ht-frame .hf-tr { right: 0; top: 0; border-right-width: 1px; border-top-width: 1px; }
+.ht-frame .hf-bl { left: 0; bottom: 0; border-left-width: 1px; border-bottom-width: 1px; }
+.ht-frame .hf-br { right: 0; bottom: 0; border-right-width: 1px; border-bottom-width: 1px; }
+/* 两条动画并行：画角（各角方向不同）+ 合焦呼吸。
+ * 呼吸从 0s 就在跑，所以画的过程中角标是亮的，画完才落到 44%——
+ * 若给呼吸加 delay 又不带 backfill，1.9s 处会从 1 硬切到 .42，像闪了一下。 */
+#view-landing.landing-enter .ht-frame .hf-c {
+  animation-name: hfDrawTL, hfFocus;
+  animation-duration: .5s, 8s;
+  animation-timing-function: cubic-bezier(.22,1,.36,1), ease-in-out;
+  animation-delay: calc(var(--d, 0) * 1ms), 0s;
+  animation-iteration-count: 1, infinite;
+  animation-fill-mode: both, none;
+}
+#view-landing.landing-enter .ht-frame .hf-tr { animation-name: hfDrawTR, hfFocus; }
+#view-landing.landing-enter .ht-frame .hf-bl { animation-name: hfDrawBL, hfFocus; }
+#view-landing.landing-enter .ht-frame .hf-br { animation-name: hfDrawBR, hfFocus; }
+@keyframes hfDrawTL { from { clip-path: inset(0 100% 100% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes hfDrawTR { from { clip-path: inset(0 0 100% 100%); } to { clip-path: inset(0 0 0 0); } }
+@keyframes hfDrawBL { from { clip-path: inset(100% 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes hfDrawBR { from { clip-path: inset(100% 0 0 100%); } to { clip-path: inset(0 0 0 0); } }
+/* 合焦：画完（0.8s 处）最亮，随后两次短脉冲，其余时间压到 44% 静静待着 */
+@keyframes hfFocus {
+  0% { opacity: .34; }
+  10% { opacity: 1; }
+  22% { opacity: .5; }
+  30% { opacity: .92; }
+  38% { opacity: .44; }
+  100% { opacity: .44; }
+}
+
+/* ---------- ⑭ 图幅尺寸线上的绘图针：与角标呼吸不同频，别像机器对拍 ---------- */
+.bp-sheet .bs-needle {
+  position: absolute; top: 1px; left: 0; width: 1px; height: 9px;
+  background: var(--brand); opacity: 0;
+  animation: bsNeedle 7.6s cubic-bezier(.45,0,.55,1) 1.2s infinite;
+}
+@keyframes bsNeedle {
+  0% { left: 0; opacity: 0; }
+  10% { opacity: .55; }
+  90% { opacity: .55; }
+  100% { left: calc(100% - 1px); opacity: 0; }
+}
+
+/* ---------- ⑯ 入场节奏：抬头先亮 → 主标语落笔 → 其余跟上 ---------- */
+/* 选择器带上 :nth-child 才压得过后面的 animation 简写（简写里 delay 是 0s） */
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(2) { animation-delay: .02s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(3) { animation-delay: .08s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(4) { animation-delay: .14s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(6) { animation-delay: 1.18s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(7) { animation-delay: 1.26s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(8) { animation-delay: 1.33s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(9) { animation-delay: 1.4s; }
+#view-landing.landing-enter .hero-spec { animation-delay: 1.52s; }
+
+/* 标题在窄屏会折到第三行，角标退到 9px 并缩小，别把横向撑出滚动条。
+ * 字号也要跟着收：第二行「都成为可量化的成长。」是 10 个字，按 38px 算要 380px，
+ * 390 屏只有 342px —— 不收就会把「成长」劈成「成」+「长。」两行。 */
+@media (max-width: 640px) {
+  .ht-frame { top: -11px; right: -9px; bottom: -9px; left: -9px; }
+  .ht-frame .hf-c { width: 11px; height: 11px; }
+  .landing h1.hero-title { font-size: clamp(26px, 8.4vw, 38px); }
+}
+/* 关键词是一个词组，拆到两行就不成词组了：宁可整块掉到下一行 */
+.hero-title .grad { white-space: nowrap; }
+
 /* ---------- ⑩ 动效宪法：本层全部静态落位 ---------- */
 @media (prefers-reduced-motion: reduce) {
   #view-landing.landing-enter .bp-sheet .bs-rule,
@@ -1966,4 +2092,8 @@
   .landing-stat.ticks-on .ls-scale i { animation: none; }
   .radar-orbit { animation: none; }
   .bp-ticker:hover .bp-ticker-track { animation-play-state: running; }
+  /* v55：字已拆开，静态时必须是「全部可见 + 高亮铺满 + 角标不出现」 */
+  #view-landing.landing-enter .hero-title .ch { animation: none; clip-path: none; opacity: 1; }
+  #view-landing.landing-enter .hero-title .gw { background-size: 100% .17em; transition: none; }
+  .ht-frame, .bp-sheet .bs-needle { display: none; }
 }

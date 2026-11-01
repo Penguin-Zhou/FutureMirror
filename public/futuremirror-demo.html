@@ -3656,14 +3656,9 @@ try {
 /* ---------- ④ 首屏其余元素：错帧落位（30–60ms 递进，不逐字抢戏） ---------- */
 #view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet),
 #view-landing.landing-enter .hero-spec { animation: hfIn .62s cubic-bezier(.22,1,.36,1) both; }
-#view-landing.landing-enter .hero-main > :nth-child(2) { animation-delay: .04s; }
-#view-landing.landing-enter .hero-main > :nth-child(3) { animation-delay: .1s; }
-#view-landing.landing-enter .hero-main > :nth-child(4) { animation-delay: .16s; }
-#view-landing.landing-enter .hero-main > :nth-child(6) { animation-delay: .3s; }
-#view-landing.landing-enter .hero-main > :nth-child(7) { animation-delay: .37s; }
-#view-landing.landing-enter .hero-main > :nth-child(8) { animation-delay: .43s; }
-#view-landing.landing-enter .hero-main > :nth-child(9) { animation-delay: .49s; }
-#view-landing.landing-enter .hero-spec { animation-delay: .5s; }
+/* 注意：animation 这个简写会连同 delay 一起重置，所以下面这些 delay 必须写到
+ * 比上面那条更高的选择器权重上（多加 :nth-child），否则全是 0s——v54 那批就是
+ * 这么静默失效的，看上去「错帧」其实所有元素同时出现。 */
 @keyframes hfIn {
   from { opacity: 0; clip-path: inset(0 0 10px 0); }
   to { opacity: 1; clip-path: inset(0 0 0 0); }
@@ -3767,6 +3762,137 @@ try {
 /* ---------- ⑨ Hero 雷达：外圈虚线轨道反向自转（仪器感，不抢视线） ---------- */
 .radar-orbit { transform-origin: 100px 100px; animation: radarSpin 26s linear infinite reverse; }
 
+/* ============================================================
+ * v55 · 主标语焦点层（Focus Overture）
+ * 首屏要讲清楚的只有一句话，入场就把全部预算压在它身上：
+ *   ① 逐字落笔：每个字一个 inline-block，clip-path 自下而上露出，
+ *      --i × 22ms 递进，像笔尖顺着基线一路写过去；
+ *   ② 取景角标：四段 L 形发丝线从各自角点向外画（clip-path 不改线宽），
+ *      落定后每 8s 对焦呼吸一次，像取景器在合焦；
+ *   ③ 关键词逐字涂红：整块背景扫过换成逐字 100%，跨行天然正确；
+ *   ④ 标题下缘游标：1px 短线 6.8s 走一趟，只在字下面、不上字面。
+ * 纪律不变：零投影、全直角、只走 clip-path / scaleX / X 轴位移。
+ * 渐进增强：所有初态挂在 .landing-enter 下；拆字失败退回整行揭载。
+ * ============================================================ */
+
+/* ---------- ⑪ 标题容器：角标与游标的定位基准 ---------- */
+/* 宽度收到字宽：角标要贴住「写出来的这段字」，而不是贴住 620px 的格子 */
+.landing h1.hero-title { position: relative; width: fit-content; max-width: 100%; }
+
+/* 逐字本体：inline-block 才能各自裁切 */
+.hero-title .ch { display: inline-block; }
+/* 每个字自左缘向右描出——与 --i 递进叠在一起，整体就像一支笔从左往右写过去。
+ * 单个字 300ms、步进 26ms：笔锋约 10 个字宽，读起来是墨在走，不是字在闪。 */
+#view-landing.landing-enter .hero-title .ch {
+  animation: chBrush .3s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--i, 0) * 26ms + 260ms);
+}
+@keyframes chBrush {
+  from { opacity: 0; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+/* 拆字没跑到（旧包 / 脚本报错）时，仍走 v54 的整行揭载 */
+#view-landing.landing-enter .hero-title .ht-inner:not(.is-split) {
+  animation: htReveal .88s cubic-bezier(.22,1,.36,1) both;
+}
+#view-landing.landing-enter .hero-title .ht-line:nth-child(2) .ht-inner:not(.is-split) { animation-delay: .12s; }
+
+/* ---------- ⑫ 关键词：整块背景交还给每个字 ---------- */
+.landing h1.hero-title .grad.is-chunked { background-image: none; }
+.hero-title .gw {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--brand) 24%, transparent),
+    color-mix(in srgb, var(--brand) 24%, transparent)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 94%;
+  background-size: 100% .17em;
+}
+#view-landing.landing-enter .hero-title .gw { background-size: 0% .17em; }
+/* 句号并进了最后一个字：底色只画到字尾，别把下划线拖到句号后面 1em */
+.hero-title .gw.gw-end { background-size: calc(100% - 1em) .17em; }
+#view-landing.landing-enter .hero-title .grad.inked .gw {
+  background-size: 100% .17em;
+  transition: background-size .44s cubic-bezier(.22,1,.36,1);
+  transition-delay: calc((var(--i, 0) - var(--gw0, 0)) * 66ms);
+}
+#view-landing.landing-enter .hero-title .grad.inked .gw.gw-end {
+  background-size: calc(100% - 1em) .17em;
+}
+
+/* ---------- ⑬ 取景角标：四段 L 形线从角点画出，落定后合焦呼吸 ---------- */
+.ht-frame {
+  position: absolute; top: -15px; right: -18px; bottom: -13px; left: -18px;
+  pointer-events: none;
+}
+.ht-frame .hf-c { position: absolute; width: 15px; height: 15px; border: 0 solid var(--brand); }
+.ht-frame .hf-tl { left: 0; top: 0; border-left-width: 1px; border-top-width: 1px; }
+.ht-frame .hf-tr { right: 0; top: 0; border-right-width: 1px; border-top-width: 1px; }
+.ht-frame .hf-bl { left: 0; bottom: 0; border-left-width: 1px; border-bottom-width: 1px; }
+.ht-frame .hf-br { right: 0; bottom: 0; border-right-width: 1px; border-bottom-width: 1px; }
+/* 两条动画并行：画角（各角方向不同）+ 合焦呼吸。
+ * 呼吸从 0s 就在跑，所以画的过程中角标是亮的，画完才落到 44%——
+ * 若给呼吸加 delay 又不带 backfill，1.9s 处会从 1 硬切到 .42，像闪了一下。 */
+#view-landing.landing-enter .ht-frame .hf-c {
+  animation-name: hfDrawTL, hfFocus;
+  animation-duration: .5s, 8s;
+  animation-timing-function: cubic-bezier(.22,1,.36,1), ease-in-out;
+  animation-delay: calc(var(--d, 0) * 1ms), 0s;
+  animation-iteration-count: 1, infinite;
+  animation-fill-mode: both, none;
+}
+#view-landing.landing-enter .ht-frame .hf-tr { animation-name: hfDrawTR, hfFocus; }
+#view-landing.landing-enter .ht-frame .hf-bl { animation-name: hfDrawBL, hfFocus; }
+#view-landing.landing-enter .ht-frame .hf-br { animation-name: hfDrawBR, hfFocus; }
+@keyframes hfDrawTL { from { clip-path: inset(0 100% 100% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes hfDrawTR { from { clip-path: inset(0 0 100% 100%); } to { clip-path: inset(0 0 0 0); } }
+@keyframes hfDrawBL { from { clip-path: inset(100% 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes hfDrawBR { from { clip-path: inset(100% 0 0 100%); } to { clip-path: inset(0 0 0 0); } }
+/* 合焦：画完（0.8s 处）最亮，随后两次短脉冲，其余时间压到 44% 静静待着 */
+@keyframes hfFocus {
+  0% { opacity: .34; }
+  10% { opacity: 1; }
+  22% { opacity: .5; }
+  30% { opacity: .92; }
+  38% { opacity: .44; }
+  100% { opacity: .44; }
+}
+
+/* ---------- ⑭ 图幅尺寸线上的绘图针：与角标呼吸不同频，别像机器对拍 ---------- */
+.bp-sheet .bs-needle {
+  position: absolute; top: 1px; left: 0; width: 1px; height: 9px;
+  background: var(--brand); opacity: 0;
+  animation: bsNeedle 7.6s cubic-bezier(.45,0,.55,1) 1.2s infinite;
+}
+@keyframes bsNeedle {
+  0% { left: 0; opacity: 0; }
+  10% { opacity: .55; }
+  90% { opacity: .55; }
+  100% { left: calc(100% - 1px); opacity: 0; }
+}
+
+/* ---------- ⑯ 入场节奏：抬头先亮 → 主标语落笔 → 其余跟上 ---------- */
+/* 选择器带上 :nth-child 才压得过后面的 animation 简写（简写里 delay 是 0s） */
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(2) { animation-delay: .02s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(3) { animation-delay: .08s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(4) { animation-delay: .14s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(6) { animation-delay: 1.18s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(7) { animation-delay: 1.26s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(8) { animation-delay: 1.33s; }
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet):nth-child(9) { animation-delay: 1.4s; }
+#view-landing.landing-enter .hero-spec { animation-delay: 1.52s; }
+
+/* 标题在窄屏会折到第三行，角标退到 9px 并缩小，别把横向撑出滚动条。
+ * 字号也要跟着收：第二行「都成为可量化的成长。」是 10 个字，按 38px 算要 380px，
+ * 390 屏只有 342px —— 不收就会把「成长」劈成「成」+「长。」两行。 */
+@media (max-width: 640px) {
+  .ht-frame { top: -11px; right: -9px; bottom: -9px; left: -9px; }
+  .ht-frame .hf-c { width: 11px; height: 11px; }
+  .landing h1.hero-title { font-size: clamp(26px, 8.4vw, 38px); }
+}
+/* 关键词是一个词组，拆到两行就不成词组了：宁可整块掉到下一行 */
+.hero-title .grad { white-space: nowrap; }
+
 /* ---------- ⑩ 动效宪法：本层全部静态落位 ---------- */
 @media (prefers-reduced-motion: reduce) {
   #view-landing.landing-enter .bp-sheet .bs-rule,
@@ -3782,6 +3908,10 @@ try {
   .landing-stat.ticks-on .ls-scale i { animation: none; }
   .radar-orbit { animation: none; }
   .bp-ticker:hover .bp-ticker-track { animation-play-state: running; }
+  /* v55：字已拆开，静态时必须是「全部可见 + 高亮铺满 + 角标不出现」 */
+  #view-landing.landing-enter .hero-title .ch { animation: none; clip-path: none; opacity: 1; }
+  #view-landing.landing-enter .hero-title .gw { background-size: 100% .17em; transition: none; }
+  .ht-frame, .bp-sheet .bs-needle { display: none; }
 }
   /* ============ v18 · 求职管理 / 答题计时 / 语音反馈 / 玻璃拟态可读性修正 / Bento Grid ============ */
 
@@ -6413,6 +6543,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="bp-sheet" aria-hidden="true">
             <i class="bs-tick"></i>
             <span class="bs-rule"></span>
+            <i class="bs-needle"></i>
             <span class="bs-label">SHEET 01 · GRID 44 · 4 / 8 MIN</span>
             <i class="bs-tick bs-tick-e"></i>
           </div>
@@ -6435,7 +6566,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>2561</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>2632</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>30</b> 页技术文档</span>
           </div>
         </div>
@@ -6446,7 +6577,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2561 ／ pytest 57</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2632 ／ pytest 57</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -6503,7 +6634,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2561 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2632 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -6513,7 +6644,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2561 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2632 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -8009,7 +8140,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2561 项前端断言 + 57 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2632 项前端断言 + 57 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -8189,7 +8320,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2561 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2632 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -14647,6 +14778,9 @@ function revealScan() {
  * 4) v54 图纸开场：图幅尺寸线自左落笔 → 标题逐行揭载 → 关键词高亮扫过；
  *    右侧区块标尺走针（填充与点亮在 scrollfx 里与导航侦测同源）；
  *    数据条入视口落下刻度尺。全部只加类、不改内容，CSS 里备好初态与终态。
+ * 5) v55 主标语焦点层：标题拆字逐字落笔（--i 递进）、四角取景标记从角点画出、
+ *    关键词改成逐字涂红、标题下缘留一条游标反复走——首屏只讲一句话，
+ *    其余元素延后到字落完才出现；鼠标划过标题可重扫一次高亮。
  * 注：十字准线与坐标读数已于 v27 迁入 appfx.js 并扩展为全站能力
  * （app 功能页卡 PG 编号 / 开发者节 SEC 编号 / 输入聚焦准线隐身）。
  * ============================================================ */
@@ -14657,6 +14791,7 @@ function revealScan() {
   const FX = (window.__bpLanding = {
     rotator: false, mock: false, phrases: 0, playMock: null,
     overture: false, rail: false, ticks: 0, enter: null,
+    chars: 0, split: false, frame: false, replay: null, pulse: false,
   });
 
   /* ---------- ① Hero 文案轮播（等宽打字机） ---------- */
@@ -14731,10 +14866,192 @@ function revealScan() {
     FX.overture = true;
     const grad = view.querySelector(".hero-title .grad");
     if (grad && grad.classList) {
-      setTimeout(() => { grad.classList.add("inked"); }, 760);  // 等标题第二行落定再扫高亮
+      setTimeout(() => { grad.classList.add("inked"); }, 820);  // 等最后一个字落定再涂红
     }
   }
   FX.enter = enterLanding;
+
+  /* ---------- ⑦ v55 主标语焦点层：逐字落笔 + 取景角标 + 关键词逐字涂红 ----------
+   * 首屏要讲清楚的就一句话，所以把「入场」全部让给它：
+   *   ① 拆字：每个字一个 inline-block（带 --i 序号），标点并入前一字
+   *      —— inline-block 不参与行首禁则，独立成块的「。」会掉到行首；
+   *   ② 取景角标：四段 L 形线从各自角点用 clip-path 画出来（不改线宽）；
+   *   ③ 关键词：整块背景扫过换成逐字涂红，跨行也天然正确。
+   * 任何一步失败都不影响可读性：拆字没跑就退回 v54 的整行揭载，
+   * 角标只是装饰（aria-hidden），CSS 里所有初态都挂在 .landing-enter 下。 */
+  const PUNCT = "，。、；：！？…—）」』》】";
+  function brushText(text, n) {
+    const out = document.createDocumentFragment();
+    let last = null;
+    [...text].forEach((ch) => {
+      if (/\s/.test(ch)) {
+        out.appendChild(document.createTextNode(ch));
+        last = null;
+        return;
+      }
+      if (last && PUNCT.indexOf(ch) >= 0) {
+        last.textContent += ch;                                // 标点粘住前一字，避免行首标点
+        return;
+      }
+      const s = document.createElement("span");
+      s.className = "ch";
+      s.style.setProperty("--i", String(n.i++));
+      s.textContent = ch;
+      out.appendChild(s);
+      last = s;
+    });
+    return out;
+  }
+
+  function splitTitle() {
+    const title = document.querySelector("#view-landing .hero-title");
+    if (!title || title.dataset.brushed === "1") return FX.chars;
+    const inners = [...title.querySelectorAll(".ht-inner")];
+    if (!inners.length) return 0;
+    const n = { i: 0 };
+    try {
+      inners.forEach((inner) => {
+        const frag = document.createDocumentFragment();
+        const kids = [];
+        [...inner.childNodes].forEach((node) => {
+          if (node.nodeType === 3) {
+            kids.push(brushText(node.textContent, n));
+            return;
+          }
+          if (node.nodeType === 1 && node.classList.contains("grad")) {
+            /* 关键词：内部同样逐字，但保留 .grad 作父——无 JS 时整块高亮还挂在它身上，
+             * 拆开后加 .is-chunked 把整块背景交还给每个字（.gw）。 */
+            const g = document.createDocumentFragment();
+            [...node.textContent].forEach((ch) => {
+              if (!ch.trim()) return;
+              const s = document.createElement("span");
+              s.className = "ch gw";
+              s.style.setProperty("--i", String(n.i++));
+              s.textContent = ch;
+              g.appendChild(s);
+            });
+            node.textContent = "";
+            node.appendChild(g);
+            node.classList.add("is-chunked");
+            const first = node.querySelector(".gw");
+            if (first) node.style.setProperty("--gw0", first.style.getPropertyValue("--i") || "0");
+            kids.push(node);
+            return;
+          }
+          kids.push(node.cloneNode(true));
+        });
+        /* 构建器把 HTML 缩进留在了 .ht-inner 里：首尾那串空白会被 fit-content 算进宽度，
+         * 角标就会比字宽出四五十像素。真正画在纸上的只有字，把空白去掉。 */
+        kids.forEach((k) => frag.appendChild(k));
+        inner.textContent = "";
+        inner.appendChild(frag);
+        const trimEdge = () => {
+          let guard = 0;
+          while (inner.firstChild && inner.firstChild.nodeType === 3 && !inner.firstChild.textContent.trim() && guard++ < 8) {
+            inner.removeChild(inner.firstChild);
+          }
+          while (inner.lastChild && inner.lastChild.nodeType === 3 && !inner.lastChild.textContent.trim() && guard++ < 16) {
+            inner.removeChild(inner.lastChild);
+          }
+        };
+        trimEdge();
+        inner.classList.add("is-split");
+        /* .grad 之后那个句号会被拆成独立的 .ch（inline-block 不参与行首禁则，
+         * 折行时「。」会掉到行首）：并回前一个字的块里，让它跟字一起换行。 */
+        [...inner.childNodes].forEach((c) => {
+          if (c.nodeType !== 1 || !c.classList || !c.classList.contains("ch")) return;
+          const t = c.textContent.trim();
+          if (!t || !/^[，。、；：！？…—]+$/.test(t)) return;
+          const prev = c.previousSibling;
+          const host =
+            prev && prev.nodeType === 1
+              ? prev.classList.contains("grad")
+                ? prev.lastElementChild
+                : prev
+              : null;
+          if (!host || !host.classList || !host.classList.contains("ch")) return;
+          host.textContent += t;
+          host.classList.add("gw-end");                        // 下划线只画到字尾，不盖住句号
+          if (c.parentNode) c.parentNode.removeChild(c);
+          inner.classList.add("has-stuck-punct");
+        });
+      });
+    } catch (e) {
+      FX.split = false;
+      return 0;
+    }
+    /* 以 DOM 实际切片数为准：句号那个 .ch 建完就被并进末字，计数器会比实际多 1 */
+    FX.chars = title.querySelectorAll(".ch").length;
+    FX.split = true;
+    title.dataset.brushed = "1";
+    return FX.chars;
+  }
+
+  /* 取景角标 + 标题下缘游标：纯装饰，无 JS 时不出现（不承担任何信息） */
+  function dressTitle() {
+    const title = document.querySelector("#view-landing .hero-title");
+    if (!title || title.querySelector(".ht-frame")) return false;
+    const frame = document.createElement("span");
+    frame.className = "ht-frame";
+    frame.setAttribute("aria-hidden", "true");
+    [
+      ["hf-tl", 0],
+      ["hf-tr", 70],
+      ["hf-bl", 140],
+      ["hf-br", 210],
+    ].forEach(([cls, d]) => {
+      const c = document.createElement("i");
+      c.className = "hf-c " + cls;
+      c.style.setProperty("--d", String(d));
+      frame.appendChild(c);
+    });
+    title.appendChild(frame);
+    FX.frame = true;
+    return true;
+  }
+
+  /* hover 重扫 + 每 12s 自动重扫一次：让「批注」这个动作可以被反复看见，
+   * 而不是开场放完就死掉。标题滚出视口或标签页在后台时不空转。 */
+  let replayAt = 0;
+  let pulseTimer = 0;
+  let pulseOn = false;
+  function replayTitle() {
+    const view = document.getElementById("view-landing");
+    if (!view || !view.classList.contains("landing-enter")) return false;
+    const grad = view.querySelector(".hero-title .grad");
+    if (!grad) return false;
+    const now = Date.now();
+    if (now - replayAt < 1200) return false;                    // 节流：别让鼠标划过就狂重播
+    replayAt = now;
+    grad.classList.remove("inked");
+    void grad.offsetWidth;                                      // 强制回流，重置背景尺寸
+    grad.classList.add("inked");
+    return true;
+  }
+  FX.replay = replayTitle;
+
+  function startPulse() {
+    const view = document.getElementById("view-landing");
+    const grad = view && view.querySelector(".hero-title .grad");
+    if (!grad || reduced()) return false;
+    if (pulseTimer) return true;
+    pulseOn = true;
+    pulseTimer = setInterval(() => {
+      if (document.hidden || !pulseOn) return;
+      replayTitle();
+    }, 12000);
+    if ("IntersectionObserver" in window) {
+      try {
+        const io = new IntersectionObserver((es) => {
+          es.forEach((en) => { pulseOn = en.isIntersecting; });
+        }, { threshold: 0.25 });
+        io.observe(grad);
+      } catch (e) { /* 没有 IO 就一直跑，成本只是一次背景过渡 */ }
+    }
+    FX.pulse = true;
+    return true;
+  }
+
 
   /* ---------- ④ v54 区块标尺：点击走位（填充与点亮由 scrollfx 统一驱动） ---------- */
   function initRail() {
@@ -14805,9 +15122,16 @@ function revealScan() {
   function boot() {
     try { initHeroRotator(); } catch (e) {}
     try { playHeroMock(); } catch (e) {}
+    /* 拆字与角标必须在 enterLanding() 之前就位：加类的同一帧里初态已在 CSS 里等着，
+     * 晚一帧就会看到「先整行出现、再消失重写」的闪跳。 */
+    try { splitTitle(); } catch (e) {}
+    try { dressTitle(); } catch (e) {}
     try { enterLanding(); } catch (e) {}
     try { initRail(); } catch (e) {}
     try { initStatScale(); } catch (e) {}
+    try { startPulse(); } catch (e) {}
+    const title = document.querySelector("#view-landing .hero-title");
+    if (title && title.addEventListener) title.addEventListener("mouseenter", replayTitle);
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot, { once: true });

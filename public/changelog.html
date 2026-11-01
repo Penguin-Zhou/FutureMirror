@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2561</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2632</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -312,6 +312,7 @@ body {
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v55"><span class="cl-toc-tag">Beta 1.1.2 · v55</span><span class="cl-toc-title-txt">主标语焦点层 · 逐字落笔 / 四角取景 / 关键词逐字涂红 / 入场节奏重排</span></a></li>
     <li><a href="#v54"><span class="cl-toc-tag">Beta 1.1.2 · v54</span><span class="cl-toc-title-txt">落地页动态层 · 尺寸线落笔 / 标题揭载 / 右侧标尺 / 跨行裁字</span></a></li>
     <li><a href="#v53"><span class="cl-toc-tag">Beta 1.1.2 · v53</span><span class="cl-toc-title-txt">对话式匹配答满 4 问后没有落点 · 分数涨了缺口没变</span></a></li>
     <li><a href="#v52"><span class="cl-toc-tag">Beta 1.1.2 · v52</span><span class="cl-toc-title-txt">PDF 简历导入只剩一个板块 · 四道坎都在「按行」这件事上</span></a></li>
@@ -555,6 +556,41 @@ body {
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v55 · 主标语焦点层：首屏只讲一句话
+       ======================================================== -->
+  <div class="version" id="v55">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 体验增强（v55）</span>
+      <span class="v-title">落地页首屏只讲一句话：标题被一笔一笔写出来，其余元素等它写完</span>
+      <span class="v-date">2026.11.01</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        v54 把「图纸绘制」铺到了整页，但首屏本身仍是一次性到位的：标题整行揭载、高亮整块铺满，
+        放完就静止。这一版把入场预算全部压在<strong>主标语</strong>上——
+        字一个一个写出来，写完才让正文、按钮、数据出现。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>逐字落笔</b>：16 个字拆成 15 个 <code>inline-block</code>（句号并进「长」，避免行首标点），每个字自左缘用 <code>clip-path</code> 描出，单字 300ms、步进 26ms——笔锋跨约 10 个字宽，读起来是墨在走，不是字在闪</div>
+        <div class="vh-item"><b>四角取景</b>：标题四周四段 L 形 1px 发丝线，各自从角点用 <code>clip-path</code> 画开（0 / 70 / 140 / 210ms）；落定后每 8s 合焦呼吸一次（压到 44% → 两次短脉冲）。用 clip-path 而不是缩放，线条粗细全程保持 1px</div>
+        <div class="vh-item"><b>关键词逐字涂红</b>：整块背景扫过换成 6 个字块依次 66ms 递进，跨行天然正确；末字下划线扣掉句号那 1em，不把批注拖出句尾</div>
+        <div class="vh-item"><b>入场节奏重排</b>：抬头（图幅标注 / 标签 / 轮播 / eyebrow）先亮 → 主标语 0.26s 起笔 → 正文 1.18s、按钮 1.26s、数据 1.4s、规格卡 1.52s 依次落位；标题宽度收到字宽，角标贴字不贴格子</div>
+        <div class="vh-item"><b>真缺陷：错帧其实没生效</b>：<code>animation</code> 简写会连同 delay 一起重置，v54 那批 <code>:nth-child</code> 延迟规则权重比简写低，全部被静默改回 0s——看着有「错帧设计」，实际所有元素同时出现。改写成带 <code>:nth-child</code> 的高权重选择器后才真正错开，断言里钉住「不许再出现裸 :nth-child 延迟规则」</div>
+        <div class="vh-item"><b>真缺陷：窄屏劈词</b>：38px 下第二行「都成为可量化的成长。」要 380px，390 屏只有 342px，把「成长」劈成「成」+「长。」两行。窄屏字号收到 <code>8.4vw</code>（≤38px）并把关键词设为不拆行，375 / 390 / 768 复验均为两行且无横向溢出</div>
+        <div class="vh-item"><b>持续动效</b>：图幅尺寸线上加一枚 1px 朱红绘图针，7.6s 沿尺寸线走一趟，与角标呼吸不同频；鼠标划过标题可立即重扫一次批注，另有 12s 自动重扫（标题出视口或标签页在后台时空转）</div>
+        <div class="vh-item"><b>降级纪律不变</b>：所有初态挂在 <code>.landing-enter</code> 下，无 JS 或 reduced-motion 一律是完整完成态；拆字失败自动退回 v54 的整行揭载</div>
+        <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2，不引入任何运行时依赖，动画全部落在 CSS 与既有动态层内</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">71</div><div class="m-label">v55 新增断言</div></div>
+        <div class="metric"><div class="m-val">2632</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">46</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">2</div><div class="m-label">顺带修掉的真实缺陷</div></div>
       </div>
     </div>
   </div>

@@ -206,7 +206,20 @@ const ev = (code) => w.eval(code);
     const defined = new Set();
     allCss.replace(/(--[a-z0-9-]+)\s*:/g, (m, n) => defined.add(n));
     /* 这些由 JS 运行时写在元素 style 上，不在样式表里定义 */
-    const runtime = ["--app-vh", "--kb-h", "--hdr-h", "--mx", "--my", "--bp-i", "--sec-i", "--ws-i", "--rail-p", "--i"];
+    const runtime = [
+      "--app-vh",
+      "--kb-h",
+      "--hdr-h",
+      "--mx",
+      "--my",
+      "--bp-i",
+      "--sec-i",
+      "--ws-i",
+      "--rail-p",
+      "--i",
+      "--d",
+      "--gw0",
+    ];
     const missing = [];
     allCss.replace(/var\(\s*(--[a-z0-9-]+)/g, (m, n) => {
       if (!defined.has(n) && runtime.indexOf(n) < 0 && missing.indexOf(n) < 0) missing.push(n);
