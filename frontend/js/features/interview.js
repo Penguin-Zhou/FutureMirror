@@ -853,6 +853,7 @@ function restartInterview() {
   const sbBadge0 = $("sb-interview-badge");
   if (sbBadge0) { sbBadge0.textContent = `0/${MAX_TURNS}`; sbBadge0.style.background = "var(--brand-bg)"; sbBadge0.style.color = "var(--brand)"; }
   lastReportSig = "";
+  lastBackendPayload = null;   // v52：新一轮作废上一场的服务端评分缓存
   renderReport();
   toast("已重置本轮面试（历史进步曲线已保留）", function () {
     session.turns = bpSnap.turns;

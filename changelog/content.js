@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2432</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2467</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -37,6 +37,7 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v52"><span class="cl-toc-tag">Beta 1.1.2 · v52</span><span class="cl-toc-title-txt">PDF 简历导入只剩一个板块 · 四道坎都在「按行」这件事上</span></a></li>
     <li><a href="#v51"><span class="cl-toc-tag">Beta 1.1.2 · v51</span><span class="cl-toc-title-txt">窄屏首屏 76px 空白 · 顶部让位按下层元素算，不再把顶栏数两遍</span></a></li>
     <li><a href="#v50"><span class="cl-toc-tag">Beta 1.1.2 · v50</span><span class="cl-toc-title-txt">检测修复 · 计划与指挥台同源 / 重开竞态 / 暗色仪表 / 坏数据防御 / 策略卡口径</span></a></li>
     <li><a href="#v49"><span class="cl-toc-tag">Beta 1.1.2 · v49</span><span class="cl-toc-title-txt">视觉升级 · 工作台指挥台（5 段仪表 + 4 格指标 + 下一步）+ 版式降噪</span></a></li>
@@ -250,6 +251,41 @@ export const changelogHtml = `
   <!-- ========================================================
        Beta 1.1.2 · v51 · 窄屏顶部让位：一份高度只算一次
        ======================================================== -->
+  <!-- ========================================================
+       Beta 1.1.2 · v52 · PDF 简历导入：把文本还原成行
+       ======================================================== -->
+  <div class="version" id="v52">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 可用性修复（v52）</span>
+      <span class="v-title">PDF 简历导进来只剩一个「简历正文」板块</span>
+      <span class="v-date">2026.11.01</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        为了演示，做了一份一页纸的 PDF 简历，导进去发现姓名、教育、技能全部为空，
+        整份简历只拆出「简历正文」一个板块。查下去不是这份简历的问题，是一条链上的四道坎，
+        每一道都踩在「按行」这件事上：<code>parsePdfText</code> 把所有文字用空格拼成一整段，
+        丢掉了 pdf.js 给的 <code>hasEOL</code> 换行标记；而简历拆分完全靠「行」来认板块标题与姓名。
+        一行到底之后，后面三件事必然一起失败。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>换行被丢掉</b>：<code>items.map(it =&gt; it.str).join(" ")</code> 把 384 个文本片段连成一行。改为按 <code>hasEOL</code> 还原 35 行，末行没有标记也不丢</div>
+        <div class="vh-item"><b>字距把姓名拆散</b>：标题的字距让 pdf.js 逐字切分，拼出来是「林 砚 舟」。一行里≥2 处汉字空隙才判为字距、合并回去——单个空格可能是真的两栏分隔（「… 本科 上海」）</div>
+        <div class="vh-item"><b>日期被当成列表符号</b>：<code>[0-9]+[.、]</code> 把「2026.03 — 2026.08 烛远科技」剥成「03 — 2026.08」，把「3.2s 降到」剥成「2s 降到」。有序标记限定 1–2 位数字且必须后跟空白</div>
+        <div class="vh-item"><b>折行与条目边界</b>：一条经历的折行在下一行且不带符号时被整行丢弃；以年份开头的新条目反而被并进上一条，公司名与时间就这样没了。改为「符号 或 行首年份」开新条，其余并入上一条</div>
+        <div class="vh-item"><b>技能匹配贪心</b>：<code>includes</code> 判定 JavaScript 命中 Java、MySQL 命中 SQL，一份前端简历的「已具备技能」里凭空多出一个 Java。改为词边界匹配（中文技能名不受限）</div>
+        <div class="vh-item"><b>同源问题：报告两次分数</b>：同一场面试第二次进报告页会跳过同步请求、拿不到 payload，静默退化成本地引擎——服务端 66 分与本地 72 分同时存在，进步曲线还多一条记录。改为复用上一次的服务端结果</div>
+        <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2；数据不出浏览器，PDF 解析仍在端侧完成</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">35</div><div class="m-label">v52 新增断言</div></div>
+        <div class="metric"><div class="m-val">2467</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">43</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">0 → 13</div><div class="m-label">导入后条目数</div></div>
+      </div>
+    </div>
+  </div>
+
   <div class="version" id="v51">
     <div class="version-head">
       <span class="v-tag">Beta 1.1.2 · 布局修正（v51）</span>
@@ -275,7 +311,7 @@ export const changelogHtml = `
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">38</div><div class="m-label">v51 新增断言</div></div>
-        <div class="metric"><div class="m-val">2432</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2467</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">42</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">76 → 16</div><div class="m-label">首屏空白（px，375 宽）</div></div>
       </div>
@@ -307,7 +343,7 @@ export const changelogHtml = `
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">41</div><div class="m-label">v50 新增断言</div></div>
-        <div class="metric"><div class="m-val">2432</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2467</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">41</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">5</div><div class="m-label">修复项</div></div>
       </div>
@@ -342,7 +378,7 @@ export const changelogHtml = `
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">52</div><div class="m-label">v49 新增断言</div></div>
-        <div class="metric"><div class="m-val">2432</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2467</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">40</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">新增运行时依赖</div></div>
       </div>

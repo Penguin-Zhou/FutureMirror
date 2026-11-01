@@ -17,6 +17,9 @@ const BASE_PLAN = [
  * 刷新页面后重新同步一次是正确行为（重新取回服务端评分），
  * 而同页内反复切到报告页不应重复 POST。 */
 let lastSyncSig = "";
+/* v52：最近一次服务端评分结果。同一场面试重复进入报告页时复用，
+ * 否则第二次会跳过请求、拿不到 payload，静默退化成本地引擎。 */
+let lastBackendPayload = null;
 
 function scoreSession() {
   const turns = session.turns;
@@ -401,9 +404,15 @@ async function renderReport(force) {
       try {
         backendPayload = await fmApi.syncAndReport(session, matchResult);
         lastSyncSig = syncSig();   // 同步后 interviewId 已生成，签名此刻才稳定
+        lastBackendPayload = backendPayload;
         try { persistSession(); } catch (e) {}   // interviewId 落本地，刷新后仍归属同一会话
       } catch (e) {}
       if (skel) skel.clear();
+    } else if (lastBackendPayload) {
+      /* v52：这次没发请求（同一会话已同步过），但结果还在——直接复用。
+       * 之前这里留空，第二次进报告页就变成「启发式引擎演示」，
+       * 同一场面试出现两个分数，历史曲线还会多出一条并不存在的记录。 */
+      backendPayload = lastBackendPayload;
     }
   }
   let dims, total, evidence, plan, weakest, serverScored = false;

@@ -403,10 +403,30 @@ const RESUME_SPLIT_HEADERS = [
 function splitSegmentItems(block) {
   const lines = String(block || "").split("\n").map((s) => s.trim()).filter(Boolean);
   if (!lines.length) return [];
-  const bulletRe = /^([•·\-*▪]|[0-9]+[.、]|（[0-9]+）|\(?[0-9]+\))\s*/;
-  const bullets = lines.filter((l) => bulletRe.test(l));
-  if (bullets.length >= 2 || (bullets.length && bullets.length === lines.length)) {
-    return bullets.map((t) => ({ text: t.replace(bulletRe, "").trim() })).filter((x) => x.text);
+  /* v52：项目符号不能贪心。「2026.03 — 2026.08 某公司」与「3.2s 降到 1.1s」都曾
+   * 被当成「1.」式有序列表剥掉开头，导入后变成「03 — 2026.08」「2s 降到」。
+   * 有序列表标记限定 1–2 位数字，且必须后跟空白；圆点类符号不设限。 */
+  const bulletRe = /^(?:[•·▪\-*]\s*|\d{1,2}[.、)]\s+|（\d{1,2}）\s*|\(\d{1,2}\)\s*)/;
+  /* v52：条目边界按「行首符号」或「行首日期」两条判据。
+   * PDF 里的换行大多只是排版折行，没有符号；旧实现只在「≥2 行都带符号」时才按
+   * 符号切，其余退化成分段切分——一条带折行的经历会整段糊成一条，
+   * 而以年份开头的新条目反倒被并进上一条，公司名与时间就从板块里消失了。 */
+  const headRe = /^(?:19|20)\d{2}\s*[.\-/年]/;
+  const startsEntry = (l) => bulletRe.test(l) || headRe.test(l);
+  if (lines.some(startsEntry)) {
+    const items = [];
+    lines.forEach((l) => {
+      if (startsEntry(l)) {
+        items.push(l.replace(bulletRe, "").trim());
+        return;
+      }
+      if (!items.length) { items.push(l); return; }
+      const prev = items[items.length - 1];
+      /* 折行续写：两段都以汉字收尾/开头时不补空格，避免制造「全组 7 人」这种伪分隔 */
+      const glue = /[\u4e00-\u9fff]$/.test(prev) && /^[\u4e00-\u9fff\uff00-\uffef]/.test(l) ? "" : " ";
+      items[items.length - 1] = prev + glue + l;
+    });
+    return items.filter(Boolean).map((t) => ({ text: t }));
   }
   const paras = String(block || "").split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
   if (paras.length >= 2) return paras.map((t) => ({ text: t }));
@@ -451,12 +471,26 @@ function splitResumeText(text) {
     const block = s.buf.join("\n").trim();
     if (!block) return;
     if (s.def.core === "skills") {
-      const toks = block.split(/[\n、，,；;]+/).map((t) => t.trim()).filter(Boolean);
-      core.skills = toks.join("、");
+      /* v52：按「行」分组再连接。旧实现把所有行拍平后用「、」串，
+       * 「熟练 / 掌握 / 了解」三档的分层被抹掉，读起来像一串并列词。 */
+      const groups = block
+        .split(/\n+/)
+        .map((l) => l.split(/[、，,；;]+/).map((t) => t.trim()).filter(Boolean).join("、"))
+        .filter(Boolean);
+      core.skills = groups.join("；");
     } else if (s.def.core === "education") {
       core.education = block;
     } else if (s.def.core === "summary") {
-      core.summary = block;
+      /* 折行不是分段：中文之间直接接回去，避免正文中间冒出半个词 */
+      core.summary = block
+        .split(/\n+/)
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .reduce((acc, l) => {
+          if (!acc) return l;
+          const glue = /[\u4e00-\u9fff]$/.test(acc) && /^[\u4e00-\u9fff\uff00-\uffef]/.test(l) ? "" : " ";
+          return acc + glue + l;
+        }, "");
     } else {
       const items = splitSegmentItems(block);
       if (items.length) sections.push({ id: jsSectionUid(), title: s.def.title, items: items });

@@ -26,9 +26,22 @@ function fillDemo() {
   onJdSelectChange(true);   // 不立即 analyze（用户需自己点按钮，避免"填示例→立刻出报告"过于突兀）
 }
 
+/* v52：技能词按「词边界」匹配，不再用 includes。
+ * 旧写法下「JavaScript」会被判成命中「Java」、「MySQL」会命中「SQL」——
+ * 一份前端简历的「已具备技能」里凭空多出一个 Java，这类错误在演示时最刺眼。
+ * 含符号的技能（Node.js / Next.js / C++）按同一规则：前后不能紧贴字母数字。 */
+function skillIn(text, skill) {
+  const t = String(text || "");
+  const s = String(skill || "");
+  if (!s) return false;
+  if (/^[\u4e00-\u9fff]+$/.test(s)) return t.indexOf(s) >= 0;   // 中文技能名没有词边界问题
+  const esc = s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp("(^|[^A-Za-z0-9_+#])" + esc + "(?![A-Za-z0-9_+#])", "i").test(t);
+}
+
 function heuristicParse(resumeText, jdText) {
-  const resumeSkills = SKILL_DICT.filter(s => resumeText.includes(s));
-  const jdSkills = SKILL_DICT.filter(s => jdText.includes(s));
+  const resumeSkills = SKILL_DICT.filter((s) => skillIn(resumeText, s));
+  const jdSkills = SKILL_DICT.filter((s) => skillIn(jdText, s));
   const gaps = jdSkills.filter(s => !resumeSkills.includes(s));
   const matchScore = jdSkills.length > 0
     ? Math.round(100 * (jdSkills.length - gaps.length) / jdSkills.length)
@@ -184,6 +197,46 @@ async function ensurePdfJs() {
   return window.pdfjsLib;
 }
 
+/* ---------- v52：PDF 文本还原成「行」，而不是一整段 ----------
+ * pdf.js 给每个 TextItem 标了 hasEOL（行末为 true）。旧实现用空格把所有 item
+ * 拼成一整段，等于把换行全部丢掉——而简历拆分完全靠「行」来认板块标题与姓名：
+ * 一行到底之后，姓名读不到（超过 12 字）、教育/技能/自我评价全空、板块数 0，
+ * 只剩一个兜底的「简历正文」。任何 PDF 导进来都是这个结果，与文件本身无关。 */
+const PDF_CJK = "\\u3000-\\u303f\\u4e00-\\u9fff\\uff00-\\uffef";
+function pdfTidyLine(line) {
+  let s = String(line || "").replace(/^\s+/, "").replace(/\s+$/, "");
+  /* 字距大的 PDF，pdf.js 会把每个字拆成独立 item，拼完变成「林 砚 舟」。
+   * 但单个空格也可能是正文里真的分隔（「… 本科 上海」这类两栏对齐），
+   * 一行里大量汉字之间都有空隙，才判定是字距造成的——此时把空格合回去。 */
+  const cjkGap = new RegExp("([" + PDF_CJK + "])[ \\t]+(?=[" + PDF_CJK + "])", "g");
+  const hits = s.match(cjkGap);
+  if (hits && hits.length >= 2) s = s.replace(cjkGap, "$1");
+  /* 逐字母空格：「L I N   Y A N Z H O U」这类通栏小标题。≥3 个单字母才合并，
+   * 「A B 测试」这种正常写法不动。 */
+  s = s.replace(/(?:\b[A-Za-z]\s){2,}\b[A-Za-z]\b/g, (m) => m.replace(/\s+/g, ""));
+  /* 合并完逐字母标题会留下「LIN   YANZHOU」这种连续空格；提取层里的多空格几乎都是
+   * 版式留白，不是语义。压成一个空格，简历里「本科 上海」这类单空格分隔不受影响。 */
+  if (/[ \t]{2,}/.test(s)) s = s.replace(/[ \t]{2,}/g, " ");
+  return s;
+}
+/* 行内拼接：先按几何间隙补空格（不少 PDF 不吐空格字形），再交给 pdfTidyLine 收拾。
+ * 汉字之间多补的空格会被上面的折叠规则吃掉，所以这里宁可多补。 */
+function pdfJoinLine(items) {
+  let line = "";
+  let prevEnd = null;
+  items.forEach((it) => {
+    const str = typeof it.str === "string" ? it.str : "";
+    const tr = it.transform || [1, 0, 0, 1, 0, 0];
+    const size = Math.abs(it.height || tr[3] || 10) || 10;
+    if (line && prevEnd !== null && tr[4] - prevEnd > 0.25 * size && !/\s$/.test(line) && !/^\s/.test(str)) {
+      line += " ";
+    }
+    line += str;
+    prevEnd = tr[4] + (it.width || 0);
+  });
+  return line;
+}
+
 async function parsePdfText(file) {
   const pdfjsLib = await ensurePdfJs();
   const data = await (file.arrayBuffer
@@ -195,14 +248,22 @@ async function parsePdfText(file) {
         r.readAsArrayBuffer(file);
       }));
   const doc = await pdfjsLib.getDocument({ data }).promise;
-  let text = "";
+  const lines = [];
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
     const content = await page.getTextContent();
-    text += content.items.map((it) => it.str || "").join(" ") + "\n";
+    let buf = [];
+    content.items.forEach((it) => {
+      buf.push(it);
+      if (!it.hasEOL) return;
+      lines.push(pdfTidyLine(pdfJoinLine(buf)));
+      buf = [];
+    });
+    /* 末行没有 hasEOL 的 PDF 不少，别把最后一行的内容丢掉 */
+    if (buf.length) lines.push(pdfTidyLine(pdfJoinLine(buf)));
   }
   return {
-    text: text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(),
+    text: lines.join("\n").replace(/\n{3,}/g, "\n\n").trim(),
     pages: doc.numPages,
   };
 }
@@ -228,7 +289,7 @@ let matchQaState = null;
 /* JD 技能集合：优先取当前 JD 文本，回退为「已具备 + 缺口」并集 */
 function currentJdSkills() {
   const jdText = ($("jd") && $("jd").value ? $("jd").value : "");
-  const fromJd = SKILL_DICT.filter((s) => jdText.indexOf(s) >= 0);
+  const fromJd = SKILL_DICT.filter((s) => skillIn(jdText, s));
   if (fromJd.length) return fromJd;
   if (matchResult) return (matchResult.skills || []).concat(matchResult.gaps || []);
   return [];
@@ -246,14 +307,14 @@ function applyQaEvidence(text) {
   const t = String(text || "");
   const added = [];
   SKILL_DICT.forEach((s) => {
-    if (t.indexOf(s) >= 0 && matchResult.skills.indexOf(s) < 0) {
+    if (skillIn(t, s) && matchResult.skills.indexOf(s) < 0) {
       matchResult.skills.push(s);
       added.push(s);
     }
   });
   const closed = [];
   matchResult.gaps = (matchResult.gaps || []).filter((g) => {
-    if (added.indexOf(g) >= 0 || t.indexOf(g) >= 0) { closed.push(g); return false; }
+    if (added.indexOf(g) >= 0 || skillIn(t, g)) { closed.push(g); return false; }
     return true;
   });
   const quantified = (t.match(/\d+(\.\d+)?\s*(%|％|倍|QPS|qps|人|万|条|次|ms|秒|天)/g) || []).length;
