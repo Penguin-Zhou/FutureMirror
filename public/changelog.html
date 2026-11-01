@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2471</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2506</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -312,6 +312,7 @@ body {
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v53"><span class="cl-toc-tag">Beta 1.1.2 · v53</span><span class="cl-toc-title-txt">对话式匹配答满 4 问后没有落点 · 分数涨了缺口没变</span></a></li>
     <li><a href="#v52"><span class="cl-toc-tag">Beta 1.1.2 · v52</span><span class="cl-toc-title-txt">PDF 简历导入只剩一个板块 · 四道坎都在「按行」这件事上</span></a></li>
     <li><a href="#v51"><span class="cl-toc-tag">Beta 1.1.2 · v51</span><span class="cl-toc-title-txt">窄屏首屏 76px 空白 · 顶部让位按下层元素算，不再把顶栏数两遍</span></a></li>
     <li><a href="#v50"><span class="cl-toc-tag">Beta 1.1.2 · v50</span><span class="cl-toc-title-txt">检测修复 · 计划与指挥台同源 / 重开竞态 / 暗色仪表 / 坏数据防御 / 策略卡口径</span></a></li>
@@ -526,6 +527,37 @@ body {
   <!-- ========================================================
        Beta 1.1.2 · v51 · 窄屏顶部让位：一份高度只算一次
        ======================================================== -->
+  <!-- ========================================================
+       Beta 1.1.2 · v53 · 对话式匹配：答满 4 问之后没有落点
+       ======================================================== -->
+  <div class="version" id="v53">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 可用性修复（v53）</span>
+      <span class="v-title">答满 4 问，按钮和输入框一起消失了</span>
+      <span class="v-date">2026.11.01</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        给演示写「4 轮追问把匹配度从 71% 拉到 86%」这段脚本时，在真实浏览器里走了一遍完整流程，
+        发现答完第 4 问之后屏幕上既没有输入框、也没有按钮、更没有汇总卡——
+        追问唯一的落点是那张「71% → 86%」的结果卡，而它只有「不等答完就手动结束」才看得到。
+        顺带还发现一处同源问题：分数涨了，能力缺口那一栏却没变。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>答满即断流</b>：<code>renderMatchQa</code> 的 <code>done</code> 分支渲染的是空串，把回答区与「结束并应用」一起收掉；而汇总卡只在 <code>finishMatchQa</code> 里渲染。答满 4 问 = 流程停在没有出口的位置。改为答完最后一问自动收尾，并在答满态保留一个「生成对话增强结果」的入口</div>
+        <div class="vh-item"><b>三处数字不同源</b>：追问会把新证据并入 <code>matchResult.skills</code>、从 <code>gaps</code> 里剔除已补齐项，但屏幕上只重画了分数环，技能与缺口仍是首次渲染的文字——出现「86 分 / 缺口仍列着 Next.js」这种自相矛盾的画面。改为把结果卡抽成 <code>renderMatchResult</code>，分数、技能、缺口、建议一次同源渲染</div>
+        <div class="vh-item"><b>空对象不覆盖</b>：结果卡在无数据时直接返回，不会把已有内容清成空白</div>
+        <div class="vh-item"><b>口径未变</b>：匹配分仍是「JD 技能覆盖率」，不理解语义；仍是 Beta 1.1.2，数据不出浏览器</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">35</div><div class="m-label">v53 新增断言</div></div>
+        <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ========================================================
        Beta 1.1.2 · v52 · PDF 简历导入：把文本还原成行
        ======================================================== -->

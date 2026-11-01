@@ -9006,7 +9006,18 @@ function analyze() {
   const p = heuristicParse(resume, jd);
   matchResult = p;
   store.set("fm_match", p);
-  $("match-result").innerHTML = `
+  renderMatchResult(p);
+}
+
+/* v53：结果卡单独抽成渲染函数。
+ * 对话式追问会把新证据并进 matchResult，但旧实现只改了分数——技能与缺口两块
+ * 仍是首次渲染时的文字，屏幕上于是出现「86 分 / 缺口仍列着 Next.js」这种
+ * 自相矛盾的画面。让追问也走同一个渲染入口，三处数字才可以始终同源。 */
+function renderMatchResult(p) {
+  if (!p) return;
+  const box = $("match-result");
+  if (!box) return;
+  box.innerHTML = `
     <div class="match-result card fade-up" style="padding:16px;margin-top:16px">
       ${ringSVG(p.matchScore)}
       <div class="match-body">
@@ -9015,7 +9026,7 @@ function analyze() {
         <div style="margin-bottom:10px"><b style="font-size:13.5px">⚠️ 能力缺口</b><br>
           ${p.gaps.length ? p.gaps.map(g => `<span class="chip chip-red">${escHtml(g)}</span>`).join("") : '<span style="color:var(--faint);font-size:13px">无明显缺口</span>'}</div>
         <div><b style="font-size:13.5px">💡 补强建议</b>
-          <ul style="padding-left:18px;font-size:13px;color:var(--muted);line-height:1.9">${p.suggestions.map(s => `<li>${escHtml(s)}</li>`).join("")}</ul></div>
+          <ul style="padding-left:18px;font-size:13px;color:var(--muted);line-height:1.9">${(p.suggestions || []).map(s => `<li>${escHtml(s)}</li>`).join("")}</ul></div>
         <div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="switchTab('interview')">开始多 Agent 模拟面试 →</button></div>
       </div>
     </div>`;
@@ -9278,6 +9289,10 @@ function renderMatchQa() {
   const box = $("match-qa-body");
   if (!box || !matchQaState) return;
   const done = matchQaState.i >= MATCH_QA_STEPS.length;
+  /* v53：4 问都答过、但汇总卡还是空的（例如状态被重渲染过），
+   * 得留一个能收尾的入口，不然屏幕上只剩对话记录、没有任何按钮。 */
+  const summary = $("match-qa-summary");
+  const needFinish = done && !(summary && summary.children.length);
   const trail = Array.isArray(matchQaState.scoreTrail) ? matchQaState.scoreTrail : [];
   const chart = trail.length >= 2
     ? `<div class="mqa-chart">
@@ -9290,7 +9305,11 @@ function renderMatchQa() {
       ${matchQaState.log.map((m) => `<div class="mqa-msg ${m.role}">${escHtml(m.text)}</div>`).join("")}
     </div>
     ${chart}
-    ${done ? "" : `
+    ${done ? (needFinish ? `
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+      <span class="hint" style="margin-top:0">已答完 ${MATCH_QA_STEPS.length} 问</span>
+      <button class="btn btn-primary btn-sm" onclick="finishMatchQa()">生成对话增强结果 →</button>
+    </div>` : "") : `
     <div class="mqa-input-row">
       <textarea id="mqa-input" rows="2" placeholder="输入你的回答…（可随时点「结束并应用」）" aria-label="匹配增强回答"></textarea>
       <button class="btn btn-primary btn-sm" onclick="submitMatchQaAnswer()">提交</button>
@@ -9322,21 +9341,22 @@ function submitMatchQaAnswer() {
   if (r.quantified) parts.push(`量化证据 ${r.quantified} 条`);
   appendMatchQaMsg("ai", `已记录 ${deltaTxt}。${parts.length ? parts.join("；") + "。" : "本轮未识别到新的技能证据，可补充具体技术名词与数字。"}`);
   matchQaState.i++;
-  if (matchQaState.i < MATCH_QA_STEPS.length) appendMatchQaMsg("ai", MATCH_QA_STEPS[matchQaState.i].q);
-  paintMatchRing(r.score);
+  /* v53：答完最后一问自动收尾。
+   * 旧实现把回答区和「结束并应用」按钮一起收掉（done 分支渲染空串），
+   * 于是答完第 4 问之后既没有输入框、也没有按钮、更不会出现汇总卡——
+   * 追问流程的落点（71% → 86% 那张卡）只有「没答完就手动结束」才看得到。 */
+  if (matchQaState.i >= MATCH_QA_STEPS.length) {
+    finishMatchQa();
+    return;
+  }
+  appendMatchQaMsg("ai", MATCH_QA_STEPS[matchQaState.i].q);
+  /* 分数、技能、缺口一起重渲染：只改环会让「缺口仍列着刚补齐的技能」 */
+  renderMatchResult(matchResult);
   renderMatchQa();
 }
 
-/* 同步刷新匹配环（若报告仍在页面上） */
-function paintMatchRing(score) {
-  const ring = $("ring-fill");
-  if (ring) {
-    const c = 2 * Math.PI * 42;
-    ring.style.strokeDashoffset = (c * (1 - score / 100)).toFixed(1);
-  }
-  const txt = document.querySelector("#match-result svg text");
-  if (txt) txt.textContent = String(score);
-}
+/* v53：整卡重渲染已由 renderMatchResult 负责，只改环会让三处数字不同源，
+ * 故原 paintMatchRing 撤掉，避免留下一个「看起来能用、其实只改一半」的入口。 */
 
 function finishMatchQa() {
   if (!matchQaState) return;

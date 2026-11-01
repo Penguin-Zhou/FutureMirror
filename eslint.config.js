@@ -79,7 +79,7 @@ const browserGlobals = {
 };
 
 module.exports = [
-  { ignores: ["node_modules/**", "public/**", "backend/static/**", "dist/**"] },
+  { ignores: ["node_modules/**", "public/**", "backend/static/**", "dist/**", ".mirror-site/**"] },
 
   js.configs.recommended,
 

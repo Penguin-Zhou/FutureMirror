@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2471 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2506 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -644,9 +644,10 @@ node scripts/test-v45-jsdom.js … test-v49-jsdom.js # v45–v49 交互确定性
 node scripts/test-v50-jsdom.js          # 检测修复：计划同源 / 重开竞态 / 暗色仪表 / 坏数据 / 口径（41 项）
 node scripts/test-v51-jsdom.js          # 窄屏顶部让位：一份高度只算一次（38 项）
 node scripts/test-v52-jsdom.js          # PDF 简历导入：文本还原成行 / 词边界技能 / 报告缓存（39 项）
+node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / 自动收尾 / 结果卡同源渲染（35 项）
 ```
 
-合计 **2471 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2506 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -724,7 +725,7 @@ node scripts/test-v52-jsdom.js          # PDF 简历导入：文本还原成行 
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2471 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2506 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -915,6 +916,19 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v53：对话式匹配——答满 4 问之后没有落点（2026.11.01）
+
+> 给演示写「4 轮追问把匹配度从 71% 拉到 86%」这段脚本时，在真实浏览器里走了一遍完整流程：
+> 答完第 4 问之后屏幕上既没有输入框、也没有按钮、更没有汇总卡。
+> 追问唯一的落点就是那张「71% → 86%」的结果卡，而它只有「不等答完就手动结束」才看得到。
+
+- **答满即断流**：`renderMatchQa` 的 `done` 分支渲染空串，把回答区与「结束并应用」一起收掉，而汇总卡只在 `finishMatchQa` 里渲染——答满 4 问等于把流程停在没有出口的位置。改为答完最后一问自动收尾，并在答满态保留「生成对话增强结果」入口
+- **三处数字同源**：追问会把新证据并入 `matchResult.skills`、从 `gaps` 剔除已补齐项，但旧实现只重画了分数环，于是出现「86 分 / 缺口仍列着 Next.js」。把结果卡抽成 `renderMatchResult(p)`，分数、技能、缺口、建议一次同源渲染
+- **空对象不覆盖**：结果卡无数据时直接返回，不会把已有内容清成空白
+- **口径未变**：匹配分仍是「JD 技能覆盖率」，不理解语义
+- **实测**：同一份简历与 JD，初始 71%（9 项已具备，缺口 Next.js / Tailwind），第 3 问补上 Next.js 后 **+15 → 86%**，缺口同步收敛为 Tailwind；汇总卡显示「新增技能证据 1 / 补齐缺口 1 / 量化证据 6」
+- **指标**：前端断言 2471 → **2506**（新增 v53 套件 35 项）｜jsdom 套件 43 → **44 套**｜共享全局符号 **745**
 
 ### Beta 1.1.2 · 增量 v52：PDF 简历导入——把文本还原成「行」（2026.11.01）
 
