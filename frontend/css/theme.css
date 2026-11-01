@@ -1776,3 +1776,194 @@
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px;
 }
 .eval-actions .btn { min-height: 32px; }
+
+/* ============================================================
+ * v54 · 落地页动态层（Drafting Overture · 绘图仪式）
+ * 语言：把「图纸绘制」做成开场动作——尺寸线自左落笔、标题逐行揭载、
+ *       高亮自左扫过、右侧标尺随滚动走针、数据条落下刻度。
+ * 纪律：全部发丝线 + 直角 + 单色阶；零投影、零上浮；
+ *       运动只走 X 轴 / clip-path / scaleX 三套既有语言。
+ * 渐进增强：无 JS 或 reduced-motion 时一切为完成态（本层只做「从初态到终态」）。
+ * ============================================================ */
+
+/* ---------- ① 图纸标题栏：通栏尺寸线 + 图幅标注 ---------- */
+.bp-sheet {
+  position: relative; height: 10px; margin: 0 0 18px;
+  pointer-events: none;
+}
+.bp-sheet .bs-rule { position: absolute; left: 0; right: 0; top: 5px; height: 1px; background: var(--line-2); }
+.bp-sheet .bs-tick { position: absolute; top: 1px; width: 1px; height: 9px; background: var(--line-2); }
+.bp-sheet .bs-tick { left: 0; }
+.bp-sheet .bs-tick-e { left: auto; right: 0; background: var(--brand); }
+.bp-sheet .bs-label {
+  position: absolute; left: 50%; top: 5px; transform: translate(-50%, -50%);
+  font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--faint); background: var(--bg);
+  padding: 0 10px; white-space: nowrap;
+}
+#view-landing.landing-enter .bp-sheet .bs-rule { animation: bsDraw .95s cubic-bezier(.22,1,.36,1) both; transform-origin: 0 50%; }
+#view-landing.landing-enter .bp-sheet .bs-tick { animation: bsFade .28s ease both; }
+#view-landing.landing-enter .bp-sheet .bs-tick-e { animation-delay: .82s; }
+#view-landing.landing-enter .bp-sheet .bs-label { animation: bsFade .5s ease .78s both; }
+@keyframes bsDraw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes bsFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- ② Hero 标题：逐行揭载（clip-path，非上浮） ---------- */
+.hero-title .ht-line { display: block; }
+/* 必须是块级：行内元素跨行时 clip-path 只按首段行盒计算，
+ * 窄屏折到第三行的那截（「长。」）会被裁掉——390px 实测踩到过。 */
+.hero-title .ht-inner { display: block; }
+#view-landing.landing-enter .hero-title .ht-inner { animation: htReveal .88s cubic-bezier(.22,1,.36,1) both; }
+#view-landing.landing-enter .hero-title .ht-line:nth-child(2) .ht-inner { animation-delay: .12s; }
+@keyframes htReveal {
+  from { opacity: 0; clip-path: inset(0 0 94% 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* ---------- ③ 关键词高亮：自左扫过（0% → 100% 底色） ---------- */
+.landing h1.hero-title .grad {
+  box-shadow: none;
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--brand) 24%, transparent),
+    color-mix(in srgb, var(--brand) 24%, transparent)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 90%;
+  background-size: 100% .17em;
+}
+#view-landing.landing-enter .hero-title .grad { background-size: 0% .17em; }
+#view-landing.landing-enter .hero-title .grad.inked {
+  background-size: 100% .17em;
+  transition: background-size .9s cubic-bezier(.22,1,.36,1);
+}
+
+/* ---------- ④ 首屏其余元素：错帧落位（30–60ms 递进，不逐字抢戏） ---------- */
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet),
+#view-landing.landing-enter .hero-spec { animation: hfIn .62s cubic-bezier(.22,1,.36,1) both; }
+#view-landing.landing-enter .hero-main > :nth-child(2) { animation-delay: .04s; }
+#view-landing.landing-enter .hero-main > :nth-child(3) { animation-delay: .1s; }
+#view-landing.landing-enter .hero-main > :nth-child(4) { animation-delay: .16s; }
+#view-landing.landing-enter .hero-main > :nth-child(6) { animation-delay: .3s; }
+#view-landing.landing-enter .hero-main > :nth-child(7) { animation-delay: .37s; }
+#view-landing.landing-enter .hero-main > :nth-child(8) { animation-delay: .43s; }
+#view-landing.landing-enter .hero-main > :nth-child(9) { animation-delay: .49s; }
+#view-landing.landing-enter .hero-spec { animation-delay: .5s; }
+@keyframes hfIn {
+  from { opacity: 0; clip-path: inset(0 0 10px 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* ---------- ⑤ 区块标尺：竖向刻度轨 + 走针填充（≥1200px） ---------- */
+.bp-rail {
+  position: fixed; right: 18px; top: 43%; z-index: 60;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 20px;
+  padding: 8px 0;
+}
+.bp-rail .rail-track {
+  position: absolute; right: 4px; top: 12px; bottom: 12px; width: 1px;
+  background: var(--line-2); overflow: hidden;
+}
+.bp-rail .rail-fill {
+  display: block; width: 1px; height: var(--rail-p, 0%); background: var(--brand);
+}
+.bp-rail .rail-item {
+  position: relative; display: flex; align-items: center; gap: 9px;
+  text-decoration: none; color: var(--faint);
+  font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: .16em;
+}
+.bp-rail .ri-no { opacity: .8; }
+.bp-rail .ri-dot {
+  width: 9px; height: 9px; flex: 0 0 auto;
+  border: 1px solid var(--line-2); background: var(--bg);
+  position: relative; z-index: 1; transition: background .2s ease, border-color .2s ease;
+}
+.bp-rail .ri-txt {
+  opacity: 0; transform: translateX(6px); white-space: nowrap;
+  transition: opacity .22s ease, transform .22s ease;
+}
+.bp-rail:hover .ri-txt,
+.bp-rail .rail-item:focus-visible .ri-txt,
+.bp-rail .rail-item.is-on .ri-txt { opacity: 1; transform: none; }
+.bp-rail .rail-item.is-on { color: var(--brand); }
+.bp-rail .rail-item.is-on .ri-dot { background: var(--brand); border-color: var(--brand); }
+.bp-rail .rail-item:hover .ri-dot { border-color: var(--ink); }
+.bp-rail .rail-item:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+@media (max-width: 1199px) { .bp-rail { display: none; } }
+@media (max-width: 900px) { .bp-sheet { display: none; } }
+
+/* 锚点落位：避开吸顶报头（原来链接会钻到导航下面） */
+#features, #workflow, #stats, #landing-end { scroll-margin-top: 78px; }
+
+/* 窄屏报头：390px 实测五个元素被压到每个字一行（竖排字），
+ * 收掉版本章与主题色钮，并锁住按钮不被压扁——报头是门面，不能塌。 */
+@media (max-width: 640px) {
+  .landing-nav .wrap { gap: 8px; padding: 0 12px; }
+  .landing-nav .logo { flex: 0 0 auto; white-space: nowrap; font-size: 14px; }
+  .landing-nav-meta { gap: 6px; min-width: 0; }
+  .landing-nav-meta .bp-ver,
+  .landing-nav-meta #accent-btn-l { display: none; }
+  .landing-nav-meta .btn { flex: 0 0 auto; white-space: nowrap; }
+  .landing-nav-meta .btn:not(.btn-icon) { padding-left: 8px; padding-right: 8px; }
+}
+@media (max-width: 380px) {
+  .landing-nav .logo span { display: none; }
+}
+
+/* ---------- ⑥ 特性卡：悬停定位（顶缘朱红线 + 编号反白 + 标题划线） ---------- */
+.feature-block::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: var(--brand); transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform .38s cubic-bezier(.22,1,.36,1); z-index: 2;
+}
+.feature-block:hover::before, .feature-block:focus-within::before { transform: scaleX(1); }
+.feature-block .fb-icon {
+  transition: background .24s ease, color .24s ease, border-color .24s ease;
+}
+.feature-block:hover .fb-icon { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.feature-block h3 { position: relative; }
+.feature-block h3::after {
+  content: ""; position: absolute; left: 0; bottom: -5px; height: 1px; width: 0;
+  background: var(--line-2); transition: width .42s cubic-bezier(.22,1,.36,1);
+}
+.feature-block:hover h3::after { width: 100%; }
+
+/* ---------- ⑦ 数据条：数字下方落下刻度尺（入视口逐格立起） ---------- */
+.ls-scale {
+  display: flex; align-items: flex-end; justify-content: center; gap: 3px;
+  height: 10px; max-width: 108px; margin: 12px auto 0;
+}
+.ls-scale i {
+  flex: 1 1 auto; width: 1px; height: 4px; background: var(--line-2);
+  transform-origin: 50% 100%;
+}
+.ls-scale i:nth-child(4n + 1) { height: 9px; background: var(--ink); opacity: .45; }
+.ls-scale i:first-child { background: var(--brand); opacity: 1; }
+.landing-stat.ticks-on .ls-scale i {
+  animation: lsTick .4s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--i, 0) * 26ms);
+}
+@keyframes lsTick { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+/* ---------- ⑧ 走马灯：悬停即停，方便读完（原本 42s 一圈无法阅读） ---------- */
+.bp-ticker:hover .bp-ticker-track,
+.bp-ticker:focus-within .bp-ticker-track { animation-play-state: paused; }
+
+/* ---------- ⑨ Hero 雷达：外圈虚线轨道反向自转（仪器感，不抢视线） ---------- */
+.radar-orbit { transform-origin: 100px 100px; animation: radarSpin 26s linear infinite reverse; }
+
+/* ---------- ⑩ 动效宪法：本层全部静态落位 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  #view-landing.landing-enter .bp-sheet .bs-rule,
+  #view-landing.landing-enter .bp-sheet .bs-tick,
+  #view-landing.landing-enter .bp-sheet .bs-label,
+  #view-landing.landing-enter .hero-title .ht-inner,
+  #view-landing.landing-enter .hero-main > *,
+  #view-landing.landing-enter .hero-spec,
+  #view-landing.landing-enter .hero-title .grad.inked { animation: none; transition: none; }
+  #view-landing.landing-enter .hero-title .grad { background-size: 100% .17em; }
+  .bp-rail .ri-txt { transition: none; }
+  .feature-block::before, .feature-block h3::after, .feature-block .fb-icon { transition: none; }
+  .landing-stat.ticks-on .ls-scale i { animation: none; }
+  .radar-orbit { animation: none; }
+  .bp-ticker:hover .bp-ticker-track { animation-play-state: running; }
+}

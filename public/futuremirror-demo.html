@@ -3592,6 +3592,197 @@ try {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px;
 }
 .eval-actions .btn { min-height: 32px; }
+
+/* ============================================================
+ * v54 · 落地页动态层（Drafting Overture · 绘图仪式）
+ * 语言：把「图纸绘制」做成开场动作——尺寸线自左落笔、标题逐行揭载、
+ *       高亮自左扫过、右侧标尺随滚动走针、数据条落下刻度。
+ * 纪律：全部发丝线 + 直角 + 单色阶；零投影、零上浮；
+ *       运动只走 X 轴 / clip-path / scaleX 三套既有语言。
+ * 渐进增强：无 JS 或 reduced-motion 时一切为完成态（本层只做「从初态到终态」）。
+ * ============================================================ */
+
+/* ---------- ① 图纸标题栏：通栏尺寸线 + 图幅标注 ---------- */
+.bp-sheet {
+  position: relative; height: 10px; margin: 0 0 18px;
+  pointer-events: none;
+}
+.bp-sheet .bs-rule { position: absolute; left: 0; right: 0; top: 5px; height: 1px; background: var(--line-2); }
+.bp-sheet .bs-tick { position: absolute; top: 1px; width: 1px; height: 9px; background: var(--line-2); }
+.bp-sheet .bs-tick { left: 0; }
+.bp-sheet .bs-tick-e { left: auto; right: 0; background: var(--brand); }
+.bp-sheet .bs-label {
+  position: absolute; left: 50%; top: 5px; transform: translate(-50%, -50%);
+  font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--faint); background: var(--bg);
+  padding: 0 10px; white-space: nowrap;
+}
+#view-landing.landing-enter .bp-sheet .bs-rule { animation: bsDraw .95s cubic-bezier(.22,1,.36,1) both; transform-origin: 0 50%; }
+#view-landing.landing-enter .bp-sheet .bs-tick { animation: bsFade .28s ease both; }
+#view-landing.landing-enter .bp-sheet .bs-tick-e { animation-delay: .82s; }
+#view-landing.landing-enter .bp-sheet .bs-label { animation: bsFade .5s ease .78s both; }
+@keyframes bsDraw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes bsFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- ② Hero 标题：逐行揭载（clip-path，非上浮） ---------- */
+.hero-title .ht-line { display: block; }
+/* 必须是块级：行内元素跨行时 clip-path 只按首段行盒计算，
+ * 窄屏折到第三行的那截（「长。」）会被裁掉——390px 实测踩到过。 */
+.hero-title .ht-inner { display: block; }
+#view-landing.landing-enter .hero-title .ht-inner { animation: htReveal .88s cubic-bezier(.22,1,.36,1) both; }
+#view-landing.landing-enter .hero-title .ht-line:nth-child(2) .ht-inner { animation-delay: .12s; }
+@keyframes htReveal {
+  from { opacity: 0; clip-path: inset(0 0 94% 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* ---------- ③ 关键词高亮：自左扫过（0% → 100% 底色） ---------- */
+.landing h1.hero-title .grad {
+  box-shadow: none;
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--brand) 24%, transparent),
+    color-mix(in srgb, var(--brand) 24%, transparent)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 90%;
+  background-size: 100% .17em;
+}
+#view-landing.landing-enter .hero-title .grad { background-size: 0% .17em; }
+#view-landing.landing-enter .hero-title .grad.inked {
+  background-size: 100% .17em;
+  transition: background-size .9s cubic-bezier(.22,1,.36,1);
+}
+
+/* ---------- ④ 首屏其余元素：错帧落位（30–60ms 递进，不逐字抢戏） ---------- */
+#view-landing.landing-enter .hero-main > *:not(.hero-title):not(.bp-sheet),
+#view-landing.landing-enter .hero-spec { animation: hfIn .62s cubic-bezier(.22,1,.36,1) both; }
+#view-landing.landing-enter .hero-main > :nth-child(2) { animation-delay: .04s; }
+#view-landing.landing-enter .hero-main > :nth-child(3) { animation-delay: .1s; }
+#view-landing.landing-enter .hero-main > :nth-child(4) { animation-delay: .16s; }
+#view-landing.landing-enter .hero-main > :nth-child(6) { animation-delay: .3s; }
+#view-landing.landing-enter .hero-main > :nth-child(7) { animation-delay: .37s; }
+#view-landing.landing-enter .hero-main > :nth-child(8) { animation-delay: .43s; }
+#view-landing.landing-enter .hero-main > :nth-child(9) { animation-delay: .49s; }
+#view-landing.landing-enter .hero-spec { animation-delay: .5s; }
+@keyframes hfIn {
+  from { opacity: 0; clip-path: inset(0 0 10px 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* ---------- ⑤ 区块标尺：竖向刻度轨 + 走针填充（≥1200px） ---------- */
+.bp-rail {
+  position: fixed; right: 18px; top: 43%; z-index: 60;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 20px;
+  padding: 8px 0;
+}
+.bp-rail .rail-track {
+  position: absolute; right: 4px; top: 12px; bottom: 12px; width: 1px;
+  background: var(--line-2); overflow: hidden;
+}
+.bp-rail .rail-fill {
+  display: block; width: 1px; height: var(--rail-p, 0%); background: var(--brand);
+}
+.bp-rail .rail-item {
+  position: relative; display: flex; align-items: center; gap: 9px;
+  text-decoration: none; color: var(--faint);
+  font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: .16em;
+}
+.bp-rail .ri-no { opacity: .8; }
+.bp-rail .ri-dot {
+  width: 9px; height: 9px; flex: 0 0 auto;
+  border: 1px solid var(--line-2); background: var(--bg);
+  position: relative; z-index: 1; transition: background .2s ease, border-color .2s ease;
+}
+.bp-rail .ri-txt {
+  opacity: 0; transform: translateX(6px); white-space: nowrap;
+  transition: opacity .22s ease, transform .22s ease;
+}
+.bp-rail:hover .ri-txt,
+.bp-rail .rail-item:focus-visible .ri-txt,
+.bp-rail .rail-item.is-on .ri-txt { opacity: 1; transform: none; }
+.bp-rail .rail-item.is-on { color: var(--brand); }
+.bp-rail .rail-item.is-on .ri-dot { background: var(--brand); border-color: var(--brand); }
+.bp-rail .rail-item:hover .ri-dot { border-color: var(--ink); }
+.bp-rail .rail-item:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+@media (max-width: 1199px) { .bp-rail { display: none; } }
+@media (max-width: 900px) { .bp-sheet { display: none; } }
+
+/* 锚点落位：避开吸顶报头（原来链接会钻到导航下面） */
+#features, #workflow, #stats, #landing-end { scroll-margin-top: 78px; }
+
+/* 窄屏报头：390px 实测五个元素被压到每个字一行（竖排字），
+ * 收掉版本章与主题色钮，并锁住按钮不被压扁——报头是门面，不能塌。 */
+@media (max-width: 640px) {
+  .landing-nav .wrap { gap: 8px; padding: 0 12px; }
+  .landing-nav .logo { flex: 0 0 auto; white-space: nowrap; font-size: 14px; }
+  .landing-nav-meta { gap: 6px; min-width: 0; }
+  .landing-nav-meta .bp-ver,
+  .landing-nav-meta #accent-btn-l { display: none; }
+  .landing-nav-meta .btn { flex: 0 0 auto; white-space: nowrap; }
+  .landing-nav-meta .btn:not(.btn-icon) { padding-left: 8px; padding-right: 8px; }
+}
+@media (max-width: 380px) {
+  .landing-nav .logo span { display: none; }
+}
+
+/* ---------- ⑥ 特性卡：悬停定位（顶缘朱红线 + 编号反白 + 标题划线） ---------- */
+.feature-block::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: var(--brand); transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform .38s cubic-bezier(.22,1,.36,1); z-index: 2;
+}
+.feature-block:hover::before, .feature-block:focus-within::before { transform: scaleX(1); }
+.feature-block .fb-icon {
+  transition: background .24s ease, color .24s ease, border-color .24s ease;
+}
+.feature-block:hover .fb-icon { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.feature-block h3 { position: relative; }
+.feature-block h3::after {
+  content: ""; position: absolute; left: 0; bottom: -5px; height: 1px; width: 0;
+  background: var(--line-2); transition: width .42s cubic-bezier(.22,1,.36,1);
+}
+.feature-block:hover h3::after { width: 100%; }
+
+/* ---------- ⑦ 数据条：数字下方落下刻度尺（入视口逐格立起） ---------- */
+.ls-scale {
+  display: flex; align-items: flex-end; justify-content: center; gap: 3px;
+  height: 10px; max-width: 108px; margin: 12px auto 0;
+}
+.ls-scale i {
+  flex: 1 1 auto; width: 1px; height: 4px; background: var(--line-2);
+  transform-origin: 50% 100%;
+}
+.ls-scale i:nth-child(4n + 1) { height: 9px; background: var(--ink); opacity: .45; }
+.ls-scale i:first-child { background: var(--brand); opacity: 1; }
+.landing-stat.ticks-on .ls-scale i {
+  animation: lsTick .4s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--i, 0) * 26ms);
+}
+@keyframes lsTick { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+/* ---------- ⑧ 走马灯：悬停即停，方便读完（原本 42s 一圈无法阅读） ---------- */
+.bp-ticker:hover .bp-ticker-track,
+.bp-ticker:focus-within .bp-ticker-track { animation-play-state: paused; }
+
+/* ---------- ⑨ Hero 雷达：外圈虚线轨道反向自转（仪器感，不抢视线） ---------- */
+.radar-orbit { transform-origin: 100px 100px; animation: radarSpin 26s linear infinite reverse; }
+
+/* ---------- ⑩ 动效宪法：本层全部静态落位 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  #view-landing.landing-enter .bp-sheet .bs-rule,
+  #view-landing.landing-enter .bp-sheet .bs-tick,
+  #view-landing.landing-enter .bp-sheet .bs-label,
+  #view-landing.landing-enter .hero-title .ht-inner,
+  #view-landing.landing-enter .hero-main > *,
+  #view-landing.landing-enter .hero-spec,
+  #view-landing.landing-enter .hero-title .grad.inked { animation: none; transition: none; }
+  #view-landing.landing-enter .hero-title .grad { background-size: 100% .17em; }
+  .bp-rail .ri-txt { transition: none; }
+  .feature-block::before, .feature-block h3::after, .feature-block .fb-icon { transition: none; }
+  .landing-stat.ticks-on .ls-scale i { animation: none; }
+  .radar-orbit { animation: none; }
+  .bp-ticker:hover .bp-ticker-track { animation-play-state: running; }
+}
   /* ============ v18 · 求职管理 / 答题计时 / 语音反馈 / 玻璃拟态可读性修正 / Bento Grid ============ */
 
   /* 1) 玻璃拟态可读性修正：亮色下更明确的玻璃边界 + 更深的层级阴影（解决白卡+白边层次不足） */
@@ -6218,12 +6409,19 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
     <div class="wrap">
       <div class="hero-grid">
         <div class="hero-main">
+          <!-- v54 图幅标注：一条尺寸线 + 图纸编号（入场自左落笔） -->
+          <div class="bp-sheet" aria-hidden="true">
+            <i class="bs-tick"></i>
+            <span class="bs-rule"></span>
+            <span class="bs-label">SHEET 01 · GRID 44 · 4 / 8 MIN</span>
+            <i class="bs-tick bs-tick-e"></i>
+          </div>
           <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.1.2</span>
           <div class="hero-rotator" aria-live="polite"><span class="hr-prefix">&gt;_</span><span class="hr-text" id="hr-text"></span><i class="hr-caret" aria-hidden="true"></i></div>
           <div class="eyebrow"><span class="eyebrow-no">VOL.1</span>AI NATIVE · 多 AGENT 模拟面试平台</div>
           <h1 class="hero-title">
-            让每一次面试，<br>
-            都成为<span class="grad">可量化的成长</span>。
+            <span class="ht-line"><span class="ht-inner">让每一次面试，</span></span>
+            <span class="ht-line"><span class="ht-inner">都成为<span class="grad">可量化的成长</span>。</span></span>
           </h1>
           <p class="hero-sub">
             上传简历与目标岗位 JD，由 AI 面试官团队（HR / 技术 / 压力面 / 观察员）完成模拟面试，
@@ -6237,7 +6435,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="hero-meta-row">
             <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
             <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>2352</b> 项自动化断言</span><span class="dot-sep">/</span>
+            <span><b>2561</b> 项自动化断言</span><span class="dot-sep">/</span>
             <span><b>30</b> 页技术文档</span>
           </div>
         </div>
@@ -6248,7 +6446,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
             <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
             <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2352 ／ pytest 57</dd></dl>
+            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2561 ／ pytest 57</dd></dl>
           </div>
           <div class="spec-foot">
             <span class="bp-stamp">Live · 已接通</span>
@@ -6275,6 +6473,8 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
               <polygon points="100,60 145,82 145,118 100,140 55,118 55,82" fill="none" stroke="var(--line)"/>
               <polygon points="100,50 155,78 145,128 100,155 45,120 60,80" fill="color-mix(in srgb,var(--brand) 30%,transparent)" stroke="var(--brand)" stroke-width="2"/>
               <g class="radar-sweep"><line x1="100" y1="100" x2="100" y2="30" stroke="var(--brand)" stroke-width="1.5" opacity="0.3"/></g>
+              <circle class="radar-orbit" cx="100" cy="100" r="80" fill="none" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="1 7" opacity="0.7"/>
+              <path d="M100 96v-4M100 108v-4M96 100h-4M108 100h-4" stroke="var(--brand)" stroke-width="1" opacity="0.55"/>
               <text x="100" y="20" text-anchor="middle" font-size="10" fill="var(--muted)">内容</text>
               <text x="180" y="65" text-anchor="end" font-size="10" fill="var(--muted)">结构</text>
               <text x="180" y="145" text-anchor="end" font-size="10" fill="var(--muted)">表达</text>
@@ -6287,6 +6487,15 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
     </div>
   </section>
 
+  <!-- v54 区块标尺：右侧竖向刻度轨，随滚动填充朱红，当前区块点亮（≥1200px 显示） -->
+  <nav class="bp-rail" id="bp-rail" aria-label="落地页区块导航">
+    <i class="rail-track" aria-hidden="true"><i class="rail-fill" id="rail-fill"></i></i>
+    <a class="rail-item" href="#features" data-rail="features"><span class="ri-txt">功能矩阵</span><span class="ri-no">01</span><i class="ri-dot" aria-hidden="true"></i></a>
+    <a class="rail-item" href="#workflow" data-rail="workflow"><span class="ri-txt">使用流程</span><span class="ri-no">02</span><i class="ri-dot" aria-hidden="true"></i></a>
+    <a class="rail-item" href="#stats" data-rail="stats"><span class="ri-txt">关键数字</span><span class="ri-no">03</span><i class="ri-dot" aria-hidden="true"></i></a>
+    <a class="rail-item" href="#landing-end" data-rail="landing-end"><span class="ri-txt">开始体验</span><span class="ri-no">04</span><i class="ri-dot" aria-hidden="true"></i></a>
+  </nav>
+
   <!-- 能力走马灯 -->
   <div class="bp-ticker" aria-hidden="true">
     <div class="bp-ticker-track">
@@ -6294,7 +6503,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2352 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2561 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -6304,7 +6513,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2352 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2561 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -6432,7 +6641,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
   </section>
 
   <!-- 底部 CTA -->
-  <section class="wrap" style="padding-bottom:64px">
+  <section class="wrap" id="landing-end" style="padding-bottom:64px">
     <div class="landing-cta bp-crop">
       <div class="eyebrow" style="color:var(--brand)"><span class="eyebrow-no" style="background:var(--plate);color:var(--on-plate);border-color:var(--on-plate)">§ 04</span><span style="color:var(--on-plate-dim)">START · 开始体验</span></div>
       <h3>准备好了吗？</h3>
@@ -7800,7 +8009,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2352 项前端断言 + 57 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2561 项前端断言 + 57 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -7980,7 +8189,7 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2352 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2561 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -8174,6 +8383,7 @@ function showView(name) {
     document.querySelectorAll(".landing-stat .val[data-count]").forEach(el => { el.dataset.done = ""; });
     animateLandingCounters();
     // v26：重播 Hero 实录播台 + 刷新导航侦测
+    try { if (window.__bpLanding && window.__bpLanding.enter) window.__bpLanding.enter(); } catch (e) {}
     try { if (window.__bpLanding && window.__bpLanding.playMock) window.__bpLanding.playMock(); } catch (e) {}
     try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
   }
@@ -8230,19 +8440,28 @@ function syncGuestLocks() {
   });
 }
 
-/* 落地页数字滚动 */
+/* 落地页数字滚动（v54：setInterval 步进改为 rAF 缓出，末尾不再有「跳一格」） */
 function animateLandingCounters() {
-  document.querySelectorAll(".landing-stat .val[data-count]").forEach(el => {
+  const nums = document.querySelectorAll(".landing-stat .val[data-count]");
+  const still = (() => {
+    try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
+  })();
+  nums.forEach(el => {
     if (el.dataset.done === "1") return;
     el.dataset.done = "1";
     const target = +el.dataset.count;
-    let cur = 0;
-    const step = Math.max(1, Math.round(target / 24));
-    const t = setInterval(() => {
-      cur += step;
-      if (cur >= target) { cur = target; clearInterval(t); }
-      el.textContent = cur;
-    }, 42);
+    if (!isFinite(target)) return;
+    if (still) { el.textContent = String(target); return; }
+    const now = () => (typeof performance !== "undefined" && performance.now ? performance.now() : Date.now());
+    const t0 = now(), DUR = 880;
+    const step = () => {
+      const t = Math.min(1, (now() - t0) / DUR);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = String(Math.round(target * eased));
+      if (t < 1) requestAnimationFrame(step);
+      else el.textContent = String(target);
+    };
+    requestAnimationFrame(step);
   });
 }
 
@@ -14310,8 +14529,23 @@ function revealScan() {
     FX.initTop = initBackToTop;                         // 暴露给测试（幂等验证）
   }
 
-  /* ---------- ② 滚动侦测（落地页导航点亮） ---------- */
+  /* ---------- ② 滚动侦测（落地页导航点亮 + v54 标尺走针） ---------- */
   const SPY_SECTIONS = ["features", "workflow", "stats"];
+  /* v54：右侧标尺与导航共用同一次滚动计算——两条轨各自监听会互相抢帧，
+   * 而且判断口径一旦分叉，就会出现「导航点亮 02、标尺还停在 01」。 */
+  function paintRail(hit) {
+    const rail = document.getElementById("bp-rail");
+    if (!rail) return;
+    const de = document.documentElement;
+    const max = de.scrollHeight - de.clientHeight;
+    const top = window.scrollY || de.scrollTop || 0;
+    const p = max > 4 ? Math.min(1, Math.max(0, top / max)) : 0;
+    rail.style.setProperty("--rail-p", (p * 100).toFixed(2) + "%");
+    const items = rail.querySelectorAll(".rail-item");
+    Array.prototype.forEach.call(items, a => {
+      a.classList.toggle("is-on", a.getAttribute("href") === "#" + hit);
+    });
+  }
   function updateScrollSpy() {
     const links = [...document.querySelectorAll('.landing-nav-links a[href^="#"]')];
     if (!links.length) return;
@@ -14329,7 +14563,16 @@ function revealScan() {
       const top = r.top + (window.scrollY || 0);
       if (top <= probe && top + r.height > probe) { hit = id; break; }
     }
-    links.forEach(a => a.classList.toggle("active", hit !== "" && a.getAttribute("href") === "#" + hit));
+    /* 末尾区块：滚到底时点亮最后一格（CTA 高度不足以进入 96px 探针） */
+    if (!hit) {
+      const end = document.getElementById("landing-end");
+      if (end) {
+        const r = end.getBoundingClientRect();
+        if (r.top < (window.innerHeight || 0) * 0.8) hit = "landing-end";
+      }
+    }
+    links.forEach(a => a.classList.toggle("active", hit !== "" && hit !== "landing-end" && a.getAttribute("href") === "#" + hit));
+    try { paintRail(hit); } catch (e) { /* 纯增强 */ }
   }
   function initScrollSpy() {
     if (FX.spy) return;
@@ -14401,6 +14644,9 @@ function revealScan() {
  * 2) 面试实录播台：Mock 对话气泡入视口依序「揭载」（clip-path 自上而下），
  *    末气泡跟一枚朱红流式光标——预告真实 SSE 的逐字体验；
  * 3) 渐进增强：无 JS 时轮播为空、实录完整可见；reduced-motion 全部静态落位。
+ * 4) v54 图纸开场：图幅尺寸线自左落笔 → 标题逐行揭载 → 关键词高亮扫过；
+ *    右侧区块标尺走针（填充与点亮在 scrollfx 里与导航侦测同源）；
+ *    数据条入视口落下刻度尺。全部只加类、不改内容，CSS 里备好初态与终态。
  * 注：十字准线与坐标读数已于 v27 迁入 appfx.js 并扩展为全站能力
  * （app 功能页卡 PG 编号 / 开发者节 SEC 编号 / 输入聚焦准线隐身）。
  * ============================================================ */
@@ -14408,7 +14654,10 @@ function revealScan() {
   const reduced = () => {
     try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
   };
-  const FX = (window.__bpLanding = { rotator: false, mock: false, phrases: 0, playMock: null });
+  const FX = (window.__bpLanding = {
+    rotator: false, mock: false, phrases: 0, playMock: null,
+    overture: false, rail: false, ticks: 0, enter: null,
+  });
 
   /* ---------- ① Hero 文案轮播（等宽打字机） ---------- */
   const PHRASES = [
@@ -14470,10 +14719,95 @@ function revealScan() {
   }
   FX.playMock = playHeroMock;
 
+  /* ---------- ③ v54 图纸开场：尺寸线落笔 + 标题揭载 + 高亮扫过 ----------
+   * 只做「加类」：初态与终态都在 CSS 里，删掉这段脚本页面仍是完成态。
+   * 类落在 #view-landing 上，重复调用幂等（路由切回落地页时不会重播）。 */
+  function enterLanding() {
+    const view = document.getElementById("view-landing");
+    if (!view || !view.classList) return;
+    if (view.classList.contains("landing-enter")) return;
+    if (reduced()) { FX.overture = "static"; return; }        // 静态落位，不注入任何动画初态
+    view.classList.add("landing-enter");
+    FX.overture = true;
+    const grad = view.querySelector(".hero-title .grad");
+    if (grad && grad.classList) {
+      setTimeout(() => { grad.classList.add("inked"); }, 760);  // 等标题第二行落定再扫高亮
+    }
+  }
+  FX.enter = enterLanding;
+
+  /* ---------- ④ v54 区块标尺：点击走位（填充与点亮由 scrollfx 统一驱动） ---------- */
+  function initRail() {
+    const rail = document.getElementById("bp-rail");
+    if (!rail) return;
+    const items = [...rail.querySelectorAll(".rail-item")];
+    if (!items.length) return;
+    FX.rail = true;
+    items.forEach(a => {
+      a.addEventListener("click", e => {
+        const id = (a.getAttribute("href") || "").replace(/^#/, "");
+        const el = id ? document.getElementById(id) : null;
+        if (!el) return;                                       // 无此区块：交回浏览器默认行为
+        e.preventDefault();
+        const nav = document.querySelector(".landing-nav");
+        const off = (nav && nav.offsetHeight ? nav.offsetHeight : 0) + 12;
+        const top = el.getBoundingClientRect().top + (window.scrollY || 0) - off;
+        try {
+          window.scrollTo({ top, behavior: reduced() ? "auto" : "smooth" });
+        } catch (err) {
+          window.scrollTo(0, top);
+        }
+      });
+    });
+  }
+
+  /* ---------- ⑤ v54 数据条刻度尺：入视口逐格立起 ---------- */
+  const SCALE_TICKS = 12;
+  function initStatScale() {
+    const stats = [...document.querySelectorAll("#view-landing .landing-stat")];
+    if (!stats.length) return;
+    let count = 0;
+    stats.forEach(stat => {
+      if (stat.querySelector(".ls-scale")) return;
+      const val = stat.querySelector(".val");
+      if (!val || typeof val.insertAdjacentElement !== "function") return;
+      const scale = document.createElement("i");
+      scale.className = "ls-scale";
+      scale.setAttribute("aria-hidden", "true");
+      for (let i = 0; i < SCALE_TICKS; i++) {
+        const tick = document.createElement("i");
+        tick.style.setProperty("--i", String(i));
+        scale.appendChild(tick);
+        count++;
+      }
+      val.insertAdjacentElement("afterend", scale);
+    });
+    FX.ticks = count;
+    if (!("IntersectionObserver" in window)) {
+      stats.forEach(s => s.classList.add("ticks-on"));         // 无 IO：直接立起
+      return;
+    }
+    try {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(en => {
+          if (!en.isIntersecting) return;
+          en.target.classList.add("ticks-on");
+          io.unobserve(en.target);
+        });
+      }, { threshold: 0.4 });
+      stats.forEach(s => io.observe(s));
+    } catch (e) {
+      stats.forEach(s => s.classList.add("ticks-on"));
+    }
+  }
+
   /* ---------- 入口 ---------- */
   function boot() {
     try { initHeroRotator(); } catch (e) {}
     try { playHeroMock(); } catch (e) {}
+    try { enterLanding(); } catch (e) {}
+    try { initRail(); } catch (e) {}
+    try { initStatScale(); } catch (e) {}
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot, { once: true });

@@ -61,8 +61,23 @@
     FX.initTop = initBackToTop;                         // 暴露给测试（幂等验证）
   }
 
-  /* ---------- ② 滚动侦测（落地页导航点亮） ---------- */
+  /* ---------- ② 滚动侦测（落地页导航点亮 + v54 标尺走针） ---------- */
   const SPY_SECTIONS = ["features", "workflow", "stats"];
+  /* v54：右侧标尺与导航共用同一次滚动计算——两条轨各自监听会互相抢帧，
+   * 而且判断口径一旦分叉，就会出现「导航点亮 02、标尺还停在 01」。 */
+  function paintRail(hit) {
+    const rail = document.getElementById("bp-rail");
+    if (!rail) return;
+    const de = document.documentElement;
+    const max = de.scrollHeight - de.clientHeight;
+    const top = window.scrollY || de.scrollTop || 0;
+    const p = max > 4 ? Math.min(1, Math.max(0, top / max)) : 0;
+    rail.style.setProperty("--rail-p", (p * 100).toFixed(2) + "%");
+    const items = rail.querySelectorAll(".rail-item");
+    Array.prototype.forEach.call(items, a => {
+      a.classList.toggle("is-on", a.getAttribute("href") === "#" + hit);
+    });
+  }
   function updateScrollSpy() {
     const links = [...document.querySelectorAll('.landing-nav-links a[href^="#"]')];
     if (!links.length) return;
@@ -80,7 +95,16 @@
       const top = r.top + (window.scrollY || 0);
       if (top <= probe && top + r.height > probe) { hit = id; break; }
     }
-    links.forEach(a => a.classList.toggle("active", hit !== "" && a.getAttribute("href") === "#" + hit));
+    /* 末尾区块：滚到底时点亮最后一格（CTA 高度不足以进入 96px 探针） */
+    if (!hit) {
+      const end = document.getElementById("landing-end");
+      if (end) {
+        const r = end.getBoundingClientRect();
+        if (r.top < (window.innerHeight || 0) * 0.8) hit = "landing-end";
+      }
+    }
+    links.forEach(a => a.classList.toggle("active", hit !== "" && hit !== "landing-end" && a.getAttribute("href") === "#" + hit));
+    try { paintRail(hit); } catch (e) { /* 纯增强 */ }
   }
   function initScrollSpy() {
     if (FX.spy) return;

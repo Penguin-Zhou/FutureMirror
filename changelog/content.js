@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2506</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2561</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -37,6 +37,7 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v54"><span class="cl-toc-tag">Beta 1.1.2 · v54</span><span class="cl-toc-title-txt">落地页动态层 · 尺寸线落笔 / 标题揭载 / 右侧标尺 / 跨行裁字</span></a></li>
     <li><a href="#v53"><span class="cl-toc-tag">Beta 1.1.2 · v53</span><span class="cl-toc-title-txt">对话式匹配答满 4 问后没有落点 · 分数涨了缺口没变</span></a></li>
     <li><a href="#v52"><span class="cl-toc-tag">Beta 1.1.2 · v52</span><span class="cl-toc-title-txt">PDF 简历导入只剩一个板块 · 四道坎都在「按行」这件事上</span></a></li>
     <li><a href="#v51"><span class="cl-toc-tag">Beta 1.1.2 · v51</span><span class="cl-toc-title-txt">窄屏首屏 76px 空白 · 顶部让位按下层元素算，不再把顶栏数两遍</span></a></li>
@@ -279,6 +280,43 @@ export const changelogHtml = `
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v54 · 落地页动态层：把「图纸绘制」做成开场
+       ======================================================== -->
+  <div class="version" id="v54">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 体验增强（v54）</span>
+      <span class="v-title">落地页不再是一张静态长图：尺寸线落笔、标题逐行揭载、右侧标尺走针</span>
+      <span class="v-date">2026.11.01</span>
+    </div>
+    <div class="version-body">
+      <div class="v-summary">
+        之前落地页的动静都集中在中段——走马灯、实录播台、粒子层，首屏本身却是一张静态版面：
+        标题直接出现，关键词高亮一开始就是满的，往下滚也没有位置感。
+        这一版补的不是「更多动画」，而是把<strong>图纸绘制</strong>这件事本身做成开场：
+        图幅尺寸线自左落笔、标题两行依次揭载、关键词底色扫过、右侧竖向标尺随滚动走针。
+        所有新增都只加类，初态与终态写在 CSS 里——关掉脚本或 reduced-motion，页面仍是完整的完成态。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>图幅尺寸线</b>：标题上方一条 1px 尺寸线，两端各刻一度（右端朱红），中间一段等宽标注 <code>SHEET 01 · GRID 44 · 4 / 8 MIN</code>；入场自左向右落笔 0.95s</div>
+        <div class="vh-item"><b>标题逐行揭载</b>：两行各自 <code>clip-path</code> 自上而下揭载（0 / 0.12s），与实录播台、页头揭载共用一套语言，不做位移上浮</div>
+        <div class="vh-item"><b>高亮扫过</b>：关键词底色从 0% 扫到 100%（0.9s）。原来用 inset 内阴影，改由 <code>background-size</code> 承担——同一处视觉，多了一个「写上去」的动作</div>
+        <div class="vh-item"><b>右侧区块标尺</b>：竖向刻度轨 + 4 格（功能 / 流程 / 数字 / 开始），朱红填充跟着滚动比例走，当前区块点亮并展开标签，点击直接走位。填充与点亮复用导航侦测的同一次滚动计算，不会出现「导航亮 02、标尺停在 01」</div>
+        <div class="vh-item"><b>特性卡定位悬停</b>：顶缘朱红细线自左画出 + 编号方块反白成墨底纸字 + 标题下方划一道发丝线；坐标 chip 照旧</div>
+        <div class="vh-item"><b>数据条刻度尺</b>：四个数字下方各落 12 格刻度（首格朱红），入视口逐格立起；数字滚动从 <code>setInterval</code> 步进改成 rAF 缓出，末位不再「跳一格」</div>
+        <div class="vh-item"><b>真缺陷 ①：跨行被裁字</b>：<code>.ht-inner</code> 原是行内元素，跨行时 <code>clip-path</code> 只按首段行盒计算——390px 下标题折到第三行的「长。」整段消失。改为块级后复验通过，断言里也钉住了这一条</div>
+        <div class="vh-item"><b>真缺陷 ②：窄屏报头竖排字</b>：390px 下报头五个元素挤到每个字占一行，「免费体验 / 登录 / 注册」被压成竖排。收掉版本章与主题色钮、锁住按钮不换行、logo 降到 14px，一行摆下且无横向溢出</div>
+        <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2；不引入任何运行时依赖，动画全部落在 CSS 与既有模块内</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">55</div><div class="m-label">v54 新增断言</div></div>
+        <div class="metric"><div class="m-val">2561</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">45</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">2</div><div class="m-label">顺带修掉的窄屏缺陷</div></div>
       </div>
     </div>
   </div>

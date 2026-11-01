@@ -29,6 +29,7 @@ function showView(name) {
     document.querySelectorAll(".landing-stat .val[data-count]").forEach(el => { el.dataset.done = ""; });
     animateLandingCounters();
     // v26：重播 Hero 实录播台 + 刷新导航侦测
+    try { if (window.__bpLanding && window.__bpLanding.enter) window.__bpLanding.enter(); } catch (e) {}
     try { if (window.__bpLanding && window.__bpLanding.playMock) window.__bpLanding.playMock(); } catch (e) {}
     try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
   }
@@ -85,19 +86,28 @@ function syncGuestLocks() {
   });
 }
 
-/* 落地页数字滚动 */
+/* 落地页数字滚动（v54：setInterval 步进改为 rAF 缓出，末尾不再有「跳一格」） */
 function animateLandingCounters() {
-  document.querySelectorAll(".landing-stat .val[data-count]").forEach(el => {
+  const nums = document.querySelectorAll(".landing-stat .val[data-count]");
+  const still = (() => {
+    try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
+  })();
+  nums.forEach(el => {
     if (el.dataset.done === "1") return;
     el.dataset.done = "1";
     const target = +el.dataset.count;
-    let cur = 0;
-    const step = Math.max(1, Math.round(target / 24));
-    const t = setInterval(() => {
-      cur += step;
-      if (cur >= target) { cur = target; clearInterval(t); }
-      el.textContent = cur;
-    }, 42);
+    if (!isFinite(target)) return;
+    if (still) { el.textContent = String(target); return; }
+    const now = () => (typeof performance !== "undefined" && performance.now ? performance.now() : Date.now());
+    const t0 = now(), DUR = 880;
+    const step = () => {
+      const t = Math.min(1, (now() - t0) / DUR);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = String(Math.round(target * eased));
+      if (t < 1) requestAnimationFrame(step);
+      else el.textContent = String(target);
+    };
+    requestAnimationFrame(step);
   });
 }
 
