@@ -555,18 +555,23 @@ async function onResumePdfSelected(e) {
     toast("未在 PDF 中识别到文本（可能是扫描件，请改用粘贴文本后拆分）");
     return;
   }
-  if (status) status.textContent = "⏳ AI 拆分中…";
-  let work = text;
+  /* v52：先看规则拆得够不够，再决定要不要请模型重排。
+   * 行还原修好之后，规则拆分的准确率已经够用；而模型那一趟要 30–45 秒，
+   * 演示时让访客干等半分钟，比多认对一个板块更伤。只有「拆不出板块」或
+   * 「姓名/技能/教育这些关键字段一个都没认出来」时才走模型。 */
+  let result = splitResumeText(text);
+  const weak = result.sections.length < 2 || !result.core.name || (!result.core.skills && !result.core.education);
   const hasLLM = (typeof llm !== "undefined" && llm) ||
     (typeof fmApi !== "undefined" && fmApi && fmApi.backendReady());
-  if (hasLLM) {
+  if (weak && hasLLM) {
+    if (status) status.textContent = "⏳ 板块不明显，交给模型重排…";
     try {
       const ctrl = new AbortController();
       setTimeout(() => ctrl.abort(), 45000);
-      work = await aiSplitResumeText(text, ctrl.signal);
-    } catch (_) { work = text; }
+      const reworked = await aiSplitResumeText(text, ctrl.signal);
+      if (reworked && reworked.trim()) result = splitResumeText(reworked);
+    } catch (_) { /* 模型不可用就用规则结果，不影响导入 */ }
   }
-  const result = splitResumeText(work);
   applyImportedResume(result);
   if (status) status.textContent = "";
   toast("已自动拆分并填入：" + result.sections.length + " 个板块" +

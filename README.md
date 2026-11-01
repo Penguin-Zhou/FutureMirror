@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2467 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2471 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -643,10 +643,10 @@ node scripts/test-v32-jsdom.js … test-v44b-jsdom.js # v32–v44 增量批次�
 node scripts/test-v45-jsdom.js … test-v49-jsdom.js # v45–v49 交互确定性 / 启动守卫 / 拖拽修复 / 视觉升级
 node scripts/test-v50-jsdom.js          # 检测修复：计划同源 / 重开竞态 / 暗色仪表 / 坏数据 / 口径（41 项）
 node scripts/test-v51-jsdom.js          # 窄屏顶部让位：一份高度只算一次（38 项）
-node scripts/test-v52-jsdom.js          # PDF 简历导入：文本还原成行 / 词边界技能 / 报告缓存（35 项）
+node scripts/test-v52-jsdom.js          # PDF 简历导入：文本还原成行 / 词边界技能 / 报告缓存（39 项）
 ```
 
-合计 **2467 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2471 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -724,7 +724,7 @@ node scripts/test-v52-jsdom.js          # PDF 简历导入：文本还原成行 
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2467 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2471 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -930,7 +930,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **技能按词边界匹配**：`includes` 曾判定 JavaScript 命中 Java、MySQL 命中 SQL；技能板块按「熟练 / 掌握 / 了解」分行用「；」连接
 - **报告不再两次分数**：同一场面试第二次进报告页会跳过同步请求、拿不到 payload，静默退化成本地引擎（服务端 66 / 本地 72 同时存在，进步曲线还多一条记录）；改为复用上一次的服务端结果，重新面试时作废
 - **实测**：同一份 PDF 从「0 个板块」变成「3 个板块 / 13 条经历」，姓名邮箱电话教育技能自我评价全部落位；匹配 71%（5/7，缺口 Next.js、Tailwind）
-- **指标**：前端断言 2467 → **2467**（新增 v52 套件 35 项）｜jsdom 套件 42 → **43 套**｜共享全局符号 744 → **745**｜PDF **29 页**
+- **指标**：前端断言 2432 → **2471**（新增 v52 套件 39 项）｜jsdom 套件 42 → **43 套**｜共享全局符号 744 → **745**｜PDF **29 页**
 
 ### Beta 1.1.2 · 增量 v51：窄屏顶部让位——一份高度只算一次（2026.10.31）
 
@@ -944,7 +944,7 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **`--hdr-h` 不再过期**：顶栏高度随页面换行变化（320px 下由计划页切到面试页，81px → 55px），只在启动 / 切页 / resize 时量一次会留下旧值，导航条浮在顶栏下方 26px 的空中；改用 `ResizeObserver` 盯住顶栏与导航条，写值前先比对、值相同不重写
 - **四个贴顶定位改为两级**：降级横幅、断网 / 慢网横幅、键盘态固定对话卡片此前只按「顶栏」算高度，窄屏会停在导航条背后或被它盖住
 - **实测**：9 个宽度（320–1280）× 11 个页面 = 99 组，导航条下沿到首个内容块一律 16px，无一元素落入导航条所在的那一条；641–900px 演示横幅标题行恢复可见
-- **指标**：前端断言 2393 → **2467**（新增 v51 套件 38 项）｜jsdom 套件 41 → **43 套**｜前端模块 44（不变）｜共享全局符号 738 → **740**｜PDF **29 页**
+- **指标**：前端断言 2393 → **2432**（新增 v51 套件 38 项）｜jsdom 套件 41 → **42 套**｜前端模块 44（不变）｜共享全局符号 738 → **740**｜PDF **29 页**
 
 ### Beta 1.1.2 · 增量 v50：全面检测，修复五处「界面说的和实际状态不一致」（2026.10.31）
 

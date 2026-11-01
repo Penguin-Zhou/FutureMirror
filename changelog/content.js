@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2467</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2471</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -278,8 +278,8 @@ export const changelogHtml = `
         <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2；数据不出浏览器，PDF 解析仍在端侧完成</div>
       </div>
       <div class="v-metrics">
-        <div class="metric"><div class="m-val">35</div><div class="m-label">v52 新增断言</div></div>
-        <div class="metric"><div class="m-val">2467</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">39</div><div class="m-label">v52 新增断言</div></div>
+        <div class="metric"><div class="m-val">2471</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">43</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">0 → 13</div><div class="m-label">导入后条目数</div></div>
       </div>
@@ -311,7 +311,7 @@ export const changelogHtml = `
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">38</div><div class="m-label">v51 新增断言</div></div>
-        <div class="metric"><div class="m-val">2467</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2471</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">42</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">76 → 16</div><div class="m-label">首屏空白（px，375 宽）</div></div>
       </div>
@@ -343,7 +343,7 @@ export const changelogHtml = `
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">41</div><div class="m-label">v50 新增断言</div></div>
-        <div class="metric"><div class="m-val">2467</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2471</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">41</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">5</div><div class="m-label">修复项</div></div>
       </div>
@@ -378,7 +378,7 @@ export const changelogHtml = `
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">52</div><div class="m-label">v49 新增断言</div></div>
-        <div class="metric"><div class="m-val">2467</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">2471</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">40</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">0</div><div class="m-label">新增运行时依赖</div></div>
       </div>

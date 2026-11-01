@@ -142,6 +142,14 @@ console.log("\n⑤ 演示包一致性");
   ok(/pdfTidyLine/.test(demoHtml) && /pdfJoinLine/.test(demoHtml), "演示包含 PDF 行还原");
   ok(/skillIn/.test(demoHtml), "演示包含词边界匹配");
   ok(/lastBackendPayload/.test(demoHtml), "演示包含报告缓存");
+  /* 导入不再无条件等模型：规则先拆，拆不动才请模型（30–45 秒的等待只留给真需要的情况） */
+  ok(/let result = splitResumeText\(text\)/.test(resumeSrc), "先跑规则拆分");
+  ok(/const weak = result\.sections\.length < 2/.test(resumeSrc), "只在拆不出板块/关键字段时才判为弱");
+  ok(/if \(weak && hasLLM\)/.test(resumeSrc), "弱结果且有模型时才重排");
+  ok(
+    resumeSrc.indexOf("let result = splitResumeText(text)") < resumeSrc.indexOf("await aiSplitResumeText"),
+    "规则拆分排在模型重排之前"
+  );
   ok(!/join\(" "\) \+ "\\n"/.test(demoHtml), "演示包已无旧的一行到底拼接");
 }
 
