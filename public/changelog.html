@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2708</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2760</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -312,6 +312,7 @@ body {
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v59"><span class="cl-toc-tag">Beta 1.1.2 · v59</span><span class="cl-toc-title-txt">落地页整体重排 · 独立样式层 / 报告截面图幅 / 居中版式 / 旧窗栏带拆除</span></a></li>
     <li><a href="#v57"><span class="cl-toc-tag">Beta 1.1.2 · v57</span><span class="cl-toc-title-txt">主标语两种笔性 · 文楷引子 / 墨渗入场 / 断点字距收敛</span></a></li>
     <li><a href="#v56"><span class="cl-toc-tag">Beta 1.1.2 · v56</span><span class="cl-toc-title-txt">主标语字型重构 · 自托管可变宋体 / 楔形版式 / 朱红退回划痕</span></a></li>
     <li><a href="#v55"><span class="cl-toc-tag">Beta 1.1.2 · v55</span><span class="cl-toc-title-txt">主标语焦点层 · 逐字落笔 / 四角取景 / 关键词逐字涂红 / 入场节奏重排</span></a></li>
@@ -558,6 +559,41 @@ body {
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v59 · 落地页整体重排：参考站的版式语言 + 把旧层收进独立样式表
+       ======================================================== -->
+  <div class="version" id="v59">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 体验增强（v59）</span>
+      <span class="v-title">落地页按参考站重排，旧图纸层收进一页独立的样式表</span>
+      <span class="v-date">2026.11.02</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        v58 只换了落地页的骨架，底下还压着 v21–v57 的图纸规则，于是出现「卡片圆角换了、
+        卡头还挂着一条米色窗栏」这种半新半旧。这一版把落地页收成独立的一层
+        <code>frontend/css/landing.css</code>，全部规则以 <code>#view-landing</code> 起头；
+        产品内页的图纸风一像素不动，两套语言各管一摊。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>先分层再改版</b>：新层排在 <code>pages.css</code> 之后，靠 ID 前缀提权重，整层零 <code>!important</code>。构建清单从 3 层 CSS 变 4 层，单文件演示包照样内联</div>
+        <div class="vh-item"><b>四个数是量出来的</b>：底色 <code>#fcfaf8</code>（暖纸，不是纯白）、容器 <code>1260px</code>、卡片圆角 <code>24px</code>、按钮圆角 <code>999px</code>。首屏全部居中，主标语 <code>clamp(34px, 4.4vw, 58px)</code>，1440 下落在 58px，与参考站同量级</div>
+        <div class="vh-item"><b>图幅从「一块海报」改成「一张报告截面」</b>：左总分 86，右五维条形，底部一条脚注写清「样例为合成数据」。条形用 <code>scaleX(var(--v))</code> 画，不用 width 动画；五条长度与右侧分数自洽，套件里逐条比对</div>
+        <div class="vh-item"><b>苔绿换成暖砂</b>：参考站的主视觉是低饱和苔绿，但本项目的主色是朱红——绿底配红字互相打架。换成 <code>#f7f2e8 → #eee3d2</code> 的暖砂渐变，朱红只留一处「看看评分怎么来的 →」</div>
+        <div class="vh-item"><b>拆掉一条会吃字的旧装饰</b>：<code>tokens.css</code> 里给 <code>.hero-mock</code> 画过一条 34px 高的米色「浏览器窗栏」，正好压住卡头标题的下半截。这一版直接 <code>content: none</code>，卡片从圆角开始</div>
+        <div class="vh-item"><b>三个区块三种密度</b>：功能 3 列白卡；流程 4 栏只留一条发丝线分栏（原来那条 2px 墨线悬在卡外，像掉了一根杠）；数字 4 列，刻度尺从 12 根 6px 宽的短棒收回 1px 细线——之前远看像一行乱码</div>
+        <div class="vh-item"><b>标题不再落宋体</b>：<code>landing-section-title</code> / <code>feature-block h3</code> 之前被旧层的「衬线大标题」组捞走，中文实际落到点数很小的宋体。这一版把节标题统一成无衬线，衬线只留给主标语与数字</div>
+        <div class="vh-item"><b>窄屏重新算一遍</b>：功能卡两列（一列 9 张要 1869px）、收掉与五维条形重复的雷达图、卡头状态字隐藏让标题单行、折叠目标清空——折叠条在短版式里只会剩下五根黑杠</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">52</div><div class="m-label">v59 新增断言</div></div>
+        <div class="metric"><div class="m-val">2760</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">49</div><div class="m-label">jsdom 套件</div></div>
+        <div class="metric"><div class="m-val">4</div><div class="m-label">CSS 层数</div></div>
       </div>
     </div>
   </div>

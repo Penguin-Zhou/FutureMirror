@@ -65,6 +65,7 @@ const cssRules = [
     "功能页面层（v18–v22：求职 / 题库 / 小助手 / 移动端 / API）",
     ["v18 · 求职管理", "v19 · 题库与小测模块", "v20 · 题库增强", "v21 · AI 悬浮球", "v22 · 后端适配层"],
   ],
+  ["css/landing.css", "v58 落地页视觉层（居中版式 / 大圆角卡片 / 胶囊按钮）", ["v58 · 落地页视觉层"]],
 ];
 const cssStarts = cssRules.map((r) => Math.min(...r[2].map((t) => bannerStart(t, STYLE_OPEN + 1, STYLE_CLOSE))));
 const CSS_LAYERS = [];

@@ -135,7 +135,9 @@ function runTests() {
       ),
     "预览雷达填充跟随主题色"
   );
-  ok(!!document.querySelector("#view-landing .landing-cta .btn-white"), "底部 CTA 白色按钮");
+  /* v59 落地页改版：CTA 由图纸白块按钮换成黑胶囊（.lp-pill-solid），
+   * 断言跟着改成「底部 CTA 有主按钮」，不再绑死旧类名 */
+  ok(!!document.querySelector("#view-landing .landing-cta .lp-pill-solid"), "底部 CTA 主按钮（黑胶囊）");
   ok(
     [...document.querySelectorAll("#view-landing .feature-block p")].some((p) =>
       p.textContent.includes("让简历通过机器筛选")

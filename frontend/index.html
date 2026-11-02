@@ -31,6 +31,7 @@ try {
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/landing.css">
 <script>
 /* ============================================================
  * v47 · 启动守卫（零依赖 · 先于主程序执行）
@@ -96,13 +97,8 @@ try {
   <!-- 落地页导航 -->
   <nav class="landing-nav">
     <div class="wrap">
-      <div class="logo">
-        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
-          <rect x="1" y="1" width="24" height="24" rx="1" fill="var(--ink)"/>
-          <ellipse cx="13" cy="13" rx="8.5" ry="5" fill="none" stroke="#fff" stroke-width="1.6"/>
-          <circle cx="13" cy="13" r="2.4" fill="#fff"/>
-        </svg>
-        面镜 <span style="color:var(--brand)">FutureMirror</span>
+      <div class="logo lp-logo">
+        <i class="lp-logo-dot" aria-hidden="true"></i>面镜 <b>FutureMirror</b>
       </div>
       <div class="landing-nav-links">
         <a href="#features">功能</a>
@@ -111,11 +107,11 @@ try {
         <a href="changelog.html">更新日志</a>
       </div>
       <div class="landing-nav-meta">
-        <span class="bp-ver">BETA 1.1.2</span>
-        <button class="btn btn-ghost btn-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式"><span data-ic="moon">🌙</span></button>
-        <button class="btn btn-ghost btn-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）"><span data-ic="palette">🟣</span></button>
-        <button class="btn btn-outline btn-sm" onclick="showView('app')">免费体验</button>
-        <button class="btn btn-primary btn-sm" onclick="showView('auth')">登录 / 注册</button>
+        <span class="lp-ver">BETA 1.1.2</span>
+        <button class="lp-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式"><span data-ic="moon">🌙</span></button>
+        <button class="lp-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）"><span data-ic="palette">🟣</span></button>
+        <button class="lp-pill lp-pill-quiet" onclick="showView('app')">免费体验</button>
+        <button class="lp-pill lp-pill-solid" onclick="showView('auth')">登录 / 注册</button>
       </div>
     </div>
   </nav>
@@ -123,66 +119,70 @@ try {
   <!-- Hero -->
   <section class="landing-hero">
     <div class="wrap">
-      <div class="hero-grid">
-        <div class="hero-main">
-          <!-- v54 图幅标注：一条尺寸线 + 图纸编号（入场自左落笔） -->
-          <div class="bp-sheet" aria-hidden="true">
-            <i class="bs-tick"></i>
-            <span class="bs-rule"></span>
-            <i class="bs-needle"></i>
-            <span class="bs-label">SHEET 01 · GRID 44 · 4 / 8 MIN</span>
-            <i class="bs-tick bs-tick-e"></i>
-          </div>
-          <span class="landing-tagline">AI Native · 一次面试，多重机会 · Beta 1.1.2</span>
-          <div class="hero-rotator" aria-live="polite"><span class="hr-prefix">&gt;_</span><span class="hr-text" id="hr-text"></span><i class="hr-caret" aria-hidden="true"></i></div>
-          <div class="eyebrow"><span class="eyebrow-no">VOL.1</span>AI NATIVE · 多 AGENT 模拟面试平台</div>
-          <h1 class="hero-title">
-            <span class="ht-line ht-l1"><span class="ht-inner">让每一次面试，都成为</span></span>
-            <span class="ht-line ht-l2"><span class="ht-inner"><span class="grad">可量化的成长</span>。</span></span>
-          </h1>
-          <p class="hero-sub">
-            上传简历与目标岗位 JD，由 AI 面试官团队（HR / 技术 / 压力面 / 观察员）完成模拟面试，
-            生成可解释的评分报告、能力雷达图与个性化学习路径。
-          </p>
-          <div class="hero-cta">
-            <button class="btn btn-primary" onclick="enterAppOrAuth()"><span class="cta-wide">立即体验 →</span><span class="cta-narrow">上传简历，开始一场可溯源的模拟面试 →</span></button>
-            <button class="btn btn-outline" onclick="showView('app')">先看看界面</button>
-          </div>
-          <div class="hero-kbd-hint">按 <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> 打开命令面板 · 直达任意功能页</div>
-          <div class="hero-meta-row">
-            <span><b>真实后端</b> · GLM-4-Flash 流式</span><span class="dot-sep">/</span>
-            <span><b>5</b> 协作 Agent</span><span class="dot-sep">/</span>
-            <span><b>2708</b> 项自动化断言</span><span class="dot-sep">/</span>
-            <span><b>30</b> 页技术文档</span>
-          </div>
-        </div>
-        <aside class="hero-spec bp-crop">
-          <div class="spec-head"><span>RUNTIME SPEC</span><span>运行规格</span></div>
-          <div class="spec-body">
-            <dl class="spec-row"><dt>Runtime</dt><dd>在线 · 真实后端</dd></dl>
-            <dl class="spec-row"><dt>LLM</dt><dd>GLM-4-Flash</dd></dl>
-            <dl class="spec-row"><dt>Agents</dt><dd>5 席圆桌</dd></dl>
-            <dl class="spec-row"><dt>Scoring</dt><dd>确定性引擎 + LLM 增强</dd></dl>
-            <dl class="spec-row"><dt>Tests</dt><dd>jsdom 2708 ／ pytest 57</dd></dl>
-          </div>
-          <div class="spec-foot">
-            <span class="bp-stamp">Live · 已接通</span>
-            <span class="spec-note">断网自动降级<br>本地 Mock，流程不中断</span>
-          </div>
-        </aside>
+      <div class="landing-tagline">AI Native · 一次面试，多重机会</div>
+      <div class="hero-rotator" aria-live="polite"><span class="hr-prefix">&gt;_</span><span class="hr-text" id="hr-text"></span><i class="hr-caret" aria-hidden="true"></i></div>
+      <h1 class="hero-title">
+        <span class="ht-line ht-l1"><span class="ht-inner">让每一次面试，都成为</span></span>
+        <span class="ht-line ht-l2"><span class="ht-inner"><span class="grad">可量化的成长</span>。</span></span>
+      </h1>
+      <p class="hero-sub">
+        上传简历与目标岗位 JD，由 AI 面试官团队（HR / 技术 / 压力面 / 观察员）完成模拟面试，
+        生成可解释的评分报告、能力雷达图与个性化学习路径。
+      </p>
+      <div class="hero-cta">
+        <button class="lp-pill lp-pill-solid lp-pill-lg" onclick="enterAppOrAuth()"><span class="cta-wide">立即体验 →</span><span class="cta-narrow">上传简历，开始一场可溯源的模拟面试 →</span></button>
+        <button class="lp-pill lp-pill-line lp-pill-lg" onclick="showView('app')">先看看界面</button>
+      </div>
+      <div class="hero-kbd-hint">按 <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> 打开命令面板 · 直达任意功能页</div>
+
+      <!-- 图幅标注：一条尺寸线给下面的评分图幅定界（图纸编号 + 网格 + 时长） -->
+      <div class="bp-sheet" aria-hidden="true">
+        <i class="bs-tick"></i>
+        <span class="bs-rule"></span>
+        <i class="bs-needle"></i>
+        <span class="bs-label">SHEET 01 · GRID 44 · 4 / 8 MIN</span>
+        <i class="bs-tick bs-tick-e"></i>
       </div>
 
-      <!-- 产品预览：面试实录（取景器框） -->
-      <div class="hero-mock bp-crop">
+      <!-- 评分图幅：一张报告截面——总分在左，五维条形在右 -->
+      <div class="lp-banner">
+        <div class="lp-banner-tex" aria-hidden="true"></div>
+        <div class="lp-banner-body">
+          <div class="lp-banner-score">
+            <span class="lp-banner-kicker">REPORT · 评分示例</span>
+            <div class="lp-banner-num">86</div>
+            <p class="lp-banner-cap">五维加权总分<br>每条证据都能回溯到你自己的原话</p>
+          </div>
+          <div class="lp-banner-dims">
+            <div class="lp-dim"><span>内容</span><i><b style="--v: 0.91"></b></i><em>91</em></div>
+            <div class="lp-dim"><span>结构</span><i><b style="--v: 0.84"></b></i><em>84</em></div>
+            <div class="lp-dim"><span>表达</span><i><b style="--v: 0.88"></b></i><em>88</em></div>
+            <div class="lp-dim"><span>匹配</span><i><b style="--v: 0.79"></b></i><em>79</em></div>
+            <div class="lp-dim"><span>抗压</span><i><b style="--v: 0.86"></b></i><em>86</em></div>
+          </div>
+        </div>
+        <div class="lp-banner-foot">
+          <span>样例为合成数据 · 真实报告逐条附原话引用</span>
+          <button class="lp-banner-link" onclick="enterAppOrAuth()">看看评分怎么来的 →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 面试实录 -->
+  <section class="lp-transcript">
+    <div class="wrap">
+      <h2 class="lp-h2">一场面试，是这样推进的</h2>
+      <div class="hero-mock">
         <div class="hero-mock-head">
           <span>INTERVIEW TRANSCRIPT · 面试实录样例</span>
           <span class="hmh-live">SSE STREAM · 5 AGENTS</span>
         </div>
         <div class="hero-mock-body">
           <div class="mock-chat">
-            <div class="mock-bubble ai"><span class="agent-tag">⚙️ 技术面试官 · 温度 0.3</span><br>「电商秒杀系统」的缓存一致性你怎么保证？如果缓存与 DB 不一致，用户侧会看到什么现象？</div>
+            <div class="mock-bubble ai"><span class="agent-tag">技术面试官 · 温度 0.3</span><br>「电商秒杀系统」的缓存一致性你怎么保证？如果缓存与 DB 不一致，用户侧会看到什么现象？</div>
             <div class="mock-bubble user">我用了 Redis 缓存热点商品，通过延迟双删 + 消息队列最终一致…QPS 从 200 提升到 1200。</div>
-            <div class="mock-bubble ai"><span class="agent-tag">🔥 压力面试官 · 温度 0.8</span><br>「QPS 1200」这个方案，我让一个实习生来写一周也能做出来——你的不可替代性在哪？</div>
+            <div class="mock-bubble ai"><span class="agent-tag">压力面试官 · 温度 0.8</span><br>「QPS 1200」这个方案，我让一个实习生来写一周也能做出来——你的不可替代性在哪？</div>
           </div>
           <div class="mock-radar">
             <svg viewBox="0 0 200 200" width="100%" style="max-width:180px" role="img" aria-label="五维能力雷达图示例">
@@ -201,6 +201,15 @@ try {
           </div>
         </div>
       </div>
+
+      <!-- 运行规格：一排浅色胶囊 -->
+      <aside class="hero-spec">
+        <div class="spec-chip"><span>Runtime</span><b>在线 · 真实后端</b></div>
+        <div class="spec-chip"><span>LLM</span><b>GLM-4-Flash</b></div>
+        <div class="spec-chip"><span>Agents</span><b>5 席圆桌</b></div>
+        <div class="spec-chip"><span>Scoring</span><b>确定性引擎 + LLM 增强</b></div>
+        <div class="spec-chip"><span>Tests</span><b>jsdom 2760 ／ pytest 57</b></div>
+      </aside>
     </div>
   </section>
 
@@ -220,7 +229,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2708 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2760 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -230,7 +239,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2708 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2760 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -243,7 +252,6 @@ try {
   <section class="landing-section" id="features">
     <div class="wrap">
       <div class="landing-section-head">
-        <div class="eyebrow"><span class="eyebrow-no">§ 01</span>FEATURES · 功能矩阵</div>
         <h2 class="landing-section-title">求职全流程，一个平台闭环</h2>
         <p class="landing-section-sub">从简历诊断到职业探索，从模拟面试到评估报告——AI 在每个环节都深度参与</p>
       </div>
@@ -301,7 +309,6 @@ try {
   <section class="landing-section alt" id="workflow">
     <div class="wrap">
       <div class="landing-section-head">
-        <div class="eyebrow"><span class="eyebrow-no">§ 02</span>WORKFLOW · 使用流程</div>
         <h2 class="landing-section-title">四步走完求职准备</h2>
         <p class="landing-section-sub">每个环节都留下可追溯的数据，形成你的专属能力成长档案</p>
       </div>
@@ -334,7 +341,7 @@ try {
   <section class="landing-section" id="stats">
     <div class="wrap">
       <div class="landing-section-head">
-        <div class="eyebrow"><span class="eyebrow-no">§ 03</span>NUMBERS · 关键数字</div>
+        <h2 class="landing-section-title">数字不会替你说谎</h2>
       </div>
       <div class="landing-stats">
         <div class="landing-stat">
@@ -359,12 +366,11 @@ try {
 
   <!-- 底部 CTA -->
   <section class="wrap" id="landing-end" style="padding-bottom:64px">
-    <div class="landing-cta bp-crop">
-      <div class="eyebrow" style="color:var(--brand)"><span class="eyebrow-no" style="background:var(--plate);color:var(--on-plate);border-color:var(--on-plate)">§ 04</span><span style="color:var(--on-plate-dim)">START · 开始体验</span></div>
+    <div class="landing-cta">
       <h3>准备好了吗？</h3>
       <p>用 3 分钟完成首次模拟面试，拿到你的第一份可解释评估报告。</p>
-      <div style="margin-top:26px">
-        <button class="btn btn-white" onclick="enterAppOrAuth()">立即开始 →</button>
+      <div class="lp-cta-btn">
+        <button class="lp-pill lp-pill-solid lp-pill-lg" onclick="enterAppOrAuth()">立即开始 →</button>
       </div>
       <div class="cta-note">
         访客与技术验证请 <button onclick="openEvaluatorGate()">进入开发者模式 →</button>
@@ -372,15 +378,18 @@ try {
     </div>
   </section>
 
-  <section class="wrap" style="padding-bottom:40px;text-align:center">
-    <button class="btn btn-ghost btn-sm" onclick="openEvaluatorGate()" style="opacity:.6;font-size:12px" title="仅访客与开发者可见">
-      🎛 开发者模式
+  <section class="wrap lp-devfoot" style="padding-bottom:40px;text-align:center">
+    <button class="lp-link-quiet" onclick="openEvaluatorGate()" title="仅访客与开发者可见">
+      开发者模式 →
     </button>
   </section>
 
   <footer class="site-foot">
-    面镜 FutureMirror · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.1.2<br>
-    <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
+    <div class="wrap">
+      <div class="lp-foot-mark">面镜 <b>FutureMirror</b></div>
+      <div class="lp-foot-line">多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.1.2</div>
+      <p class="lp-foot-note">AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</p>
+    </div>
   </footer>
 
 </div>
@@ -1726,7 +1735,7 @@ try {
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2708 项前端断言 + 57 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2760 项前端断言 + 57 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -1906,7 +1915,7 @@ try {
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（44 模块 + 3 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2708 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 4 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2760 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>

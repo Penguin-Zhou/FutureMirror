@@ -1,0 +1,1445 @@
+/* ============================================================
+ * v58 · 落地页视觉层（参考 mimo.mi.com 的版式语言重建）
+ * ------------------------------------------------------------
+ * 作用域：#view-landing 内。产品内页仍走蓝图图纸风，两套语言
+ * 各管一摊——落地页负责「第一眼好感和留白」，内页负责「精密」。
+ *
+ * 令牌全部来自对参考站的实测（1440×900）：
+ *   底色 rgb(252,250,248)   容器 1260px      区块留白 72px
+ *   卡片圆角 24px           胶囊圆角 999px   卡片无阴影、无边框
+ *   hero 标题 文楷 48px / 行高 1.02 / 居中
+ *   区块标题 黑体 40px / 字重 400 / 居中
+ *   主胶囊 高 44 / 内距 5 16 / 字号 14 / 黑底白字
+ * ============================================================ */
+
+#view-landing {
+  --lp-bg: #fcfaf8;
+  --lp-ink: #0a0a0a;
+  --lp-mute: rgba(10, 10, 10, 0.56);
+  --lp-faint: rgba(10, 10, 10, 0.36);
+  --lp-hair: rgba(10, 10, 10, 0.07);
+  --lp-card: #ffffff;
+  --lp-soft: #f2f0ec;
+  --lp-panel-a: #f7f2e8;
+  --lp-panel-b: #eee3d2;
+  --lp-panel-ink: #1c1913;
+  --lp-r: 24px;
+  --lp-r-sm: 14px;
+  --lp-pill: 999px;
+  --lp-wrap: 1260px;
+  --lp-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, system-ui, sans-serif;
+  --lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  background: var(--lp-bg);
+  color: var(--lp-ink);
+  min-height: 100vh;
+}
+
+[data-theme="dark"] #view-landing {
+  --lp-bg: #131311;
+  --lp-ink: #f4f1e8;
+  --lp-mute: rgba(244, 241, 232, 0.62);
+  --lp-faint: rgba(244, 241, 232, 0.4);
+  --lp-hair: rgba(244, 241, 232, 0.1);
+  --lp-card: #1c1b18;
+  --lp-soft: #232220;
+  --lp-panel-a: #1e1c17;
+  --lp-panel-b: #26231c;
+  --lp-panel-ink: #f4f1e8;
+}
+
+/* 落地页在屏时摘掉 body 的蓝图网格：参考站是干净底色 */
+body:has(#view-landing.active) {
+  background-image: none;
+  background-color: #fcfaf8;
+}
+
+[data-theme="dark"] body:has(#view-landing.active) {
+  background-color: #131311;
+}
+
+#view-landing .wrap {
+  width: 100%;
+  max-width: var(--lp-wrap);
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* ------------------------------------------------------------
+ * ① 导航：左字标、中右菜单、右侧黑胶囊
+ * ------------------------------------------------------------ */
+#view-landing .landing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--lp-bg);
+  border: 0;
+  border-bottom: 1px solid var(--lp-hair);
+  box-shadow: none;
+  padding: 0;
+}
+
+#view-landing .landing-nav .wrap {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+#view-landing .lp-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--lp-ink);
+  white-space: nowrap;
+}
+
+#view-landing .lp-logo b {
+  font-weight: 700;
+}
+
+#view-landing .lp-logo-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand);
+  flex: 0 0 auto;
+}
+
+#view-landing .landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-left: auto;
+}
+
+#view-landing .landing-nav-links a {
+  position: relative;
+  font-size: 14px;
+  color: var(--lp-mute);
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  transition: color 0.24s ease;
+}
+
+#view-landing .landing-nav-links a::after {
+  display: none;
+}
+
+#view-landing .landing-nav-links a:hover,
+#view-landing .landing-nav-links a.active {
+  color: var(--lp-ink);
+  background: none;
+}
+
+#view-landing .landing-nav-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#view-landing .lp-ver {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--lp-faint);
+  margin-right: 4px;
+}
+
+#view-landing .lp-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--lp-mute);
+  font-size: 13px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+#view-landing .lp-icon:hover {
+  background: var(--lp-soft);
+  border-color: var(--lp-hair);
+}
+
+/* ------------------------------------------------------------
+ * ② 胶囊按钮体系
+ * ------------------------------------------------------------ */
+#view-landing .lp-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 18px;
+  border-radius: var(--lp-pill);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  transition: transform 0.3s var(--lp-ease), background 0.2s ease,
+    border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+#view-landing .lp-pill:active {
+  transform: scale(0.985);
+}
+
+#view-landing .lp-pill-solid {
+  background: var(--lp-ink);
+  border-color: var(--lp-ink);
+  color: var(--lp-bg);
+}
+
+#view-landing .lp-pill-solid:hover {
+  opacity: 0.88;
+  color: var(--lp-bg);
+}
+
+#view-landing .lp-pill-quiet {
+  background: transparent;
+  border-color: var(--lp-hair);
+  color: var(--lp-ink);
+}
+
+#view-landing .lp-pill-quiet:hover {
+  border-color: rgba(10, 10, 10, 0.28);
+  color: var(--lp-ink);
+}
+
+#view-landing .lp-pill-line {
+  background: transparent;
+  border-color: var(--lp-ink);
+  color: var(--lp-ink);
+}
+
+#view-landing .lp-pill-line:hover {
+  background: var(--lp-ink);
+  color: var(--lp-bg);
+}
+
+#view-landing .lp-pill-glass {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: transparent;
+  color: #1d2618;
+}
+
+#view-landing .lp-pill-glass:hover {
+  background: #fff;
+  color: #1d2618;
+}
+
+#view-landing .lp-pill-lg {
+  height: 48px;
+  padding: 0 26px;
+  font-size: 14.5px;
+}
+
+#view-landing .lp-link-quiet {
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: var(--lp-faint);
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+#view-landing .lp-link-quiet:hover {
+  color: var(--lp-mute);
+}
+
+/* ------------------------------------------------------------
+ * ③ Hero：全部居中，字号靠 clamp 撑
+ * ------------------------------------------------------------ */
+#view-landing .landing-hero {
+  padding: 76px 0 0;
+  text-align: center;
+  background: none;
+}
+
+#view-landing .landing-hero::before {
+  display: none;
+}
+
+/* 价值主张抬头：一行等宽小字，不用红色胶囊（参考站没有彩底标签） */
+#view-landing .landing-tagline {
+  display: block;
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lp-faint);
+}
+
+#view-landing .landing-tagline::before {
+  content: none;
+}
+
+#view-landing .hero-rotator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-height: 30px;
+  margin: 0 auto 20px;
+  font-family: "FM Kai", "LXGW WenKai TC", var(--serif);
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--lp-faint);
+  letter-spacing: 0.02em;
+}
+
+#view-landing .hero-rotator .hr-prefix {
+  display: none;
+}
+
+#view-landing .hero-rotator .hr-caret {
+  display: inline-block;
+  width: 12px;
+  height: 2px;
+  margin-left: 4px;
+  background: var(--brand);
+  vertical-align: 2px;
+  animation: lpCaret 1.1s steps(1, end) infinite;
+}
+
+@keyframes lpCaret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+#view-landing .hero-title {
+  position: relative;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto 28px;
+  padding: 0;
+  font-family: "FM Kai", "LXGW WenKai TC", var(--serif);
+  font-size: clamp(34px, 4.4vw, 58px);
+  font-weight: 400;
+  font-synthesis: none;
+  line-height: 1.14;
+  letter-spacing: 0.012em;
+  text-align: center;
+  color: var(--lp-ink);
+  border: 0;
+  background: none;
+}
+
+/* 两行同字号同字重：参考站的做法是「一句话分两行」，不是「两种笔性」。
+ * 上一版让引子行小一半、字距放开，在居中的版式里会变成三截，先收回来。 */
+#view-landing .hero-title .ht-l1,
+#view-landing .hero-title .ht-l2 {
+  display: block;
+  margin-top: 0;
+  font-family: inherit;
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: 0.012em;
+  color: var(--lp-ink);
+}
+
+/* 引子行的字距收敛动画保留（从松到紧），但终值跟着新字距走 */
+@keyframes lpL1Track {
+  from {
+    letter-spacing: 0.2em;
+  }
+  to {
+    letter-spacing: 0.012em;
+  }
+}
+
+#view-landing.landing-enter .hero-title .ht-l1 .ht-inner.is-split {
+  animation: lpL1Track 0.92s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 四角取景框是图纸语言的产物，居中版式里它会把两行字夹成一张票据 */
+#view-landing .ht-frame {
+  display: none;
+}
+
+/* 关键词：细一档的朱红划线，不抢字的重量 */
+#view-landing .hero-title .gw {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--brand) 62%, transparent),
+    color-mix(in srgb, var(--brand) 62%, transparent)
+  );
+  background-position: 0 calc(100% - 4px);
+  background-size: 100% 3px;
+}
+
+#view-landing.landing-enter .hero-title .gw {
+  background-size: 0% 3px;
+}
+
+#view-landing .hero-title .gw.gw-end {
+  background-size: calc(100% - 0.92em) 3px;
+}
+
+#view-landing.landing-enter .hero-title .grad.inked .gw {
+  background-size: 100% 3px;
+}
+
+#view-landing.landing-enter .hero-title .grad.inked .gw.gw-end {
+  background-size: calc(100% - 0.92em) 3px;
+}
+
+#view-landing .hero-title .ht-line {
+  display: block;
+  text-align: center;
+  overflow: visible;
+}
+
+#view-landing .hero-title .ht-inner {
+  display: block;
+  overflow: visible;
+}
+
+#view-landing .hero-title .ch {
+  display: inline-block;
+  white-space: pre;
+}
+
+#view-landing .hero-sub {
+  max-width: 640px;
+  margin: 0 auto 34px;
+  font-size: 15.5px;
+  line-height: 1.95;
+  letter-spacing: 0.005em;
+  color: var(--lp-mute);
+  text-align: center;
+}
+
+#view-landing .hero-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+}
+
+#view-landing .hero-cta .btn {
+  display: none;
+}
+
+#view-landing .hero-kbd-hint {
+  margin: 20px 0 0;
+  font-size: 12px;
+  color: var(--lp-faint);
+  text-align: center;
+}
+
+#view-landing .hero-kbd-hint kbd {
+  background: var(--lp-soft);
+  border: 1px solid var(--lp-hair);
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+/* ------------------------------------------------------------
+ * ④ 评分图幅：一张报告截面 —— 左总分、右五维条形
+ *    参考站的做法是「把产品本身当主视觉」，所以这块不是海报，
+ *    而是报告页的一截：有数字、有分项、有脚注。
+ * ------------------------------------------------------------ */
+#view-landing .lp-banner {
+  position: relative;
+  margin: 18px 0 0;
+  padding: 54px 56px 22px;
+  border-radius: var(--lp-r);
+  background: linear-gradient(158deg, var(--lp-panel-a), var(--lp-panel-b));
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* 尺寸线：给图幅定界。沿用旧装置，只把线色压淡、字距收一点 */
+#view-landing .bp-sheet {
+  margin: 58px 0 0;
+}
+
+#view-landing .bp-sheet .bs-rule,
+#view-landing .bp-sheet .bs-tick {
+  background: color-mix(in srgb, var(--lp-ink) 16%, transparent);
+}
+
+#view-landing .bp-sheet .bs-tick-e {
+  background: var(--brand);
+}
+
+#view-landing .bp-sheet .bs-label {
+  background: var(--lp-bg);
+  color: var(--lp-faint);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+}
+
+#view-landing .lp-banner-tex {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in srgb, var(--lp-panel-ink) 30%, transparent) 1px,
+    transparent 1.5px
+  );
+  background-size: 8px 8px;
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(105deg, #000 0%, transparent 62%);
+  mask-image: linear-gradient(105deg, #000 0%, transparent 62%);
+}
+
+#view-landing .lp-banner-body {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: 64px;
+  align-items: center;
+}
+
+#view-landing .lp-banner-kicker {
+  display: block;
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--lp-panel-ink) 52%, transparent);
+}
+
+#view-landing .lp-banner-num {
+  font-family: "FM Kai", "LXGW WenKai TC", var(--serif);
+  font-size: clamp(96px, 10.4vw, 152px);
+  font-weight: 400;
+  line-height: 0.82;
+  letter-spacing: -0.03em;
+  color: var(--lp-panel-ink);
+}
+
+#view-landing .lp-banner-cap {
+  margin: 22px 0 0;
+  max-width: 250px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--lp-panel-ink) 68%, transparent);
+}
+
+/* 五维：一行一个维度，发丝分隔，条形用 scaleX 画出 */
+#view-landing .lp-banner-dims {
+  position: relative;
+  z-index: 1;
+}
+
+#view-landing .lp-dim {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 16px;
+  padding: 15px 0;
+  border-top: 1px solid color-mix(in srgb, var(--lp-panel-ink) 14%, transparent);
+}
+
+#view-landing .lp-dim:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+#view-landing .lp-dim:last-child {
+  padding-bottom: 0;
+}
+
+#view-landing .lp-dim span {
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--lp-panel-ink) 74%, transparent);
+}
+
+#view-landing .lp-dim i {
+  position: relative;
+  display: block;
+  height: 3px;
+  background: color-mix(in srgb, var(--lp-panel-ink) 12%, transparent);
+}
+
+#view-landing .lp-dim i b {
+  position: absolute;
+  inset: 0;
+  background: var(--lp-panel-ink);
+  transform: scaleX(var(--v, 0));
+  transform-origin: 0 50%;
+}
+
+#view-landing .lp-dim em {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-style: normal;
+  text-align: right;
+  color: var(--lp-panel-ink);
+}
+
+#view-landing .lp-banner-foot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 42px;
+  padding-top: 16px;
+  border-top: 1px solid color-mix(in srgb, var(--lp-panel-ink) 14%, transparent);
+  font-size: 12px;
+  color: color-mix(in srgb, var(--lp-panel-ink) 56%, transparent);
+}
+
+#view-landing .lp-banner-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--brand);
+  cursor: pointer;
+}
+
+#view-landing .lp-banner-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ------------------------------------------------------------
+ * ⑤ 面试实录卡
+ * ------------------------------------------------------------ */
+#view-landing .lp-transcript {
+  padding: 84px 0 0;
+}
+
+#view-landing .lp-h2 {
+  margin: 0 0 40px;
+  font-family: var(--lp-sans);
+  font-size: clamp(26px, 2.6vw, 36px);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-align: center;
+  color: var(--lp-ink);
+}
+
+#view-landing .hero-mock {
+  margin: 0;
+  background: var(--lp-card);
+  border: 1px solid var(--lp-hair);
+  border-radius: var(--lp-r);
+  overflow: hidden;
+  box-shadow: none;
+}
+
+#view-landing .hero-mock-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--lp-hair);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--lp-faint);
+  text-transform: uppercase;
+}
+
+#view-landing .hmh-live {
+  color: var(--brand);
+}
+
+#view-landing .hero-mock-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 32px;
+  align-items: center;
+  padding: 30px 28px 34px;
+}
+
+#view-landing .mock-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+#view-landing .mock-bubble {
+  max-width: 92%;
+  padding: 13px 16px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--lp-ink);
+}
+
+#view-landing .mock-bubble.ai {
+  align-self: flex-start;
+  background: var(--lp-soft);
+  border-top-left-radius: 6px;
+}
+
+#view-landing .mock-bubble.user {
+  align-self: flex-end;
+  background: var(--lp-ink);
+  color: var(--lp-bg);
+  border-top-right-radius: 6px;
+}
+
+#view-landing .mock-bubble .agent-tag {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+#view-landing .mock-radar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ------------------------------------------------------------
+ * ⑥ 运行规格：一排浅色胶囊
+ * ------------------------------------------------------------ */
+#view-landing .hero-spec {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+  margin: 24px 0 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+#view-landing .spec-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 11px 18px 12px;
+  background: var(--lp-soft);
+  border-radius: var(--lp-r-sm);
+  min-width: 0;
+}
+
+#view-landing .spec-chip span {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lp-faint);
+}
+
+#view-landing .spec-chip b {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lp-ink);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------
+ * ⑦ 区块：标题居中，留白放宽
+ * ------------------------------------------------------------ */
+#view-landing .landing-section {
+  padding: 96px 0 0;
+  background: none;
+  border: 0;
+}
+
+#view-landing .landing-section.alt {
+  background: none;
+  border: 0;
+}
+
+#view-landing .landing-section-head {
+  margin: 0 0 44px;
+  text-align: center;
+}
+
+#view-landing .landing-section-title {
+  margin: 0;
+  font-family: var(--lp-sans);
+  font-size: clamp(26px, 2.6vw, 36px);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  text-align: center;
+  color: var(--lp-ink);
+}
+
+#view-landing .landing-section-sub {
+  max-width: 580px;
+  margin: 16px auto 0;
+  font-size: 14.5px;
+  line-height: 1.9;
+  color: var(--lp-mute);
+  text-align: center;
+}
+
+/* 功能卡：三列白卡，无阴影 */
+#view-landing .feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+#view-landing .feature-block {
+  position: relative;
+  padding: 26px 24px 28px;
+  background: var(--lp-card);
+  border: 1px solid var(--lp-hair);
+  border-radius: var(--lp-r);
+  box-shadow: none;
+  transition: background 0.28s ease, border-color 0.28s ease;
+}
+
+#view-landing .feature-block::before {
+  display: none;
+}
+
+#view-landing .feature-block:hover {
+  background: var(--lp-soft);
+  border-color: transparent;
+}
+
+#view-landing .feature-block .fb-icon {
+  display: block;
+  width: auto;
+  height: auto;
+  margin: 0 0 16px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: "FM Kai", var(--serif);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--lp-faint);
+  letter-spacing: 0.04em;
+}
+
+#view-landing .feature-block:hover .fb-icon {
+  background: none;
+  color: var(--brand);
+  border: 0;
+}
+
+#view-landing .feature-block h3 {
+  margin: 0 0 10px;
+  font-family: var(--lp-sans);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--lp-ink);
+}
+
+#view-landing .feature-block h3::after {
+  display: none;
+}
+
+#view-landing .feature-block p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: var(--lp-mute);
+}
+
+/* 流程：四列文字栏，靠一条发丝线分栏——与上面的白卡错开节奏 */
+#view-landing .workflow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0 40px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+#view-landing .workflow-step {
+  position: relative;
+  padding: 26px 0 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#view-landing .workflow-step:hover {
+  background: none;
+}
+
+/* 原来那条 2px 墨线改成 1px 发丝：它现在是分栏的顶规，不是进度条 */
+#view-landing .workflow-step .ws-draw {
+  top: 0;
+  height: 1px;
+  background: var(--lp-ink);
+  opacity: 0.22;
+}
+
+#view-landing .workflow-step .ws-num {
+  margin: 0 0 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  color: var(--lp-faint);
+}
+
+#view-landing .workflow-step h4 {
+  margin: 0 0 10px;
+  font-family: var(--lp-sans);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--lp-ink);
+}
+
+#view-landing .workflow-step p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: var(--lp-mute);
+}
+
+/* 数字：四列居中，只留数字与标签，刻度尺当发丝标尺读 */
+#view-landing .landing-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+#view-landing .landing-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  background: none;
+  border: 0;
+  text-align: center;
+}
+
+#view-landing .landing-stat .val {
+  font-family: "FM Kai", var(--serif);
+  font-size: clamp(48px, 5vw, 70px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--lp-ink);
+}
+
+/* 12 格刻度：必须是 1px 细线，原来被 flex 撑成 6px 宽，远看像一行乱码 */
+#view-landing .landing-stat .ls-scale {
+  gap: 6px;
+  width: 78px;
+  max-width: none;
+  height: 14px;
+  margin: 8px auto 4px;
+}
+
+#view-landing .landing-stat .ls-scale i {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 5px;
+  background: color-mix(in srgb, var(--lp-ink) 26%, transparent);
+}
+
+#view-landing .landing-stat .ls-scale i:nth-child(4n + 1) {
+  height: 10px;
+  background: color-mix(in srgb, var(--lp-ink) 42%, transparent);
+  opacity: 1;
+}
+
+#view-landing .landing-stat .ls-scale i:first-child {
+  background: color-mix(in srgb, var(--lp-ink) 55%, transparent);
+}
+
+#view-landing .landing-stat .lbl {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--lp-mute);
+}
+
+/* ------------------------------------------------------------
+ * ⑧ 底部 CTA 与页脚
+ * ------------------------------------------------------------ */
+#view-landing #landing-end {
+  padding-top: 96px;
+}
+
+#view-landing .landing-cta {
+  padding: 64px 40px 58px;
+  background: var(--lp-panel-a);
+  border: 0;
+  border-radius: var(--lp-r);
+  box-shadow: none;
+  text-align: center;
+}
+
+#view-landing .landing-cta h3 {
+  margin: 0 0 14px;
+  font-family: var(--lp-sans);
+  font-size: clamp(24px, 2.4vw, 32px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--lp-ink);
+}
+
+#view-landing .landing-cta p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.9;
+  color: var(--lp-mute);
+}
+
+#view-landing .lp-cta-btn {
+  margin-top: 26px;
+}
+
+#view-landing .landing-cta .cta-note {
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--lp-faint);
+}
+
+#view-landing .landing-cta .cta-note button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--lp-mute);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+#view-landing .lp-devfoot {
+  padding-top: 8px;
+}
+
+#view-landing .site-foot {
+  margin-top: 40px;
+  padding: 44px 0 56px;
+  border-top: 1px solid var(--lp-hair);
+  background: none;
+  text-align: center;
+  font-size: 12px;
+  color: var(--lp-faint);
+}
+
+#view-landing .lp-foot-mark {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--lp-ink);
+  letter-spacing: 0.01em;
+}
+
+#view-landing .lp-foot-mark b {
+  font-weight: 700;
+}
+
+#view-landing .lp-foot-line {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--lp-mute);
+}
+
+#view-landing .lp-foot-note {
+  max-width: 720px;
+  margin: 18px auto 0;
+  font-size: 11.5px;
+  line-height: 1.95;
+  color: var(--lp-faint);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------
+ * ⑨ 旧层清零
+ * ------------------------------------------------------------
+ * theme.css 里 v21–v57 的落地页规则仍然在位（留作历史与回滚）。
+ * 新的落地页只认这一层，所以把旧规则的视觉属性一次性盖掉，
+ * 免得出现「卡片圆角换了、内衬还是图纸」的半新半旧。
+ * 全部用 ID 前缀提升权重，不靠 !important。
+ * ------------------------------------------------------------ */
+#view-landing .hero-mock,
+#view-landing .landing-cta,
+#view-landing .site-foot {
+  max-width: none;
+  width: 100%;
+}
+
+#view-landing .hero-mock-head {
+  background: var(--lp-card);
+  color: var(--lp-mute);
+}
+
+#view-landing .hero-mock-head .hmh-live::before {
+  content: none;
+}
+
+#view-landing .mock-chat,
+#view-landing .mock-radar {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  min-height: 0;
+}
+
+#view-landing .mock-bubble {
+  border: 0;
+  border-radius: 16px;
+  font-size: 13.5px;
+}
+
+#view-landing .mock-bubble.ai {
+  background: var(--lp-soft);
+  border-radius: 6px 16px 16px 16px;
+}
+
+#view-landing .mock-bubble.user {
+  background: var(--lp-ink);
+  color: var(--lp-bg);
+  border-radius: 16px 6px 16px 16px;
+}
+
+/* 暗色里墨色气泡会变成一整块白，太抢眼：改成「AI 描边 / 用户填充」的明暗差 */
+[data-theme="dark"] #view-landing .mock-bubble.ai {
+  background: transparent;
+  border: 1px solid var(--lp-hair);
+}
+
+[data-theme="dark"] #view-landing .mock-bubble.user {
+  background: #2c2822;
+  color: var(--lp-ink);
+}
+
+#view-landing .feature-grid {
+  border: 0;
+  background: none;
+}
+
+#view-landing .workflow {
+  border: 0;
+}
+
+#view-landing .workflow-step,
+#view-landing .landing-stat {
+  border-right: 0;
+  border-bottom: 0;
+}
+
+#view-landing .workflow-step .ws-num {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+/* 旧版在卡头画了一条「浏览器窗栏」米色带（.hero-mock::before），
+ * 会把标题文字压掉一半；这里整块拆掉，卡片直接从圆角开始 */
+#view-landing .hero-mock::before {
+  content: none;
+}
+
+#view-landing .landing-stats {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+#view-landing .landing-cta::after {
+  display: none;
+}
+
+#view-landing .landing-cta .cta-note,
+#view-landing .landing-cta .cta-note button {
+  font-family: inherit;
+  letter-spacing: 0;
+  color: var(--lp-faint);
+}
+
+#view-landing .landing-cta .cta-note button {
+  color: var(--lp-mute);
+}
+
+/* ------------------------------------------------------------
+ * ⑩ 保留的两个旧装置，重绘成细线条
+ * ------------------------------------------------------------ */
+#view-landing .bp-ticker {
+  margin-top: 72px;
+  border-top: 1px solid var(--lp-hair);
+  border-bottom: 1px solid var(--lp-hair);
+  background: none;
+  overflow: hidden;
+}
+
+#view-landing .bp-ticker-track {
+  padding: 12px 0;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--lp-faint);
+}
+
+#view-landing .bp-ticker .tk-sep {
+  color: color-mix(in srgb, var(--brand) 55%, transparent);
+}
+
+#view-landing .bp-rail {
+  display: none;
+}
+
+/* ------------------------------------------------------------
+ * ⑩ 窄屏
+ * ------------------------------------------------------------ */
+@media (max-width: 900px) {
+  #view-landing .wrap {
+    padding: 0 24px;
+  }
+  #view-landing .landing-nav-links {
+    display: none;
+  }
+  #view-landing .landing-nav-meta {
+    margin-left: auto;
+  }
+  #view-landing .hero-title {
+    font-size: clamp(30px, 6vw, 44px);
+  }
+  #view-landing .lp-banner {
+    margin-top: 44px;
+    padding: 40px 32px 18px;
+  }
+  #view-landing .lp-banner-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  #view-landing .lp-banner-num {
+    font-size: clamp(88px, 20vw, 132px);
+  }
+  #view-landing .lp-banner-cap {
+    max-width: none;
+  }
+  #view-landing .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #view-landing .workflow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+  }
+  #view-landing .landing-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 32px;
+  }
+  #view-landing .hero-mock-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  #view-landing .mock-radar {
+    padding-bottom: 4px;
+  }
+  #view-landing .landing-hero {
+    padding-top: 52px;
+  }
+  #view-landing .landing-section,
+  #view-landing .lp-transcript {
+    padding-top: 72px;
+  }
+}
+
+@media (max-width: 640px) {
+  #view-landing .wrap {
+    padding: 0 18px;
+  }
+  #view-landing .landing-section,
+  #view-landing .lp-transcript {
+    padding-top: 56px;
+  }
+  #view-landing #landing-end {
+    padding-top: 64px;
+  }
+  #view-landing .lp-ver {
+    display: none;
+  }
+  #view-landing .landing-nav-meta .lp-pill-quiet {
+    display: none;
+  }
+  #view-landing .hero-rotator {
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+  #view-landing .hero-title {
+    font-size: clamp(26px, 8.2vw, 34px);
+    line-height: 1.28;
+    margin-bottom: 22px;
+  }
+  #view-landing .hero-sub {
+    font-size: 14px;
+    line-height: 1.9;
+    margin-bottom: 26px;
+  }
+  #view-landing .lp-pill-lg {
+    width: 100%;
+    height: 46px;
+    font-size: 14px;
+  }
+  #view-landing .hero-kbd-hint {
+    display: none;
+  }
+  #view-landing .lp-banner {
+    padding: 30px 22px 16px;
+    border-radius: 18px;
+  }
+  #view-landing .lp-banner-num {
+    font-size: 84px;
+  }
+  #view-landing .lp-banner-kicker {
+    font-size: 9.5px;
+    margin-bottom: 10px;
+  }
+  #view-landing .lp-dim {
+    grid-template-columns: 32px minmax(0, 1fr) 30px;
+    gap: 12px;
+    padding: 12px 0;
+  }
+  #view-landing .lp-banner-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 28px;
+    font-size: 11px;
+  }
+  #view-landing .lp-banner-cap {
+    font-size: 11.5px;
+    margin: 14px 0 0;
+  }
+  #view-landing .hero-mock-head {
+    gap: 10px;
+    padding: 12px 16px;
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+  }
+  #view-landing .hero-mock-head > span:first-child {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  #view-landing .hero-mock-head .hmh-live {
+    display: none;
+  }
+  #view-landing .hero-mock-body {
+    padding: 20px 16px 22px;
+  }
+  /* 手机上雷达图与上方五维条形重复，还要吃掉 280px，直接收掉 */
+  #view-landing .mock-radar {
+    display: none;
+  }
+  /* 手机上功能卡两列：一列 9 张卡会把整页拉到 1800px，两列刚好一屏半 */
+  #view-landing .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  #view-landing .workflow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+  #view-landing .landing-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 26px;
+  }
+  #view-landing .feature-block {
+    padding: 18px 16px 20px;
+    border-radius: 16px;
+  }
+  #view-landing .feature-block h3 {
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  #view-landing .feature-block p {
+    font-size: 12.5px;
+    line-height: 1.75;
+  }
+  #view-landing .workflow-step {
+    padding: 20px 0 0;
+    border-radius: 0;
+  }
+  #view-landing .workflow-step .ws-num {
+    margin-bottom: 12px;
+    font-size: 10px;
+  }
+  #view-landing .hero-spec {
+    gap: 8px;
+  }
+  #view-landing .spec-chip {
+    flex: 1 1 calc(50% - 8px);
+    padding: 10px 14px 11px;
+  }
+  #view-landing .spec-chip b {
+    font-size: 12px;
+    white-space: normal;
+  }
+  #view-landing .landing-cta {
+    padding: 40px 22px 38px;
+    border-radius: 18px;
+  }
+  #view-landing .hero-mock {
+    border-radius: 18px;
+  }
+  #view-landing .mock-bubble {
+    max-width: 100%;
+    font-size: 13px;
+  }
+  #view-landing .bp-ticker {
+    margin-top: 56px;
+  }
+  #view-landing .lp-h2 {
+    margin-bottom: 28px;
+  }
+  #view-landing .landing-section-head {
+    margin-bottom: 32px;
+  }
+}
+
+/* 无动效偏好：光标与入场动画一并停掉 */
+@media (prefers-reduced-motion: reduce) {
+  #view-landing .hero-rotator .hr-caret {
+    animation: none;
+    opacity: 1;
+  }
+  #view-landing .lp-pill,
+  #view-landing .feature-block,
+  #view-landing .workflow-step {
+    transition: none;
+  }
+}

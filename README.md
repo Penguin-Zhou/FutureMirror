@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2708 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2760 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -648,7 +648,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2708 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2760 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -726,7 +726,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2708 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2760 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -917,6 +917,22 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v59：落地页整体重排——旧图纸层收进独立样式表（2026.11.02）
+
+> v58 只换了落地页的骨架，底下还压着 v21–v57 的图纸规则，于是出现「卡片圆角换了、卡头还挂着一条米色窗栏」这种半新半旧。
+> 这一版把落地页收成独立的一层 `frontend/css/landing.css`，全部规则以 `#view-landing` 起头，产品内页的图纸风一像素不动。
+
+- **先分层再改版**：新层排在 `pages.css` 之后，靠 ID 前缀提权重，整层零 `!important`；构建清单 3 层 CSS → **4 层**，单文件演示包照样内联
+- **四个数是量出来的**：底色 `#fcfaf8`、容器 `1260px`、卡片圆角 `24px`、按钮圆角 `999px`；首屏全部居中，主标语 `clamp(34px, 4.4vw, 58px)`（1440 下 58px）
+- **图幅从海报改成报告截面**：左总分 86、右五维条形、底部脚注「样例为合成数据」；条形用 `scaleX(var(--v))` 画，长度与右侧分数自洽（套件逐条比对）
+- **苔绿换暖砂**：参考站的主视觉是低饱和苔绿，与朱红互相打架；换成 `#f7f2e8 → #eee3d2` 暖砂渐变，朱红只留一处文字链接
+- **拆掉一条会吃字的旧装饰**：`tokens.css` 给 `.hero-mock` 画的 34px 米色「浏览器窗栏」正好压住卡头标题下半截，这一版 `content: none`
+- **三个区块三种密度**：功能 3 列白卡；流程 4 栏只留一条发丝线（原来 2px 墨线悬在卡外）；数字 4 列，刻度尺从 12 根 6px 短棒收回 1px 细线
+- **节标题不再落宋体**：旧层的「衬线大标题」组把 `landing-section-title` / `feature-block h3` 一并捞走，中文落到点数很小的宋体；这一版统一无衬线，衬线只留给主标语与数字
+- **窄屏重算**：功能卡两列、收掉与五维条形重复的雷达图、卡头状态字隐藏让标题单行、折叠目标清空（短版式里折叠只剩五根黑杠）
+- **口径未变**：仍是 Beta 1.1.2，不引入运行时依赖
+- **指标**：前端断言 2708 → **2760**（新增 v59 套件 52 项）｜jsdom 套件 48 → **49 套**｜共享全局符号 **745**（不变）
 
 ### Beta 1.1.2 · 增量 v57：主标语两种笔性——手写的渗进去，印刷的压上去（2026.11.01）
 
