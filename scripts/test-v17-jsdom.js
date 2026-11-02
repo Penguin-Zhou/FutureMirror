@@ -108,7 +108,13 @@ function runTests() {
   ok(ruleHas(".feature-block h3", /font-family:\s*var\(--serif\)/), "特性卡标题衬线化");
 
   /* ---------- D. 悬浮微交互：平面描边，不上浮 ---------- */
-  ok(!/translateY\(-\d/.test(css), "全站无 translateY 上浮 hover");
+  /* 落地页自 v58 起改用参考站的版式与动效（1–2px 的 hover 微抬是刻意的），
+   * 这条只管图纸三层：应用内页仍不许上浮。 */
+  const blueprintCss = ["tokens.css", "theme.css", "pages.css"]
+    .map((f) => fs.readFileSync(path.join(__dirname, "..", "frontend", "css", f), "utf8"))
+    .join("\n");
+  ok(!/translateY\(-\d/.test(blueprintCss), "内页图纸层无 translateY 上浮 hover");
+  ok(!/translateY\(-[3-9]/.test(css), "落地页的微抬不超过 2px（再高就是模板站）");
   ok(ruleHas(".card:hover", /border-color:\s*var\(--ink\)/), "卡片 hover = 墨色描边");
   ok(ruleHas(".btn-primary:hover:not(:disabled)", /background:\s*var\(--brand-deep\)/), "主按钮 hover = 朱红加深");
   ok(ruleHas(".feature-block:hover", /background:\s*var\(--bg-deep\)/), "特性卡 hover = 纸面加深");

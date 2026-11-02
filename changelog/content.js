@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2760</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2826</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -37,6 +37,7 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v60"><span class="cl-toc-tag">Beta 1.1.2 · v60</span><span class="cl-toc-title-txt">落地页动效层 · 60px 缓出上浮 / 首屏序列 / 1px 微抬 / 实证三条降级</span></a></li>
     <li><a href="#v59"><span class="cl-toc-tag">Beta 1.1.2 · v59</span><span class="cl-toc-title-txt">落地页整体重排 · 独立样式层 / 报告截面图幅 / 居中版式 / 旧窗栏带拆除</span></a></li>
     <li><a href="#v57"><span class="cl-toc-tag">Beta 1.1.2 · v57</span><span class="cl-toc-title-txt">主标语两种笔性 · 文楷引子 / 墨渗入场 / 断点字距收敛</span></a></li>
     <li><a href="#v56"><span class="cl-toc-tag">Beta 1.1.2 · v56</span><span class="cl-toc-title-txt">主标语字型重构 · 自托管可变宋体 / 楔形版式 / 朱红退回划痕</span></a></li>
@@ -284,6 +285,41 @@ export const changelogHtml = `
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v60 · 落地页动效层：照参考站实测的节奏，不靠「感觉快一点」
+       ======================================================== -->
+  <div class="version" id="v60">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 体验增强（v60）</span>
+      <span class="v-title">把参考站的动效节奏量下来，再长到自己的笔锋上</span>
+      <span class="v-date">2026.11.02</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        版式换过来了，动效还是旧的：卡片靠 <code>clip-path</code> 自上而下「揭载」，
+        这是图纸语言，放在居中的暖白版式里像卡带。这一版先用 CDP 把参考站的动效量清楚
+        ——29 处 <code>.reveal</code>、初态 <code>translateY(60px)</code>、
+        过渡 <code>0.8s cubic-bezier(.16, 1, .3, 1)</code>、按钮 hover 抬 <code>1px</code>、
+        导航 <code>150ms</code>——再按这组数重写落地页的动效层。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>三个数是量出来的</b>：<code>0.8s</code> / <code>60px</code> / <code>cubic-bezier(.16, 1, .3, 1)</code>。参考站的缓出曲线一开始冲得很快、最后几乎不动，这与「弹簧式 ease-out」是两回事——换错曲线，60px 就会显得黏</div>
+        <div class="vh-item"><b>滚动入场 29 处</b>：区块标题、实录卡、规格胶囊、九张功能卡、四步流程、四个数字、底部 CTA、页脚。同排错峰 60ms（功能卡按列 0/60/120，每排重新起算），流程与数字 70ms。位移用 <code>translate</code> 属性而不是 <code>transform</code>，跟 hover 的微抬各管一摊，谁也不覆盖谁</div>
+        <div class="vh-item"><b>首屏编成一支笔</b>：标题 60ms 起笔（原来要等 220ms，首屏先白一截）→ 副标题 0.72s → 主按钮 0.82s → 快捷键提示 0.92s → 评分图幅 0.82s → 五条横条 1.02s 起依次长出。图幅走 <code>animation</code> 而不是滚动监听：它在 1440×900 下本来就露在折线下缘，交给 IO 会在解析期就判「已在视口」，首帧直接跳到终态——图幅先到、标题后写，顺序是反的</div>
+        <div class="vh-item"><b>悬停只抬 1px</b>：主胶囊 hover 抬 1px 并把黑底压深 14%，次胶囊抬 1px 铺 4% 黑底，功能卡抬 2px。参考站就抬 1px——抬多了立刻变成模板站。导航链接从 240ms 收到 150ms，与参考站的 <code>opacity .15s</code> 同量级</div>
+        <div class="vh-item"><b>数据自己长出来</b>：五维条形从 0 沿左端拉到位（每条再叠 80ms），雷达图的五边形沿周长描一遍（周长约 323，给 360 的余量）。条形用 <code>scaleX(var(--v))</code>，终值与右侧分数仍然自洽</div>
+        <div class="vh-item"><b>实录等看得见才播</b>：气泡只播一遍，播在首屏下面等于没播。现在先量卡片位置，在视口外就挂一个 IO，进视口再真正开始；量不到尺寸（jsdom / 隐藏视图）时不拦着，直接播——老行为在测试里照旧成立</div>
+        <div class="vh-item"><b>三条降级都得有内容</b>：初态只挂在 JS 打的 <code>.lp-motion</code> 上，所以无 JS 是完成态；没有 <code>IntersectionObserver</code> 时直接补 <code>.is-in</code>，不靠动画才有内容；<code>prefers-reduced-motion</code> 下连类都不打，CSS 再兜一层把位移与动画一并抹掉——否则会停在半路发虚</div>
+        <div class="vh-item"><b>顺手修掉两处旧账</b>：落地页的 <code>.reveal</code> 退成空操作（裁切揭载留给内页）；v17 那条「全站无 translateY 上浮」收窄到图纸三层，另加一条「落地页微抬不超过 2px」，免得为了过断言把动效做成别的东西</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">65</div><div class="m-label">v60 新增断言</div></div>
+        <div class="metric"><div class="m-val">2826</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">50</div><div class="m-label">jsdom 套件</div></div>
       </div>
     </div>
   </div>

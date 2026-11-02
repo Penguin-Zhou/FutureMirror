@@ -24,6 +24,7 @@
     rotator: false, mock: false, phrases: 0, playMock: null,
     overture: false, rail: false, ticks: 0, enter: null,
     chars: 0, split: false, frame: false, replay: null, pulse: false,
+    reveal: 0, revealMode: "", mockDefer: false,
   });
 
   /* ---------- ① Hero 文案轮播（等宽打字机） ---------- */
@@ -64,11 +65,44 @@
   }
 
   /* ---------- ② 面试实录播台（气泡依序揭载 + 流式光标） ---------- */
-  function playHeroMock() {
+  /* v60：首播挪到「真的看得见」的时候。气泡只播一遍，播在首屏下面等于没播。 */
+  function heroMockInView() {
+    const card = document.querySelector("#view-landing .hero-mock");
+    if (!card || typeof card.getBoundingClientRect !== "function") return true;
+    const r = card.getBoundingClientRect();
+    const vh = window.innerHeight || (document.documentElement && document.documentElement.clientHeight) || 0;
+    /* 量不到尺寸（jsdom / 隐藏视图 / 未布局）时不要拦着播放 */
+    if (!vh || (!r.width && !r.height)) return true;
+    return r.top < vh * 0.82 && r.bottom > 0;
+  }
+  function deferMockUntilVisible() {
+    const card = document.querySelector("#view-landing .hero-mock");
+    if (!card || FX.mockDefer) return false;
+    if (!("IntersectionObserver" in window)) return false;
+    FX.mockDefer = true;
+    try {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (!en.isIntersecting) return;
+          io.unobserve(en.target);
+          FX.mockDefer = false;
+          playHeroMock(true);
+        });
+      }, { threshold: 0.35 });
+      io.observe(card);
+      return true;
+    } catch (e) {
+      FX.mockDefer = false;
+      return false;
+    }
+  }
+
+  function playHeroMock(force) {
     const body = document.querySelector(".hero-mock-body");
     if (!body) return;
     const bubbles = [...body.querySelectorAll(".mock-bubble")];
     if (!bubbles.length) return;
+    if (!force && !reduced() && heroMockInView() === false && deferMockUntilVisible()) return;
     FX.mock = true;
     bubbles.forEach(b => { b.classList.remove("mock-in"); b.querySelectorAll(".mock-caret").forEach(c => c.remove()); });
     body.classList.add("mock-play");
@@ -355,15 +389,81 @@
     }
   }
 
+  /* ---------- ⑧ v60 滚动入场：照参考站的 60px / 0.8s 缓出 ----------
+   * 参考站有 29 处 .reveal：初态 translateY(60px) + opacity 0，进视口加 .visible，
+   * 过渡 opacity/transform 各 0.8s cubic-bezier(.16, 1, .3, 1)。这里用同一组数，
+   * 类名换成 .lp-rv / .is-in，同排错峰靠 --rd（60ms 一级，最多错三级）。
+   * 初态挂在 .lp-motion 上：没有 JS、没有 IO、reduced-motion 三种情况都是完成态。
+   * 首屏里那几件（标题 / 副标题 / 按钮 / 评分图幅）不走这一路：它们在解析期就
+   * 已经算「在视口内」，交给 IO 会跳过过渡，改由 CSS 的 landing-enter 序列管。 */
+  const RV_SETS = [
+    { sel: ".lp-h2", step: 0, cap: 0 },                       // 实录区标题
+    { sel: ".hero-mock", step: 0, cap: 0 },                   // 实录卡
+    { sel: ".hero-spec .spec-chip", step: 55, cap: 4 },       // 规格胶囊，一列跟着一列
+    { sel: ".landing-section-head", step: 0, cap: 0 },        // 区块标题两行一起
+    { sel: ".feature-block", step: 60, cycle: 3 },            // 功能卡：按列错峰，每排都 0/60/120
+    { sel: ".workflow-step", step: 70, cap: 3 },
+    { sel: ".landing-stat", step: 70, cap: 3 },
+    { sel: ".landing-cta", step: 0, cap: 0 },
+    { sel: ".site-foot", step: 0, cap: 0 },
+  ];
+
+  function initScrollReveal() {
+    const view = document.getElementById("view-landing");
+    if (!view || !view.querySelectorAll) return 0;
+    if (reduced()) { FX.revealMode = "static"; return 0; }    // 不打类：页面直接是完成态
+    const items = [];
+    RV_SETS.forEach(({ sel, step, cap, cycle, base }) => {
+      [...view.querySelectorAll(sel)].forEach((el, i) => {
+        if (!el.classList || el.classList.contains("lp-rv")) return;
+        el.classList.add("lp-rv");
+        const k = cycle ? i % cycle : Math.min(i, cap || 0);
+        const ms = (base || 0) + k * (step || 0);
+        /* 0ms 也写出来：错峰表要能被读、被断言，不要靠「没写就是 0」 */
+        if (step || cycle || base) el.style.setProperty("--rd", ms + "ms");
+        items.push(el);
+      });
+    });
+    if (!items.length) return 0;
+    view.classList.add("lp-motion");
+    FX.reveal = items.length;
+    /* 强制一次样式计算：读一下 offsetWidth，初态就被固定下来。
+     * 少了这一步，首屏里已经露出的元素（评分图幅正好在 900 高的下缘）
+     * 会在同一帧里从「初态」直接跳到「终态」，过渡被合并掉——图幅是蹦出来的，
+     * 不是浮上来的。 */
+    void view.offsetWidth;
+    if (!("IntersectionObserver" in window)) {
+      items.forEach((el) => el.classList.add("is-in"));       // 无 IO：直接落位
+      FX.revealMode = "fallback";
+      return items.length;
+    }
+    try {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (!en.isIntersecting) return;
+          en.target.classList.add("is-in");
+          io.unobserve(en.target);
+        });
+      }, { rootMargin: "0px 0px -6% 0px", threshold: 0.06 });
+      items.forEach((el) => io.observe(el));
+      FX.revealMode = "io";
+    } catch (e) {
+      items.forEach((el) => el.classList.add("is-in"));
+      FX.revealMode = "fallback";
+    }
+    return items.length;
+  }
+
   /* ---------- 入口 ---------- */
   function boot() {
     try { initHeroRotator(); } catch (e) {}
-    try { playHeroMock(); } catch (e) {}
     /* 拆字与角标必须在 enterLanding() 之前就位：加类的同一帧里初态已在 CSS 里等着，
      * 晚一帧就会看到「先整行出现、再消失重写」的闪跳。 */
     try { splitTitle(); } catch (e) {}
     try { dressTitle(); } catch (e) {}
+    try { initScrollReveal(); } catch (e) {}
     try { enterLanding(); } catch (e) {}
+    try { playHeroMock(); } catch (e) {}
     try { initRail(); } catch (e) {}
     try { initStatScale(); } catch (e) {}
     try { startPulse(); } catch (e) {}

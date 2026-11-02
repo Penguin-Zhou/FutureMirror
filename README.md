@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2760 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2826 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -648,7 +648,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2760 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2826 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -726,7 +726,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2760 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2826 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -917,6 +917,24 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v60：落地页动效层——把参考站的节奏量下来（2026.11.02）
+
+> 版式换过来了，动效还是旧的：卡片靠 `clip-path` 自上而下「揭载」，那是图纸语言，放在居中的暖白版式里像卡带。
+> 这一版先用 CDP 把参考站的动效量清楚，再按那组数重写落地页的动效层。
+
+- **三个数是量出来的**：`0.8s` / `60px` / `cubic-bezier(.16, 1, .3, 1)`——参考站的缓出曲线一开始冲得很快、最后几乎不动
+- **滚动入场 29 处**：区块标题、实录卡、规格胶囊、九张功能卡、四步流程、四个数字、底部 CTA、页脚；同排错峰 60ms（功能卡按列 0/60/120）、流程与数字 70ms
+- **位移用 `translate` 属性**：跟 hover 的 `transform` 微抬各管一摊，谁也不覆盖谁
+- **首屏编成一支笔**：标题 60ms 起笔（原来等 220ms，首屏先白一截）→ 副标题 0.72s → 主按钮 0.82s → 提示 0.92s → 评分图幅 0.82s → 五条横条 1.02s 起依次长出
+- **图幅走 `animation` 不走 IO**：它在 1440×900 下就露在折线下缘，交给 IO 会在解析期判「已在视口」，首帧直接跳到终态
+- **悬停只抬 1px**：主胶囊 1px + 黑底压深 14%，次胶囊 1px + 4% 黑底，功能卡 2px；导航 240ms → 150ms
+- **数据自己长出来**：五维条形从 0 拉到位、雷达图沿周长描一遍（周长约 323，给 360 余量）
+- **实录等看得见才播**：首屏外先挂 IO，进视口才开始揭载气泡；量不到尺寸时不拦着，直接播
+- **三条降级都有内容**：无 JS 是完成态 / 无 IO 直接补 `.is-in` / reduced-motion 连类都不打
+- **顺手修掉两处旧账**：落地页的 `.reveal` 退成空操作；v17 的「全站无 translateY 上浮」收窄到图纸三层，另加「落地页微抬不超过 2px」
+- **口径未变**：仍是 Beta 1.1.2，不引入运行时依赖
+- **指标**：前端断言 2760 → **2826**（新增 v60 套件 65 项）｜jsdom 套件 49 → **50 套**｜共享全局符号 **745**（不变）
 
 ### Beta 1.1.2 · 增量 v59：落地页整体重排——旧图纸层收进独立样式表（2026.11.02）
 
