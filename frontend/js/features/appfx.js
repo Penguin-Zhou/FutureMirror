@@ -220,7 +220,11 @@
     const a = document.activeElement;
     const typing = !!(a && typeof a.matches === "function" &&
       a.matches("input, textarea, select, [contenteditable='true']"));
-    const show = !typing && crossMX > -900;
+    /* 落地页是 mimo 式干净留白，两条墨线横贯整屏只会破坏画面——
+     * 落地页收起来，进内页（图纸风）再显示。 */
+    const lp = document.getElementById("view-landing");
+    const onLanding = !!(lp && lp.classList.contains("active"));
+    const show = !typing && crossMX > -900 && !onLanding;
     if (show !== crossShown) {
       crossShown = show;
       crossX.style.visibility = show ? "visible" : "hidden";

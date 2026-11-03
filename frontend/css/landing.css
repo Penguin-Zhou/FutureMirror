@@ -1602,14 +1602,26 @@ body:has(#view-landing.active) {
     transform: none;
   }
 
-  /* v63 能力网：浮动停掉，节点直接可见（只关时长不关位移，会停在半路发虚） */
-  #view-landing .fv-node {
+  /* v63 能力网：浮动停掉，节点直接可见（只关时长不关位移，会停在半路发虚）。
+   * ⑪ 段落写在文件更后面，同权重会被它盖掉；这里把选择器写到
+   * 「#id + 3 个类 + 元素」，比那句 #id + 3 个类 多一级元素，压得住。 */
+  #view-landing .fv-stage.is-live button.fv-node {
     animation: none;
     opacity: 1;
     translate: none;
   }
 
-  #view-landing .fv-tip {
+  /* 线的「绽开」是圆形裁剪，动不了就整条裁掉——这里必须显式放开，
+   * 否则 reduced-motion 下整张图只剩节点没有线。 */
+  #view-landing .fv-stage.is-live svg.fv-links {
+    animation: none;
+  }
+
+  #view-landing .fv-stage .fv-links {
+    clip-path: none;
+  }
+
+  #view-landing .fv-stage .fv-tip {
     transition: none;
     transform: none;
   }
@@ -1617,9 +1629,10 @@ body:has(#view-landing.active) {
 
 /* ============================================================
  * ⑪ v63 · 能力网（Capability Mesh）
- * 中心 → 五个主题 → 二十个实现点。静态坐标 + CSS 浮动 + 悬停弹卡。
- * 定位用 transform（居中），浮动用 translate——两个属性互不覆盖，
+ * 中心 → 五个主题 → 二十个实现点。静态坐标 + 逐帧浮动 + 悬停弹卡。
+ * 定位用 transform（居中），浮动由 JS 写 translate——两个属性互不覆盖，
  * 与 v60 滚动入场 / hover 微抬用的是同一套分离手法。
+ * 位移不放在 CSS 里：线的两端是两条独立轨迹上的点，只有一帧一算才咬得住。
  * ============================================================ */
 #view-landing .fv-section {
   padding: 96px 0 0;
@@ -1639,16 +1652,25 @@ body:has(#view-landing.active) {
   height: 100%;
   overflow: visible;
   pointer-events: none;
+  /* 入场：以中心为圆心的圆形裁剪从 0 撑到 88%，整片线像从核里绽开。
+   * 试过用 dashoffset 逐条「生长」，但 vector-effect: non-scaling-stroke
+   * 会让 dash 长度按屏幕像素算、且不受 pathLength 归一化影响，
+   * 结果每条线都变成一截截短杠。整块裁剪没有这个问题。 */
+  clip-path: circle(0 at 50% 47%);
+}
+
+#view-landing .fv-stage.is-live .fv-links {
+  animation: fvBloom 1.15s var(--lp-ease) both;
 }
 
 #view-landing .fv-link {
-  stroke: rgba(10, 10, 10, 0.13);
+  stroke: rgba(10, 10, 10, 0.15);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
 #view-landing .fv-link-hub {
-  stroke: rgba(10, 10, 10, 0.22);
+  stroke: rgba(10, 10, 10, 0.24);
 }
 
 /* ---------- 节点 ---------- */
@@ -1664,7 +1686,9 @@ body:has(#view-landing.active) {
   padding: 5px 9px;
   border: 0;
   border-radius: var(--lp-pill);
-  background: transparent;
+  /* 与页面底色同色：线从文字底下过时被切断，不必加阴影也不必描边，
+   * 看上去就是「线避开了字」，比让线穿过文字干净得多 */
+  background: var(--lp-bg);
   color: var(--lp-mute);
   font-family: var(--lp-sans);
   font-size: 12px;
@@ -1674,9 +1698,14 @@ body:has(#view-landing.active) {
   white-space: nowrap;
   cursor: default;
   opacity: 0;
-  animation: fvDrift var(--dur, 9s) ease-in-out var(--del, 0s) infinite, fvIn 0.7s var(--lp-ease) both;
-  animation-delay: var(--del, 0s), var(--din, 0ms);
+  /* 位移由 voices.js 逐帧写 translate（线的端点要跟着走，CSS 动画做不到）。
+   * 淡入挂在 .fv-stage.is-live 上，理由同下面的连线。 */
   transition: color 0.18s ease, background-color 0.18s ease;
+}
+
+#view-landing .fv-stage.is-live .fv-node {
+  animation: fvIn 0.7s var(--lp-ease) both;
+  animation-delay: var(--din, 0ms);
 }
 
 #view-landing .fv-node::before {
@@ -1702,12 +1731,23 @@ body:has(#view-landing.active) {
   opacity: 0.75;
 }
 
+/* 中心是这张网的重心：给它一张小卡片，其余全部只是文字。
+ * 白纸压在米色底上只有一级明度差，够分量又不抢标题。 */
 #view-landing .fv-center {
   color: var(--lp-ink);
   font-size: 19px;
   font-weight: 500;
   letter-spacing: -0.01em;
-  padding: 8px 14px;
+  padding: 10px 18px;
+  background: var(--lp-card);
+  box-shadow: inset 0 0 0 1px var(--lp-hair);
+}
+
+#view-landing .fv-center.is-hot,
+#view-landing .fv-center:hover,
+#view-landing .fv-center:focus-visible {
+  background: var(--lp-card);
+  box-shadow: inset 0 0 0 1px rgba(10, 10, 10, 0.18);
 }
 
 #view-landing .fv-center::before {
@@ -1728,7 +1768,7 @@ body:has(#view-landing.active) {
 #view-landing .fv-node:hover,
 #view-landing .fv-node:focus-visible {
   color: var(--lp-ink);
-  background: rgba(10, 10, 10, 0.045);
+  background: var(--lp-soft);
 }
 
 #view-landing .fv-node.is-hot::before,
@@ -1739,23 +1779,18 @@ body:has(#view-landing.active) {
   height: 5px;
 }
 
-/* 浮动：四个关键帧错开相位，看起来像被同一股力推着呼吸，而不是整齐地上下跳 */
-@keyframes fvDrift {
-  0% {
-    translate: 0 0;
-  }
-  25% {
-    translate: calc(var(--ax) * 1px) calc(var(--ay) * -0.6px);
-  }
-  50% {
-    translate: calc(var(--ax) * 0.45px) calc(var(--ay) * 1px);
-  }
-  75% {
-    translate: calc(var(--ax) * -0.8px) calc(var(--ay) * 0.3px);
-  }
-  100% {
-    translate: 0 0;
-  }
+/* 焦点分组：悬停某一组时，其余四组连同它们的线一起退到背景里，
+ * 中心与当前组留在前景。用颜色而不是透明度——文字带 opacity 在纸色上会发灰。 */
+#view-landing .fv-stage[data-focus] .fv-node:not(.fv-center) {
+  color: var(--lp-faint);
+}
+
+#view-landing .fv-stage[data-focus="0"] .fv-node[data-g="0"],
+#view-landing .fv-stage[data-focus="1"] .fv-node[data-g="1"],
+#view-landing .fv-stage[data-focus="2"] .fv-node[data-g="2"],
+#view-landing .fv-stage[data-focus="3"] .fv-node[data-g="3"],
+#view-landing .fv-stage[data-focus="4"] .fv-node[data-g="4"] {
+  color: var(--lp-ink);
 }
 
 @keyframes fvIn {
@@ -1764,6 +1799,15 @@ body:has(#view-landing.active) {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes fvBloom {
+  from {
+    clip-path: circle(0 at 50% 47%);
+  }
+  to {
+    clip-path: circle(88% at 50% 47%);
   }
 }
 
@@ -1934,15 +1978,22 @@ body:has(#view-landing.active) {
 }
 
 [data-theme="dark"] #view-landing .fv-link {
-  stroke: rgba(255, 255, 255, 0.09);
+  stroke: rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] #view-landing .fv-link-hub {
-  stroke: rgba(255, 255, 255, 0.16);
+  stroke: rgba(255, 255, 255, 0.18);
 }
 
 [data-theme="dark"] #view-landing .fv-node.is-hot,
 [data-theme="dark"] #view-landing .fv-node:hover,
 [data-theme="dark"] #view-landing .fv-node:focus-visible {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--lp-soft);
+}
+
+[data-theme="dark"] #view-landing .fv-center.is-hot,
+[data-theme="dark"] #view-landing .fv-center:hover,
+[data-theme="dark"] #view-landing .fv-center:focus-visible {
+  background: var(--lp-card);
+  box-shadow: inset 0 0 0 1px rgba(244, 241, 232, 0.28);
 }

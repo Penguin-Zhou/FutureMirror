@@ -7,14 +7,21 @@
  * 1) 参考站用 canvas 逐帧重绘。这里改用「DOM 节点 + SVG 连线」：
  *    文字可选中、可读屏、可打印（PDF 导出走的是同一条渲染路径），
  *    jsdom 里能数节点、能断言文案，canvas 则只能截图比对；
- * 2) 浮动交给 CSS @keyframes（translate），不占 rAF：
- *    标签页切后台自动暂停，reduced-motion 一行 media query 关干净；
- * 3) 连线用 viewBox="0 0 100 100" + preserveAspectRatio="none"，
+ * 2) 连线用 viewBox="0 0 100 100" + preserveAspectRatio="none"，
  *    坐标即百分比，与节点的 left/top 百分比同源，容器怎么缩放都对齐；
  *    线宽靠 vector-effect 固定 1px，不被非等比缩放拉花。
  *
+ * 浮动为什么改成逐帧（v64）：线是两点之间的直线，两端的点是两个独立
+ * 动体。交给 CSS 各自 keyframes，端点必然脱开——位移越大越明显，
+ * 而位移一小又看不出「在动」。所以改由这里统一算位移场：先算出每个
+ * 节点的 (dx, dy)，再把同一组数写进线端，两者从同一份数据出发，
+ * 不存在对不齐的可能。代价是一帧 51 个元素的写入——
+ * 由 IntersectionObserver 门控（离开视口即停）、页面隐藏即停、
+ * reduced-motion 直接不启动，后台不会空转。
+ *
  * 交互：悬停 / 聚焦 → 弹出说明卡（1 节点 1 句，讲清它在代码里对应什么）；
- * 触屏点一下切换。窄屏（<900）整块降级为分组列表，不做「点不动的图」。
+ * 同时其余四组变淡、本组安静下来。触屏点一下切换。
+ * 窄屏（<900）整块降级为分组列表，不做「点不动的图」。
  * ============================================================ */
 (function initVoices() {
   const FX = (window.__bpVoices = {
@@ -23,10 +30,14 @@
     groups: 0,
     links: 0,
     mode: "",
+    motion: "",
+    frames: 0,
     tipOpen: "",
     activeNode: null,
     show: null,
     hide: null,
+    tick: null,
+    stop: null,
   });
 
   /* ---------- 数据：每个点都对得上仓库里的实现 ---------- */
@@ -102,13 +113,23 @@
     String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
   /* 浮动参数按序号推导：同一个公式保证每次刷新一致（截图比对不会漂），
-   * 又不至于让所有节点同相位地一起晃。 */
-  function drift(i, isCenter) {
-    if (isCenter) return { ax: 2, ay: -2, dur: 13, del: -1 };
-    const ax = 3 + (i % 4);
-    const ay = [5, -4, 6, -3][i % 4];
-    const dur = (8.5 + (i % 5) * 1.3).toFixed(1);
-    const del = (-((i * 1.37) % 9) - 0.3).toFixed(2);
+   * 又不至于让所有节点同相位地一起晃。
+   * v64 起幅度分三层：中心最稳（像被钉住），主题次之，细标签最活——
+   * 越外围越放松，整张网才有「浮着」的层次，而不是整体刚性平移。 */
+  function jit(i, k) {
+    const s = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
+    return s - Math.floor(s);
+  }
+
+  function drift(i, kind) {
+    if (kind === "center") return { ax: 3.6, ay: 3.2, dur: 21, del: -1 };
+    const isGroup = kind === "group";
+    const base = isGroup ? 8.2 : 11;
+    const span = isGroup ? 3.0 : 4.0;
+    const ax = +(base + span * jit(i, 1)).toFixed(1);
+    const ay = +(base * 0.86 + span * jit(i, 2)).toFixed(1);
+    const dur = (isGroup ? 9.6 + jit(i, 3) * 3.4 : 7.1 + jit(i, 4) * 3.0).toFixed(1);
+    const del = (-(jit(i, 5) * 9 + 0.3)).toFixed(2);
     return { ax, ay, dur, del };
   }
 
@@ -135,47 +156,48 @@
   });
 
   /* ---------- 渲染 ---------- */
+  /* pins 的次序就是 DOM 次序：0 号是中心，其后按组依次排开。
+   * lines 存的是端点下标而不是坐标——浮动要逐帧改端点，存下标才能
+   * 保证线和点永远从同一份数据出发。 */
   function build(stage) {
-    const paths = [];
-    const pins = [];
-    let seq = 0;
+    const pins = [{ kind: "center", gi: -1, x: CX, y: CY }];
+    const lines = [];
 
-    /* 中心 → 主节点 */
     GROUPS.forEach((g, gi) => {
       const gp = at(g.deg, G_RX, G_RY);
-      paths.push(
-        '<line class="fv-link fv-link-hub" x1="' + CX + '" y1="' + CY + '" x2="' + gp.x + '" y2="' + gp.y + '"></line>'
-      );
-      /* 主节点 → 细标签 */
-      g.leaves.forEach((lf) => {
-        const lp = leafAt(gp.x, gp.y, g.deg + lf.da);
-        paths.push(
-          '<line class="fv-link" x1="' + gp.x + '" y1="' + gp.y + '" x2="' + lp.x + '" y2="' + lp.y + '"></line>'
-        );
-      });
-      pins.push({ kind: "group", gi, g, x: gp.x, y: gp.y, seq: seq++ });
+      const hub = pins.push({ kind: "group", gi, g, x: gp.x, y: gp.y }) - 1;
+      lines.push({ a: 0, b: hub, gi, hub: true });
       g.leaves.forEach((lf, li) => {
         const lp = leafAt(gp.x, gp.y, g.deg + lf.da);
-        pins.push({ kind: "leaf", gi, li, g, lf, x: lp.x, y: lp.y, seq: seq++ });
+        const idx = pins.push({ kind: "leaf", gi, li, g, lf, x: lp.x, y: lp.y }) - 1;
+        lines.push({ a: hub, b: idx, gi, hub: false });
       });
     });
 
-    const d0 = drift(0, true);
-    const centerHtml =
-      '<button type="button" class="fv-node fv-center" data-k="center" style="--x:50;--y:50;--ax:' +
-      d0.ax + ';--ay:' + d0.ay + ';--dur:' + d0.dur + 's;--del:' + d0.del +
-      's;--din:0ms"><span class="fv-t">' + esc(CENTER.t) + "</span></button>";
+    const linkHtml = lines
+      .map((ln, i) => {
+        const a = pins[ln.a];
+        const b = pins[ln.b];
+        return (
+          '<line class="fv-link' + (ln.hub ? " fv-link-hub" : "") +
+          '" data-i="' + i + '" data-g="' + ln.gi +
+          '" x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '"></line>'
+        );
+      })
+      .join("");
 
     const nodeHtml = pins
       .map((p, i) => {
-        const d = drift(i + 1, false);
-        const isG = p.kind === "group";
-        const label = isG ? p.g.name : p.lf.t;
+        const d = drift(i, p.kind);
+        const label = p.kind === "center" ? CENTER.t : p.kind === "group" ? p.g.name : p.lf.t;
+        const kind = p.kind === "center" ? "fv-center" : p.kind === "group" ? "fv-group" : "fv-leaf";
         return (
-          '<button type="button" class="fv-node ' + (isG ? "fv-group" : "fv-leaf") +
-          '" data-k="' + (isG ? "g" : "l") + '" data-g="' + p.gi + '" data-i="' + (p.li === undefined ? "" : p.li) +
-          '" style="--x:' + p.x + ";--y:" + p.y + ";--ax:" + d.ax + ";--ay:" + d.ay +
-          ";--dur:" + d.dur + "s;--del:" + d.del + 's;--din:' + (i * 34 + 60) +
+          '<button type="button" class="fv-node ' + kind + '" data-k="' +
+          (p.kind === "center" ? "center" : p.kind === "group" ? "g" : "l") +
+          '"' + (p.gi >= 0 ? ' data-g="' + p.gi + '"' : "") +
+          (p.li === undefined ? "" : ' data-i="' + p.li + '"') +
+          ' style="--x:' + p.x + ";--y:" + p.y + ";--ax:" + d.ax + ";--ay:" + d.ay +
+          ";--dur:" + d.dur + "s;--del:" + d.del + 's;--din:' + (i ? i * 34 + 60 : 0) +
           'ms"><span class="fv-t">' + esc(label) + "</span></button>"
         );
       })
@@ -186,9 +208,8 @@
 
     stage.innerHTML =
       '<svg class="fv-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">' +
-      paths.join("") +
+      linkHtml +
       "</svg>" +
-      centerHtml +
       nodeHtml;
 
     if (tip) stage.appendChild(tip);
@@ -206,12 +227,212 @@
       ).join("");
     }
 
-    FX.nodes = pins.length + 1;
+    bindMotion(stage, pins, lines);
+
+    FX.nodes = pins.length;
     FX.groups = GROUPS.length;
-    FX.links = paths.length;
+    FX.links = lines.length;
     FX.ready = true;
     stage.classList.add("fv-ready");
     return stage;
+  }
+
+  /* ---------- 浮动引擎 ---------- */
+  /* 位移场 = 两个不同频率的正弦叠加，相位取节点在舞台上的位置
+   * （ph = x·0.06 + y·0.05）——于是相邻的点几乎同相、远处的点差半个周期，
+   * 看起来是一阵缓慢的波从左上扫到右下，而不是二十六个点各自乱抖。
+   * 每层的幅度与周期由 drift() 给出：中心慢而稳，细标签快而活。 */
+  const MOTION = {
+    stage: null,
+    items: [],
+    links: [],
+    running: false,
+    visible: false,
+    raf: 0,
+    clock: 0,
+    last: 0,
+    W: 0,
+    H: 0,
+    focus: -1,
+  };
+
+  function bindMotion(stage, pins, lines) {
+    const els = stage.querySelectorAll(".fv-node");
+    const lineEls = stage.querySelectorAll(".fv-link");
+
+    MOTION.stage = stage;
+    MOTION.items = pins.map((p, i) => ({
+      el: els[i],
+      gi: p.gi,
+      x: p.x,
+      y: p.y,
+      ax: parseFloat(els[i].style.getPropertyValue("--ax")) || 4,
+      ay: parseFloat(els[i].style.getPropertyValue("--ay")) || 4,
+      w: (Math.PI * 2) / (parseFloat(els[i].style.getPropertyValue("--dur")) || 10),
+      dx: 0,
+      dy: 0,
+      damp: 1,
+    }));
+    MOTION.links = lines.map((ln, i) => ({
+      el: lineEls[i],
+      a: MOTION.items[ln.a],
+      b: MOTION.items[ln.b],
+      gi: ln.gi,
+      /* 线的深浅由 stroke 的 rgba 定（干道 .24 / 分支 .15），
+       * 这里只叠一层 0.72–0.92 的呼吸，别再把整体压暗一次——
+       * 两层透明度相乘会把线压到几乎看不见。 */
+      base: 0.82,
+      cur: 0.82,
+    }));
+
+    /* 供现场核对与截图冻结：__bpVoices.tick(12.5) 直接把画面推到第 12.5 秒 */
+    FX.tick = function (sec) {
+      measure();
+      paint(+sec || 0);
+      FX.frames++;
+      return {
+        nodes: MOTION.items.length,
+        links: MOTION.links.length,
+        w: MOTION.W,
+        h: MOTION.H,
+        dx: MOTION.items.map((it) => +it.dx.toFixed(2)),
+        dy: MOTION.items.map((it) => +it.dy.toFixed(2)),
+      };
+    };
+  }
+
+  function measure() {
+    const st = MOTION.stage;
+    MOTION.W = st ? st.clientWidth : 0;
+    MOTION.H = st ? st.clientHeight : 0;
+  }
+
+  function paint(t) {
+    const items = MOTION.items;
+    const links = MOTION.links;
+    if (!items.length) return;
+
+    /* viewBox 是 0..100 且不保持比例：x 方向 1 单位 = W/100 px，y 方向 = H/100 px */
+    const kx = MOTION.W ? 100 / MOTION.W : 0;
+    const ky = MOTION.H ? 100 / MOTION.H : 0;
+    /* 进场 1.6s 内位移从 0 长到全幅，避免首帧从几十像素外跳回来 */
+    const ramp = Math.min(1, t / 1.6);
+    /* 整片还有一层 37 秒的超慢调制：一阵舒展一阵收拢。
+     * 所有点用同一个因子，所以网会「一起深呼吸」，而不是各自为政。 */
+    const mood = 0.74 + 0.26 * Math.sin(t * 0.17 + 0.6);
+    const focus = MOTION.focus;
+
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      const ph = it.x * 0.06 + it.y * 0.05;
+      const w = it.w;
+      /* 悬停时本组安静下来（0.4 倍幅），其余照常漂——焦点处稳，四周才活 */
+      const want = focus >= 0 && it.gi === focus ? 0.4 : 1;
+      it.damp += (want - it.damp) * 0.08;
+      const A = ramp * it.damp * mood;
+      it.dx = it.ax * A * (0.62 * Math.sin(t * w + ph) + 0.38 * Math.sin(t * w * 0.61 + ph * 1.7 + 1.3));
+      it.dy = it.ay * A * (0.58 * Math.cos(t * w * 0.87 + ph * 1.2 + 0.6) + 0.42 * Math.sin(t * w * 0.49 + ph * 0.8 + 2.1));
+      it.el.style.translate = it.dx.toFixed(2) + "px " + it.dy.toFixed(2) + "px";
+    }
+
+    for (let i = 0; i < links.length; i++) {
+      const ln = links[i];
+      const a = ln.a;
+      const b = ln.b;
+      ln.el.setAttribute("x1", (a.x + a.dx * kx).toFixed(2));
+      ln.el.setAttribute("y1", (a.y + a.dy * ky).toFixed(2));
+      ln.el.setAttribute("x2", (b.x + b.dx * kx).toFixed(2));
+      ln.el.setAttribute("y2", (b.y + b.dy * ky).toFixed(2));
+      /* 线的透明度做低频呼吸（±16%），各组的相位错开：
+       * 单看一条几乎察觉不到，整片看过去网是「活着」的 */
+      const breathe = 0.82 + 0.1 * Math.sin(t * 0.5 + ln.gi * 1.25);
+      let target = ln.base * breathe;
+      if (focus >= 0) target = ln.gi === focus ? 1 : 0.3;
+      ln.cur += (target - ln.cur) * 0.1;
+      ln.el.style.opacity = ln.cur.toFixed(3);
+    }
+
+    FX.frames++;
+  }
+
+  function reduced() {
+    const mq = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+    return !!(mq && mq.matches);
+  }
+
+  function loop(ts) {
+    if (!MOTION.running) return;
+    if (MOTION.last) MOTION.clock += Math.min(0.2, (ts - MOTION.last) / 1000);
+    MOTION.last = ts;
+    paint(MOTION.clock);
+    MOTION.raf = window.requestAnimationFrame(loop);
+  }
+
+  function start() {
+    if (MOTION.running || reduced()) return;
+    measure();
+    /* 首次进入视口才挂 is-live：入场的「织网」与淡入由此开始，
+     * 而不是在页面加载时就播完 */
+    MOTION.stage.classList.add("is-live");
+    MOTION.running = true;
+    MOTION.last = 0;
+    FX.motion = "raf";
+    MOTION.raf = window.requestAnimationFrame(loop);
+  }
+
+  function stop() {
+    MOTION.running = false;
+    MOTION.last = 0;
+    if (MOTION.raf) window.cancelAnimationFrame(MOTION.raf);
+    MOTION.raf = 0;
+    if (FX.motion === "raf") FX.motion = "idle";
+  }
+
+  /* 门控：进视口才跑、离开即停、切到后台即停。
+   * 不做 rAF 常驻——落地页很长，用户在别的区块读字时这里不该耗电。 */
+  function arm(stage) {
+    if (reduced()) {
+      FX.motion = "reduced";
+      stage.classList.add("is-live");
+      return;
+    }
+    if (typeof window.IntersectionObserver !== "function") {
+      /* 老浏览器没有 IO：保持静态，宁可不动也不要空转；
+       * 但必须自己挂上 is-live，否则这块会一直停在全透明的入场首帧 */
+      FX.motion = "static";
+      stage.classList.add("is-live");
+      return;
+    }
+    const io = new window.IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (e) {
+          MOTION.visible = e.isIntersecting;
+          if (e.isIntersecting && !document.hidden) start();
+          else stop();
+        });
+      },
+      { rootMargin: "160px 0px" }
+    );
+    io.observe(stage);
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) stop();
+      else if (MOTION.visible) start();
+    });
+
+    let rt = 0;
+    window.addEventListener("resize", function () {
+      clearTimeout(rt);
+      rt = setTimeout(measure, 150);
+    });
+
+    const mq = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mq && mq.addEventListener) {
+      mq.addEventListener("change", function () {
+        if (mq.matches) stop();
+        else if (MOTION.visible) start();
+      });
+    }
   }
 
   /* ---------- 说明卡 ---------- */
@@ -286,6 +507,14 @@
     FX.tipOpen = name;
     FX.activeNode = node;
     node.classList.add("is-hot");
+    /* 焦点分组：本组保持墨色、其余四组转浅，同时本组的漂移收着走。
+     * 卡片停在一个安静的位置上才好读，四周的网继续流。 */
+    MOTION.focus = k === "center" ? -1 : +node.dataset.g;
+    const stage = node.parentElement;
+    if (stage) {
+      if (MOTION.focus < 0) delete stage.dataset.focus;
+      else stage.dataset.focus = String(MOTION.focus);
+    }
   }
 
   function hide() {
@@ -295,10 +524,17 @@
     tip.setAttribute("aria-hidden", "true");
     FX.tipOpen = "";
     FX.activeNode = null;
+    MOTION.focus = -1;
+    if (MOTION.stage) delete MOTION.stage.dataset.focus;
     document.querySelectorAll("#fv-stage .fv-node.is-hot").forEach((n) => n.classList.remove("is-hot"));
   }
   FX.show = show;
   FX.hide = hide;
+  /* 现场核对用：先 stop 再 tick，可以把画面停在任意时刻，方便前后对比 */
+  FX.stop = function () {
+    stop();
+    FX.motion = "hold";
+  };
 
   function bind(stage) {
     stage.addEventListener("mouseover", (e) => {
@@ -340,6 +576,7 @@
     try {
       build(stage);
       bind(stage);
+      arm(stage);
       FX.mode = "mesh";
     } catch (e) {
       /* 出问题就整块收起来：宁可没有这块，也不要留一堆错位的点和线 */

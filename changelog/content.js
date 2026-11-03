@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2898</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2914</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -37,6 +37,7 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v64"><span class="cl-toc-tag">Beta 1.1.2 · v64</span><span class="cl-toc-title-txt">能力网改造 · 逐帧位移场 / 端点咬合 / 焦点分组 / 绽开入场</span></a></li>
     <li><a href="#v63"><span class="cl-toc-tag">Beta 1.1.2 · v63</span><span class="cl-toc-title-txt">能力网 · 中心 + 五主题 + 二十实现点 / CSS 浮动 / 悬停弹卡</span></a></li>
     <li><a href="#v62"><span class="cl-toc-tag">Beta 1.1.2 · v62</span><span class="cl-toc-title-txt">首屏撑满一屏 · .lp-first 容器 / svh 视口 / 图幅退到折线以下</span></a></li>
     <li><a href="#v61"><span class="cl-toc-tag">Beta 1.1.2 · v61</span><span class="cl-toc-title-txt">首屏只留一句话 · 三个小标签下线 / 打字机连定时器一起删 / 序列重排</span></a></li>
@@ -288,6 +289,39 @@ export const changelogHtml = `
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v64 · 让网自己动起来：位移场、端点咬合与焦点分组
+       ======================================================== -->
+  <div class="version" id="v64">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 体验增强（v64）</span>
+      <span class="v-title">让网自己动起来：位移场、端点咬合与焦点分组</span>
+      <span class="v-date">2026.11.03</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        v63 那张图能看懂，但它是静的：CSS 关键帧只把节点挪了几像素，线纹丝不动，
+        端点在肉眼可见处脱开。这一版把整张图交给一个位移场——每帧先算二十六个节点该去哪，
+        再把这同一组数写进二十五条线的两端，位移自然咬合。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>为什么必须逐帧</b>：一条线是两点之间的直线，两端的点是两个独立动体。交给 CSS 各飘各的，端点必然脱开——位移越大越明显，而位移一小又看不出「在动」。改成逐帧后，节点与线从同一份数据出发，不存在对不齐的可能；实测同一时刻中心节点位移与主干线起点之差为 <code>0.000</code></div>
+        <div class="vh-item"><b>位移场：是波，不是抖</b>：两个不同频率的正弦叠加，相位取节点在舞台上的位置（<code>ph = x·0.06 + y·0.05</code>）。相邻的点几乎同相、远处的点差半个周期，远看是一阵缓慢的波从左上扫到右下；再叠一层 37 秒的全体调制，整张网会一起深呼吸</div>
+        <div class="vh-item"><b>幅度与周期分三层</b>：中心 3.6px / 21 秒（像被钉住），主题 8–11px / 9.6–13 秒，细节 11–15px / 7.1–10 秒。越外围越放松，画面才有「浮着」的层次，而不是整块刚性平移</div>
+        <div class="vh-item"><b>非等比坐标的换算</b>：线画在 <code>viewBox="0 0 100 100"</code> 且 <code>preserveAspectRatio="none"</code>，x 方向 1 单位对应 W/100 像素、y 方向对应 H/100。位移按这个比例写回 <code>x1/y1/x2/y2</code>，容器怎么缩放都对齐</div>
+        <div class="vh-item"><b>门控三层，不空转</b>：<code>IntersectionObserver</code> 进视口才跑、离开即停；<code>visibilitychange</code> 切到后台即停；<code>prefers-reduced-motion</code> 直接不启动。一帧写 51 个元素，实测 62fps。入场也因此改成「滚到才播」：新增 <code>is-live</code>，否则页面加载时这块还在屏外，用户滚下来动画早播完了</div>
+        <div class="vh-item"><b>连线从中心绽开</b>：<code>clip-path: circle(0 → 88%)</code>。先试过用 <code>stroke-dashoffset</code> 逐条生长，但 <code>vector-effect: non-scaling-stroke</code> 会让 dash 长度按屏幕像素算、且不受 <code>pathLength</code> 归一化影响，每条线都断成一截截短杠——整块裁剪没有这个问题</div>
+        <div class="vh-item"><b>节点有了实体，网有了重心</b>：节点底色改成与页面同色，线从文字底下过时被整齐切断，不再穿过字；中心节点压一张白纸小卡片，四周二十个标签只是文字。悬停某一组时，本组文字回到墨色、连线加深，其余四组连人带线退到 36%，同时本组漂移收到 0.4 倍幅——焦点处稳，四周继续流</div>
+        <div class="vh-item"><b>顺手清了两处旧账</b>：蓝图十字准线原本全站常驻，在落地页上两条墨线横贯整屏（这里从 v58 起已是干净留白风），改为落地页收起、进内页再显示；<code>reduced-motion</code> 块里那几条能力网规则因写在主体段落之前，被后面同权重的声明盖掉，「关动画」其实从未生效，选择器抬一级才真正压下</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">16</div><div class="m-label">v64 新增断言</div></div>
+        <div class="metric"><div class="m-val">2914</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">62</div><div class="m-label">实测帧率（fps）</div></div>
       </div>
     </div>
   </div>

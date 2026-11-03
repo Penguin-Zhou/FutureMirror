@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2898 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2914 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -648,7 +648,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2898 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2914 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -726,7 +726,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2898 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2914 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -917,6 +917,21 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v64：让网自己动起来——位移场、端点咬合与焦点分组（2026.11.03）
+
+> v63 的图能看懂，但它是「静」的：CSS 关键帧只把节点挪了 3–6px，线纹丝不动，
+> 端点在肉眼可见处脱开。这一版把整张图交给一个位移场，节点和线从同一份数据里算位置。
+
+- **浮动改逐帧驱动**：每帧先算 26 个节点的 `(dx, dy)`，再把这同一组数写进 25 条线的端点。位移场是两个不同频率的正弦叠加，相位取节点在舞台上的位置（`ph = x·0.06 + y·0.05`）——相邻的点几乎同相、远处的点差半个周期，看起来是一阵缓慢的波从左上扫到右下，而不是二十六个点各自乱抖
+- **幅度分三层**：中心 3.6px（像被钉住）、主题 8–11px、细节 11–15px，周期反过来（21s / 9.6–13s / 7.1–10s）。越外围越放松，整张图才有「浮着」的层次；再叠一层 37 秒的全体调制，网会一起深呼吸
+- **端点咬合实测零误差**：`viewBox` 非等比缩放，x 方向 1 单位 = W/100 px、y 方向 = H/100 px，按这个换算把位移写回 `x1/y1/x2/y2`。现场探针比对中心节点位移与主干线起点，差 0.000
+- **门控三层**：`IntersectionObserver` 进视口才跑、离开即停；`visibilitychange` 切后台即停；`prefers-reduced-motion` 直接不启动。实测 62fps，一帧 51 个元素写入
+- **入场改成滚到才播**：新增 `is-live`，只有首次进入视口才挂上——否则页面加载时这块还在屏外，用户滚下来动画早播完了。连线用 `clip-path: circle(0 → 88%)` 从中心绽开（试过 `dashoffset` 逐条生长，但 `non-scaling-stroke` 下 dash 按屏幕像素算、不受 `pathLength` 归一化，每条线都变成短杠）
+- **节点有了实体**：底色改成与页面同色，线从文字底下过时被切断，不再穿过字；中心节点压一张白纸小卡片，右下角二十个标签只是文字——网有了重心
+- **悬停聚焦**：`data-focus` 记下当前组，本组文字回到墨色、连线加深到不透明，其余四组连人带线退到 36%；同时本组的漂移收到 0.4 倍幅——焦点处稳，四周继续流
+- **顺手修掉两处旧账**：蓝图十字准线原本全站常驻，在落地页上两条墨线横贯整屏（v58 之后这里已经是干净留白风），改为落地页收起、进内页再显示；`reduced-motion` 块里那几条 fv 规则因写在 ⑪ 段落之前而被后面的同权重声明盖掉，选择器抬一级才真正生效
+- **指标**：前端断言 2898 → **2914**（新增 16 项）｜jsdom 套件 **51 套**｜共享全局符号 **745**（不变）
 
 ### Beta 1.1.2 · 增量 v63：能力网——中心一个名字，四周二十条实现（2026.11.03）
 

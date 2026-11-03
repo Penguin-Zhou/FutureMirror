@@ -8,7 +8,7 @@
  * 断言分七组：
  * ① 结构与数量：1 + 5 + 20 = 26 个节点、25 条连线、5 个列表组
  * ② 布局：所有节点落在舞台内、左右上下不偏斜、四个角都用到
- * ③ 浮动：关键帧存在、每个节点都挂上、相位与时长被打散（不是齐步走）
+ * ③ 浮动：位移由逐帧驱动、线端点与节点同源、进视口才跑
  * ④ 弹卡：悬停 / 聚焦都能开，文案与节点对得上，位置不出舞台
  * ⑤ 降级：reduced-motion 关干净、窄屏换列表、无 JS 不留空框
  * ⑥ 文案诚实：不编造用户评价，每个点都能对上仓库里的实现
@@ -164,11 +164,17 @@ function boot(opts) {
   );
 
   console.log("\n── ③ 浮动 ──");
-  ok(/@keyframes fvDrift/.test(landingCss), "浮动关键帧 fvDrift 存在");
   ok(/@keyframes fvIn/.test(landingCss), "入场关键帧 fvIn 存在");
+  ok(/@keyframes fvBloom/.test(landingCss), "连线绽开关键帧 fvBloom 存在");
   const nodeRule = rule(landingCss, "#view-landing .fv-node");
-  ok(/animation:\s*fvDrift/.test(nodeRule), "节点挂了浮动动画");
-  ok(/var\(--dur/.test(nodeRule) && /var\(--del/.test(nodeRule), "时长与相位走变量，逐点不同");
+  ok(/transform: translate\(-50%, -50%\)/.test(nodeRule), "居中用 transform，与位移分离（互不覆盖）");
+  ok(/opacity: 0/.test(nodeRule), "未入场时不可见，不闪一帧裸文字");
+  ok(/requestAnimationFrame/.test(voicesSrc), "位移由逐帧驱动（线的两端才咬得住）");
+  ok(/style\.translate/.test(voicesSrc), "浮动写的是 translate 属性");
+  ok(!/style\.transform/.test(voicesSrc), "不碰 transform（那是居中的活）");
+  ok(/IntersectionObserver/.test(voicesSrc), "进视口才跑，离开即停");
+  ok(/visibilitychange/.test(voicesSrc), "切到后台即停，不空转");
+  ok(!/@keyframes fvDrift/.test(landingCss), "旧的 CSS 位移关键帧已移除（点与线必须同源）");
   const durs = new Set(nodes.map((n) => n.style.getPropertyValue("--dur")));
   const dels = new Set(nodes.map((n) => n.style.getPropertyValue("--del")));
   const axs = new Set(nodes.map((n) => n.style.getPropertyValue("--ax")));
@@ -179,8 +185,38 @@ function boot(opts) {
     [...dels].every((v) => parseFloat(v) < 0),
     "相位用负延迟：首屏即刻处于动画中段，不是整齐地从 0 开始"
   );
-  ok(/translate:/.test(landingCss), "浮动用 translate 属性");
-  ok(/transform: translate\(-50%, -50%\)/.test(nodeRule), "居中用 transform，与浮动分离（互不覆盖）");
+  ok(
+    nodes.every((n) => parseFloat(n.style.getPropertyValue("--ax")) >= 3),
+    "每个点都有可见幅度（中心 3.6 / 主题 8+ / 细节 11+）"
+  );
+
+  console.log("\n── ③b 位移与端点 ──");
+  ok(w.__bpVoices.motion === "static", "无 IntersectionObserver 时不启动 rAF（jsdom 走静态）");
+  ok(d.getElementById("fv-stage").classList.contains("is-live"), "静态兜底也要挂 is-live，否则永远停在入场首帧");
+
+  const snap = w.__bpVoices.tick(4.2);
+  ok(snap.nodes === 26 && snap.links === 25, "tick 能驱动全部 26 点 / 25 线");
+  ok(
+    snap.dx.some((v) => Math.abs(v) > 3),
+    "推进到第 4.2 秒，确有节点被推开（最大 " + Math.max(...snap.dx.map(Math.abs)).toFixed(1) + "px）"
+  );
+  ok(
+    snap.dx.slice(1).some((v, i) => Math.abs(v - snap.dx[i]) > 0.2),
+    "相邻两点的位移不等（不是整块刚性平移）"
+  );
+
+  const hub0 = d.querySelector("#fv-stage .fv-link-hub");
+  const cdx = parseFloat(d.querySelector("#fv-stage .fv-center").style.translate.split(" ")[0]);
+  const wantX = 50 + (cdx * 100) / 1180;
+  ok(Math.abs(wantX - parseFloat(hub0.getAttribute("x1"))) < 0.02, "主干线起点跟着中心一起动（同一份位移，差 < 0.02）");
+  const leavesAll = [...d.querySelectorAll("#fv-stage .fv-link:not(.fv-link-hub)")];
+  ok(
+    leavesAll.every((l) => {
+      const v = ["x1", "y1", "x2", "y2"].map((k) => parseFloat(l.getAttribute(k)));
+      return v.every((n) => isFinite(n) && n > -20 && n < 120);
+    }),
+    "所有端点换算后仍落在合理范围（没有 NaN / 飞出舞台）"
+  );
 
   console.log("\n── ④ 弹卡 ──");
   const tip = d.getElementById("fv-tip");
@@ -217,12 +253,16 @@ function boot(opts) {
   w.__bpVoices.show(gNode);
   ok(tip.querySelector(".fv-tip-group").textContent === "4 个实现点", "主题节点的副标题写「4 个实现点」");
   ok(tip.querySelector(".fv-tip-name").textContent === gNode.textContent.trim(), "主题节点显示自己的名字");
+  ok(d.getElementById("fv-stage").dataset.focus === "2", "悬停哪一组，舞台就记下哪个焦点（其余四组退背景）");
+  ok(/\[data-focus="2"\] \.fv-node\[data-g="2"\]/.test(landingCss), "焦点组的文字保住墨色（CSS 里按分组编号各写一条）");
   w.__bpVoices.hide();
+  ok(!d.getElementById("fv-stage").dataset.focus, "关闭后焦点撤销，五组重新等权");
 
   console.log("\n── ⑤ 降级 ──");
   const rm = media(landingCss, "@media (prefers-reduced-motion: reduce)");
   ok(/\.fv-node\s*\{[^}]*animation: none/.test(rm), "reduced-motion 下浮动全停");
   ok(/\.fv-node\s*\{[^}]*opacity: 1/.test(rm), "reduced-motion 下节点直接可见（不留半透明）");
+  ok(/\.fv-links\s*\{[^}]*clip-path: none/.test(rm), "reduced-motion 下不裁剪（圆不开就一条线都没有）");
   const narrow = media(landingCss, "@media (max-width: 900px)");
   ok(/\.fv-stage\s*\{[^}]*display: none/.test(narrow), "窄屏隐藏力导图");
   ok(/\.fv-list\s*\{[^}]*display: block/.test(narrow), "窄屏改用分组列表");
@@ -262,7 +302,7 @@ function boot(opts) {
   ok(/不上行|不出端|端侧/.test(bodies.join("")), "隐私那条讲的是数据不出端，与既有承诺一致");
 
   console.log("\n── ⑦ 成品 ──");
-  ok(demoHtml.includes("@keyframes fvDrift"), "演示包内联了浮动关键帧");
+  ok(demoHtml.includes("@keyframes fvBloom"), "演示包内联了连线绽开关键帧");
   ok(demoHtml.includes("fv-tip-body"), "演示包内联了卡片结构");
   ok(/__bpVoices/.test(voicesSrc), "模块自报打点，便于现场核对");
   ok(!/getContext\(|createElement\("canvas"\)/.test(voicesSrc), "没有走 canvas 路线（可选中 / 可读屏 / 可打印）");
