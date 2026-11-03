@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2826</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2898</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -312,6 +312,7 @@ body {
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v63"><span class="cl-toc-tag">Beta 1.1.2 · v63</span><span class="cl-toc-title-txt">能力网 · 中心 + 五主题 + 二十实现点 / CSS 浮动 / 悬停弹卡</span></a></li>
     <li><a href="#v62"><span class="cl-toc-tag">Beta 1.1.2 · v62</span><span class="cl-toc-title-txt">首屏撑满一屏 · .lp-first 容器 / svh 视口 / 图幅退到折线以下</span></a></li>
     <li><a href="#v61"><span class="cl-toc-tag">Beta 1.1.2 · v61</span><span class="cl-toc-title-txt">首屏只留一句话 · 三个小标签下线 / 打字机连定时器一起删 / 序列重排</span></a></li>
     <li><a href="#v60"><span class="cl-toc-tag">Beta 1.1.2 · v60</span><span class="cl-toc-title-txt">落地页动效层 · 60px 缓出上浮 / 首屏序列 / 1px 微抬 / 实证三条降级</span></a></li>
@@ -562,6 +563,39 @@ body {
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v63 · 能力网：一张会呼吸的关系图
+       ======================================================== -->
+  <div class="version" id="v63">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 体验增强（v63）</span>
+      <span class="v-title">能力网：中心一个名字，四周二十条实现</span>
+      <span class="v-date">2026.11.03</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        落地页讲完了功能、流程和数字，还是没回答一个问题：这套东西到底靠什么立起来。
+        这一版在页尾加了一张关系图：中心是产品名，五个方向各自挂四到五个实现点，细线相连，
+        整体缓慢浮动；鼠标停在任意一个点上，弹出一张卡片说清它在代码里对应哪一段。
+        形态参照 mimo.mi.com 的「开发者的声音」，内容全部换成能对上仓库的实现。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>不用 canvas，用 DOM + SVG</b>：参考站是在一块 1200×600 的画布上逐帧重绘。这里换成绝对定位的节点配一条 SVG 线：文字可以选中、可以读屏、打印导出时不会被丢掉，测试里也能数清节点、断言文案——画布只能截图比对。线用 <code>viewBox="0 0 100 100"</code> 加 <code>preserveAspectRatio="none"</code>，坐标即百分比，与节点的 <code>left/top</code> 同源，容器怎么缩放都对齐；线宽靠 <code>vector-effect</code> 固定 1px，不被非等比缩放拉花</div>
+        <div class="vh-item"><b>浮动交给 CSS，不占 rAF</b>：每个节点有自己的 <code>--ax / --ay / --dur / --del</code>，一条 <code>@keyframes fvDrift</code> 走四个关键帧。时长 8.5–13.7 秒、相位用负延迟错开，看起来像被同一股力推着呼吸，而不是整齐地上下跳。标签页切到后台动画自动暂停，<code>prefers-reduced-motion</code> 一行关干净——不需要自己写一帧循环和暂停逻辑</div>
+        <div class="vh-item"><b>居中用 <code>transform</code>，浮动用 <code>translate</code></b>：两个属性分开写，互不覆盖。节点靠 <code>transform: translate(-50%, -50%)</code> 钉在坐标点上，浮动改的是独立的 <code>translate</code>——这也是 v60 滚动入场与 hover 微抬用的同一套手法</div>
+        <div class="vh-item"><b>布局改过两轮：同心环会串组</b>：第一版把所有细标签摆在一个大同心圆上，角度一偏就漂到邻组旁边——「观察员」跑到了混合检索那一侧，连线看起来像连错了人。改成以主节点为圆心向外伸展、每组张角 68°，每个标签离自己的组恒定距离，怎么转都不会串门</div>
+        <div class="vh-item"><b>卡片的尺寸照参考站量</b>：白底、圆角 12px、阴影 <code>0 4px 24px rgba(0,0,0,.08)</code> 叠 <code>0 1px 4px</code>、内边距 <code>16px 20px</code>、出入 <code>opacity/transform .2s</code> 并从 <code>translateY(4px)</code> 落位；左侧一枚 32px 圆形序号代替人物头像，名字 13px/600，正文 13px/1.5。位置按节点的布局坐标算，避开右边界时自动翻到左侧，上方放不下就翻到下方</div>
+        <div class="vh-item"><b>不编造用户评价</b>：参考站那圈标签是开发者原话，配头像和引述。我们没有真实用户证言，所以这块不假装有——标题从「开发者的声音」改成「这张网由什么支撑」，卡片里写的是实现说明，每个点都能在仓库里找到对应代码（评分公式、四位面试官、混合检索、三级降级、端侧隐私）</div>
+        <div class="vh-item"><b>三条降级</b>：<code>prefers-reduced-motion</code> 下浮动全停、节点直接可见；窄屏（≤900px）不做「点不动的图」，整块换成五组可读的列表，副标题也跟着从「悬停」改成陈述句；没有 JS 时舞台不挂 <code>fv-ready</code>，宁可空着也不留一堆错位的点和线</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">72</div><div class="m-label">v63 新增断言</div></div>
+        <div class="metric"><div class="m-val">2898</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">51</div><div class="m-label">jsdom 套件</div></div>
       </div>
     </div>
   </div>

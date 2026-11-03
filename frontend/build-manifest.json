@@ -5,32 +5,32 @@
     {
       "file": "css/tokens.css",
       "lines": [
-        29,
-        1813
+        32,
+        1848
       ],
       "note": "基础令牌层（v1–v16：主题变量 / 暗色 / 组件增量）"
     },
     {
       "file": "css/theme.css",
       "lines": [
-        1814,
-        3325
+        1849,
+        4013
       ],
       "note": "v21 蓝图编辑风视觉重构层"
     },
     {
       "file": "css/pages.css",
       "lines": [
-        3326,
-        4284
+        4014,
+        6544
       ],
       "note": "功能页面层（v18–v22：求职 / 题库 / 小助手 / 移动端 / API）"
     },
     {
       "file": "css/landing.css",
       "lines": [
-        4285,
-        5330
+        6545,
+        8492
       ],
       "note": "v58 落地页视觉层（居中版式 / 大圆角卡片 / 胶囊按钮）"
     }
@@ -39,354 +39,362 @@
     {
       "file": "js/data/config.js",
       "lines": [
-        6127,
-        6151
+        10541,
+        10565
       ],
       "note": "§0 项目材料配置"
     },
     {
       "file": "js/core/router.js",
       "lines": [
-        6152,
-        6382
+        10566,
+        10848
       ],
       "note": "§0.5 视图路由 + §0.6 应用内子路由 + 0.6 应用内子路由"
     },
     {
       "file": "js/INDEX.js",
       "lines": [
-        6383,
-        6410
+        10849,
+        10876
       ],
       "note": "模块索引（注释）"
     },
     {
       "file": "js/core/store.js",
       "lines": [
-        6411,
-        6489
+        10877,
+        11014
       ],
       "note": "§1 全局状态 & 工具"
     },
     {
       "file": "js/core/auth.js",
       "lines": [
-        6490,
-        6762
+        11015,
+        11287
       ],
       "note": "§2 用户系统"
     },
     {
       "file": "js/core/theme.js",
       "lines": [
-        6763,
-        6815
+        11288,
+        11340
       ],
       "note": "§3 主题"
     },
     {
       "file": "js/core/router-pages.js",
       "lines": [
-        6816,
-        6827
+        11341,
+        11352
       ],
       "note": "§4 应用内页面路由"
     },
     {
       "file": "js/features/match.js",
       "lines": [
-        6828,
-        7207
+        11353,
+        11829
       ],
       "note": "§4 简历匹配"
     },
     {
       "file": "js/features/explain.js",
       "lines": [
-        0,
-        0
+        11830,
+        12275
       ],
-      "note": "v40 · 可解释性交互层（锚点 / 双镜头 / 节奏）"
+      "note": "v40 可解释性交互层"
     },
     {
       "file": "js/features/asr.js",
       "lines": [
-        0,
-        0
+        12276,
+        12518
       ],
-      "note": "v46 · 服务端语音转写（录音分段 / WAV 编码 / 上传降级）"
+      "note": "v46 服务端语音转写"
     },
     {
       "file": "js/features/interview.js",
       "lines": [
-        7208,
-        8127
+        12519,
+        14116
       ],
       "note": "§5 模拟面试（含 QUESTION_BANK）"
     },
     {
       "file": "js/data/kb.js",
       "lines": [
-        8128,
-        8786
+        14117,
+        14791
       ],
       "note": "§6 RAG 面经问答 + v10 知识库 + v10 · 面经知识库扩充"
     },
     {
       "file": "js/features/report.js",
       "lines": [
-        8787,
-        9118
+        14792,
+        15668
       ],
       "note": "§7 评估报告"
     },
     {
       "file": "js/features/prompt-viewer.js",
       "lines": [
-        9119,
-        9237
+        15669,
+        15846
       ],
       "note": "§7.5 Prompt 查看器 / 导出"
     },
     {
       "file": "js/core/boot.js",
       "lines": [
-        9238,
-        9380
+        15847,
+        16338
       ],
       "note": "§9 启动流程（bootApp 等声明）"
     },
     {
       "file": "js/core/reveal.js",
       "lines": [
-        9381,
-        9500
+        16339,
+        16458
       ],
       "note": "v17 滚动渐入 + init()"
     },
     {
       "file": "js/core/particles.js",
       "lines": [
-        9501,
-        9715
+        16459,
+        16673
       ],
       "note": "v25 蓝图粒子层 + Hero 视差"
     },
     {
       "file": "js/core/scrollfx.js",
       "lines": [
-        9716,
-        9860
+        16674,
+        16842
       ],
       "note": "v26 滚动驱动层"
     },
     {
       "file": "js/features/landingfx.js",
       "lines": [
-        9861,
-        9948
+        16843,
+        17286
       ],
       "note": "v26 落地页动态层"
     },
     {
+      "file": "js/features/voices.js",
+      "lines": [
+        17287,
+        17642
+      ],
+      "note": "v63 能力网"
+    },
+    {
       "file": "js/core/command.js",
       "lines": [
-        9949,
-        10194
+        17643,
+        17891
       ],
       "note": "v26 命令面板"
     },
     {
       "file": "js/features/appfx.js",
       "lines": [
-        10195,
-        10647
+        17892,
+        18478
       ],
       "note": "v27 全站交互层"
     },
     {
       "file": "js/core/theme-variants.js",
       "lines": [
-        10648,
-        10668
+        18479,
+        18499
       ],
       "note": "§10 主题色变体"
     },
     {
       "file": "js/core/roll.js",
       "lines": [
-        10669,
-        10695
+        18500,
+        18526
       ],
       "note": "§11 数字滚动"
     },
     {
       "file": "js/features/resume.js",
       "lines": [
-        10696,
-        11208
+        18527,
+        19476
       ],
       "note": "§12 简历优化工作台"
     },
     {
       "file": "js/features/career.js",
       "lines": [
-        11209,
-        12094
+        19477,
+        20362
       ],
       "note": "§13 职业探索 + v10 扩充 + v11 选择器 + v10 · 岗位数据库扩充 + v11 · 目标岗位下拉选择器"
     },
     {
       "file": "js/dev/runtime.js",
       "lines": [
-        12095,
-        12290
+        20363,
+        20558
       ],
       "note": "v12 可验证运行时三件套"
     },
     {
       "file": "js/bootstrap.js",
       "lines": [
-        12291,
-        12335
+        20559,
+        20603
       ],
       "note": "v10 尾部引导 bootstrapV10"
     },
     {
       "file": "js/dev/devmode.js",
       "lines": [
-        12336,
-        12948
+        20604,
+        21216
       ],
       "note": "v13 + v14 开发者模式 + v14 · 开发者模式"
     },
     {
       "file": "js/features/today.js",
       "lines": [
-        12949,
-        12982
+        21217,
+        21278
       ],
-      "note": "v15 今日推荐"
+      "note": "v38 今日推荐"
     },
     {
       "file": "js/features/profile.js",
       "lines": [
-        12983,
-        13391
+        21279,
+        21700
       ],
       "note": "v16 个人中心"
     },
     {
       "file": "js/features/jobs.js",
       "lines": [
-        13392,
-        13717
+        21701,
+        22061
       ],
       "note": "v18 求职闭环"
     },
     {
       "file": "js/features/quiz.js",
       "lines": [
-        13718,
-        14869
+        22062,
+        23213
       ],
       "note": "v19 题库 + v20 题库增强 + v20 · 题库增强"
     },
     {
       "file": "js/features/plan.js",
       "lines": [
-        14870,
-        15182
+        23214,
+        23543
       ],
       "note": "v31 学习计划"
     },
     {
       "file": "js/features/icons.js",
       "lines": [
-        15183,
-        15263
+        23544,
+        23624
       ],
       "note": "v31 全站图标系统"
     },
     {
       "file": "js/features/assistant.js",
       "lines": [
-        15264,
-        15696
+        23625,
+        24057
       ],
       "note": "v20 AI 小助手 + v21 悬浮球 + v21 · AI 悬浮球"
     },
     {
       "file": "js/core/api.js",
       "lines": [
-        15697,
-        15910
+        24058,
+        24279
       ],
       "note": "v22 后端适配层"
     },
     {
       "file": "js/core/motion.js",
       "lines": [
-        15911,
-        16237
+        24280,
+        24618
       ],
       "note": "v29 动效与交互层"
     },
     {
       "file": "js/features/viz.js",
       "lines": [
-        16238,
-        17031
+        24619,
+        25412
       ],
       "note": "v30 数据可视化与看板组件"
     },
     {
       "file": "js/core/skeleton.js",
       "lines": [
-        17032,
-        17136
+        25413,
+        25517
       ],
       "note": "v30 骨架屏"
     },
     {
       "file": "js/core/media.js",
       "lines": [
-        17137,
-        17308
+        25518,
+        25689
       ],
       "note": "v30 媒体懒加载与预览"
     },
     {
       "file": "js/features/mbti.js",
       "lines": [
-        17309,
-        17578
+        25690,
+        26160
       ],
       "note": "v36 MBTI 职业性格测评"
     },
     {
       "file": "js/features/persona.js",
       "lines": [
-        0,
-        0
+        26161,
+        26592
       ],
       "note": "v43 人格参数化层"
     },
     {
       "file": "js/features/charts.js",
       "lines": [
-        17579,
-        17870
+        26593,
+        26884
       ],
       "note": "v37 通用图表组件"
     },
     {
       "file": "js/core/perf.js",
       "lines": [
-        0,
-        0
+        26885,
+        27047
       ],
-      "note": "v45 · 交互确定性层（设备分档 / 让帧 / 长任务记账）"
+      "note": "v45 交互确定性层"
     }
   ],
   "jsLoadOrder": [
@@ -410,6 +418,7 @@
     "js/core/particles.js",
     "js/core/scrollfx.js",
     "js/features/landingfx.js",
+    "js/features/voices.js",
     "js/core/command.js",
     "js/features/appfx.js",
     "js/core/roll.js",

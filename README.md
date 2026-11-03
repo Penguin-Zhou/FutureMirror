@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2826 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2898 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -648,7 +648,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2826 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2898 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -726,7 +726,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2826 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2898 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -917,6 +917,21 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v63：能力网——中心一个名字，四周二十条实现（2026.11.03）
+
+> 落地页讲完功能、流程和数字，还是没回答「这套东西靠什么立起来」。
+> 页尾新增一张关系图：中心是产品名，五个方向各挂四到五个实现点，细线相连、整体缓慢浮动；
+> 悬停任意一点弹出说明卡，写清它在代码里对应哪一段。
+
+- **形态参照 mimo.mi.com 的「开发者的声音」，内容全部换掉**：那圈标签是开发者原话配头像引述。本项目没有真实用户证言，就不假装有——标题改成「这张网由什么支撑」，卡片里写实现说明，每条对得上仓库代码（评分公式 / 四位面试官 / 混合检索 / 三级降级 / 端侧隐私）
+- **不用 canvas，用 DOM + SVG**：参考站在 1200×600 画布上逐帧重绘；这里用绝对定位节点 + 一条 `viewBox="0 0 100 100"` 的线，坐标即百分比，与节点 `left/top` 同源。好处是文字可选中、可读屏、可打印，测试里能数节点断言文案
+- **浮动交给 CSS**：每点一组 `--ax / --ay / --dur / --del`，一条 `@keyframes fvDrift`；时长 8.5–13.7s、负延迟错相位。后台自动暂停，`prefers-reduced-motion` 一行关掉
+- **居中与浮动分属两个属性**：`transform: translate(-50%,-50%)` 定位，独立的 `translate` 做浮动，互不覆盖
+- **布局改过两轮**：同心环会让标签漂到邻组（「观察员」跑到混合检索那侧），改成以主节点为圆心、每组张角 68° 向外伸展
+- **卡片尺寸照参考站量**：12px 圆角 / `0 4px 24px rgba(0,0,0,.08)` / `16px 20px` 内边距 / `.2s` 出入 / 32px 圆形序号
+- **三条降级**：`reduced-motion` 停浮动；≤900px 换成五组可读列表（副标题同步改成陈述句）；无 JS 不留空框
+- **指标**：前端断言 2826 → **2898**（新增 72 项）｜jsdom 套件 **51 套**｜共享全局符号 **745**（不变）
 
 ### Beta 1.1.2 · 增量 v62：首屏撑满一屏——标题独占第一眼（2026.11.03）
 

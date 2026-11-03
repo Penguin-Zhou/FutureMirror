@@ -36,7 +36,15 @@ const assertAt = (n, needle, what) => {
 
 const STYLE_OPEN = findLine("<style>");
 const STYLE_CLOSE = findLine("</style>");
-const SCRIPT_OPEN = findLine("<script>", STYLE_CLOSE); // 主脚本（head 之后）
+/* 主脚本 = 紧跟着 "use strict"; 的那个 <script>。
+ * 不能只取「</style> 之后的第一个 <script>」——v47 的启动守卫是内联的、就排在样式块后面，
+ * 它后面跟的是横幅注释而不是严格模式指令，按旧判据会一路把守卫当成主脚本。 */
+const SCRIPT_OPEN = (() => {
+  for (let i = STYLE_CLOSE + 1; i <= lines.length; i++) {
+    if (at(i).trim() === "<script>" && (at(i + 1) || "").trim() === '"use strict";') return i;
+  }
+  return -1;
+})();
 const SCRIPT_CLOSE = lines.findIndex((l, i) => i + 1 > SCRIPT_OPEN && l.trim() === "</script>") + 1;
 assertAt(STYLE_OPEN, "<style>", "样式块");
 assertAt(STYLE_CLOSE, "</style>", "样式块结束");
@@ -100,6 +108,7 @@ const jsRules = [
   ["js/core/particles.js", "v25 蓝图粒子层 + Hero 视差", ["v25 · 蓝图粒子层"]],
   ["js/core/scrollfx.js", "v26 滚动驱动层", ["v26 · 滚动驱动层"]],
   ["js/features/landingfx.js", "v26 落地页动态层", ["v26 · 落地页动态层"]],
+  ["js/features/voices.js", "v63 能力网", ["v63 · 能力网"]],
   ["js/core/command.js", "v26 命令面板", ["v26 · 命令面板"]],
   ["js/features/appfx.js", "v27 全站交互层", ["v27 · 全站交互层"]],
   ["js/core/theme-variants.js", "§10 主题色变体", ["10. 主题色变体"]],
@@ -113,7 +122,7 @@ const jsRules = [
   ["js/dev/runtime.js", "v12 可验证运行时三件套", ["v12 · 生产级"]],
   ["js/bootstrap.js", "v10 尾部引导 bootstrapV10", ["v10 · 尾部引导"]],
   ["js/dev/devmode.js", "v13 + v14 开发者模式", ["v13 · 开发者模式", "v14 · 开发者模式"]],
-  ["js/features/today.js", "v15 今日推荐", ["v15 · 今日推荐岗位"]],
+  ["js/features/today.js", "v38 今日推荐", ["v38 · 今日推荐岗位"]],
   ["js/features/profile.js", "v16 个人中心", ["v16 · 个人中心"]],
   ["js/features/jobs.js", "v18 求职闭环", ["v18 · 产品闭环深化"]],
   ["js/features/quiz.js", "v19 题库 + v20 题库增强", ["v19 · 题库与小测模块", "v20 · 题库增强"]],
@@ -192,6 +201,7 @@ const LOAD_ORDER = [
   "js/core/router-pages.js",
   "js/features/match.js",
   "js/features/explain.js",
+  "js/features/asr.js",
   "js/features/interview.js",
   "js/data/kb.js",
   "js/features/report.js",
@@ -202,6 +212,7 @@ const LOAD_ORDER = [
   "js/core/particles.js",
   "js/core/scrollfx.js",
   "js/features/landingfx.js",
+  "js/features/voices.js",
   "js/core/command.js",
   "js/features/appfx.js",
   "js/core/roll.js",
@@ -225,6 +236,7 @@ const LOAD_ORDER = [
   "js/features/mbti.js",
   "js/features/persona.js",
   "js/features/charts.js",
+  "js/core/perf.js",
 ];
 if (
   LOAD_ORDER.length !== JS_SECTIONS.length ||
@@ -232,6 +244,12 @@ if (
   !LOAD_ORDER.every((f) => JS_SECTIONS.some((s) => s.file === f))
 ) {
   console.error("❌ 加载顺序与模块清单不匹配");
+  console.error(`   LOAD_ORDER ${LOAD_ORDER.length} 项 / JS_SECTIONS ${JS_SECTIONS.length} 项`);
+  const parsed = JS_SECTIONS.map((s) => s.file);
+  const missing = LOAD_ORDER.filter((f) => !parsed.includes(f));
+  const extra = parsed.filter((f) => !LOAD_ORDER.includes(f));
+  if (missing.length) console.error("   在脚本顺序里但没解析到: " + missing.join(", "));
+  if (extra.length) console.error("   解析到但不在脚本顺序里: " + extra.join(", "));
   process.exit(1);
 }
 
