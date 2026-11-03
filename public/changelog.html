@@ -585,10 +585,11 @@ body {
       </div>
       <div class="v-highlights">
         <div class="vh-item"><b>为什么必须逐帧</b>：一条线是两点之间的直线，两端的点是两个独立动体。交给 CSS 各飘各的，端点必然脱开——位移越大越明显，而位移一小又看不出「在动」。改成逐帧后，节点与线从同一份数据出发，不存在对不齐的可能；实测同一时刻中心节点位移与主干线起点之差为 <code>0.000</code></div>
-        <div class="vh-item"><b>位移场：是波，不是抖</b>：两个不同频率的正弦叠加，相位取节点在舞台上的位置（<code>ph = x·0.06 + y·0.05</code>）。相邻的点几乎同相、远处的点差半个周期，远看是一阵缓慢的波从左上扫到右下；再叠一层 37 秒的全体调制，整张网会一起深呼吸</div>
-        <div class="vh-item"><b>幅度与周期分三层</b>：中心 3.6px / 21 秒（像被钉住），主题 8–11px / 9.6–13 秒，细节 11–15px / 7.1–10 秒。越外围越放松，画面才有「浮着」的层次，而不是整块刚性平移</div>
+        <div class="vh-item"><b>方向各走各的，不是一阵风</b>：每个点的相位与频率比都由序号推导（确定性，刷新和截图比对都不会漂），但彼此不同——相邻两点不再同向摆动。两轴各叠两个分量，频率比取 1.73 / 1.57 这类非整数倍，合成出的是不闭合的利萨如轨迹：忽左忽右、忽快忽慢。实测四十秒内二十五个点<strong>全部走遍八个方向扇区</strong>，主方向占比最高只有 0.26——不是二十五个点各自乱抖，也不是整片被同一阵风推着走</div>
+        <div class="vh-item"><b>总览钉住，其余才动</b>：中心节点幅度为 0。它是一张网的锚，自己也晃的话，二十五条线的起点跟着抖，画面会散。主题 8–11px、细节 11–15px，纵向再收到 0.72 倍——同组四个细标签竖直方向只隔约 38px，压一压才不会撞在一起（实测六十秒内文字零重叠）</div>
+        <div class="vh-item"><b>节奏是一个系数</b>：全局 <code>TEMPO = 1.5</code> 只乘振荡的时间，不乘相位、不改幅度——波的形状与传播方向一概不动，只是走得快些。细节周期 8.2 → 5.6 秒、主题 10.2 → 7.0 秒。入场那 1.6 秒坡道仍按真实时间走，不跟着缩短，免得开局像被推了一把</div>
         <div class="vh-item"><b>非等比坐标的换算</b>：线画在 <code>viewBox="0 0 100 100"</code> 且 <code>preserveAspectRatio="none"</code>，x 方向 1 单位对应 W/100 像素、y 方向对应 H/100。位移按这个比例写回 <code>x1/y1/x2/y2</code>，容器怎么缩放都对齐</div>
-        <div class="vh-item"><b>门控三层，不空转</b>：<code>IntersectionObserver</code> 进视口才跑、离开即停；<code>visibilitychange</code> 切到后台即停；<code>prefers-reduced-motion</code> 直接不启动。一帧写 51 个元素，实测 62fps。入场也因此改成「滚到才播」：新增 <code>is-live</code>，否则页面加载时这块还在屏外，用户滚下来动画早播完了</div>
+        <div class="vh-item"><b>门控三层，不空转</b>：<code>IntersectionObserver</code> 进视口才跑、离开即停；<code>visibilitychange</code> 切到后台即停；<code>prefers-reduced-motion</code> 直接不启动。一帧写 51 个元素，实测 60fps。入场也因此改成「滚到才播」：新增 <code>is-live</code>，否则页面加载时这块还在屏外，用户滚下来动画早播完了</div>
         <div class="vh-item"><b>连线从中心绽开</b>：<code>clip-path: circle(0 → 88%)</code>。先试过用 <code>stroke-dashoffset</code> 逐条生长，但 <code>vector-effect: non-scaling-stroke</code> 会让 dash 长度按屏幕像素算、且不受 <code>pathLength</code> 归一化影响，每条线都断成一截截短杠——整块裁剪没有这个问题</div>
         <div class="vh-item"><b>节点有了实体，网有了重心</b>：节点底色改成与页面同色，线从文字底下过时被整齐切断，不再穿过字；中心节点压一张白纸小卡片，四周二十个标签只是文字。悬停某一组时，本组文字回到墨色、连线加深，其余四组连人带线退到 36%，同时本组漂移收到 0.4 倍幅——焦点处稳，四周继续流</div>
         <div class="vh-item"><b>顺手清了两处旧账</b>：蓝图十字准线原本全站常驻，在落地页上两条墨线横贯整屏（这里从 v58 起已是干净留白风），改为落地页收起、进内页再显示；<code>reduced-motion</code> 块里那几条能力网规则因写在主体段落之前，被后面同权重的声明盖掉，「关动画」其实从未生效，选择器抬一级才真正压下</div>
@@ -596,7 +597,7 @@ body {
       <div class="v-metrics">
         <div class="metric"><div class="m-val">16</div><div class="m-label">v64 新增断言</div></div>
         <div class="metric"><div class="m-val">2914</div><div class="m-label">前端断言总数</div></div>
-        <div class="metric"><div class="m-val">62</div><div class="m-label">实测帧率（fps）</div></div>
+        <div class="metric"><div class="m-val">60</div><div class="m-label">实测帧率（fps）</div></div>
       </div>
     </div>
   </div>

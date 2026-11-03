@@ -125,12 +125,18 @@
   }
 
   function drift(i, kind) {
-    if (kind === "center") return { ax: 3.6, ay: 3.2, dur: 21, del: -1 };
+    /* 总览（中心）固定不动：它要当整张图的锚，
+     * 自己也晃的话，二十五条线的起点跟着抖，画面会散。 */
+    if (kind === "center") return { ax: 0, ay: 0, dur: 21, del: -1 };
     const isGroup = kind === "group";
     const base = isGroup ? 8.2 : 11;
     const span = isGroup ? 3.0 : 4.0;
     const ax = +(base + span * jit(i, 1)).toFixed(1);
-    const ay = +(base * 0.86 + span * jit(i, 2)).toFixed(1);
+    /* 纵向收一点（0.72× 横向）：同组四个细标签在竖直方向只隔约 38px，
+     * 上下各摆十几个像素时按钮框会挨上——实测文字仍不会重叠，
+     * 但留出余量更稳。横向它们分散得很开，放心摆。
+     * 两轴频率本就不同，压扁一些不影响「轨迹不闭合、方向不乱」。 */
+    const ay = +(base * (isGroup ? 0.86 : 0.72) + span * jit(i, 2) * (isGroup ? 1 : 0.72)).toFixed(1);
     const dur = (isGroup ? 9.6 + jit(i, 3) * 3.4 : 7.1 + jit(i, 4) * 3.0).toFixed(1);
     const del = (-(jit(i, 5) * 9 + 0.3)).toFixed(2);
     return { ax, ay, dur, del };
@@ -241,10 +247,12 @@
   }
 
   /* ---------- 浮动引擎 ---------- */
-  /* 位移场 = 两个不同频率的正弦叠加，相位取节点在舞台上的位置
-   * （ph = x·0.06 + y·0.05）——于是相邻的点几乎同相、远处的点差半个周期，
-   * 看起来是一阵缓慢的波从左上扫到右下，而不是二十六个点各自乱抖。
-   * 每层的幅度与周期由 drift() 给出：中心慢而稳，细标签快而活。 */
+  /* 每个点走自己的路：相位与频率比都由序号推导（确定性，截图比对不会漂），
+   * 但彼此不同——相邻两点不再同向摆动，整张网的方向是散的。
+   * 每一轴仍是「两个正弦叠加」，只是两个分量的频率比取的是无理近似值，
+   * 合成出来的是一条不闭合的利萨如轨迹：忽左忽右、忽快忽慢，
+   * 看起来像被不同的气流各自托着，而不是整块被同一阵风吹。
+   * 总览点（中心）幅度为 0，钉在原处当锚。 */
 
   /* 全局节奏系数：只作用于「振荡的时间」，不改幅度、不改入场。
    * 调快调慢只改这一个数——逐个去改 26 个节点的 --dur 既费事，
@@ -276,18 +284,39 @@
     const lineEls = stage.querySelectorAll(".fv-link");
 
     MOTION.stage = stage;
-    MOTION.items = pins.map((p, i) => ({
-      el: els[i],
-      gi: p.gi,
-      x: p.x,
-      y: p.y,
-      ax: parseFloat(els[i].style.getPropertyValue("--ax")) || 4,
-      ay: parseFloat(els[i].style.getPropertyValue("--ay")) || 4,
-      w: (Math.PI * 2) / (parseFloat(els[i].style.getPropertyValue("--dur")) || 10),
-      dx: 0,
-      dy: 0,
-      damp: 1,
-    }));
+    MOTION.items = pins.map((p, i) => {
+      const el = els[i];
+      /* 注意：幅度可以是 0（总览就是 0），所以不能写 `parseFloat(x) || 4`——
+       * 那会把 0 当成空值补成 4，中心反而动起来。只有 NaN 才回落。 */
+      const num = function (raw, fallback) {
+        const n = parseFloat(raw);
+        return isFinite(n) ? n : fallback;
+      };
+      const dur = num(el.style.getPropertyValue("--dur"), 10);
+      return {
+        el: el,
+        gi: p.gi,
+        x: p.x,
+        y: p.y,
+        ax: num(el.style.getPropertyValue("--ax"), 4),
+        ay: num(el.style.getPropertyValue("--ay"), 4),
+        /* 基频：同一层的周期相近但不相等 */
+        w: (Math.PI * 2) / dur,
+        /* 每个点自己的相位：两轴分开取，否则所有点会沿同一条斜线来回 */
+        px: jit(i, 7) * Math.PI * 2,
+        py: jit(i, 8) * Math.PI * 2,
+        /* 每个点自己的频率比：0.62–1.34 / 0.58–1.42，
+         * 两轴不相等，轨迹才是二维的面而不是一条来回的线 */
+        rx: 0.62 + jit(i, 9) * 0.72,
+        ry: 0.58 + jit(i, 10) * 0.84,
+        /* 幅度呼吸的速率与相位，同样逐点不同 */
+        mr: 0.72 + jit(i, 11) * 0.6,
+        pm: jit(i, 12) * Math.PI * 2,
+        dx: 0,
+        dy: 0,
+        damp: 1,
+      };
+    });
     MOTION.links = lines.map((ln, i) => ({
       el: lineEls[i],
       a: MOTION.items[ln.a],
@@ -336,21 +365,31 @@
     const ramp = Math.min(1, t / 1.6);
     /* 振荡用 T：TEMPO 只加快「摆动的快慢」，幅度与波形一概不动 */
     const T = t * TEMPO;
-    /* 整片还有一层二十多秒的超慢调制：一阵舒展一阵收拢。
-     * 所有点用同一个因子，所以网会「一起深呼吸」，而不是各自为政。 */
-    const mood = 0.74 + 0.26 * Math.sin(T * 0.17 + 0.6);
     const focus = MOTION.focus;
 
     for (let i = 0; i < items.length; i++) {
       const it = items[i];
-      const ph = it.x * 0.06 + it.y * 0.05;
-      const w = it.w;
       /* 悬停时本组安静下来（0.4 倍幅），其余照常漂——焦点处稳，四周才活 */
       const want = focus >= 0 && it.gi === focus ? 0.4 : 1;
       it.damp += (want - it.damp) * 0.08;
+      /* 幅度本身也各自呼吸（二十多秒一轮，每点错开相位）。
+       * 早先用的是全场同一个因子，结果所有点一起涨落，
+       * 反而又把「各走各的」拉回整齐——这里改成逐点。 */
+      const mood = 0.76 + 0.24 * Math.sin(T * 0.17 * it.mr + it.pm);
       const A = ramp * it.damp * mood;
-      it.dx = it.ax * A * (0.62 * Math.sin(T * w + ph) + 0.38 * Math.sin(T * w * 0.61 + ph * 1.7 + 1.3));
-      it.dy = it.ay * A * (0.58 * Math.cos(T * w * 0.87 + ph * 1.2 + 0.6) + 0.42 * Math.sin(T * w * 0.49 + ph * 0.8 + 2.1));
+      /* 两轴各两个分量，频率比 1.73 / 1.57 不是整数倍，
+       * 所以轨迹不闭合：同一个点每次摆回来的路径都不一样，
+       * 方向也就没有「固定斜线」可循。 */
+      it.dx =
+        it.ax *
+        A *
+        (0.68 * Math.sin(T * it.w * it.rx + it.px) +
+          0.32 * Math.sin(T * it.w * it.rx * 1.73 + it.px * 1.6 + 0.9));
+      it.dy =
+        it.ay *
+        A *
+        (0.66 * Math.sin(T * it.w * it.ry + it.py) +
+          0.34 * Math.sin(T * it.w * it.ry * 1.57 + it.py * 1.4 + 2.3));
       it.el.style.translate = it.dx.toFixed(2) + "px " + it.dy.toFixed(2) + "px";
     }
 

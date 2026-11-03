@@ -186,8 +186,9 @@ function boot(opts) {
     "相位用负延迟：首屏即刻处于动画中段，不是整齐地从 0 开始"
   );
   ok(
-    nodes.every((n) => parseFloat(n.style.getPropertyValue("--ax")) >= 3),
-    "每个点都有可见幅度（中心 3.6 / 主题 8+ / 细节 11+）"
+    nodes.slice(1).every((n) => parseFloat(n.style.getPropertyValue("--ax")) >= 3) &&
+      parseFloat(nodes[0].style.getPropertyValue("--ax")) === 0,
+    "除总览外每个点都有可见幅度（主题 8+ / 细节 11+）；总览幅度为 0，钉住当锚"
   );
 
   console.log("\n── ③b 位移与端点 ──");
@@ -197,18 +198,28 @@ function boot(opts) {
   const snap = w.__bpVoices.tick(4.2);
   ok(snap.nodes === 26 && snap.links === 25, "tick 能驱动全部 26 点 / 25 线");
   ok(
-    snap.dx.some((v) => Math.abs(v) > 3),
-    "推进到第 4.2 秒，确有节点被推开（最大 " + Math.max(...snap.dx.map(Math.abs)).toFixed(1) + "px）"
+    snap.dx.some((v) => Math.abs(v) > 3) && snap.dx[0] === 0 && snap.dy[0] === 0,
+    "推进到第 4.2 秒，确有节点被推开（最大 " + Math.max(...snap.dx.map(Math.abs)).toFixed(1) + "px）；总览位移恒为 0"
   );
+  /* 朝向散开：同一时刻四个象限都应该有点，才叫「各走各的」 */
+  const quads = new Set(snap.dx.slice(1).map((v, i) => (v >= 0 ? 2 : 0) + (snap.dy[i + 1] >= 0 ? 1 : 0)));
   ok(
-    snap.dx.slice(1).some((v, i) => Math.abs(v - snap.dx[i]) > 0.2),
-    "相邻两点的位移不等（不是整块刚性平移）"
+    snap.dx.slice(1).some((v, i) => Math.abs(v - snap.dx[i]) > 0.2) && quads.size >= 3,
+    "各点位移互不相同，朝向也散开（" + quads.size + "/4 个象限都有点）"
   );
 
   const hub0 = d.querySelector("#fv-stage .fv-link-hub");
-  const cdx = parseFloat(d.querySelector("#fv-stage .fv-center").style.translate.split(" ")[0]);
-  const wantX = 50 + (cdx * 100) / 1180;
-  ok(Math.abs(wantX - parseFloat(hub0.getAttribute("x1"))) < 0.02, "主干线起点跟着中心一起动（同一份位移，差 < 0.02）");
+  const g0 = d.querySelector("#fv-stage .fv-group");
+  const gx = parseFloat(g0.style.getPropertyValue("--x"));
+  const gy = parseFloat(g0.style.getPropertyValue("--y"));
+  const gxy = g0.style.translate.split(" ");
+  const wantX = gx + (parseFloat(gxy[0]) * 100) / 1180;
+  const wantY = gy + (parseFloat(gxy[1]) * 100) / 518;
+  ok(
+    Math.abs(wantX - parseFloat(hub0.getAttribute("x2"))) < 0.02 &&
+      Math.abs(wantY - parseFloat(hub0.getAttribute("y2"))) < 0.02,
+    "主干线终点跟着主题节点一起动（两轴同一份位移，差 < 0.02）"
+  );
   const leavesAll = [...d.querySelectorAll("#fv-stage .fv-link:not(.fv-link-hub)")];
   ok(
     leavesAll.every((l) => {
