@@ -84,12 +84,13 @@ function media(css, query) {
   ok(/text-align: center/.test(hero), "首屏整体居中");
   ok(/background: none/.test(hero), "首屏不再铺图纸底色");
   ok(/font-size: clamp\(34px, 4\.4vw, 58px\)/.test(landingCss), "主标语用 vw 撑（1440 下 58px，与参考站同量级）");
-  const tagline = rule(landingCss, "#view-landing .landing-tagline");
-  ok(/background: none/.test(tagline) && /border: 0/.test(tagline), "价值主张抬头不再是红色胶囊");
-  ok(/letter-spacing: 0\.18em/.test(tagline), "抬头拉字距（等宽小字才站得住）");
   ok(
-    /一次面试，多重机会/.test(indexHtml) && /landing-tagline/.test(indexHtml),
-    "「一次面试，多重机会」这句价值主张仍在首屏"
+    !/\.landing-tagline|\.hero-rotator|\.lp-ver/.test(landingCss),
+    "落地页样式表里抬头/轮播/版本胶囊的规则已一并清掉（v61）"
+  );
+  ok(
+    /让每一次面试/.test(indexHtml) && !/一次面试，多重机会/.test(indexHtml),
+    "首屏只留标题：抬头那句价值主张随节点一起移除"
   );
 
   console.log("\n── ③ 图幅：一张报告截面，不是一块海报 ──");

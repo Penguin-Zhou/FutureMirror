@@ -13,7 +13,7 @@
  * 断言分六组：
  * ① 令牌：0.8s / 60px / .16,1,.3,1 三个数必须是量出来的那些
  * ② 滚动入场：初态只挂 .lp-motion，归位靠 .is-in，老 .reveal 在落地页退成空操作
- * ③ 首屏序列：六件东西的延迟逐个对表，条形与图幅编在同一支笔里
+ * ③ 首屏序列：四站延迟逐个对表（v61 起标题后就是副标题），条形与图幅编在同一支笔里
  * ④ 悬停：1px / 2px / 4% 底 / 150ms，与参考站同量级
  * ⑤ 三条降级：无 JS、无 IO、reduced-motion 都不能让内容消失
  * ⑥ 行为：jsdom 里装上构建产物，看类到底有没有打上、实录有没有识相地等
@@ -163,10 +163,10 @@ function fireAllIO(LazyIO) {
   ok(/clip-path: none/.test(legacy) && /transition: none/.test(legacy), "老 .reveal 的裁切揭载在落地页被关掉");
   ok(!/translateY/.test(legacy), "落地页的 .reveal 规则里不留 translateY（v23 的断言仍然成立）");
 
-  console.log("\n── ③ 首屏序列：六件东西的延迟逐个对表 ──");
+  console.log("\n── ③ 首屏序列：四站延迟逐个对表 ──");
   ok(/@keyframes lpRise/.test(landingCss), "lpRise 关键帧在场");
-  ok(/animation-delay: 0\.04s/.test(landingCss), "抬头 0.04s");
-  ok(/animation-delay: 0\.1s/.test(landingCss), "轮播行 0.1s");
+  ok(!/\.landing-tagline|\.hero-rotator/.test(landingCss), "序列里不再有抬头/轮播两站（v61 收掉）");
+  ok(/\.hero-sub \{\s*animation-delay: 0\.72s/.test(landingCss), "标题之后的第一站是副标题 0.72s");
   ok(/animation-delay: 0\.72s/.test(landingCss), "副标题 0.72s（标题刚写到「成长」）");
   ok(/animation-delay: 0\.82s/.test(landingCss), "主按钮 0.82s");
   ok(/animation-delay: 0\.92s/.test(landingCss), "快捷键提示 0.92s");

@@ -6686,14 +6686,6 @@ body:has(#view-landing.active) {
   gap: 8px;
 }
 
-#view-landing .lp-ver {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--lp-faint);
-  margin-right: 4px;
-}
-
 #view-landing .lp-icon {
   width: 32px;
   height: 32px;
@@ -6805,7 +6797,9 @@ body:has(#view-landing.active) {
  * ③ Hero：全部居中，字号靠 clamp 撑
  * ------------------------------------------------------------ */
 #view-landing .landing-hero {
-  padding: 76px 0 0;
+  /* v61：抬头/轮播收掉后，标题上方少了约 75px 的堆叠元素，
+   * 上边距补回来，免得标题贴在导航条下面 */
+  padding: 108px 0 0;
   text-align: center;
   background: none;
 }
@@ -6814,64 +6808,8 @@ body:has(#view-landing.active) {
   display: none;
 }
 
-/* 价值主张抬头：一行等宽小字，不用红色胶囊（参考站没有彩底标签） */
-#view-landing .landing-tagline {
-  display: block;
-  margin: 0 0 14px;
-  padding: 0;
-  border: 0;
-  background: none;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  font-weight: 400;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--lp-faint);
-}
-
-#view-landing .landing-tagline::before {
-  content: none;
-}
-
-#view-landing .hero-rotator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  min-height: 30px;
-  margin: 0 auto 20px;
-  font-family: "FM Kai", "LXGW WenKai TC", var(--serif);
-  font-size: 16px;
-  line-height: 1.4;
-  color: var(--lp-faint);
-  letter-spacing: 0.02em;
-}
-
-#view-landing .hero-rotator .hr-prefix {
-  display: none;
-}
-
-#view-landing .hero-rotator .hr-caret {
-  display: inline-block;
-  width: 12px;
-  height: 2px;
-  margin-left: 4px;
-  background: var(--brand);
-  vertical-align: 2px;
-  animation: lpCaret 1.1s steps(1, end) infinite;
-}
-
-@keyframes lpCaret {
-  0%,
-  49% {
-    opacity: 1;
-  }
-  50%,
-  100% {
-    opacity: 0;
-  }
-}
-
+/* 首屏只讲一句话：抬头、轮播、版本胶囊都已收掉（v61），
+ * 标题直接从导航下方起笔 —— 参考站的入场也不给标题加任何前缀。 */
 #view-landing .hero-title {
   position: relative;
   width: auto;
@@ -7814,7 +7752,7 @@ body:has(#view-landing.active) {
     padding-bottom: 4px;
   }
   #view-landing .landing-hero {
-    padding-top: 52px;
+    padding-top: 68px;
   }
   #view-landing .landing-section,
   #view-landing .lp-transcript {
@@ -7833,15 +7771,8 @@ body:has(#view-landing.active) {
   #view-landing #landing-end {
     padding-top: 64px;
   }
-  #view-landing .lp-ver {
-    display: none;
-  }
   #view-landing .landing-nav-meta .lp-pill-quiet {
     display: none;
-  }
-  #view-landing .hero-rotator {
-    font-size: 15px;
-    margin-bottom: 16px;
   }
   #view-landing .hero-title {
     font-size: clamp(26px, 8.2vw, 34px);
@@ -7975,12 +7906,8 @@ body:has(#view-landing.active) {
   }
 }
 
-/* 无动效偏好：光标与入场动画一并停掉 */
+/* 无动效偏好：入场动画一并停掉 */
 @media (prefers-reduced-motion: reduce) {
-  #view-landing .hero-rotator .hr-caret {
-    animation: none;
-    opacity: 1;
-  }
   #view-landing .lp-pill,
   #view-landing .feature-block,
   #view-landing .workflow-step {
@@ -8060,21 +7987,10 @@ body:has(#view-landing.active) {
   }
 }
 
-#view-landing.lp-motion.landing-enter .landing-tagline,
-#view-landing.lp-motion.landing-enter .hero-rotator,
 #view-landing.lp-motion.landing-enter .hero-sub,
 #view-landing.lp-motion.landing-enter .hero-cta,
 #view-landing.lp-motion.landing-enter .hero-kbd-hint {
   animation: lpRise var(--lp-mo-dur) var(--lp-mo-ease) both;
-}
-
-
-#view-landing.lp-motion.landing-enter .landing-tagline {
-  animation-delay: 0.04s;
-}
-
-#view-landing.lp-motion.landing-enter .hero-rotator {
-  animation-delay: 0.1s;
 }
 
 /* 标题最后一个字落在 0.81s（主行 220ms 起笔 + 5×34ms 步进 + 420ms 笔画）。
@@ -8190,8 +8106,6 @@ body:has(#view-landing.active) {
     transition: none;
   }
 
-  #view-landing.lp-motion.landing-enter .landing-tagline,
-  #view-landing.lp-motion.landing-enter .hero-rotator,
   #view-landing.lp-motion.landing-enter .hero-sub,
   #view-landing.lp-motion.landing-enter .hero-cta,
   #view-landing.lp-motion.landing-enter .hero-kbd-hint {
@@ -8290,7 +8204,6 @@ body:has(#view-landing.active) {
         <a href="changelog.html">更新日志</a>
       </div>
       <div class="landing-nav-meta">
-        <span class="lp-ver">BETA 1.1.2</span>
         <button class="lp-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式"><span data-ic="moon">🌙</span></button>
         <button class="lp-icon" id="accent-btn-l" onclick="cycleAccent()" aria-label="切换主题色" title="切换主题色（朱红 / 牛客绿 / 科技蓝）"><span data-ic="palette">🟣</span></button>
         <button class="lp-pill lp-pill-quiet" onclick="showView('app')">免费体验</button>
@@ -8302,8 +8215,6 @@ body:has(#view-landing.active) {
   <!-- Hero -->
   <section class="landing-hero">
     <div class="wrap">
-      <div class="landing-tagline">AI Native · 一次面试，多重机会</div>
-      <div class="hero-rotator" aria-live="polite"><span class="hr-prefix">&gt;_</span><span class="hr-text" id="hr-text"></span><i class="hr-caret" aria-hidden="true"></i></div>
       <h1 class="hero-title">
         <span class="ht-line ht-l1"><span class="ht-inner">让每一次面试，都成为</span></span>
         <span class="ht-line ht-l2"><span class="ht-inner"><span class="grad">可量化的成长</span>。</span></span>
@@ -8391,7 +8302,7 @@ body:has(#view-landing.active) {
         <div class="spec-chip"><span>LLM</span><b>GLM-4-Flash</b></div>
         <div class="spec-chip"><span>Agents</span><b>5 席圆桌</b></div>
         <div class="spec-chip"><span>Scoring</span><b>确定性引擎 + LLM 增强</b></div>
-        <div class="spec-chip"><span>Tests</span><b>jsdom 2826 ／ pytest 57</b></div>
+        <div class="spec-chip"><span>Tests</span><b>jsdom 2825 ／ pytest 57</b></div>
       </aside>
     </div>
   </section>
@@ -8412,7 +8323,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2826 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2825 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -8422,7 +8333,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2826 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2825 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -9918,7 +9829,7 @@ body:has(#view-landing.active) {
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2826 项前端断言 + 57 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2825 项前端断言 + 57 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -10098,7 +10009,7 @@ body:has(#view-landing.active) {
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（44 模块 + 4 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2826 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 4 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2825 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -16563,48 +16474,16 @@ function revealScan() {
     try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
   };
   const FX = (window.__bpLanding = {
-    rotator: false, mock: false, phrases: 0, playMock: null,
+    mock: false,
     overture: false, rail: false, ticks: 0, enter: null,
     chars: 0, split: false, frame: false, replay: null, pulse: false,
     reveal: 0, revealMode: "", mockDefer: false,
   });
 
-  /* ---------- ① Hero 文案轮播（等宽打字机） ---------- */
-  const PHRASES = [
-    "多 AGENT 圆桌协同追问",
-    "五维可解释评分 · 证据引用原话",
-    "RAG 混合检索 · 端侧 MINILM 向量",
-    "三级降级兜底 · 流程不中断",
-    "代码沙盒 · PII 脱敏",
-  ];
-  function initHeroRotator() {
-    const out = document.getElementById("hr-text");
-    if (!out) return;
-    FX.rotator = true;
-    FX.phrases = PHRASES.length;
-    if (reduced()) { out.textContent = PHRASES[0]; return; }
-    let pi = 0, ci = 0, del = false, timer = 0;
-    const tick = () => {
-      timer = 0;
-      const cur = PHRASES[pi];
-      if (!del) {
-        ci++;
-        out.textContent = cur.slice(0, ci);
-        if (ci >= cur.length) { del = true; timer = setTimeout(tick, 1700); return; }
-        timer = setTimeout(tick, 68);
-      } else {
-        ci--;
-        out.textContent = cur.slice(0, Math.max(0, ci));
-        if (ci <= 0) { del = false; pi = (pi + 1) % PHRASES.length; timer = setTimeout(tick, 460); return; }
-        timer = setTimeout(tick, 34);
-      }
-    };
-    timer = setTimeout(tick, 650);
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) { clearTimeout(timer); timer = 0; }
-      else if (!timer) { timer = setTimeout(tick, 420); }
-    });
-  }
+  /* ---------- ① Hero 文案轮播 —— v61 已下线 ---------- */
+  /* 首屏三个小标签（Beta 胶囊 / >_ 轮播 / AI Native 抬头）一并收掉，
+   * 标题成了首屏唯一的文字。打字机的定时器随之删除：
+   * 节点没了还留着定时器，只是让它在后台空转。 */
 
   /* ---------- ② 面试实录播台（气泡依序揭载 + 流式光标） ---------- */
   /* v60：首播挪到「真的看得见」的时候。气泡只播一遍，播在首屏下面等于没播。 */
@@ -16998,7 +16877,6 @@ function revealScan() {
 
   /* ---------- 入口 ---------- */
   function boot() {
-    try { initHeroRotator(); } catch (e) {}
     /* 拆字与角标必须在 enterLanding() 之前就位：加类的同一帧里初态已在 CSS 里等着，
      * 晚一帧就会看到「先整行出现、再消失重写」的闪跳。 */
     try { splitTitle(); } catch (e) {}

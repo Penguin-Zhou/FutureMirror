@@ -145,37 +145,18 @@ async function runTests() {
   );
   ok(/\.ws-draw\s*\{[^}]*transition-delay:\s*calc\(var\(--ws-i/.test(cssA), "CSS：绘制线 stagger 延迟（120ms×索引）");
 
-  /* ---------- A4. Hero 文案轮播 ---------- */
-  console.log("\n--- A4. Hero 文案轮播 ---");
-  const hr = dA.getElementById("hr-text");
-  ok(!!hr && !!dA.querySelector(".hero-rotator .hr-caret"), "Hero 轮播元素与方块光标存在");
+  /* ---------- A4. 首屏：三标签已收（v61） ---------- */
+  console.log("\n--- A4. 首屏三标签已下线 ---");
+  ok(!dA.getElementById("hr-text") && !dA.querySelector(".hero-rotator"), "轮播节点与方块光标已移除");
   ok(
-    wA.__bpLanding && wA.__bpLanding.rotator === true && wA.__bpLanding.phrases === 5,
-    "__bpLanding.rotator = true（5 条文案）"
+    wA.__bpLanding && !("rotator" in wA.__bpLanding) && !("phrases" in wA.__bpLanding),
+    "打点对象不再暴露轮播字段（打字机定时器一并删除，不留后台空转）"
   );
-  /* 首字出现的时间跟着页面加载走（脚本要等 650ms 才起跑），固定等 820ms 会偶发拿到空串。
-   * 改成最多等 2.4s 的第一个非空样本——语义仍是「逐字敲出首句」，只是不再赌加载耗时。 */
-  let t1 = "";
-  for (let i = 0; i < 20 && !t1; i++) {
-    await wait(120);
-    if (hr.textContent) t1 = hr.textContent;
-  }
-  ok(t1.length >= 1 && "多 AGENT 圆桌协同追问".startsWith(t1), "打字机逐字敲出首句（「" + t1 + "」）");
-  /* 轮播节奏是「打字 68ms/字 → 满句停留 1700ms → 删除 34ms/字 → 换句」，
-   * 单看某个固定时刻「是否变长」会踩进停留期：页面加载快慢差 200ms，
-   * 采样点就从「正在打字」滑到「停留」或「删除」，断言随机翻红。
-   * 改成在一个足够长的窗口里等「文案发生变化」——打字、删除、换句都算在轮播，
-   * 真卡死时仍然会失败。 */
-  let changed = "";
-  for (let i = 0; i < 30 && !changed; i++) {
-    await wait(150);
-    const now = hr.textContent;
-    if (now !== t1) changed = now;
-  }
-  ok(!!changed, "轮播持续推进（文案在变：「" + t1 + "」→「" + changed + "」）");
+  const heroKids = [...dA.querySelectorAll("#view-landing .landing-hero .wrap > *")];
+  ok(!!heroKids[0] && /hero-title/.test(heroKids[0].className), "标题是首屏第一个元素");
   ok(
-    /@keyframes caretBlink/.test(cssA) && /\.hero-rotator \.hr-caret\s*\{[^}]*animation:\s*caretBlink/.test(cssA),
-    "CSS：方块光标硬切闪烁"
+    !dA.querySelector("#view-landing .landing-tagline") && !dA.querySelector("#view-landing .lp-ver"),
+    "AI Native 抬头与 BETA 胶囊同样不在首屏（版本串仍由 title 与页脚承载）"
   );
 
   /* ---------- A5. 面试实录播台 ---------- */
@@ -320,10 +301,8 @@ async function runTests() {
     dR = wR.document;
 
   ok(!!dR.getElementById("bp-top"), "reduced-motion 下返回顶部仍注入（功能不缺失）");
-  ok(dR.getElementById("hr-text").textContent === "多 AGENT 圆桌协同追问", "reduced-motion 下轮播静态落位首句");
-  const tR = dR.getElementById("hr-text").textContent;
-  await wait(900);
-  ok(dR.getElementById("hr-text").textContent === tR, "reduced-motion 下轮播不跑定时器（文案稳定）");
+  ok(!dR.getElementById("hr-text"), "reduced-motion 下同样无轮播节点（降级不回填已下线的东西）");
+  ok(dR.querySelectorAll("#view-landing .lp-rv").length === 0, "reduced-motion 下不打滚动入场类（页面直接是完成态）");
   const rb = [...dR.querySelectorAll(".hero-mock-body .mock-bubble")];
   ok(
     rb.every((b) => b.classList.contains("mock-in")),
@@ -335,7 +314,10 @@ async function runTests() {
   const cssR = dR.querySelector("style").textContent;
   const rmBlock = (cssR.match(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\}\s*\}/g) || []).join("\n");
   ok(/\.bp-top\s*\{\s*transition:\s*none/.test(rmBlock), "reduced-motion 下回顶过渡关闭");
-  ok(/\.hero-rotator \.hr-caret\s*\{\s*animation:\s*none/.test(rmBlock), "reduced-motion 下光标停闪");
+  ok(
+    /#view-landing\.lp-motion\.landing-enter \.hero-sub[\s\S]{0,160}?animation:\s*none/.test(rmBlock),
+    "reduced-motion 下首屏入场动画关闭（只覆盖仍在的元素）"
+  );
   ok(
     /\.mock-caret\s*\{\s*animation:\s*none/.test(rmBlock) &&
       /\.hmh-live::before\s*\{\s*animation:\s*none/.test(rmBlock),

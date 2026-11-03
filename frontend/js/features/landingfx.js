@@ -21,48 +21,16 @@
     try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
   };
   const FX = (window.__bpLanding = {
-    rotator: false, mock: false, phrases: 0, playMock: null,
+    mock: false,
     overture: false, rail: false, ticks: 0, enter: null,
     chars: 0, split: false, frame: false, replay: null, pulse: false,
     reveal: 0, revealMode: "", mockDefer: false,
   });
 
-  /* ---------- ① Hero 文案轮播（等宽打字机） ---------- */
-  const PHRASES = [
-    "多 AGENT 圆桌协同追问",
-    "五维可解释评分 · 证据引用原话",
-    "RAG 混合检索 · 端侧 MINILM 向量",
-    "三级降级兜底 · 流程不中断",
-    "代码沙盒 · PII 脱敏",
-  ];
-  function initHeroRotator() {
-    const out = document.getElementById("hr-text");
-    if (!out) return;
-    FX.rotator = true;
-    FX.phrases = PHRASES.length;
-    if (reduced()) { out.textContent = PHRASES[0]; return; }
-    let pi = 0, ci = 0, del = false, timer = 0;
-    const tick = () => {
-      timer = 0;
-      const cur = PHRASES[pi];
-      if (!del) {
-        ci++;
-        out.textContent = cur.slice(0, ci);
-        if (ci >= cur.length) { del = true; timer = setTimeout(tick, 1700); return; }
-        timer = setTimeout(tick, 68);
-      } else {
-        ci--;
-        out.textContent = cur.slice(0, Math.max(0, ci));
-        if (ci <= 0) { del = false; pi = (pi + 1) % PHRASES.length; timer = setTimeout(tick, 460); return; }
-        timer = setTimeout(tick, 34);
-      }
-    };
-    timer = setTimeout(tick, 650);
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) { clearTimeout(timer); timer = 0; }
-      else if (!timer) { timer = setTimeout(tick, 420); }
-    });
-  }
+  /* ---------- ① Hero 文案轮播 —— v61 已下线 ---------- */
+  /* 首屏三个小标签（Beta 胶囊 / >_ 轮播 / AI Native 抬头）一并收掉，
+   * 标题成了首屏唯一的文字。打字机的定时器随之删除：
+   * 节点没了还留着定时器，只是让它在后台空转。 */
 
   /* ---------- ② 面试实录播台（气泡依序揭载 + 流式光标） ---------- */
   /* v60：首播挪到「真的看得见」的时候。气泡只播一遍，播在首屏下面等于没播。 */
@@ -456,7 +424,6 @@
 
   /* ---------- 入口 ---------- */
   function boot() {
-    try { initHeroRotator(); } catch (e) {}
     /* 拆字与角标必须在 enterLanding() 之前就位：加类的同一帧里初态已在 CSS 里等着，
      * 晚一帧就会看到「先整行出现、再消失重写」的闪跳。 */
     try { splitTitle(); } catch (e) {}

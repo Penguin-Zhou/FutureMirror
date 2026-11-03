@@ -127,8 +127,14 @@ function runTests() {
   ok(/\.quick-entries-hero\s*\{[^}]*repeat\(3,\s*1fr\)/.test(css), "快速入口 3 列网格（v15 保留）");
 
   /* ---------- F. 落地页内容增强 ---------- */
-  const tagline = document.querySelector("#view-landing .landing-tagline");
-  ok(tagline && tagline.textContent.includes("一次面试，多重机会"), "首屏价值主张标签「一次面试，多重机会」");
+  const h1 = document.querySelector("#view-landing .hero-title");
+  ok(!!h1 && /可量化的成长/.test(h1.textContent), "首屏主标语「可量化的成长」仍是唯一标题");
+  ok(
+    !document.querySelector("#view-landing .landing-tagline") &&
+      !document.querySelector("#view-landing .hero-rotator") &&
+      !document.querySelector("#view-landing .lp-ver"),
+    "首屏三个小标签已下线（AI Native 抬头 / >_ 轮播 / BETA 胶囊）"
+  );
   ok(!!document.querySelector("#view-landing .hero-mock .mock-chat"), "产品预览 Mock（对话）存在");
   ok(!!document.querySelector("#view-landing .hero-mock .mock-radar svg"), "产品预览 Mock（雷达图）存在");
   ok(

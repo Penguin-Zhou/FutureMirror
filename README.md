@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2826 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2825 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -648,7 +648,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2826 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2825 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -726,7 +726,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2826 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2825 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -917,6 +917,20 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v61：首屏只留一句话——三个小标签下线（2026.11.03）
+
+> 动效照参考站做完了，首屏顶上却还压着三层小字：`AI Native` 抬头、`>_` 打字机、`BETA 1.1.2` 胶囊。
+> 参考站的开场没有这些——它就一句话。这一版把三层一起收掉。
+
+- **三个标签是删掉，不是藏起来**：抬头 / `>_` 轮播 / 导航右侧版本胶囊，连同 `landing.css` 里的规则、窄屏覆盖、入场延迟项一起移除
+- **打字机连定时器一起删**：`initHeroRotator`、5 条文案、`__bpLanding.rotator / phrases` 一并下线，不留后台空转的 `setTimeout`
+- **上边距补回 32px**：抬头 + 轮播原本占掉约 75px 堆叠高度，首屏 `padding` 76 → 108px、窄屏 52 → 68px（对 1440 / 390 截图校准）
+- **序列少了两站，节奏没变**：标题之后第一站直接是副标题 0.72s，其余 0.82s / 0.92s / 1.02s 一概不动
+- **版本串不靠胶囊站着**：`Beta 1.1.2` 仍在 `<title>`、页脚、开发者模式横条三处；版本口径断言改为大小写不敏感
+- **断言口径反过来钉**：五处十四条改为「节点已下线 + 标题是首屏首元素 + 降级不回填」；净减 1 项，覆盖率不减
+- **口径未变**：仍是 Beta 1.1.2，不升版
+- **指标**：前端断言 2826 → **2825**（改写 14 条）｜jsdom 套件 **50 套**｜共享全局符号 **745**（不变）
 
 ### Beta 1.1.2 · 增量 v60：落地页动效层——把参考站的节奏量下来（2026.11.02）
 

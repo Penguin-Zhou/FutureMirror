@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2826</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2825</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -312,6 +312,7 @@ body {
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v61"><span class="cl-toc-tag">Beta 1.1.2 · v61</span><span class="cl-toc-title-txt">首屏只留一句话 · 三个小标签下线 / 打字机连定时器一起删 / 序列重排</span></a></li>
     <li><a href="#v60"><span class="cl-toc-tag">Beta 1.1.2 · v60</span><span class="cl-toc-title-txt">落地页动效层 · 60px 缓出上浮 / 首屏序列 / 1px 微抬 / 实证三条降级</span></a></li>
     <li><a href="#v59"><span class="cl-toc-tag">Beta 1.1.2 · v59</span><span class="cl-toc-title-txt">落地页整体重排 · 独立样式层 / 报告截面图幅 / 居中版式 / 旧窗栏带拆除</span></a></li>
     <li><a href="#v57"><span class="cl-toc-tag">Beta 1.1.2 · v57</span><span class="cl-toc-title-txt">主标语两种笔性 · 文楷引子 / 墨渗入场 / 断点字距收敛</span></a></li>
@@ -560,6 +561,37 @@ body {
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v61 · 首屏只留一句话：三个小标签下线
+       ======================================================== -->
+  <div class="version" id="v61">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 体验增强（v61）</span>
+      <span class="v-title">首屏只留一句话：三个小标签下线，标题从头接管</span>
+      <span class="v-date">2026.11.03</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        上一版把动效照参考站做完了，首屏顶上却还压着三层小字：<code>AI Native</code> 抬头、
+        <code>&gt;_</code> 打字机、<code>BETA 1.1.2</code> 胶囊。参考站的开场没有这些——它就一句话。
+        这一版把三层一起收掉，顺带把打字机的定时器、CSS 规则和四条挂在上面的断言一并清干净。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>三个标签是删掉，不是藏起来</b>：抬头那句「一次面试，多重机会」、<code>&gt;_</code> 轮播行、导航右侧的 <code>BETA 1.1.2</code> 胶囊，连同它们在 <code>landing.css</code> 里的规则、窄屏覆盖、入场延迟项一起移除。标题成了首屏唯一的文字，从导航下方直接起笔</div>
+        <div class="vh-item"><b>打字机连定时器一起删</b>：节点没了还留着 68ms/字的 <code>setTimeout</code>，只是让它在后台空转。<code>initHeroRotator</code>、5 条文案、<code>__bpLanding.rotator / phrases</code> 两个打点字段一并下线，boot 里那行调用也去掉</div>
+        <div class="vh-item"><b>上边距补回 32px</b>：抬头 + 轮播原本占掉约 75px 的堆叠高度（含各自间距），直接删会让标题贴在导航条下。首屏 <code>padding</code> 76 → 108px、窄屏 52 → 68px，数值是对着 1440 与 390 两张截图校准的，不是凭感觉给的</div>
+        <div class="vh-item"><b>序列少了两站，节奏没变</b>：标题之后第一站直接是副标题 0.72s（原来中间还嵌着 0.04s 抬头与 0.1s 轮播），主按钮 0.82s、提示 0.92s、评分图幅 0.82s、五条横条 1.02s 起一概不动。一支笔连写下来的顺序还在，只是前缀那两笔没了</div>
+        <div class="vh-item"><b>版本串不靠胶囊站着</b>：<code>Beta 1.1.2</code> 仍出现在 <code>&lt;title&gt;</code>、页脚与开发者模式横条三处，<code>test-v31</code> 的版本口径断言改成大小写不敏感。删掉的是那颗胶囊，不是版本号本身</div>
+        <div class="vh-item"><b>断言口径反过来钉</b>：原先是「这句文案在不在」，现在是「这三个节点在不在」。v17 / v25 / v31 / v59 / v60 五处共十四条改写为「已下线 + 标题是首屏首元素 + 降级不回填已删的东西」，覆盖率不减，也不再为不存在的节点留着假绿</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">14</div><div class="m-label">v61 改写断言</div></div>
+        <div class="metric"><div class="m-val">2825</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">50</div><div class="m-label">jsdom 套件</div></div>
       </div>
     </div>
   </div>

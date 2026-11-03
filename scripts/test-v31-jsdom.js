@@ -400,7 +400,7 @@ async function runTests() {
      ⑦ 版本串口径
      ================================================================ */
   console.log("\n—— ⑦ 版本口径 ——");
-  ok(/BETA 1\.1\.2/.test(html), "页面版本串为 BETA 1.1.2");
+  ok(/Beta 1\.1\.2/i.test(html), "页面版本串为 Beta 1.1.2（v61 收掉导航里的 BETA 胶囊后，仍由 title 与页脚承载）");
   ok(/beta1\.1\.2/.test(html), "开发者模式版本串为 beta1.1.2");
   ok(!/beta1\.1\.1/.test(html), "无 beta1.1.1 残留");
 
