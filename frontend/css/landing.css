@@ -29,6 +29,8 @@
   --lp-wrap: 1260px;
   --lp-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, system-ui, sans-serif;
   --lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* 首屏撑满一屏时要扣掉吸顶导航条的高度（实测 65px，窄屏同为 65px） */
+  --lp-nav-h: 65px;
 
   background: var(--lp-bg);
   color: var(--lp-ink);
@@ -253,11 +255,27 @@ body:has(#view-landing.active) {
  * ③ Hero：全部居中，字号靠 clamp 撑
  * ------------------------------------------------------------ */
 #view-landing .landing-hero {
-  /* v61：抬头/轮播收掉后，标题上方少了约 75px 的堆叠元素，
-   * 上边距补回来，免得标题贴在导航条下面 */
-  padding: 108px 0 0;
+  /* v62：首屏由 .lp-first 自己撑满一屏，这里不再留上边距 ——
+   * 否则一屏高度之外还会多出 108px 的空白 */
+  padding: 0;
   text-align: center;
   background: none;
+}
+
+/* 第一屏：导航以下整屏，标题块在其中垂直居中。
+ * 尺寸线（.bp-sheet）与评分图幅不在这个容器里，因此整体落到折线以下 ——
+ * 首屏只留标题、副标题、两个按钮与快捷键提示。 */
+#view-landing .lp-first {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--lp-nav-h));
+  /* 移动端 100vh 取的是地址栏「收起后」的高度，地址栏还在时会比可视区大；
+   * svh 取的是「展开时」的最小高度，正好是一屏的保守值。不支持的浏览器留在上一行 */
+  min-height: calc(100svh - var(--lp-nav-h));
+  /* 上少下多：视觉重心略高于正中，比机械居中稳 */
+  padding: 32px 0 56px;
 }
 
 #view-landing .landing-hero::before {
@@ -1207,8 +1225,8 @@ body:has(#view-landing.active) {
   #view-landing .mock-radar {
     padding-bottom: 4px;
   }
-  #view-landing .landing-hero {
-    padding-top: 68px;
+  #view-landing .lp-first {
+    padding: 18px 0 34px;
   }
   #view-landing .landing-section,
   #view-landing .lp-transcript {

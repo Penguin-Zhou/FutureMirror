@@ -152,8 +152,12 @@ async function runTests() {
     wA.__bpLanding && !("rotator" in wA.__bpLanding) && !("phrases" in wA.__bpLanding),
     "打点对象不再暴露轮播字段（打字机定时器一并删除，不留后台空转）"
   );
-  const heroKids = [...dA.querySelectorAll("#view-landing .landing-hero .wrap > *")];
-  ok(!!heroKids[0] && /hero-title/.test(heroKids[0].className), "标题是首屏第一个元素");
+  const heroFirst = dA.querySelector("#view-landing .landing-hero .lp-first");
+  ok(!!heroFirst && /hero-title/.test(heroFirst.firstElementChild.className), "标题是第一屏容器里的第一个元素");
+  ok(
+    !heroFirst || !heroFirst.querySelector(".bp-sheet, .lp-banner"),
+    "尺寸线与评分图幅不在第一屏容器内（整体落到折线以下）"
+  );
   ok(
     !dA.querySelector("#view-landing .landing-tagline") && !dA.querySelector("#view-landing .lp-ver"),
     "AI Native 抬头与 BETA 胶囊同样不在首屏（版本串仍由 title 与页脚承载）"

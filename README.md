@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2825 项断言
+npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2826 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -648,7 +648,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2825 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2826 项前端断言 + 57 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -726,7 +726,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2825 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2826 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -917,6 +917,19 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v62：首屏撑满一屏——标题独占第一眼（2026.11.03）
+
+> 三个标签收掉后，首屏只剩标题与 CTA，可评分图幅的顶边仍露在折线下缘。
+> 这一版把第一屏交给标题独占：满一屏，图幅连同尺寸线整体推到折线以下。
+
+- **用一个容器划出一屏**：标题 / 副标题 / 两个按钮 / 快捷键提示收进 `.lp-first`，它自己 `min-height: calc(100svh - 65px)` 并垂直居中；尺寸线与评分图幅不在容器内，自然落到折线以下
+- **`svh` 而不是 `vh`**：移动端地址栏收起时 `100vh` 高于真实可视区，两行声明并存，支持的走 `100svh`、不支持的退回 `100vh`
+- **重心略高于正中**：`justify-content: center` + `padding: 32px 0 56px`，窄屏 `18px / 34px`
+- **上边距归零**：v61 加的 `padding-top: 108px` 由容器高度接管，两套留白叠加会凭空多出 108px
+- **实测折线**：1440×900 图幅顶 986（退后 86px）｜390×844 顶 888（退后 44px），两档都不探出
+- **断言钉在结构上**：v25 改为「`.lp-first` 首个子元素是标题」+ 新增「容器内不含尺寸线与评分图幅」
+- **指标**：前端断言 2825 → **2826**（净增 1 项）｜jsdom 套件 **50 套**｜共享全局符号 **745**（不变）
 
 ### Beta 1.1.2 · 增量 v61：首屏只留一句话——三个小标签下线（2026.11.03）
 

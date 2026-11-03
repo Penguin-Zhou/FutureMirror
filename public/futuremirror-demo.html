@@ -6573,6 +6573,8 @@ html[data-boot="slow"]::before { content: "载入较慢 · 可刷新页面，或
   --lp-wrap: 1260px;
   --lp-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, system-ui, sans-serif;
   --lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* 首屏撑满一屏时要扣掉吸顶导航条的高度（实测 65px，窄屏同为 65px） */
+  --lp-nav-h: 65px;
 
   background: var(--lp-bg);
   color: var(--lp-ink);
@@ -6797,11 +6799,27 @@ body:has(#view-landing.active) {
  * ③ Hero：全部居中，字号靠 clamp 撑
  * ------------------------------------------------------------ */
 #view-landing .landing-hero {
-  /* v61：抬头/轮播收掉后，标题上方少了约 75px 的堆叠元素，
-   * 上边距补回来，免得标题贴在导航条下面 */
-  padding: 108px 0 0;
+  /* v62：首屏由 .lp-first 自己撑满一屏，这里不再留上边距 ——
+   * 否则一屏高度之外还会多出 108px 的空白 */
+  padding: 0;
   text-align: center;
   background: none;
+}
+
+/* 第一屏：导航以下整屏，标题块在其中垂直居中。
+ * 尺寸线（.bp-sheet）与评分图幅不在这个容器里，因此整体落到折线以下 ——
+ * 首屏只留标题、副标题、两个按钮与快捷键提示。 */
+#view-landing .lp-first {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--lp-nav-h));
+  /* 移动端 100vh 取的是地址栏「收起后」的高度，地址栏还在时会比可视区大；
+   * svh 取的是「展开时」的最小高度，正好是一屏的保守值。不支持的浏览器留在上一行 */
+  min-height: calc(100svh - var(--lp-nav-h));
+  /* 上少下多：视觉重心略高于正中，比机械居中稳 */
+  padding: 32px 0 56px;
 }
 
 #view-landing .landing-hero::before {
@@ -7751,8 +7769,8 @@ body:has(#view-landing.active) {
   #view-landing .mock-radar {
     padding-bottom: 4px;
   }
-  #view-landing .landing-hero {
-    padding-top: 68px;
+  #view-landing .lp-first {
+    padding: 18px 0 34px;
   }
   #view-landing .landing-section,
   #view-landing .lp-transcript {
@@ -8212,22 +8230,24 @@ body:has(#view-landing.active) {
     </div>
   </nav>
 
-  <!-- Hero -->
+  <!-- Hero：第一屏只放标题与 CTA，撑满一屏；尺寸线与评分图幅整体落在折线以下 -->
   <section class="landing-hero">
     <div class="wrap">
-      <h1 class="hero-title">
-        <span class="ht-line ht-l1"><span class="ht-inner">让每一次面试，都成为</span></span>
-        <span class="ht-line ht-l2"><span class="ht-inner"><span class="grad">可量化的成长</span>。</span></span>
-      </h1>
-      <p class="hero-sub">
-        上传简历与目标岗位 JD，由 AI 面试官团队（HR / 技术 / 压力面 / 观察员）完成模拟面试，
-        生成可解释的评分报告、能力雷达图与个性化学习路径。
-      </p>
-      <div class="hero-cta">
-        <button class="lp-pill lp-pill-solid lp-pill-lg" onclick="enterAppOrAuth()"><span class="cta-wide">立即体验 →</span><span class="cta-narrow">上传简历，开始一场可溯源的模拟面试 →</span></button>
-        <button class="lp-pill lp-pill-line lp-pill-lg" onclick="showView('app')">先看看界面</button>
+      <div class="lp-first">
+        <h1 class="hero-title">
+          <span class="ht-line ht-l1"><span class="ht-inner">让每一次面试，都成为</span></span>
+          <span class="ht-line ht-l2"><span class="ht-inner"><span class="grad">可量化的成长</span>。</span></span>
+        </h1>
+        <p class="hero-sub">
+          上传简历与目标岗位 JD，由 AI 面试官团队（HR / 技术 / 压力面 / 观察员）完成模拟面试，
+          生成可解释的评分报告、能力雷达图与个性化学习路径。
+        </p>
+        <div class="hero-cta">
+          <button class="lp-pill lp-pill-solid lp-pill-lg" onclick="enterAppOrAuth()"><span class="cta-wide">立即体验 →</span><span class="cta-narrow">上传简历，开始一场可溯源的模拟面试 →</span></button>
+          <button class="lp-pill lp-pill-line lp-pill-lg" onclick="showView('app')">先看看界面</button>
+        </div>
+        <div class="hero-kbd-hint">按 <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> 打开命令面板 · 直达任意功能页</div>
       </div>
-      <div class="hero-kbd-hint">按 <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> 打开命令面板 · 直达任意功能页</div>
 
       <!-- 图幅标注：一条尺寸线给下面的评分图幅定界（图纸编号 + 网格 + 时长） -->
       <div class="bp-sheet" aria-hidden="true">
@@ -8302,7 +8322,7 @@ body:has(#view-landing.active) {
         <div class="spec-chip"><span>LLM</span><b>GLM-4-Flash</b></div>
         <div class="spec-chip"><span>Agents</span><b>5 席圆桌</b></div>
         <div class="spec-chip"><span>Scoring</span><b>确定性引擎 + LLM 增强</b></div>
-        <div class="spec-chip"><span>Tests</span><b>jsdom 2825 ／ pytest 57</b></div>
+        <div class="spec-chip"><span>Tests</span><b>jsdom 2826 ／ pytest 57</b></div>
       </aside>
     </div>
   </section>
@@ -8323,7 +8343,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2825 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2826 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -8333,7 +8353,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2825 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2826 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -9829,7 +9849,7 @@ body:has(#view-landing.active) {
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2825 项前端断言 + 57 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2826 项前端断言 + 57 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -10009,7 +10029,7 @@ body:has(#view-landing.active) {
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（44 模块 + 4 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2825 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（44 模块 + 4 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2826 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>

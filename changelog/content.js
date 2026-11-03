@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2825</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2826</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -37,6 +37,7 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v62"><span class="cl-toc-tag">Beta 1.1.2 · v62</span><span class="cl-toc-title-txt">首屏撑满一屏 · .lp-first 容器 / svh 视口 / 图幅退到折线以下</span></a></li>
     <li><a href="#v61"><span class="cl-toc-tag">Beta 1.1.2 · v61</span><span class="cl-toc-title-txt">首屏只留一句话 · 三个小标签下线 / 打字机连定时器一起删 / 序列重排</span></a></li>
     <li><a href="#v60"><span class="cl-toc-tag">Beta 1.1.2 · v60</span><span class="cl-toc-title-txt">落地页动效层 · 60px 缓出上浮 / 首屏序列 / 1px 微抬 / 实证三条降级</span></a></li>
     <li><a href="#v59"><span class="cl-toc-tag">Beta 1.1.2 · v59</span><span class="cl-toc-title-txt">落地页整体重排 · 独立样式层 / 报告截面图幅 / 居中版式 / 旧窗栏带拆除</span></a></li>
@@ -286,6 +287,37 @@ export const changelogHtml = `
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v62 · 首屏撑满一屏：图幅整体退到折线以下
+       ======================================================== -->
+  <div class="version" id="v62">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 体验增强（v62）</span>
+      <span class="v-title">首屏撑满一屏：标题独占第一眼，图幅退到折线以下</span>
+      <span class="v-date">2026.11.03</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        v61 把三个小标签收掉之后，首屏只剩标题与 CTA，可评分图幅的顶边仍露在折线下缘
+        ——一屏里同时出现了「开场」和「正文」，第一眼不知道该看哪里。
+        这一版把第一屏交给标题独占：满一屏，图幅连同那条 <code>SHEET 01</code> 尺寸线整体推到折线以下。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>用容器划出一屏，而不是给图幅加位移</b>：标题 / 副标题 / 两个按钮 / 快捷键提示收进新容器 <code>.lp-first</code>，它自己 <code>min-height: calc(100svh - 65px)</code>（扣掉吸顶导航条）并垂直居中。尺寸线与评分图幅不在这个容器里，自然落到折线以下——不是把图幅往下推了多少像素，而是第一屏的定义被改清楚了</div>
+        <div class="vh-item"><b><code>svh</code> 而不是 <code>vh</code></b>：移动端地址栏收起时 <code>100vh</code> 比真实可视区高，首屏会多出一截。两行声明并存，支持的浏览器走 <code>100svh</code>，不支持的退回 <code>100vh</code>，不会出现「撑不满」或「撑过头」</div>
+        <div class="vh-item"><b>重心略高于正中</b>：<code>justify-content: center</code> 配 <code>padding: 32px 0 56px</code>，下边留得比上边多——机械居中会显得整块往下坠。窄屏收到 <code>18px / 34px</code></div>
+        <div class="vh-item"><b>上边距归零</b>：v61 为补呼吸感加的 <code>padding-top: 108px</code> 已由容器高度接管，<code>.landing-hero</code> 回到 <code>padding: 0</code>。两套留白叠加会让首屏凭空多出 108px 空白</div>
+        <div class="vh-item"><b>实测折线位置</b>：1440×900 图幅顶边 986（折线 900，退后 86px）；390×844 顶边 888（退后 44px）；两档都不再有图幅探出。首屏内容在各自视口内垂直居中，深色态同样成立</div>
+        <div class="vh-item"><b>断言跟着结构走</b>：v25 的首屏断言从「<code>.wrap</code> 第一个子元素是标题」改为「第一屏容器 <code>.lp-first</code> 的第一个子元素是标题」，并新增一条「容器内不含尺寸线与评分图幅」——把「图幅在折线以下」这件事钉在结构上，而不是量像素</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">1</div><div class="m-label">v62 净增断言</div></div>
+        <div class="metric"><div class="m-val">2826</div><div class="m-label">前端断言总数</div></div>
+        <div class="metric"><div class="m-val">50</div><div class="m-label">jsdom 套件</div></div>
       </div>
     </div>
   </div>
