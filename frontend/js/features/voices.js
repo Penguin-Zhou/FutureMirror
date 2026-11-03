@@ -32,6 +32,7 @@
     mode: "",
     motion: "",
     frames: 0,
+    tempo: 0,
     tipOpen: "",
     activeNode: null,
     show: null,
@@ -115,7 +116,9 @@
   /* 浮动参数按序号推导：同一个公式保证每次刷新一致（截图比对不会漂），
    * 又不至于让所有节点同相位地一起晃。
    * v64 起幅度分三层：中心最稳（像被钉住），主题次之，细标签最活——
-   * 越外围越放松，整张网才有「浮着」的层次，而不是整体刚性平移。 */
+   * 越外围越放松，整张网才有「浮着」的层次，而不是整体刚性平移。
+   * 这里的 dur 是「各层的基础周期」，实际节奏再乘下方 TEMPO。
+   * 幅度与周期分开：想更活泼就调 TEMPO，想更飘就调 ax/ay，互不牵连。 */
   function jit(i, k) {
     const s = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
     return s - Math.floor(s);
@@ -242,6 +245,18 @@
    * （ph = x·0.06 + y·0.05）——于是相邻的点几乎同相、远处的点差半个周期，
    * 看起来是一阵缓慢的波从左上扫到右下，而不是二十六个点各自乱抖。
    * 每层的幅度与周期由 drift() 给出：中心慢而稳，细标签快而活。 */
+
+  /* 全局节奏系数：只作用于「振荡的时间」，不改幅度、不改入场。
+   * 调快调慢只改这一个数——逐个去改 26 个节点的 --dur 既费事，
+   * 又容易把各层之间「外快内慢」的关系弄乱。
+   * 1.0 是 v64 首版（细节 7.1–10.1s / 主题 9.6–13s / 中心 21s）；
+   * 1.5 → 细节 4.7–6.7s / 主题 6.4–8.7s / 中心 14s：
+   * 一眼能看出在飘，又不至于像被风吹。
+   * 注意：相位靠空间位置算（ph），乘的是时间而不是相位，
+   * 所以波的形状与传播方向完全不变，只是走得快了些。 */
+  const TEMPO = 1.5;
+  /* 也写进打点：现场核对时能直接读出这一版是几倍速 */
+  FX.tempo = TEMPO;
   const MOTION = {
     stage: null,
     items: [],
@@ -315,11 +330,15 @@
     /* viewBox 是 0..100 且不保持比例：x 方向 1 单位 = W/100 px，y 方向 = H/100 px */
     const kx = MOTION.W ? 100 / MOTION.W : 0;
     const ky = MOTION.H ? 100 / MOTION.H : 0;
-    /* 进场 1.6s 内位移从 0 长到全幅，避免首帧从几十像素外跳回来 */
+    /* 进场 1.6s 内位移从 0 长到全幅，避免首帧从几十像素外跳回来。
+     * 这条坡道走的是真实时间 t，不乘 TEMPO——节奏调快不该把入场也压短，
+     * 否则开局会像被推了一把。 */
     const ramp = Math.min(1, t / 1.6);
-    /* 整片还有一层 37 秒的超慢调制：一阵舒展一阵收拢。
+    /* 振荡用 T：TEMPO 只加快「摆动的快慢」，幅度与波形一概不动 */
+    const T = t * TEMPO;
+    /* 整片还有一层二十多秒的超慢调制：一阵舒展一阵收拢。
      * 所有点用同一个因子，所以网会「一起深呼吸」，而不是各自为政。 */
-    const mood = 0.74 + 0.26 * Math.sin(t * 0.17 + 0.6);
+    const mood = 0.74 + 0.26 * Math.sin(T * 0.17 + 0.6);
     const focus = MOTION.focus;
 
     for (let i = 0; i < items.length; i++) {
@@ -330,8 +349,8 @@
       const want = focus >= 0 && it.gi === focus ? 0.4 : 1;
       it.damp += (want - it.damp) * 0.08;
       const A = ramp * it.damp * mood;
-      it.dx = it.ax * A * (0.62 * Math.sin(t * w + ph) + 0.38 * Math.sin(t * w * 0.61 + ph * 1.7 + 1.3));
-      it.dy = it.ay * A * (0.58 * Math.cos(t * w * 0.87 + ph * 1.2 + 0.6) + 0.42 * Math.sin(t * w * 0.49 + ph * 0.8 + 2.1));
+      it.dx = it.ax * A * (0.62 * Math.sin(T * w + ph) + 0.38 * Math.sin(T * w * 0.61 + ph * 1.7 + 1.3));
+      it.dy = it.ay * A * (0.58 * Math.cos(T * w * 0.87 + ph * 1.2 + 0.6) + 0.42 * Math.sin(T * w * 0.49 + ph * 0.8 + 2.1));
       it.el.style.translate = it.dx.toFixed(2) + "px " + it.dy.toFixed(2) + "px";
     }
 
@@ -344,8 +363,9 @@
       ln.el.setAttribute("x2", (b.x + b.dx * kx).toFixed(2));
       ln.el.setAttribute("y2", (b.y + b.dy * ky).toFixed(2));
       /* 线的透明度做低频呼吸（±16%），各组的相位错开：
-       * 单看一条几乎察觉不到，整片看过去网是「活着」的 */
-      const breathe = 0.82 + 0.1 * Math.sin(t * 0.5 + ln.gi * 1.25);
+       * 单看一条几乎察觉不到，整片看过去网是「活着」的。
+       * 跟着 TEMPO 一起加快，免得点的摆动快了、线的明暗还慢半拍。 */
+      const breathe = 0.82 + 0.1 * Math.sin(T * 0.5 + ln.gi * 1.25);
       let target = ln.base * breathe;
       if (focus >= 0) target = ln.gi === focus ? 1 : 0.3;
       ln.cur += (target - ln.cur) * 0.1;
