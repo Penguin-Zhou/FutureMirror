@@ -5,8 +5,15 @@ from app.scoring import score_session
 
 
 def test_health():
+    from app import main as m
     with TestClient(app) as c:
-        assert c.get("/api/health").json()["ok"] is True
+        body = c.get("/api/health").json()
+        assert body["ok"] is True
+        # v68：外部要靠这两个字段判断「起了几个进程」「限额记在哪」，
+        # 少了它们，线上限流失效时只能靠猜。
+        assert body["instance"] == m.INSTANCE_ID
+        assert body["rate_store"]["db_ok"] is True
+        assert body["rate_store"]["mode"] == "db"
 
 
 def test_register_login_and_report_flow():

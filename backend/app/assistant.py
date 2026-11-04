@@ -19,6 +19,7 @@
 """
 from __future__ import annotations
 
+import re
 import threading
 import time
 from collections import deque
@@ -185,25 +186,70 @@ anon_limiter = DbRateLimiter(QUOTA_ANON["per_min"], QUOTA_ANON["per_day"])
 user_limiter = DbRateLimiter(QUOTA_USER["per_min"], QUOTA_USER["per_day"])
 
 
-def client_key(request: Any, user: Any = None) -> str:
-    """限流主体。
+_ANON_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
 
-    镜像站前面有一层反向代理，`request.client.host` 是代理的内网地址——
-    直接用它会让所有访客共用一个额度，第 7 个人就被拒。
-    所以优先取 X-Forwarded-For 的第一段。这个头可以伪造，
-    但伪造的代价只是「自己换一个额度」，挡不住真正想刷的人；
-    在这里它的作用是防止**误伤**，不是防攻击。
+# 所有「没有设备标识」的匿名调用共用一个主体。
+# 这是刻意的：宁可让它们共用一份额度，也不要因为认不出人而人人一份。
+SHARED_KEY = "a:shared"
+
+
+def client_key(request: Any, user: Any = None) -> str:
+    """限流主体：登录按账号，访客按前端生成的设备标识。
+
+    为什么不按来源地址：镜像站前面是一层会换出口 IP 的代理池，
+    实测连发 5 个请求拿到 4 个不同网段（43.143 / 82.156 / 82.157 / 49.233），
+    `X-Real-IP` 与 `X-Forwarded-For` 首段都跟着变——按地址计额等于没计额
+    （线上 10 个并发被记成 10 个 key，额度一次都没扣住）。
+
+    所以身份由前端生成：`X-Anon-Id` 是 localStorage 里的随机串，随请求带上。
+    它不是身份凭证（清掉 localStorage 就换一个），作用只是让**同一个浏览器**
+    共用一份额度，挡住误触连点与顺手写脚本的人；真正的账号额度仍按用户 id 计。
     """
     if user is not None:
         return f"u:{getattr(user, 'id', '?')}"
     try:
-        fwd = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
-        if fwd:
-            return f"ip:{fwd}"
-        host = getattr(getattr(request, "client", None), "host", "") or ""
-        return f"ip:{host or 'unknown'}"
-    except Exception:  # noqa: BLE001 - 取不到来源就不拦，宁可放行也不要 500
-        return "ip:unknown"
+        anon = (request.headers.get("x-anon-id") or "").strip()
+        if _ANON_ID_RE.match(anon):
+            return f"a:{anon}"
+    except Exception:  # noqa: BLE001 - 取不到就当没有标识
+        pass
+    return SHARED_KEY
+
+
+def proxy_shape(request: Any) -> dict[str, Any]:
+    """请求身份的「形状」，不含具体值，供线上核验限流是否按预期聚合。
+
+    `anon` 为真说明前端带上了设备标识；`xff_segments` / `real_ip` 记录下来
+    是为了留证：这层代理的来源头对识别访客没有用（见 `client_key` 的说明）。
+    """
+    try:
+        xff = request.headers.get("x-forwarded-for") or ""
+        return {
+            "anon": _ANON_ID_RE.match((request.headers.get("x-anon-id") or "").strip()) is not None,
+            "xff_segments": len([s for s in xff.split(",") if s.strip()]) if xff else 0,
+            "real_ip": bool(request.headers.get("x-real-ip")),
+            "key": client_key(request)[:24],
+        }
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def rate_store_info() -> dict[str, Any]:
+    """限额记账现在落在哪、有多少主体。
+
+    存在的理由：限流从内存搬到库里之后，「到底有没有共用一份账」从外部看不见。
+    线上排查时发现 10 个并发全过——是库没写进去（回落内存版），
+    还是进程各有各的存储，只能靠这几个字段区分。所以把状态暴露在 /api/health。
+    """
+    fallbacks = getattr(anon_limiter, "_fallback_used", 0) + getattr(user_limiter, "_fallback_used", 0)
+    try:
+        from .db import RateHit, SessionLocal
+        with SessionLocal() as s:
+            keys = len({r[0] for r in s.query(RateHit.key).all()})
+        return {"mode": "db", "db_ok": True, "keys": keys, "fallbacks": fallbacks}
+    except Exception as e:  # noqa: BLE001
+        return {"mode": "memory", "db_ok": False, "fallbacks": fallbacks,
+                "error": str(e)[:80]}
 
 
 def build_messages(question: str, hits: list[dict[str, Any]],

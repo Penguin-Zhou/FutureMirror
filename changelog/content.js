@@ -316,6 +316,8 @@ export const changelogHtml = `
         <div class="vh-item"><b>怎么确认真修好了</b>：本地 <code>uvicorn --workers 3</code> 复现多进程，同一来源 12 个并发 → <strong>6 个 200 / 6 个 429</strong>（修复前是 9 个通过）。换一个来源仍然各自计额，互不牵连</div>
         <div class="vh-item"><b>库写失败不退化成放行</b>：<code>SessionLocal</code> 抛异常时回落到进程内存版限流。最坏结果是退回「单进程 6 次/分」，而不是完全不拦</div>
         <div class="vh-item"><b>容忍毫秒级竞态</b>：两个进程可能同时读到「还剩 1 次」再各自写入，于是多放过去一次。限额是防滥用不是计费，这个精度写在代码注释里，不假装是精确值</div>
+        <div class="vh-item"><b>修完存储才看见真问题：认不出人</b>：把记账挪到库里之后，10 个并发仍然全过——<code>/api/health</code> 里 <code>rate_store.keys</code> 显示 <strong>10</strong>，即 10 个请求被记成了 10 个主体。追下去发现同一台机器连发 5 个请求，来源地址分别是 43.143 / 82.156 / 82.157 / 49.233 四个网段，<code>X-Real-IP</code> 同样在变——这层网关是代理池，按地址计额等于没计额。改为前端生成 <code>X-Anon-Id</code>（localStorage 随机串）随请求带上，服务端按它计额；标识缺失或不合法一律归到同一个共享主体，宁可共用一份额度，也不要因为认不出人而人人一份</div>
+        <div class="vh-item"><b>三个诊断字段</b>：<code>/api/health</code> 增加 <code>instance</code>（进程随机标识，用来数清线上起了几个实例）、<code>rate_store</code>（记账落点 / 主体数 / 兜底次数）、<code>proxy</code>（身份头形状，只报布尔与计数不报地址）。这次能收敛靠的就是 <code>keys: 10</code> 这一个数——没有它只能在「库没写进去」和「进程各存一份」之间猜</div>
         <div class="vh-item"><b>顺手补一个压缩中间件的漏网</b>：<code>/api/assistant/chat</code> 也是逐帧 SSE，却没在 <code>GZIP_SKIP_PREFIXES</code> 里。现网凑巧能流式到达（流式响应没有 content-length，中间件放行），但代码注释里写着「SSE 必须排除」，就按注释办</div>
       </div>
       <div class="v-metrics">
@@ -345,7 +347,7 @@ export const changelogHtml = `
         <div class="vh-item"><b>为什么新开一个端点</b>：通用通道 <code>/api/chat/stream</code> 是转发器，调用方自带 messages 与 system prompt，必须登录；小助手要的是「只能问、不能改提示」，而且希望访客也能用。合并成一个，等于把模型额度开放给任何脚本，也无法限制提示词内容。所以新增 <code>/api/assistant/chat</code>，检索、参考资料编号、限流都在服务端完成</div>
         <div class="vh-item"><b>知识库只有一份</b>：前端 <code>kb.js</code> 仍是唯一数据源，<code>scripts/export-kb.js</code> 把 40 条导出成后端数据文件（JSON），<code>npm run verify</code> 里加了 <code>kb:check</code>，两边不一致直接失败。导出时踩到一个坑：知识库是「初始 8 条 + 后续 push 34 条」两段拼起来的，只取第一段会静默导出 8 条，而 check 模式也会通过——因为两边都是 8 条</div>
         <div class="vh-item"><b>检索口径与前端对齐</b>：后端复刻同一套分词（按空白与中文标点切、丢弃单字碎片、中文补 bigram）、同一组 BM25 参数（<code>k1=1.5 / b=0.75</code>，标题重复一次等价 ×2 权重），重排也用控制台上的四项特征：标题覆盖、标签覆盖、最长公共子串、来源类型与长度先验。<strong>不做端侧向量</strong>——纯词面检索对「同义不同词」会弱一些，这是已知差距，没有假装补齐</div>
-        <div class="vh-item"><b>访客可用，但额度收紧</b>：匿名 6 次/分、40 次/天；登录用户 12 次/分、200 次/天。窗口最初是进程内内存的滑动窗口——这个项目的部署形态没有 Redis，为限流引入一套中间件反而会让服务起不来；<strong>v68 发现镜像站多进程会各记一份账，已改为落库共用一份</strong>。来源地址优先取 <code>X-Forwarded-For</code>：镜像站前面有一层反向代理，只看 <code>request.client.host</code> 会让所有访客共用一个额度，第七个人就被拒</div>
+        <div class="vh-item"><b>访客可用，但额度收紧</b>：匿名 6 次/分、40 次/天；登录用户 12 次/分、200 次/天。窗口最初是进程内内存的滑动窗口——这个项目的部署形态没有 Redis，为限流引入一套中间件反而会让服务起不来；<strong>v68 发现镜像站多进程会各记一份账，已改为落库共用一份；同时发现按来源地址根本认不出人（网关是换出口 IP 的代理池），已改为按设备标识计额</strong></div>
         <div class="vh-item"><b>引用由服务端给出</b>：流的首帧是一帧 <code>meta</code>，带模型名、引用来源与剩余额度。前端只负责把它们列出来，不再自己拼一份「可能和模型看到的不是同一份」的参考资料。引用编号与模型看到的编号因此天然一致</div>
         <div class="vh-item"><b>降级要说清是哪一级失败</b>：额度用完（带等待秒数）、后端未配置模型 Key、普通调用失败，三套文案各不相同，且都附上本地知识库的检索结果。把额度问题说成「模型调用失败」，用户会一直重试</div>
         <div class="vh-item"><b>顺手修掉一个一直存在的问题</b>：面板高度写死 480px，报告追问那四句长问题各占一行，把消息区压到 <strong>42px</strong>——回答进去只剩结尾半句，得自己往上滚。这个问题是截图核验时才看见的，不是测出来的。改为快捷区限高可滚动 + 面板高度受视口约束，实测消息区 42 → <strong>336px</strong></div>

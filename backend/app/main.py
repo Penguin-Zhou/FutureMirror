@@ -49,6 +49,10 @@ def _resolve_secret_key() -> str:
 
 SECRET_KEY = _resolve_secret_key()
 
+# 本进程的随机标识（不是机器名，也不含部署信息）。
+# 镜像站会起多个工作进程，/api/health 里带上它就能从外部数清实例个数。
+INSTANCE_ID = secrets.token_hex(4)
+
 
 def _utcnow() -> datetime:
     """naive UTC 时间戳。
@@ -210,11 +214,17 @@ def me(user: User = Depends(current_user)):
 
 # ---------------- 健康检查（前端用它显示运行模式） ----------------
 @app.get("/api/health")
-def health():
+def health(request: Request):
     return {"ok": True, "llm_ready": llm_ready(), "model": LLM_MODEL if llm_ready() else None,
             "asr_ready": asr_ready(), "asr_model": ASR_MODEL if asr_ready() else None,
             # v67：小助手的检索在服务端，把条目数一起报出来，线上核验不必另开接口
-            "kb_count": kbsearch.stats()["count"]}
+            "kb_count": kbsearch.stats()["count"],
+            # v68：限额记账的落点与进程标识。同一进程每次返回同一串，
+            # 不同进程不同——用来判断「线上到底起了几个实例」，
+            # 以及限流是共用一份账还是各记各的。
+            "instance": INSTANCE_ID,
+            "rate_store": assistant_mod.rate_store_info(),
+            "proxy": assistant_mod.proxy_shape(request)}
 
 
 # ---------------- 语音转写（v46） ----------------

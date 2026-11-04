@@ -24571,7 +24571,28 @@ const fmApi = {
       h["X-Auth-Token"] = this.token;
       h["Authorization"] = "Bearer " + this.token;
     }
+    const anon = this.anonId();
+    if (anon) h["X-Anon-Id"] = anon;
     return h;
+  },
+  /* 匿名设备标识。
+   *
+   * 镜像站的网关是个会换出口 IP 的代理池（实测连发 5 个请求拿到 4 个不同网段），
+   * 服务端按来源地址算额度，等于每个请求都是新访客——线上 10 个并发被记成 10 个 key。
+   * 所以由浏览器生成一个随机串随请求带上，服务端按它计额。
+   * 它不是身份凭证（清掉 localStorage 就换一个），只是让同一个浏览器共用一份额度。 */
+  anonId() {
+    try {
+      const key = "fm_anon_id";
+      let v = localStorage.getItem(key);
+      if (!v || !/^[A-Za-z0-9_-]{8,64}$/.test(v)) {
+        v = "d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem(key, v);
+      }
+      return v;
+    } catch (e) {
+      return "";
+    }
   },
   async checkHealth(force) {
     const now = Date.now();

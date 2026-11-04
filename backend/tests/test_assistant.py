@@ -191,14 +191,30 @@ def test_limiter_day_cap():
     assert states == [True, True, True, False]
 
 
-def test_client_key_prefers_forwarded_for():
+def test_client_key_uses_device_id_not_address():
+    """限额主体按设备标识算，不按来源地址。
+
+    镜像网关是个换出口 IP 的代理池，按地址算等于没算：线上 10 个并发
+    被记成 10 个 key。这里连来源头都不该被采纳。
+    """
     class Req:
-        headers = {"x-forwarded-for": "203.0.113.9, 10.0.0.1"}
+        headers = {"x-anon-id": "dabc12345", "x-forwarded-for": "203.0.113.9:5100, 10.0.0.1"}
 
         class client:
             host = "10.0.0.1"
 
-    assert A.client_key(Req()) == "ip:203.0.113.9"
+    assert A.client_key(Req()) == "a:dabc12345"
+    # 同一设备标识 → 同一个主体；端口/来源变化不影响
+    Req.headers = {"x-anon-id": "dabc12345", "x-forwarded-for": "198.51.100.7"}
+    assert A.client_key(Req()) == "a:dabc12345"
+    # 标识不合法或缺失 → 全部归到同一个共享主体（宁可共用额度，也不要人人一份）
+    Req.headers = {"x-anon-id": "bad id!", "x-forwarded-for": "203.0.113.9"}
+    assert A.client_key(Req()) == A.SHARED_KEY
+    Req.headers = {}
+    assert A.client_key(Req()) == A.SHARED_KEY
+    # 登录用户仍按账号
+    user = type("U", (), {"id": "u_1"})()
+    assert A.client_key(Req(), user) == "u:u_1"
 
 
 # ---------------- 提示词装配 ----------------
