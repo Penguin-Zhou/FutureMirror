@@ -29,6 +29,7 @@ from .llm import LLM_MODEL, llm_ready, sse_response                    # noqa: E
 from .asr import ASR_MODEL, asr_ready, transcribe_audio                # noqa: E402
 from .scoring import score_session                                     # noqa: E402
 from .enrich import enrich_report                                       # noqa: E402
+from . import assistant as assistant_mod, kbsearch                      # noqa: E402
 
 def _resolve_secret_key() -> str:
     """JWT 签名密钥。
@@ -150,6 +151,24 @@ def user_payload(user: User) -> dict:
     return {"id": user.id, "name": user.name, "email": user.email, "is_vip": user.is_vip}
 
 
+def optional_user(authorization: str = Header(default=""),
+                  x_auth_token: str = Header(default="", alias="X-Auth-Token"),
+                  db: Session = Depends(get_db)) -> User | None:
+    """和小助手一样「登录更好、不登录也能用」的端点用这个。
+
+    与 current_user 的唯一区别是不抛 401：令牌缺失或失效一律返回 None，
+    由端点自己决定要不要放行。这样访客不会看到一个 401 的报错气泡。
+    """
+    token = x_auth_token.strip() or (authorization[7:] if authorization.startswith("Bearer ") else "")
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    except jwt.PyJWTError:
+        return None
+    return db.get(User, payload.get("sub"))
+
+
 class RegisterIn(BaseModel):
     name: str = Field(min_length=1, max_length=20)
     email: EmailStr
@@ -191,7 +210,9 @@ def me(user: User = Depends(current_user)):
 @app.get("/api/health")
 def health():
     return {"ok": True, "llm_ready": llm_ready(), "model": LLM_MODEL if llm_ready() else None,
-            "asr_ready": asr_ready(), "asr_model": ASR_MODEL if asr_ready() else None}
+            "asr_ready": asr_ready(), "asr_model": ASR_MODEL if asr_ready() else None,
+            # v67：小助手的检索在服务端，把条目数一起报出来，线上核验不必另开接口
+            "kb_count": kbsearch.stats()["count"]}
 
 
 # ---------------- 语音转写（v46） ----------------
@@ -247,6 +268,61 @@ def chat_stream(body: ChatIn, user: User = Depends(current_user)):
         raise HTTPException(400, f"会话上下文过长（上限 {MAX_CONVERSATION_CHARS} 字）")
     temp = body.temperature if body.temperature is not None else 0.6
     return sse_response(body.messages, temperature=max(0.0, min(1.2, temp)))
+
+
+# ---------------- AI 小助手（v67：检索 + 生成都在服务端） ----------------
+class AssistantIn(BaseModel):
+    question: str = Field(min_length=1, max_length=500)
+    # 前端只传最近几轮，服务端仍要挡住「一次性塞几千条」的请求
+    history: list[dict] = Field(default_factory=list)
+    k: int = 3
+
+
+MAX_ASSISTANT_HISTORY = 20
+
+
+@app.post("/api/assistant/chat")
+def assistant_chat(body: AssistantIn, request: Request,
+                   user: User | None = Depends(optional_user)):
+    """小助手的专用通道。
+
+    与 /api/chat/stream 的分工：
+      · 那个是通用转发，调用方自带 messages 与 system prompt，必须登录；
+      · 这个是「知识库问答」，检索、参考资料编号、限流都在服务端完成，
+        访客可用（额度更小），登录后额度放宽。
+    之所以不合并成一个：通用端点一旦允许匿名，就等于把模型额度开放给任何脚本，
+    且无法限制 prompt 内容；而小助手需要的是「只能问、不能改系统提示」。
+    """
+    if not llm_ready():
+        raise HTTPException(503, "服务端未配置 LLM_API_KEY，请使用本地检索")
+    if len(body.history) > MAX_ASSISTANT_HISTORY:
+        raise HTTPException(400, f"历史消息过多（上限 {MAX_ASSISTANT_HISTORY} 条）")
+
+    q = (body.question or "").strip()
+    if not q:
+        raise HTTPException(400, "问题不能为空")
+
+    limiter = assistant_mod.user_limiter if user is not None else assistant_mod.anon_limiter
+    ok, info = limiter.check(assistant_mod.client_key(request, user))
+    if not ok:
+        scope = "每分钟" if info.get("scope") == "minute" else "今日"
+        raise HTTPException(
+            429,
+            f"{scope}额度已用完（上限 {info['limit']} 次），请 {info['retry_after']} 秒后再试",
+            headers={"Retry-After": str(info["retry_after"])},
+        )
+
+    hits = kbsearch.search(q, body.k)
+    meta = {
+        "mode": "backend",
+        "model": LLM_MODEL,
+        "logged_in": user is not None,
+        "citations": assistant_mod.citations_of(hits),
+        "quota": info,
+        "hits": len(hits),
+    }
+    return sse_response(assistant_mod.build_messages(q, hits, body.history),
+                        temperature=0.5, meta=meta)
 
 
 # ---------------- 面试会话持久化 ----------------

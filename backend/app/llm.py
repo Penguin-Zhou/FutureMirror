@@ -21,8 +21,16 @@ def _sse(payload: dict) -> str:
 
 
 async def _proxy_stream(messages: list[dict], temperature: float,
-                        model: str | None) -> AsyncIterator[str]:
-    """把上游 OpenAI 兼容 SSE 原样转发；上游异常时下发 error 事件，由前端降级 Mock。"""
+                        model: str | None,
+                        meta: dict | None = None) -> AsyncIterator[str]:
+    """把上游 OpenAI 兼容 SSE 原样转发；上游异常时下发 error 事件，由前端降级 Mock。
+
+    v67：可选先发一帧 meta（模型名 / 引用来源 / 剩余额度）。
+    放在流首而不是响应头，是因为前端已经在逐帧解析 SSE——
+    再读一次 header 等于多一套解析路径；而且引用编号本来就是流的一部分。
+    """
+    if meta is not None:
+        yield _sse({"meta": meta})
     payload = {
         "model": model or LLM_MODEL,
         "messages": messages,
@@ -55,9 +63,10 @@ async def _proxy_stream(messages: list[dict], temperature: float,
 
 
 def sse_response(messages: list[dict], temperature: float = 0.6,
-                 model: str | None = None) -> StreamingResponse:
+                 model: str | None = None,
+                 meta: dict | None = None) -> StreamingResponse:
     return StreamingResponse(
-        _proxy_stream(messages, temperature, model),
+        _proxy_stream(messages, temperature, model, meta),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

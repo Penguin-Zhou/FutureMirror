@@ -618,7 +618,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → ESLint 0 error → Prettier 检查 → 2914 项断言
+npm run verify                          # globals 校验 → 知识库一致性 → ESLint 0 error → Prettier 检查 → 2953 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -648,7 +648,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2914 项前端断言 + 57 项后端单测**，全部通过。
+合计 **2953 项前端断言 + 83 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -726,7 +726,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 57 项 + 前端 2914 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 83 项 + 前端 2953 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -917,6 +917,21 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **构建脚本升级**：`build-demo.js` 支持 `--out` 输出路径与环境变量 `FM_API_BASE`；新增 `build-backend-static.js` 组装同源托管目录
 - **健康检查超时 4s → 8s**：跨境网络下更稳；**CORS 默认放开演示域名**，部署零配置
 - **修复公网鉴权头被网关覆盖**：托管平台边缘网关会用自己的 JWT 覆盖请求的 `Authorization` 头，导致线上鉴权接口全部 401；令牌主通道改用自定义头 `X-Auth-Token`（网关原样透传），线上全链路实测可用
+
+### Beta 1.1.2 · 增量 v67：AI 小助手接入后端——检索、引用与额度都搬到服务端（2026.11.04）
+
+> 小助手原来在浏览器里检索、在浏览器里拼提示词、在浏览器里限流。
+> 换台机器检索质量就变（端侧向量模型要重新下载），回答里的 `[1][2]` 与界面上列出的引用可能对不上，
+> 而一旦允许访客直接调用真实模型，额度就成了公共资源——前端限流改一行 JS 就能绕过。
+
+- **专用通道 `/api/assistant/chat`**：与通用 `/api/chat/stream` 分工明确。后者是通用转发，调用方自带 messages 与 system prompt，必须登录；前者是「知识库问答」，检索、参考资料编号、限流都在服务端完成，且只能问、不能改系统提示。合并成一个就等于把模型额度开放给任何脚本
+- **检索搬到服务端**：`scripts/export-kb.js` 从 `frontend/js/data/kb.js` 导出 40 条到 `backend/app/kb_data.json`，前端那份仍是唯一数据源；`npm run verify` 新增 `kb:check`，两份不一致直接失败。后端 `kbsearch.py` 复刻前端口径（同一套分词、BM25 `k1=1.5 / b=0.75`、标题重复一次等价 ×2 权重、四项重排），**不含端侧向量**——纯词面检索对「同义不同词」会弱一些，这是已知差距，不假装补齐
+- **访客可用但限流**：匿名 6 次/分、40 次/天；登录用户 12 次/分、200 次/天。滑动窗口在进程内存里（这个项目的部署形态没有 Redis，加了反而起不来）；来源地址优先取 `X-Forwarded-For`，否则镜像的反向代理会让所有访客共用一个额度、第 7 个人就被拒
+- **引用由服务端给出**：流首一帧 `meta` 带 `citations`（标题 + 来源）、模型名与剩余额度，前端只负责列表，不再自己拼一份可能和模型看到的不同的参考资料
+- **三级降级各说各的**：额度用完（带等待秒数）、后端未配置 Key、普通调用失败——三套文案都附本地检索结果。把额度问题说成「模型调用失败」，用户会一直重试
+- **顺手修掉面板的老问题**：高度写死 480px，报告追问那四句长问题各占一行、把消息区压到 **42px**，回答进去只剩结尾半句（截图核验时才暴露）。改为快捷区限高可滚动 + 面板高度受视口约束，实测消息区 42 → **336px**
+- **后端地址不再取决于先点过哪一页**：原来只有打开面试页才会初始化适配层，小助手在别的页面里地址还是空串——镜像站上凑巧同源可用，Pages / 本地则必然失败
+- **指标**：前端断言 2914 → **2953**（新增 v67 套件 38 项 + v20 两处口径修订）｜jsdom 套件 51 → **52**｜共享全局符号 745 → **751**｜后端 pytest 57 → **83**
 
 ### Beta 1.1.2 · 增量 v64：让网自己动起来——位移场、端点咬合与焦点分组（2026.11.03）
 

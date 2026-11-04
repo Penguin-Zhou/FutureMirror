@@ -274,7 +274,9 @@ function runTests() {
     ok(document.getElementById("ai-assistant-panel").classList.contains("open"), "点击 FAB 打开抽屉");
     ok(document.getElementById("ai-assistant-messages").children.length === 1, "首次打开有欢迎语");
     ok(document.querySelectorAll("#ai-panel-quick .ai-quick-chip").length === 3, "3 个快捷问题 chips");
-    ok(document.getElementById("ai-mode-tag").textContent.includes("Mock"), "模式标签显示 Mock");
+    /* v67：标签改成三级里最诚实的那一级——没有后端就不再写「Mock」，
+     * 因为「Mock」对外行等于没说；「本地检索」直接交代了答案从哪来 */
+    ok(document.getElementById("ai-mode-tag").textContent.includes("本地检索"), "模式标签显示「本地检索」");
 
     /* 预设意图：使用引导 */
     document.getElementById("ai-assistant-input").value = "怎么开始模拟面试";
@@ -285,15 +287,15 @@ function runTests() {
       ok(msgs[msgs.length - 1].textContent.includes("三步开始模拟面试"), "命中「开始面试」预设引导");
       ok(!!document.querySelector("#ai-assistant-messages .ai-actions button"), "预设回复带跳转操作按钮");
 
-      /* Mock 检索应答 */
+      /* 本地检索兜底（v67：先说明「为什么没有模型」，再给摘录） */
       document.getElementById("ai-assistant-input").value = "MySQL 索引";
       window.eval("sendAiAssistant()");
       setTimeout(() => {
         const last = document.querySelectorAll("#ai-assistant-messages .ai-msg");
         const lastMsg = last[last.length - 1];
         ok(
-          lastMsg.textContent.includes("Mock 模式") && lastMsg.textContent.includes("知识库中相关的内容"),
-          "Mock 模式返回检索摘要"
+          lastMsg.textContent.includes("未部署后端") && lastMsg.textContent.includes("本地知识库"),
+          "无后端时说明原因并给出本地检索结果"
         );
         ok(lastMsg.textContent.includes("B+ 树"), "摘要内容来自知识库命中");
 

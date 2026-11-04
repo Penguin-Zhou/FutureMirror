@@ -22,6 +22,10 @@ const fmApi = {
   },
   backendReady() { return this.ready && !!this.health && this.health.ok; },
   backendModel() { return (this.health && this.health.model) || "后端模型"; },
+  /* v67：小助手要的是「后端 + 真模型」两个条件都成立。
+   * 后端在线但没配 Key 时，/api/assistant/chat 会 503，
+   * 与其先发一次再报错，不如提前判定走本地检索。 */
+  assistantReady() { return this.backendReady() && !!this.health.llm_ready; },
   /* 公网静态托管（GitHub Pages / 国内镜像）没有后端是设计如此，不应报成故障：
    * 只有「https 公网 + 后端地址仍是默认 localhost」才算静态部署 */
   isStaticDeploy() {
@@ -61,9 +65,12 @@ const fmApi = {
         model: j.model || null,
         asr_ready: !!j.asr_ready,
         asr_model: j.asr_model || null,
+        /* v67：服务端知识库条数。面板上不显示，但现场核验时能一眼看出
+         * 检索是不是真的在后端跑（0 就说明 kb_data.json 没随包发布）。 */
+        kb_count: j.kb_count || 0,
       };
     } catch (e) {
-      this.health = { ok: false, llm_ready: false, model: null, asr_ready: false, asr_model: null };
+      this.health = { ok: false, llm_ready: false, model: null, asr_ready: false, asr_model: null, kb_count: 0 };
     } finally {
       clearTimeout(kill);
     }
@@ -108,6 +115,57 @@ const fmApi = {
         } catch (e) {
           if (e.message && e.message.indexOf("Unexpected") !== 0) throw e;
         }
+      }
+    }
+  },
+  /* v67：小助手专用通道。
+   * 检索、参考资料编号、限流都在服务端完成，前端只做两件事：
+   * 把增量文字贴上屏幕、把服务端给的引用来源列出来。
+   * 与通用 chat() 的差别是流首多一帧 meta（模型名 / 引用 / 剩余额度），
+   * 以及 429 要能区分出「额度」而不是笼统的「调用失败」。 */
+  async assistantChat(question, history, onDelta, onMeta, signal) {
+    const res = await fetch(this.base + "/api/assistant/chat", {
+      method: "POST",
+      signal,
+      headers: this.authHeaders(),
+      body: JSON.stringify({ question, history: history || [], k: 3 }),
+    });
+    if (res.status === 429) {
+      const wait = (res.headers && res.headers.get("Retry-After")) || "";
+      const err = new Error("额度已用完" + (wait ? `（${wait} 秒后可再试）` : ""));
+      err.code = "quota";
+      err.retryAfter = wait;
+      throw err;
+    }
+    if (res.status === 503) {
+      const err = new Error("后端未配置 LLM_API_KEY");
+      err.code = "no_key";
+      throw err;
+    }
+    if (!res.ok) throw new Error("后端 HTTP " + res.status);
+    if (!res.body) throw new Error("后端响应无 body");
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+    for (; ;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split("\n");
+      buf = lines.pop() || "";
+      for (const line of lines) {
+        const t = line.trim();
+        if (!t.startsWith("data:")) continue;
+        const payload = t.slice(5).trim();
+        if (payload === "[DONE]") return;
+        let json;
+        try { json = JSON.parse(payload); } catch (e) { continue; }
+        if (json.meta) { if (onMeta) onMeta(json.meta); continue; }
+        if (json.error) throw new Error("后端模型调用失败：" + (json.detail || json.error));
+        const delta = json.choices && json.choices[0] && json.choices[0].delta;
+        const piece = delta && (delta.content || delta.reasoning_content || delta.text || "");
+        if (piece) onDelta(piece);
       }
     }
   },
@@ -219,5 +277,12 @@ function refreshBackendUi() {
   if (input && document.activeElement !== input && !input.value) input.value = fmApi.base;
   updateLlmStatus();
 }
+
+/* v67：把后端探测从面试页的 LLM 面板里提出来。
+ * 原来只有 initLlmPanel() 会调 fmApi.init()，于是小助手在别的页面里
+ * base 仍是初始空串：镜像站上凑巧同源可用，Pages / 本地则必然失败——
+ * 「能不能用后端」取决于用户先点过哪个页面，这不该是产品行为。
+ * 这里只做地址与令牌的读取（纯 storage，不碰 DOM），健康探测交给 boot。 */
+try { fmApi.init(); } catch (e) { /* 存储不可用时保持 base 为空，后续请求自然降级 */ }
 
 

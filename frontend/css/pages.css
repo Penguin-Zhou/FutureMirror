@@ -477,7 +477,10 @@
 .ai-fab:hover { transform: scale(1.08); }
 .ai-panel {
   position: fixed; right: 20px; bottom: 84px; z-index: 89;
-  width: 372px; max-width: calc(100vw - 40px); height: 480px;
+  width: 372px; max-width: calc(100vw - 40px);
+  /* v67：原来写死 480px，快捷问题加上报告追问后会折成七八行、
+   * 把消息区挤到只剩四十来像素——回答进去就被裁掉开头。 */
+  height: 520px; max-height: calc(100vh - 140px);
   background: var(--card); border: 1px solid var(--glass-border);
   border-radius: 0; box-shadow: none;
   display: flex; flex-direction: column; overflow: hidden;
@@ -505,6 +508,10 @@
 .ai-panel-quick {
   display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 12px 0;
   border-top: 1px solid var(--line);
+  /* v67：报告追问的四个问题都很长，不加限制会各占一行、
+   * 把消息区压到几十像素。超出就滚动，不抢回答的位置。 */
+  max-height: 84px; overflow-y: auto;
+  scrollbar-width: thin;
 }
 .ai-quick-chip {
   appearance: none; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600;

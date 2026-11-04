@@ -33,7 +33,18 @@ function toggleAiAssistant(force) {
   }
   if (typeof document !== "undefined") document.body.classList.toggle("ai-open", aiAssistantOpen);
   const tag = $("ai-mode-tag");
-  if (tag) tag.textContent = llm ? "LLM · " + String(llm.model || "").slice(0, 14) : "Mock 检索";
+  if (tag) tag.textContent = aiModeLabel();
+  /* 刚打开页面就点小助手时，健康探测可能还没回来——标签会先显示「本地检索」，
+   * 而回答其实走的是后端。这里补一次探测并在回来后改写标签，
+   * 免得同一屏里标签与行为自相矛盾。 */
+  if (aiAssistantOpen && typeof fmApi !== "undefined" && !fmApi.health) {
+    try {
+      fmApi.checkHealth().then(() => {
+        const t = $("ai-mode-tag");
+        if (t) t.textContent = aiModeLabel();
+      }).catch(() => {});
+    } catch (e) { /* 探测失败保持当前标签 */ }
+  }
   if (aiAssistantOpen) {
     renderAiQuick();
     const box = $("ai-assistant-messages");
@@ -118,12 +129,45 @@ async function sendAiAssistant() {
     return;
   }
 
-  /* 2) 检索知识库（复用 RAG 的 retrieve） */
-  const hits = typeof retrieve === "function" ? retrieve(q, 3) : [];
-  const ctx = hits.map((h, i) => `[${i + 1}] ${h.title}：${h.content}`).join("\n");
+  /* 2) 生成：优先走后端（v67——检索、参考资料编号、限流都在服务端完成）。
+   *    直连 Key 与本地检索退为第二、第三级，语义与面试通道一致。 */
+  const history = aiRecentHistory();
+  if (typeof fmApi !== "undefined" && fmApi.assistantReady()) {
+    const bubble = appendAiMsg("ai", "思考中…", true);
+    if (bubble) bubble.classList.add("typing");
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 60000);
+    let full = "";
+    let cites = null;
+    try {
+      await fmApi.assistantChat(q, history, (piece) => {
+        full += piece;
+        if (bubble) { bubble.classList.remove("typing"); bubble.textContent = full; }
+        const box = $("ai-assistant-messages");
+        if (box) box.scrollTop = box.scrollHeight;
+      }, (meta) => {
+        /* meta 在流首就到：先记下来，等正文结束再挂引用行，
+         * 免得引用条先出现、回答后长，观感像两段错位的内容 */
+        if (meta && Array.isArray(meta.citations)) cites = meta.citations;
+      }, ctrl.signal);
+      if (bubble) { bubble.classList.remove("typing"); bubble.textContent = full || "（模型未返回内容）"; }
+      aiCitationLine(cites);
+      aiScrollToAnswer(bubble);
+    } catch (e) {
+      if (bubble) {
+        bubble.classList.remove("typing");
+        bubble.textContent = aiFailureText(e, q);
+      }
+    }
+    const b4 = $("ai-assistant-messages");
+    if (b4) b4.scrollTop = b4.scrollHeight;
+    return;
+  }
 
-  /* 3) 有 LLM（或后端在线）则流式回答；否则返回检索摘要（Mock 兜底） */
-  if (llm || fmApi.backendReady()) {
+  /* 3) 直连 Key（未部署后端时的第二级） */
+  const hits = typeof retrieve === "function" ? retrieve(q, 3) : [];
+  if (typeof llm !== "undefined" && llm) {
+    const ctx = hits.map((h, i) => `[${i + 1}] ${h.title}：${h.content}`).join("\n");
     const bubble = appendAiMsg("ai", "思考中…", true);
     if (bubble) bubble.classList.add("typing");
     const ctrl = new AbortController();
@@ -141,11 +185,7 @@ async function sendAiAssistant() {
       }, ctrl.signal);
       if (bubble) { bubble.classList.remove("typing"); bubble.textContent = full || "（模型未返回内容）"; }
       if (hits.length) {
-        const cite = document.createElement("div");
-        cite.className = "ai-actions";
-        cite.innerHTML = `<span style="font-size:11.5px;color:var(--faint)">引用：${hits.map((h, i) => `[${i + 1}] ${esc(h.source || h.title)}`).join(" · ")}</span>`;
-        const box = $("ai-assistant-messages");
-        if (box) box.appendChild(cite);
+        aiCitationLine(hits.map(h => ({ title: h.source || h.title })));
       }
     } catch (e) {
       if (bubble) {
@@ -154,13 +194,85 @@ async function sendAiAssistant() {
       }
     }
   } else {
-    const reply = hits.length
-      ? `（Mock 模式）知识库中相关的内容：\n\n${hits[0].content.slice(0, 220)}…\n\n来源：${hits[0].source || hits[0].title}\n接入 API Key 后可获得完整的模型回答。`
-      : "知识库中暂未找到直接相关的内容，换个关键词试试，或接入 API Key 让模型自由回答。";
-    appendAiMsg("ai", reply, true);
+    /* 4) 本地检索兜底：把「为什么没有模型」说清楚，而不是只给一段摘录 */
+    const why = (typeof fmApi !== "undefined" && fmApi.backendReady())
+      ? "后端已连接，但未配置模型 Key"
+      : "当前是纯前端版本（未部署后端）";
+    appendAiMsg("ai", `（${why}，以下是本地知识库的检索结果）\n\n${aiLocalAnswer(q)}`, true);
   }
   const box = $("ai-assistant-messages");
   if (box) box.scrollTop = box.scrollHeight;
+}
+
+/* ---------- v67：小助手的三级状态与降级文案 ---------- */
+function aiModeLabel() {
+  if (typeof fmApi !== "undefined") {
+    if (fmApi.assistantReady()) return "后端 · " + String((fmApi.health && fmApi.health.model) || "").slice(0, 16);
+    if (fmApi.backendReady()) return "后端 · 未配置模型";
+  }
+  if (typeof llm !== "undefined" && llm) return "直连 · " + String(llm.model || "").slice(0, 14);
+  return "本地检索";
+}
+
+/* 把最近几轮问答带给后端：没有上下文时模型会把「它呢」当成新问题。
+ * 截到 600 字/条，服务端还会再截一次。 */
+function aiRecentHistory() {
+  const box = $("ai-assistant-messages");
+  if (!box) return [];
+  const rows = [...box.querySelectorAll(".ai-msg")].slice(-7, -1);
+  return rows
+    .filter(el => !el.classList.contains("typing"))
+    .map(el => ({
+      role: el.classList.contains("user") ? "user" : "assistant",
+      content: String(el.textContent || "").slice(0, 600),
+    }))
+    .filter(m => m.content.trim());
+}
+
+function aiCitationLine(list) {
+  if (!list || !list.length) return;
+  const box = $("ai-assistant-messages");
+  if (!box) return;
+  const div = document.createElement("div");
+  div.className = "ai-actions ai-cite";
+  div.innerHTML = `<span style="font-size:11.5px;color:var(--faint)">引用：${list
+    .map((c, i) => `[${i + 1}] ${escHtml(c.title || c.source || "")}`).join(" · ")}</span>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function aiLocalAnswer(q) {
+  const hits = typeof retrieve === "function" ? retrieve(q, 3) : [];
+  if (!hits.length) return "知识库中暂未找到直接相关的内容，换个关键词试试。";
+  return hits[0].content.slice(0, 220) + "…\n\n来源：" + (hits[0].source || hits[0].title);
+}
+
+/* 流式过程中一路贴底是对的（新字在下面），但回答结束后还停在底部，
+ * 用户看到的是结尾半句，得自己往上滚才知道这段在讲什么。
+ * 超过一屏时回到这条回答的开头；短回答就不动，免得无谓地跳一下。 */
+function aiScrollToAnswer(bubble) {
+  const box = $("ai-assistant-messages");
+  if (!box || !bubble) return;
+  try {
+    const boxRect = box.getBoundingClientRect();
+    const msgRect = bubble.getBoundingClientRect();
+    if (!boxRect.height || !msgRect.height) return;          // 无布局环境（测试）直接跳过
+    if (msgRect.height <= boxRect.height * 0.9) return;
+    box.scrollTop += msgRect.top - boxRect.top - 8;
+  } catch (e) { /* 取不到布局就保持原位 */ }
+}
+
+/* 失败必须分清是哪一级失败：把额度用完说成「模型调用失败」，用户会一直重试 */
+function aiFailureText(e, q) {
+  const code = e && e.code;
+  if (code === "quota") {
+    return "小助手的调用额度已用完（" + (e.retryAfter ? e.retryAfter + " 秒后可再试" : "稍后再试") + "）。\n先用本地知识库回答你：\n\n" + aiLocalAnswer(q);
+  }
+  if (code === "no_key") {
+    return "后端已连接，但服务端没有配置模型 Key。\n先用本地知识库回答你：\n\n" + aiLocalAnswer(q);
+  }
+  const msg = e && e.message ? e.message : "未知错误";
+  return "模型调用失败（" + msg + "）。以下是知识库中相关的内容：\n" + aiLocalAnswer(q);
 }
 function appendAiMsg(role, text, isHtml) {
   const box = $("ai-assistant-messages");
