@@ -6,8 +6,8 @@ import os
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import (Boolean, DateTime, ForeignKey, Integer, String, Text,
-                        create_engine, select)
+from sqlalchemy import (Boolean, DateTime, Float, ForeignKey, Integer, String,
+                        Text, create_engine, select)
 from sqlalchemy.orm import (DeclarativeBase, Mapped, Session, mapped_column,
                             sessionmaker)
 
@@ -93,6 +93,21 @@ class InterviewStatusEvent(Base):
     label: Mapped[str] = mapped_column(String(40), default="")
     turn: Mapped[int] = mapped_column(Integer, default=0)
     detector: Mapped[str] = mapped_column(String(20), default="faceapi")
+
+
+class RateHit(Base):
+    """AI 小助手限额的记账（v68）。
+
+    限流原先只存在进程内存里，单进程够用；但镜像站实际会起多个工作进程，
+    每个进程各记一份账，匿名额度被放大成「6 × 进程数」（实测 5 个并发请求
+    只扣了 2 次）。把命中时间戳落到同一张表，多进程就共用一份账。
+    这张表只记「谁在什么时候问过一句」，不记问题内容。
+    """
+
+    __tablename__ = "rate_hits"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    key: Mapped[str] = mapped_column(String(80), index=True)
+    ts: Mapped[float] = mapped_column(Float, index=True)
 
 
 def init_db() -> None:

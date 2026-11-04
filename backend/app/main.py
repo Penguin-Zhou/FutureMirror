@@ -106,7 +106,9 @@ app.add_middleware(
 # 但镜像网关不压缩，国内首屏要多传 540KB —— 这里补 gzip，
 # 实测 765KB → 约 224KB（-70%），与 GitHub Pages 的压缩水位对齐。
 # SSE 接口必须排除：某些代理会缓冲压缩流，逐字输出会退化成整段到达。
-GZIP_SKIP_PREFIXES = ("/api/chat/stream",)
+# 小助手也是逐帧 SSE（v68 补上）：漏了它会走压缩中间件，
+# 个别代理会缓冲压缩流，回答从逐字变成整段到达。
+GZIP_SKIP_PREFIXES = ("/api/chat/stream", "/api/assistant/chat")
 
 
 class SelectiveGZipMiddleware(GZipMiddleware):

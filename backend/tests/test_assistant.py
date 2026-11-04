@@ -228,3 +228,67 @@ def test_build_messages_flags_empty_retrieval():
 def test_citations_only_carry_title_and_source():
     cites = A.citations_of([{"title": "T", "source": "S", "content": "很长的正文"}])
     assert cites == [{"title": "T", "source": "S"}]
+
+
+# ---------------- 跨进程记账（v68） ----------------
+# 上线实测：镜像站起多个工作进程，进程内限流被放大成「6 × 进程数」。
+# 下面这组测试用「两个 limiter 实例」模拟两个进程：内存各一份，账必须是同一份。
+def test_limiters_are_db_backed():
+    assert isinstance(A.anon_limiter, A.DbRateLimiter)
+    assert isinstance(A.user_limiter, A.DbRateLimiter)
+
+
+def test_db_limiter_shares_quota_across_instances():
+    A.anon_limiter.reset()
+    a, b = A.DbRateLimiter(2, 40), A.DbRateLimiter(2, 40)
+    t = 1_700_000_000.0
+    assert a.check("ip:1.1.1.1", now=t)[0] is True
+    assert b.check("ip:1.1.1.1", now=t + 1)[0] is True
+    ok, info = a.check("ip:1.1.1.1", now=t + 2)
+    assert ok is False and info["scope"] == "minute" and info["remain"] == 0
+    # 另一个来源有自己的额度，不被牵连
+    assert b.check("ip:2.2.2.2", now=t + 2)[0] is True
+
+
+def test_db_limiter_window_expires():
+    A.anon_limiter.reset()
+    lim = A.DbRateLimiter(1, 40)
+    t = 1_700_000_000.0
+    assert lim.check("k", now=t)[0] is True
+    ok, info = lim.check("k", now=t + 30)
+    assert ok is False and info["scope"] == "minute" and info["retry_after"] >= 1
+    assert lim.check("k", now=t + 61)[0] is True
+
+
+def test_db_limiter_day_cap():
+    A.anon_limiter.reset()
+    lim = A.DbRateLimiter(1, 2)
+    t = 1_700_000_000.0
+    assert lim.check("k", now=t)[0] is True
+    assert lim.check("k", now=t + 61)[0] is True
+    ok, info = lim.check("k", now=t + 122)
+    assert ok is False and info["scope"] == "day"
+
+
+def test_db_limiter_falls_back_to_memory_when_db_down(monkeypatch):
+    import app.db as dbmod
+
+    A.anon_limiter.reset()
+    lim = A.DbRateLimiter(1, 40)
+
+    def boom():
+        raise RuntimeError("db down")
+
+    monkeypatch.setattr(dbmod, "SessionLocal", boom)
+    # 库不可用不是放行：退化成单进程限额，仍然拦住第二次
+    assert lim.check("k", now=1.0)[0] is True
+    assert lim.check("k", now=2.0)[0] is False
+
+
+def test_db_limiter_reset_clears_rows():
+    A.anon_limiter.reset()
+    lim = A.DbRateLimiter(1, 40)
+    assert lim.check("k", now=1_700_000_000.0)[0] is True
+    assert lim.size() >= 1
+    lim.reset()
+    assert lim.size() == 0

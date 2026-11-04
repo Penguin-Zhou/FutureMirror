@@ -10,9 +10,12 @@
    让前端自己拼「参考资料」，它就可以拼一份、发另一份，回答里的 [1][2]
    与界面上列出的引用也会对不上。
 
-限流是**进程内内存**的滑动窗口：单实例部署（本项目即是）足够，
-多副本部署时每个副本各算一份。写在这里而不是引入 Redis，
-是因为这个项目的部署形态里没有 Redis，加了反而起不来。
+限流最初是**进程内内存**的滑动窗口，本地单进程跑得好好的；上线后实测发现
+镜像站会起多个工作进程，每个进程各记一份账——5 个并发请求只扣了 2 次额度，
+匿名上限被放大到「6 × 进程数」。所以记账改成落库（见 `DbRateLimiter`），
+多进程共用同一份。内存版保留下来：一是单测要能脱离数据库验证窗口逻辑，
+二是库写失败时的兜底（宁可退化成单进程限额，也不要直接放行）。
+不引入 Redis 的原因不变：这个部署形态里没有 Redis。
 """
 from __future__ import annotations
 
@@ -94,8 +97,92 @@ class RateLimiter:
             return len(self._hits)
 
 
-anon_limiter = RateLimiter(QUOTA_ANON["per_min"], QUOTA_ANON["per_day"])
-user_limiter = RateLimiter(QUOTA_USER["per_min"], QUOTA_USER["per_day"])
+class DbRateLimiter:
+    """跨进程滑动窗口：命中时间戳落库，多个工作进程共用一份账。
+
+    接口与 `RateLimiter` 完全一致（check/reset/size），差别只在存储和时钟：
+    时钟换成 `time.time()` 的可比时间戳，因为别的进程看不到本进程的 monotonic。
+
+    并发下的精度：两条线程/进程可能同时读到「还剩 1 次」再各自写入，
+    于是多放过去一次。限额是防滥用不是计费，容忍这种毫秒级竞态；
+    真正要严的地方（防刷）得靠网关，这里只保证「大致按 6 次/分」。
+    """
+
+    def __init__(self, per_min: int, per_day: int) -> None:
+        self.per_min = per_min
+        self.per_day = per_day
+        # 库不可用时的兜底：退化成单进程限额，总比完全不拦好
+        self._fallback = RateLimiter(per_min, per_day)
+        self._fallback_used = 0
+
+    def check(self, key: str, now: float | None = None) -> tuple[bool, dict[str, Any]]:
+        t = time.time() if now is None else now
+        try:
+            from .db import RateHit, SessionLocal
+        except Exception:  # noqa: BLE001 - 没有库层就用内存版
+            return self._fallback.check(key, now=t)
+        try:
+            with SessionLocal() as s:
+                # 顺手清掉一天以前的记录：表很小，每次扫一遍比养清理线程简单
+                s.query(RateHit).filter(RateHit.ts < t - _DAY_WINDOW).delete(
+                    synchronize_session=False)
+                stamps = [r[0] for r in s.query(RateHit.ts)
+                          .filter(RateHit.key == key, RateHit.ts > t - _DAY_WINDOW)
+                          .all()]
+                in_min = [x for x in stamps if t - x <= _MIN_WINDOW]
+                if len(in_min) >= self.per_min:
+                    s.rollback()
+                    return False, {
+                        "scope": "minute",
+                        "limit": self.per_min,
+                        "retry_after": max(1, int(_MIN_WINDOW - (t - min(in_min))) + 1),
+                        "remain": 0,
+                    }
+                if len(stamps) >= self.per_day:
+                    s.rollback()
+                    return False, {
+                        "scope": "day",
+                        "limit": self.per_day,
+                        "retry_after": max(1, int(_DAY_WINDOW - (t - min(stamps))) + 1),
+                        "remain": 0,
+                    }
+                s.add(RateHit(key=key, ts=t))
+                s.commit()
+                return True, {
+                    "remain": max(0, self.per_min - len(in_min) - 1),
+                    "limit": self.per_min,
+                }
+        except Exception:  # noqa: BLE001 - 库写失败不能把功能打成 500
+            self._fallback_used += 1
+            return self._fallback.check(key, now=t)
+
+    def reset(self) -> None:
+        """测试用：清空记账。"""
+        self._fallback.reset()
+        self._fallback_used = 0
+        try:
+            from .db import RateHit, SessionLocal
+        except Exception:  # noqa: BLE001
+            return
+        try:
+            with SessionLocal() as s:
+                s.query(RateHit).delete(synchronize_session=False)
+                s.commit()
+        except Exception:  # noqa: BLE001
+            pass
+
+    def size(self) -> int:
+        """当前记账的主体数。"""
+        try:
+            from .db import RateHit, SessionLocal
+            with SessionLocal() as s:
+                return len({r[0] for r in s.query(RateHit.key).all()})
+        except Exception:  # noqa: BLE001
+            return self._fallback.size()
+
+
+anon_limiter = DbRateLimiter(QUOTA_ANON["per_min"], QUOTA_ANON["per_day"])
+user_limiter = DbRateLimiter(QUOTA_USER["per_min"], QUOTA_USER["per_day"])
 
 
 def client_key(request: Any, user: Any = None) -> str:
