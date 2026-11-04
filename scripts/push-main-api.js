@@ -39,21 +39,44 @@ function gitBuf(args) {
     encoding: "buffer",
   });
 }
+/* 出口网关对 api.github.com 的 GET 偶发 502（实测三次里两次失败，
+   同一条命令重试就好），所以读操作带退避重试；写操作（POST/PATCH）不做，
+   免得把「已成功但响应丢失」的请求重放成两次提交。 */
 function gh(args, input) {
-  return execFileSync("gh", ["api", ...args, ...(input ? ["--input", "-"] : [])], {
-    input: input || undefined,
-    encoding: "utf8",
-    maxBuffer: 1024 * 1024 * 512,
-  }).trim();
+  /* blobs / trees / commits 都是「同样的输入产出同样的东西」（内容寻址），
+     失败重放不会写出多余记录，所以这三条 POST 也允许重试；
+     真正有副作用的是末尾的 ref PATCH，它单独处理。 */
+  const pure = args.some((a) => /\/git\/(blobs|trees|commits)$/.test(a));
+  const write = args.some((a) => a === "-X" || a.startsWith("-X"));
+  let lastErr;
+  for (let i = 0; i < 6; i++) {
+    try {
+      return execFileSync("gh", ["api", ...args, ...(input ? ["--input", "-"] : [])], {
+        input: input || undefined,
+        encoding: "utf8",
+        maxBuffer: 1024 * 1024 * 512,
+      }).trim();
+    } catch (e) {
+      lastErr = e;
+      const msg = String((e && (e.stderr || e.message)) || "");
+      const flaky = /Bad Gateway|502|timed? ?out|ETIMEDOUT|ECONNRESET|socket hang up/i.test(msg);
+      if (!flaky || (write && !pure)) throw e;
+      execFileSync("node", ["-e", `setTimeout(()=>{},${400 * (i + 1)})`]);
+    }
+  }
+  throw lastErr;
 }
 function ghJson(args, input) {
   return JSON.parse(gh(args, input));
 }
 
-/* 0) 远端 main 头与树 */
-const head = ghJson([`repos/${REPO}/commits/${BRANCH}`, "--jq", "."]);
+/* 0) 远端 main 头与树
+   不用 /commits/{branch}：该端点在某些网络环境下会稳定返回 502（网关，
+   不是 GitHub 本身），而 git/ref + git/commits 两条端点一直可用。 */
+const ref = ghJson([`repos/${REPO}/git/ref/heads/${BRANCH}`, "--jq", "."]);
+const head = ghJson([`repos/${REPO}/git/commits/${ref.object.sha}`, "--jq", "."]);
 const remoteSha = head.sha;
-const remoteTree = head.commit.tree.sha;
+const remoteTree = head.tree.sha;
 console.log(`远端 ${BRANCH}: ${remoteSha.slice(0, 7)}（tree ${remoteTree.slice(0, 7)}）`);
 
 /* 1) 在本地历史里回溯：哪个提交的 tree 与远端一致 → 它就是「已推送到」的位置 */
@@ -148,6 +171,13 @@ for (const c of pending) {
   prevTree = treeSha;
 }
 
-/* 3) 快进更新 ref */
-gh([`repos/${REPO}/git/refs/heads/${BRANCH}`, "-X", "PATCH", "-f", `sha=${parent}`, "-F", "force=false"]);
+/* 3) 快进更新 ref。这一条不重试：重放一次「移动分支」比失败更难收拾。
+   若上次其实已经成功、只是响应丢在路上，这里按现状核对一遍再决定是否报错。 */
+try {
+  gh([`repos/${REPO}/git/refs/heads/${BRANCH}`, "-X", "PATCH", "-f", `sha=${parent}`, "-F", "force=false"]);
+} catch (e) {
+  const now = ghJson([`repos/${REPO}/git/ref/heads/${BRANCH}`, "--jq", "."]);
+  if (now.object.sha !== parent) throw e;
+  console.log("（ref 已在目标位置，按成功处理）");
+}
 console.log(`✅ main 已更新 → ${parent.slice(0, 7)}（https://github.com/${REPO}/commit/${parent}）`);
