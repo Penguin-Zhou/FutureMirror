@@ -115,6 +115,7 @@
   "USERS_KEY": "writable",
   "VEC_CFG": "writable",
   "VIEW_KEY": "writable",
+  "VIEW_NAMES": "writable",
   "VOICE_ERR_HINT": "writable",
   "VOICE_FATAL": "writable",
   "__bpApp": "writable",

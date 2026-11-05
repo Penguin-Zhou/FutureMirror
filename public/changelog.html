@@ -303,7 +303,7 @@ body {
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2962</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2969</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -312,6 +312,7 @@ body {
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v72"><span class="cl-toc-tag">Beta 1.1.2 · v72</span><span class="cl-toc-title-txt">短板提示的「定向补强」点了白屏 —— 把应用内 tab 当成了顶层视图</span></a></li>
     <li><a href="#v71"><span class="cl-toc-tag">Beta 1.1.2 · v71</span><span class="cl-toc-title-txt">报告 → 学习计划 · 跳转必须带导入：把「链接无效」修成「落地即个人版计划」</span></a></li>
     <li><a href="#v70"><span class="cl-toc-tag">Beta 1.1.2 · v70</span><span class="cl-toc-title-txt">定位重写 + 评分方法页 · 可核查的评价链路 / 边界声明 / Vue 3 展示层 / 71 项双引擎对拍</span></a></li>
     <li><a href="#v68"><span class="cl-toc-tag">Beta 1.1.2 · v68</span><span class="cl-toc-title-txt">限额跨进程记账 · rate_hits 落库 / 三进程并发 6 : 6 / 库挂兜底</span></a></li>
@@ -568,6 +569,43 @@ body {
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v72 · 短板提示「定向补强」白屏
+       ======================================================== -->
+  <div class="version" id="v72">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 缺陷修复（v72）</span>
+      <span class="v-title">「去练习计划定向补强」一点，整页变成空白</span>
+      <span class="v-date">2026.11.05</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        评估报告里「短板提示」卡有一枚按钮「→ 去练习计划定向补强」。点了之后页面全白、没有任何反应，
+        浏览器控制台也没有明显报错——因为代码并没有崩，它只是把<strong>所有顶层视图都关掉了</strong>。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>根因：tab 名被当成顶层视图传</b>：按钮写的是 <code>showView('plan')</code>。而 <code>showView</code> 管的是
+        landing / app / auth / evaluator 四个<strong>顶层视图</strong>，做法是把每个 <code>.view</code> 的 active 按 <code>view-</code> + name 匹配。
+        页面里没有 <code>#view-plan</code>，于是四个视图全部失活——只剩 body 背景</div>
+        <div class="vh-item"><b>为什么看着「无响应」而不是报错</b>：<code>showView</code> 本身执行成功，只是结果为空视图；
+        同时它把 <code>plan</code> 写进了 <code>sessionStorage</code> 的视图记忆。恢复逻辑有白名单兜底（<code>lastView === "app" ? "app" : "landing"</code>），
+        所以刷新能回来，但当场就是白屏</div>
+        <div class="vh-item"><b>修法一：按钮改指正确入口</b>：改为 <code>openPlanFromReport()</code>——先按本场报告导入计划、再切 tab、再渲染、再给回执。
+        与报告底部那枚「进入学习计划板块」走同一条逻辑，行为不再分叉</div>
+        <div class="vh-item"><b>修法二：给 showView 加顶层视图白名单</b>：新增 <code>VIEW_NAMES = ["landing","app","auth","evaluator"]</code>，
+        非法名字直接拒绝并 warn，<strong>不写视图记忆、不动 active</strong>。以后谁再把 tab 名误传进来，最坏只是「点了没反应」，不会整页空白</div>
+        <div class="vh-item"><b>为什么之前没被发现</b>：这条链路<strong>一项断言都没有</strong>——测试覆盖了报告页底部的按钮，漏了短板卡里的那枚。
+        本次把 <code>renderWeakCue</code> 挂到 <code>__bpViz</code> 作观测点，补 7 项断言：按钮存在、onclick 指向新入口、不含 showView、
+        非法视图名不清空 .view、不污染 <code>g_view</code>、点击后落在 plan 页、计划已按本场报告导入</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">2969</div><div class="m-label">前端断言</div></div>
+        <div class="metric"><div class="m-val">7</div><div class="m-label">本次新增断言</div></div>
+        <div class="metric"><div class="m-val">4</div><div class="m-label">顶层视图白名单</div></div>
       </div>
     </div>
   </div>

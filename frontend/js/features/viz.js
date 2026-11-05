@@ -614,7 +614,10 @@
       host.appendChild(body);
       const btn = el("button", "bp-wc-btn", "→ 去练习计划定向补强");
       btn.type = "button";
-      btn.setAttribute("onclick", "showView('plan')");
+      /* plan 是应用内的 tab，不是顶层视图。写 showView('plan') 会让所有 .view 失活
+       * （不存在 #view-plan），整页只剩背景——观感就是「点了没反应、页面空白」。
+       * 走 openPlanFromReport()：先按本场报告导入计划，再切 tab。 */
+      btn.setAttribute("onclick", "openPlanFromReport()");
       host.appendChild(btn);
     } else {
       body.appendChild(el("p", "bp-wc-text", "完成一次模拟面试后，此处显示你的真实短板与定向提升方向。"));
@@ -772,6 +775,7 @@
     init: initAll,
     renderHeat: renderHeat,
     renderScatter: renderScatter,
+    renderWeakCue: renderWeakCue,
     enhanceTable: enhanceTable,
     initBoard: initBoard,
     startLive: startLive,

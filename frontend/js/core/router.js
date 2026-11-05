@@ -3,8 +3,15 @@
  * 0.5 视图路由系统（landing / app / auth）
  * ============================================================ */
 const VIEW_KEY = "g_view";
+/* 顶层视图白名单。应用内的 tab（dashboard / report / plan …）不是顶层视图，
+ * 误传进来会让所有 .view 失活、整页只剩背景——所以这里先挡住。 */
+const VIEW_NAMES = ["landing", "app", "auth", "evaluator"];
 
 function showView(name) {
+  if (VIEW_NAMES.indexOf(name) === -1) {
+    try { console.warn("[showView] 未知视图：" + name + "（应用内切换请用 switchTab）"); } catch (e) {}
+    return false;
+  }
   document.querySelectorAll(".view").forEach(v => {
     v.classList.toggle("active", v.id === "view-" + name);
   });
@@ -41,6 +48,7 @@ function showView(name) {
   try { if (window.__bpScroll && window.__bpScroll.updateSpy) window.__bpScroll.updateSpy(); } catch (e) {}
   // v31：滚动吸附只作用于落地页视图——进入挂载、离开拆除（曾全局常驻导致应用内滚动粘滞）
   try { if (window.__bpMotion && window.__bpMotion.setSnap) window.__bpMotion.setSnap(name === "landing"); } catch (e) {}
+  return true;
 }
 
 /* 落地页 CTA：已登录进应用，未登录进登录页 */

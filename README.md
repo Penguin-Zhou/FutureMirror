@@ -631,7 +631,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → 知识库一致性 → ESLint 0 error → Prettier 检查 → 2962 项断言
+npm run verify                          # globals 校验 → 知识库一致性 → ESLint 0 error → Prettier 检查 → 2969 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -661,7 +661,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2962 项前端断言 + 89 项后端单测**，全部通过。
+合计 **2969 项前端断言 + 89 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -739,7 +739,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 89 项 + 前端 2962 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 89 项 + 前端 2969 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ⬜  | `<录制后填写链接>`                                                                                                                                                                       |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
@@ -961,6 +961,23 @@ Copyright (c) 2026 FutureMirror Team (面镜 FutureMirror 团队)
 - **身份不能按地址认**：修完存储才看清真正的问题——同一台机器连发 5 个请求，来源地址分别是 43.143 / 82.156 / 82.157 / 49.233 四个网段，`X-Real-IP` 同样在变（代理池）。按地址计额的结果就是线上 10 个并发被记成 **10 个 key**、额度一次没扣住。改为前端生成 `X-Anon-Id`（localStorage 随机串）随请求带上，服务端按它计额；标识缺失或不合法一律归到同一个共享主体，宁可共用一份额度，也不要因为认不出人而人人一份
 - **诊断字段**：`/api/health` 增加 `instance`（进程随机标识，用来数清起了几个实例）、`rate_store`（记账落点 / 主体数 / 兜底次数）、`proxy`（身份头形状）。这三个字段是这次排查能收敛的原因——`keys: 10` 一眼看出主体没有聚合，否则只能猜
 - **指标**：前端断言 **2953** 不变｜后端 pytest 83 → **89**（新增 6 项：跨实例共账 / 窗口过期 / 日上限 / 库挂兜底 / reset 清账 / 实例类型）
+
+### Beta 1.1.2 · 增量 v72：短板提示的「定向补强」一点就白屏（2026.11.05）
+
+> 评估报告的「短板提示」卡上有一枚按钮「→ 去练习计划定向补强」。点了之后整页空白、没有反应，
+> 控制台也没有报错——因为代码没崩，它只是把**所有顶层视图都关掉了**。
+
+- **根因**：按钮写的是 `showView('plan')`。`showView` 管的是 landing / app / auth / evaluator 四个**顶层视图**，
+  做法是把每个 `.view` 的 active 按 `view-` + name 匹配。页面里没有 `#view-plan`，四个视图于是全部失活，
+  只剩 body 背景。它还把 `plan` 写进 `sessionStorage` 的视图记忆（刷新能靠白名单兜底回来，但当场是白屏）。
+- **修法一**：按钮改指 `openPlanFromReport()`——先按本场报告导入计划、再切 tab、再渲染、再给回执，
+  与报告底部那枚「进入学习计划板块」走同一条逻辑。
+- **修法二**：`showView` 增加顶层视图白名单 `VIEW_NAMES`，非法名字直接拒绝并 warn，**不写视图记忆、不动 active**。
+  以后误传 tab 名，最坏只是「点了没反应」，不会整页空白。
+- **为什么之前没发现**：这条链路一项断言都没有——测试覆盖了报告页底部按钮，漏了短板卡里的那枚。
+  本次把 `renderWeakCue` 挂到 `__bpViz` 作观测点，补 7 项断言：按钮存在、onclick 指向新入口、不含 showView、
+  非法视图名不清空 `.view`、不污染 `g_view`、点击后落在 plan 页、计划已按本场报告导入。
+- **指标**：前端断言 2962 → **2969**（新增 7 项）｜jsdom 套件 **52 套**｜共享全局符号 754｜PDF 仍 30 页。
 
 ### Beta 1.1.2 · 增量 v71：报告 → 学习计划，跳过去要拿到那一份计划（2026.11.05）
 

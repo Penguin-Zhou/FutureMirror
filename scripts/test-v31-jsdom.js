@@ -251,6 +251,41 @@ async function runTests() {
   ok(w.eval("lpGet()").source === "report", "无会话时跳转不把已有个性化计划降级");
   ok(d.querySelector(".app-page.active")?.dataset.page === "plan", "无会话时仍能正常进入 plan 页");
 
+  /* 短板提示卡的「定向补强」按钮：曾写成 showView('plan')——
+   * plan 是应用内 tab，传给 showView 会让所有 .view 失活，整页只剩背景。 */
+  const cueHost = d.createElement("div");
+  w.__bpViz.renderWeakCue(cueHost, [{ dimension: "结构逻辑", score: 46, comment: "结构松散，建议用 STAR 组织" }], true);
+  const cueBtn = cueHost.querySelector(".bp-wc-btn");
+  ok(!!cueBtn, "短板提示卡渲染「去练习计划定向补强」按钮");
+  ok(cueBtn && cueBtn.getAttribute("onclick") === "openPlanFromReport()", "短板卡按钮指向 openPlanFromReport()");
+  ok(cueBtn !== null && !/showView/.test(cueBtn.getAttribute("onclick") || ""), "短板卡按钮不再把 tab 名当顶层视图传");
+  /* showView 守卫：非法视图名必须被拒绝，且不能改动当前视图与视图记忆。
+   * 注：motion.js 的 View Transition 包装会丢弃 showView 的返回值，故断言不绑返回值，
+   * 只绑真实危害——「所有 .view 失活」与「sessionStorage 被写脏」。 */
+  w.eval("showView('app')");
+  const viewBefore = w.eval("document.querySelector('.view.active') && document.querySelector('.view.active').id");
+  const memBefore = w.eval("sessionStorage.getItem('g_view')");
+  w.eval("showView('plan')");
+  ok(
+    w.eval("document.querySelector('.view.active') && document.querySelector('.view.active').id") === viewBefore,
+    "非法视图名不清空所有 .view（不会白屏）"
+  );
+  ok(
+    w.eval("sessionStorage.getItem('g_view')") === memBefore && memBefore === "app",
+    "非法视图名不污染视图记忆（g_view 仍为 app）"
+  );
+  /* 点按钮要真的落到 plan 页，并带上本场报告生成的计划 */
+  w.eval("store.set('fm_plan', null, true)");
+  w.eval(
+    "session.turns.push({ agent: '技术面', question: '具体指标是什么？', answer: '我优化了系统性能，把首屏加载从 3.2 秒降到 1.1 秒，50 人并发下测的。', notes: '', mode: 'tech', anchors: [], anchorRef: [], ts: Date.now() })"
+  );
+  w.eval(
+    "(() => { const h = document.createElement('div'); __bpViz.renderWeakCue(h, [{ dimension: '结构逻辑', score: 46, comment: 'x' }], true); h.querySelector('.bp-wc-btn').click(); return 1; })()"
+  );
+  w.eval("applyRoute()");
+  ok(d.querySelector(".app-page.active")?.dataset.page === "plan", "点短板卡按钮后进入 plan 页");
+  ok(w.eval("lpGet()").source === "report", "点短板卡按钮后计划已按本场报告导入");
+
   /* ================================================================
      ⑥ 全站蓝图风 SVG 图标系统
      ================================================================ */
