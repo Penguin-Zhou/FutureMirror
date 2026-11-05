@@ -46,6 +46,8 @@ if (!fs.existsSync(SRC)) {
   process.exit(1);
 }
 const HAS_DOC = fs.existsSync(DOC);
+const METHOD = path.join(ROOT, "docs", "scoring-method.html");
+const HAS_METHOD = fs.existsSync(METHOD);
 const CHANGELOG = path.join(ROOT, "public", "changelog.html");
 const HAS_CL = fs.existsSync(CHANGELOG);
 
@@ -71,6 +73,14 @@ if (HAS_DOC) {
   docKB = Buffer.byteLength(doc, "utf8") / 1024;
   fs.mkdirSync(path.join(tmp, "docs"), { recursive: true });
   fs.writeFileSync(path.join(tmp, "docs", "technical-doc.html"), doc);
+}
+
+/* 评分方法展示页：Vue 3 单文件产物，与评分引擎同源，评审可直接交互核对 */
+let methodKB = 0;
+if (HAS_METHOD) {
+  const method = fs.readFileSync(METHOD, "utf8");
+  methodKB = Buffer.byteLength(method, "utf8") / 1024;
+  fs.writeFileSync(path.join(tmp, "docs", "scoring-method.html"), method);
 }
 
 /* 版本更新日志（独立静态页，含可点击版本索引）随演示一同发布 */
@@ -103,6 +113,9 @@ fs.writeFileSync(
   `# FutureMirror 在线演示（发布产物分支）\n\n` +
     `- 内容：\`public/futuremirror-demo.html\`（单文件演示版，${sizeKB}KB，CSS/JS 全内联）\n` +
     (HAS_DOC ? `- 文档：\`docs/technical-doc.html\`（技术文档 HTML 在线版，${docKB.toFixed(1)}KB）\n` : "") +
+    (HAS_METHOD
+      ? `- 评分方法：\`docs/scoring-method.html\`（评分公式与锚点规则的交互展示，${methodKB.toFixed(1)}KB）\n`
+      : "") +
     (HAS_CL ? `- 更新日志：\`changelog.html\`（版本更新日志静态页，${clKB.toFixed(1)}KB，可点击跳转）\n` : "") +
     (modelMB ? `- 端侧模型：\`models/\`（all-MiniLM-L6-v2，${modelMB.toFixed(1)}MB，同源可读）\n` : "") +
     `- 版本：${version}\n` +

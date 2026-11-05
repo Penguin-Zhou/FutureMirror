@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2914</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2953</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -37,6 +37,7 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v70"><span class="cl-toc-tag">Beta 1.1.2 · v70</span><span class="cl-toc-title-txt">定位重写 + 评分方法页 · 可核查的评价链路 / 边界声明 / Vue 3 展示层 / 71 项双引擎对拍</span></a></li>
     <li><a href="#v68"><span class="cl-toc-tag">Beta 1.1.2 · v68</span><span class="cl-toc-title-txt">限额跨进程记账 · rate_hits 落库 / 三进程并发 6 : 6 / 库挂兜底</span></a></li>
     <li><a href="#v67"><span class="cl-toc-tag">Beta 1.1.2 · v67</span><span class="cl-toc-title-txt">AI 小助手接入后端 · 服务端检索 / 引用回传 / 访客限流 / 面板高度修复</span></a></li>
     <li><a href="#v64"><span class="cl-toc-tag">Beta 1.1.2 · v64</span><span class="cl-toc-title-txt">能力网改造 · 逐帧位移场 / 端点咬合 / 焦点分组 / 绽开入场</span></a></li>
@@ -291,6 +292,37 @@ export const changelogHtml = `
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v70 · 定位重写 + 评分方法页
+       ======================================================== -->
+  <div class="version" id="v70">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 定位（v70）</span>
+      <span class="v-title">把「可解释」从功能点提成产品存在的理由</span>
+      <span class="v-date">2026.11.05</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        功能一行没改，改的是它在文档里怎么被定义。此前的一句话定位是「面向高校学生的 AI Native 求职训练平台」——
+        讲清了做什么，没讲清为什么非做不可。这一版换掉命题，并把边界一起写在开头。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>定位换成一句提问</b>：「当 AI 开始参与对一个人的评价，谁来保证这个评价可追溯、可复现？」答案不是更聪明的面试官，而是一条<strong>可核查的评价链路</strong>：规则先算分，证据在算分那一刻锁定，同一输入逐位相同</div>
+        <div class="vh-item"><b>边界写在开头，不藏在附录</b>：服务训练与自评、不参与真实录用决策、不采集受保护属性、不做人群维度的偏见审计。它保证的是<strong>单次评价内部</strong>的证据可核查——不宣称解决了「AI 招聘是否公平」这个更大的问题</div>
+        <div class="vh-item"><b>新增评分方法页</b>：<code>vue-scoring-method/</code> 用 Vue 3 + Vite 构建为 <code>docs/scoring-method.html</code>，<strong>84.8KB 单文件、零外部请求</strong>。左边贴任意回答，右边实时出五维；点任一维度展开「这一分是怎么来的」，每个公式旁标注 <code>scoring.py</code> 行号</div>
+        <div class="vh-item"><b>两个引擎必须一样</b>：<code>scripts/check-scoring-method.js</code> 用 5 组样本同时跑 Python 与 JS，比对五维分数、总分、最弱维度、双镜头分歧、锚点起止位置共 <strong>71 项</strong>；任一侧改公式而忘记同步，这一步直接失败</div>
+        <div class="vh-item"><b>技术选型改成分层论证</b>：核心链路保持零依赖（离线可跑、端侧评分、产物可逐字节还原），展示层用 Vue（状态驱动）。3.5 节新增 3.5.4，写清两层如何隔离，以及为什么不是全量迁移</div>
+        <div class="vh-item"><b>演示材料同步</b>：视频脚本从 5 分钟页面巡礼改为 <strong>6 分钟对比结构</strong>（黑箱反馈 vs 证据链）；答辩预设新增三问（创新点在哪 / 规则比大模型准吗 / 没用框架怎么体现前端能力），每题给 15–20 秒口播稿与危险追问兜底</div>
+        <div class="vh-item"><b>顺手修掉的过期口径</b>：技术文档里还写着「2026 项断言 / 后端 37 项 / 42 个模块 / 3 层 CSS / 900KB」，全部对齐到当前实测值</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">71</div><div class="m-label">双引擎对拍项</div></div>
+        <div class="metric"><div class="m-val">84.8KB</div><div class="m-label">方法页单文件</div></div>
+        <div class="metric"><div class="m-val">2953</div><div class="m-label">前端断言</div></div>
       </div>
     </div>
   </div>

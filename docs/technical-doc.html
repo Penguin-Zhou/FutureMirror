@@ -281,6 +281,17 @@
   td a { color: var(--brand); text-decoration: none; word-break: break-all; }
   td a:hover { text-decoration: underline; }
 
+  .lead-quote {
+    font-family: var(--serif);
+    font-size: 12.5pt;
+    line-height: 1.5;
+    color: var(--ink);
+    padding: 0 0 0 3.5mm;
+    border-left: 3px solid var(--brand);
+    margin: 1mm 0 3.5mm;
+    page-break-inside: avoid;
+  }
+
   .callout {
     padding: 3mm 3.5mm; border-radius: 7px;
     margin: 2.5mm 0 3.5mm; font-size: 9.5pt;
@@ -449,38 +460,55 @@
   <h1>项目概述</h1>
 
   <h2>1.1 一句话定位</h2>
+  <p class="lead-quote">
+    当 AI 开始参与对一个人的评价，谁来保证这个评价<strong>可追溯</strong>、<strong>可复现</strong>？
+  </p>
   <p>
-    <strong>面镜 FutureMirror</strong> 是一个面向高校学生的 <strong>AI Native 求职训练平台</strong>：
+    <strong>面镜 FutureMirror</strong> 不做「更聪明的 AI 面试官」，它做的是<strong>一条可核查的评价链路</strong>：
     上传简历与目标岗位 JD，由 HR / 技术 / 压力面 / 观察员 / 教练五个 AI Agent 协作完成一场模拟面试，
-    实时生成<strong>每条评分都引用对话原话的可解释评估报告</strong>、能力雷达图与个性化 7 天学习路径；
-    内置 RAG 面经问答、简历 6 维诊断、题库小测、求职看板形成完整闭环。
+    五个维度的每一个分数都由确定性规则在生成时算出，并<strong>当场锚定到候选人说过的那一句原话</strong>；
+    同一份回答，在任何时间、任何模型温度下得到同一组分数。报告、能力雷达图与 7 天学习路径由这份分数驱动，
+    简历 6 维诊断、RAG 面经问答、题库小测贯穿同一条证据线。
+  </p>
+  <p>
+    一句话：市面上的 AI 告诉你「哪里不好」，FutureMirror 告诉你<strong>「哪句话导致了不好」</strong>。
   </p>
 
-  <h2>1.2 解决什么问题</h2>
-  <p>应届生面试训练面临三个结构性困境：</p>
+  <h2>1.2 为什么现在需要它</h2>
+  <p>AI 进入评价环节之后，求职训练出现了三个新问题，它们不是「练习不够」的旧问题：</p>
 
   <table>
     <thead>
-      <tr><th style="width:24%">困境</th><th style="width:34%">传统方案</th><th>本作品的解法</th></tr>
+      <tr><th style="width:22%">问题</th><th style="width:33%">常见做法</th><th>本作品的做法</th></tr>
     </thead>
     <tbody>
       <tr>
-        <td><strong>缺少练习对手</strong></td>
-        <td>找同学互面，时间难凑、质量不稳</td>
-        <td>5 个 AI Agent 随时待命，按回答内容动态追问</td>
+        <td><strong>评价是黑箱</strong></td>
+        <td>让大模型给一段评语和总分，用户只能选择相信或不信</td>
+        <td>评分由规则引擎先算出，<strong>证据在算分那一刻就锁定</strong>；LLM 只负责追问与措辞，不碰分数</td>
       </tr>
       <tr>
-        <td><strong>反馈不可解释</strong></td>
-        <td>面试后只记得「感觉不太好」</td>
-        <td>5 维度评分，<strong>每条证据引用回答原话</strong>，最弱维度驱动学习路径</td>
+        <td><strong>结论不可复现</strong></td>
+        <td>同一份回答换个时间再问，模型给出不同分数，训练缺少稳定标尺</td>
+        <td>确定性引擎无采样、无随机：同一输入<strong>逐位相同</strong>，前端与后端双引擎对拍校验</td>
       </tr>
       <tr>
-        <td><strong>知识零散</strong></td>
-        <td>面经散落各平台，无法溯源</td>
-        <td>RAG 混合检索 40 条合成面经，<strong>答案强制附引用来源与两路得分</strong></td>
+        <td><strong>依据无法溯源</strong></td>
+        <td>报告里的「引用」是模型事后补写的，可能与原话不符</td>
+        <td>锚点从回答原文中<strong>按规则提取</strong>（技术名词 &gt; 量化 &gt; 动作），可点回对话位置核对</td>
       </tr>
     </tbody>
   </table>
+
+  <div class="callout warn">
+    <strong>边界声明：先说清楚不做什么</strong>
+    <p style="margin:0">
+      本作品服务<strong>训练与自评</strong>场景，<strong>不参与任何真实招聘的录用决策</strong>，也不对人的职业能力下终审结论；
+      它<strong>不做人群维度的偏见审计</strong>（不采集性别、年龄、院校层次等受保护属性，也没有统计均等性指标）。
+      它保证的是<strong>单次评价内部</strong>的证据可核查与结果可复现；至于「AI 招聘是否公平」这一更大的公共命题，
+      本作品提供的是其中一环——<strong>让评价过程从不可核查变成可核查</strong>，而不是宣称已经给出了完整答案。
+    </p>
+  </div>
 
   <h2>1.3 核心数据</h2>
 
@@ -488,7 +516,7 @@
     <div class="stat"><div class="stat-num">5</div><div class="stat-label">协作 Agent</div></div>
     <div class="stat"><div class="stat-num">24</div><div class="stat-label">岗位数据库</div></div>
     <div class="stat"><div class="stat-num">40</div><div class="stat-label">面经知识库</div></div>
-    <div class="stat"><div class="stat-num">2026</div><div class="stat-label">前端自动化断言</div></div>
+    <div class="stat"><div class="stat-num">2953</div><div class="stat-label">前端自动化断言</div></div>
   </div>
 
   <table>
@@ -503,7 +531,7 @@
       <tr><td>题库</td><td>24 题 / 5 分类</td><td>SQL / 网络 / 操作系统 / 算法 / STAR</td></tr>
       <tr><td>MCP 工具</td><td>3 个</td><td><code>search_job_db</code> / <code>fetch_interview_experience</code> / <code>schedule_mock</code></td></tr>
       <tr><td>前端自动化断言</td><td>2953 项</td><td>单文件版 + 模块版 jsdom 测试（52 套）</td></tr>
-      <tr><td>后端单元测试</td><td>37 项</td><td>pytest 冒烟 + 评分引擎 + LLM 增强</td></tr>
+      <tr><td>后端单元测试</td><td>89 项</td><td>pytest 冒烟 + 鉴权 + 评分引擎 + 限流 + LLM 增强</td></tr>
       <tr><td>部署形态</td><td>3 种</td><td>单文件 / 模块版 / FastAPI 同源后端</td></tr>
     </tbody>
   </table>
@@ -514,9 +542,10 @@
       <tr><th style="width:26%">形态</th><th style="width:32%">位置</th><th>定位</th></tr>
     </thead>
     <tbody>
-      <tr><td>单文件演示版</td><td><code>public/futuremirror-demo.html</code></td><td>零依赖、可离线运行（约 900KB，CSS/JS 全内联）</td></tr>
-      <tr><td>模块版前端</td><td><code>frontend/</code></td><td>42 个 JS 模块 + 3 层 CSS，与单文件版逐字节等价</td></tr>
+      <tr><td>单文件演示版</td><td><code>public/futuremirror-demo.html</code></td><td>零依赖、可离线运行（约 1.3MB，CSS/JS 全内联）</td></tr>
+      <tr><td>模块版前端</td><td><code>frontend/</code></td><td>45 个 JS 模块 + 4 层 CSS，与单文件版逐字节等价</td></tr>
       <tr><td>FastAPI 后端</td><td><code>backend/</code></td><td>JWT 鉴权 + SQLite 持久化 + GLM SSE 流式代理 + 确定性评分引擎 + LLM 质性增强</td></tr>
+      <tr><td>评分方法页</td><td><code>docs/scoring-method.html</code></td><td>Vue 3 + Vite 单文件构建：公式、权重、锚点规则可交互核对，与评分引擎同源（<a href="scoring-method.html">打开</a>）</td></tr>
     </tbody>
   </table>
 
@@ -592,6 +621,38 @@
       </tr>
     </tbody>
   </table>
+
+  <p style="margin-top:4mm">
+    近两年「可解释 AI 面试」方向已经出现学术原型与专利布局，它们的常见做法与本作品有一处根本差异，需要提前讲清：
+  </p>
+
+  <table>
+    <thead>
+      <tr><th style="width:22%">做法</th><th style="width:30%">解释是怎么产生的</th><th style="width:24%">能否当场核对</th><th>能否复现</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>事后解释</strong><br><span style="color:var(--faint);font-size:8.5pt">同类方案常见</span></td>
+        <td>先让大模型打出分数，再让模型「写一段理由」，引用是第二次生成</td>
+        <td>引用可能与原话不一致，也无法定位到具体字符位置</td>
+        <td>重新采样后分数与解释都会变化</td>
+      </tr>
+      <tr>
+        <td><strong>规则绑定</strong><br><span style="color:var(--faint);font-size:8.5pt">本作品</span></td>
+        <td>规则引擎先算出分数，锚点在<strong>算分同一刻</strong>从回答原文中按规则提取并随报告落库</td>
+        <td>可点回对话原句，字符起止位置固定</td>
+        <td>同一份输入在任何时间、任何温度下逐位相同</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout info">
+    <strong>一句话划清差异</strong>
+    <p style="margin:0">
+      不是「谁的解释写得更自然」，而是<strong>「解释是生成出来的，还是被锁定的」</strong>。
+      前者需要相信模型，后者可以自己去核对——这也是本作品在同类方案中唯一想争的一点。
+    </p>
+  </div>
 
   <div class="chapter-footer">
     <span class="cf-brand"><b>面镜 FutureMirror</b> · 技术文档 v1.11</span>
@@ -674,11 +735,17 @@
     <strong>降级触发条件</strong>：<code>/api/health</code> 返回非 200、请求超时 60s、HTTP 5xx、SSE 流中断——任一触发即自动降级，且顶部横幅会如实告知用户当前形态。
   </p>
 
-  <h2>3.5 技术选型论证：为什么是原生栈，而不是 Next.js</h2>
+  <h2>3.5 技术选型：核心链路零依赖，展示层用 Vue 3</h2>
 
   <p>
-    作品的前端技术选型为<strong>原生 JavaScript（ES2022）+ HTML + CSS 手写设计系统</strong>，后端为 FastAPI 薄接入层。
-    这是一个需要正面回答的选择——现代前端框架是全栈 AI 应用的主流方案，本节逐条说明取舍依据，以及为此付出的工程补偿。
+    本作品的前端选型是<strong>分层</strong>的，而不是「用不用框架」的二选一：
+    <strong>产品核心链路</strong>（五个 Agent 的对话与派发、确定性评分引擎、可解释报告、离线单文件演示）保持
+    <strong>原生 JavaScript（ES2022）零依赖</strong>；<strong>说明与展示层</strong>（评分方法页）使用
+    <strong>Vue 3 + Vite</strong> 构建，产物仍是单个自包含 HTML。
+  </p>
+  <p>
+    切分标准只有一条：<strong>哪些代码必须能在断网、无 Node、双击即开的条件下跑完整个演示，哪些代码可以借助构建工具链</strong>。
+    前者是核心链路，后者是说明页。下面 3.5.1–3.5.3 论证核心链路为什么不用框架，3.5.4 说明展示层为什么用 Vue、以及两者如何隔离。
   </p>
 
   <h3>3.5.1 三条决定性约束</h3>
@@ -690,7 +757,7 @@
       <tr>
         <td><strong>必须能离线演示</strong></td>
         <td>Next.js / Vite 产物依赖构建环境与运行时（Node、<code>.next</code> 目录、Node 静态服务）；访客电脑断网或未装 Node 时，演示直接失败</td>
-        <td>构建脚本把 42 个模块与 3 层 CSS <strong>反合并成单个 900KB 的 HTML</strong>，双击即可运行，无 npm、无构建、无服务器</td>
+        <td>构建脚本把 45 个模块与 4 层 CSS <strong>反合并成单个 1.3MB 的 HTML</strong>，双击即可运行，无 npm、无构建、无服务器</td>
       </tr>
       <tr>
         <td><strong>评分引擎要能端侧独立跑</strong></td>
@@ -700,7 +767,7 @@
       <tr>
         <td><strong>演示要能证明「代码可解释」</strong></td>
         <td>框架的抽象层（编译器、路由约定、Server Components）会带来大量「不是我写的代码」，深挖追问时解释成本高</td>
-        <td>全部 42 个模块均为手写、无编译转换，<code>scripts/split-frontend.js</code> 可把单文件产物<strong>逐字节还原成源码</strong>，源码与交付物一一对应</td>
+        <td>全部 45 个模块均为手写、无编译转换，<code>scripts/split-frontend.js</code> 可把单文件产物<strong>逐字节还原成源码</strong>，源码与交付物一一对应</td>
       </tr>
     </tbody>
   </table>
@@ -714,10 +781,10 @@
       <tr><th style="width:22%">框架通常提供的</th><th style="width:34%">本项目的补偿手段</th><th>可当场验证</th></tr>
     </thead>
     <tbody>
-      <tr><td>组件化 / 模块边界</td><td>42 个模块按「core / data / features / dev」四层划分，由 <code>build-manifest.json</code> 声明加载顺序</td><td><code>npm run build:demo</code></td></tr>
-      <tr><td>代码规范（ESLint）</td><td>ESLint 10 扁平配置；因模块共享同一全局作用域，用 <code>gen-eslint-globals.js</code> 从源码自动提取 718 个共享符号做白名单，<code>no-undef</code> 仍然有效</td><td><code>npm run lint</code> → 0 error</td></tr>
+      <tr><td>组件化 / 模块边界</td><td>45 个模块按「core / data / features / dev」四层划分，由 <code>build-manifest.json</code> 声明加载顺序</td><td><code>npm run build:demo</code></td></tr>
+      <tr><td>代码规范（ESLint）</td><td>ESLint 10 扁平配置；因模块共享同一全局作用域，用 <code>gen-eslint-globals.js</code> 从源码自动提取 751 个共享符号做白名单，<code>no-undef</code> 仍然有效</td><td><code>npm run lint</code> → 0 error</td></tr>
       <tr><td>格式化（Prettier）</td><td>Prettier 3 托管脚本层与配置层；前端源码因 <code>build-manifest</code> 行号基准与格式敏感断言而不纳入重排，理由写在 <code>.prettierignore</code> 注释里</td><td><code>npm run format:check</code></td></tr>
-      <tr><td>类型约束（TypeScript）</td><td>不引入编译步骤，改用 <code>jsconfig.json</code> + JSDoc + <code>types/models.d.ts</code>：编辑器内获得补全与跳转，运行时契约由 2674 条断言与后端 Pydantic 模型双向保证</td><td><code>npm run verify</code></td></tr>
+      <tr><td>类型约束（TypeScript）</td><td>不引入编译步骤，改用 <code>jsconfig.json</code> + JSDoc + <code>types/models.d.ts</code>：编辑器内获得补全与跳转，运行时契约由 2953 条断言与后端 Pydantic 模型双向保证</td><td><code>npm run verify</code></td></tr>
       <tr><td>状态管理（Zustand 等）</td><td>自研 <code>store</code>（约 30 行）：<code>sessionStorage</code> 优先、<code>localStorage</code> 回落，键名按用户 id 加前缀实现数据隔离</td><td>切换账号后数据不串号</td></tr>
     </tbody>
   </table>
@@ -734,8 +801,39 @@
     <li><strong>商用 LLM API</strong>：智谱 GLM-4-Flash（免费额度），服务端代理转发，Key 不下发浏览器</li>
   </ul>
 
+  <h3>3.5.4 展示层为什么用 Vue 3，以及两层怎么隔离</h3>
+  <p>
+    评分方法页（在线 <a href="scoring-method.html"><code>/docs/scoring-method.html</code></a>，源码 <code>vue-scoring-method/</code>）需要实时响应输入、
+    同步重算五个维度与总分、并逐项展开「这一分是怎么来的」。这类状态驱动的界面正是框架的强项，
+    因此这一层<strong>真的用 Vue 3 写</strong>，而不是挂一个空壳：
+  </p>
+  <table>
+    <thead>
+      <tr><th style="width:24%">维度</th><th>实现</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>框架与构建</td><td>Vue 3.5（<code>&lt;script setup&gt;</code> + <code>computed</code> 派生全部分数）、Vite 8、<code>vite-plugin-singlefile</code> 内联为单文件</td></tr>
+      <tr><td>交付物</td><td><code>docs/scoring-method.html</code>，<strong>84.8KB 单文件、零外部请求</strong>，与主应用一样双击即开，不依赖服务器</td></tr>
+      <tr><td>与引擎同源</td><td><code>src/scoring.js</code> 逐条复刻 <code>backend/app/scoring.py</code>，每个公式旁标注 Python 源码行号（如 <code>171–174</code>）</td></tr>
+      <tr><td>一致性保障</td><td><code>scripts/check-scoring-method.js</code> 用 5 组样本同时跑 Python 与 JS，比对 <strong>71 项</strong>（五维分数 / 总分 / 最弱维度 / 双镜头分歧 / 锚点起止位置），任一侧漂移即失败</td></tr>
+      <tr><td>隔离方式</td><td>该层不进入主应用 bundle，不注册任何全局符号，不受 <code>globals:check</code> / jsdom 套件约束；主应用的四层 CSS 与构建链一行未改</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>为什么不是把整个产品改写成 Vue：</strong>核心链路的三条约束（离线单文件可跑、评分引擎端侧独立执行、
+    产物可逐字节还原成源码）与 SFC 编译、路由约定直接冲突——单文件演示版一旦引入构建期编译，
+    「双击 HTML 就能完整演示」与「源码与交付物一一对应」这两条同时失效。因此选择分层，而不是迁移。
+  </p>
+  <p>
+    <strong>迁移路径是明确的：</strong>45 个模块已按 <code>core / data / features / dev</code> 四层划分，
+    业务状态集中在自研 <code>store</code>（约 30 行，<code>sessionStorage</code> 优先、<code>localStorage</code> 回落），
+    与 DOM 的耦合集中在各 <code>render*</code> 函数。若要整体迁到 Vue，替换的是这一层绑定，
+    评分公式、锚点规则、派发策略不需要重写——这也是展示层能直接复用 <code>scoring.py</code> 规则的原因。
+  </p>
+
   <div class="callout">
-    <strong>结论</strong>：技术选型的判断标准是「能否把作品的核心价值稳定交付给访客」，而非「是否命中推荐列表」。本作品的核心价值是<strong>可解释的评分过程 + 端侧可独立运行 + 全部代码可还原可解释</strong>，这三点恰好与重框架的方向相反，因此选择原生栈，并用 ESLint / Prettier / JSDoc / 2674 条断言把工程规范补齐到可审查的水平。
+    <strong>结论</strong>：技术选型的判断标准是「能否把作品的核心价值稳定交付给访客」，而非「是否命中推荐列表」。本作品的核心价值是<strong>可解释的评分过程 + 端侧可独立运行 + 全部代码可还原可解释</strong>，这三点决定了核心链路必须零依赖；而说明层需要状态驱动的交互，于是用 Vue 3 单独构建、单独交付。两层用「是否必须离线跑完演示」切开，各自拿到自己需要的工具链，并用 ESLint / Prettier / JSDoc / 2953 条断言 / 71 项双引擎对拍把工程规范补齐到可审查的水平。
   </div>
 
   <div class="chapter-footer">

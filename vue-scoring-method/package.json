@@ -1,0 +1,19 @@
+{
+  "name": "fm-scoring-method",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "面镜 FutureMirror · 评分方法展示层（Vue 3 单文件构建）",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vue": "^3.5.45"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.10",
+    "vite": "^8.3.6",
+    "vite-plugin-singlefile": "^2.3.4"
+  }
+}

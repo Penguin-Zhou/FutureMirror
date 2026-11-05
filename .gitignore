@@ -57,3 +57,7 @@ next-env.d.ts
 *-交付核对表.md
 *-自查.md
 *-审核表.md
+
+# Vue 展示层（评分方法页）：依赖与中间产物不入库，docs/scoring-method.html 是提交的交付物
+/vue-scoring-method/node_modules/
+/vue-scoring-method/dist/

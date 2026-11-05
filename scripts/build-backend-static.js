@@ -42,6 +42,12 @@ if (fs.existsSync(DOC)) {
   fs.copyFileSync(DOC, path.join(OUT, "docs", "technical-doc.html"));
 }
 
+/* ---------- 2b) 评分方法展示页（Vue 3 单文件构建产物，与评分引擎同源） ---------- */
+const METHOD = path.join(ROOT, "docs", "scoring-method.html");
+if (fs.existsSync(METHOD)) {
+  fs.copyFileSync(METHOD, path.join(OUT, "docs", "scoring-method.html"));
+}
+
 /* ---------- 3) 更新日志 ---------- */
 const CHANGELOG = path.join(ROOT, "public", "changelog.html");
 if (fs.existsSync(CHANGELOG)) {
@@ -67,4 +73,6 @@ const dirSize = (d) =>
       0
     );
 console.log(`✅ 后端静态目录已就绪 → backend/static/（${(dirSize(OUT) / 1024 / 1024).toFixed(1)}MB）`);
-console.log("   演示页 / · 文档 /docs/technical-doc.html · 日志 /changelog.html · 模型 /models/");
+console.log(
+  "   演示页 / · 文档 /docs/technical-doc.html · 评分方法 /docs/scoring-method.html · 日志 /changelog.html · 模型 /models/"
+);

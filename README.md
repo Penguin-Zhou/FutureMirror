@@ -1,4 +1,4 @@
-# 面镜 FutureMirror · 多 Agent 模拟面试与能力成长平台
+# 面镜 FutureMirror · 可核查的 AI 评价链路
 
 > **AI辅助开发声明**  
 > 本项目开发过程使用AI编程工具作为辅助手段，CSS主题样板、通用工具函数、测试用例骨架、部分页面文案由AI辅助生成，**所有AI产出内容均经过开发团队逐行审查、修改、调试与测试**，完整Git提交记录可查看开发演进过程，团队可完整解释全部代码逻辑。
@@ -17,6 +17,18 @@
 ---
 
 ## 一、项目解决什么问题
+
+### 1.0 一句话定位
+
+> 当 AI 开始参与对一个人的评价，谁来保证这个评价**可追溯**、**可复现**？
+
+面镜 FutureMirror 不做「更聪明的 AI 面试官」。五个 AI Agent 完成一场模拟面试，五个维度的每一个分数都由**确定性规则**算出，并当场锚定到候选人说过的那一句原话；同一份回答，任何时候、任何模型温度下得到同一组分数。
+
+市面上的 AI 告诉你「哪里不好」，FutureMirror 告诉你**「哪句话导致了不好」**。
+
+**边界（先说清楚不做什么）**：服务训练与自评，不参与真实录用决策；不采集受保护属性，也不做人群维度的偏见审计。它保证的是**单次评价内部**的证据可核查与结果可复现。
+
+想直接核对评分规则？打开 [评分方法页](docs/scoring-method.html)：公式、权重、锚点规则都是可交互的，与 `backend/app/scoring.py` 逐条对应。
 
 ### 1.1 真实痛点
 
@@ -594,6 +606,7 @@ futuremirror/
 │                                   #   build-print-doc / build-backend-static / gen-eslint-globals /
 │                                   #   run-tests / validate-demo / deploy-pages / push-main-api …
 ├── docs/
+├── vue-scoring-method/             # 评分方法展示层：Vue 3 + Vite，构建为 docs/scoring-method.html
 │   ├── technical-doc.html          # 技术文档（10 章正式版，可在线阅读）
 │   ├── FutureMirror.Beta.pdf       # 打印版技术文档（含封面，30 页）
 │   ├── FutureMirror.Deck.pptx        # 项目演示文稿
