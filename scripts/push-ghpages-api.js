@@ -25,6 +25,7 @@ const CHANGED = [
   "README.md",
   "changelog.html",
   "docs/technical-doc.html",
+  "docs/scoring-method.html",
   // 端侧人脸检测资源（自托管，Pages 同源可读）；缺失则跳过，前端自动回退 CDN
   "models/faceapi/face-api.min.js",
   "models/faceapi/weights/tiny_face_detector_model-weights_manifest.json",
