@@ -22,6 +22,7 @@
     choreograph: null, countUpScan: null, reportIn: null,
     cross: false, coord: false, draw: false, speaking: false,
     reportViz: false, formFx: false, annotate: false,
+    authStage: false,
     setCrosshair: null,
   });
 
@@ -132,6 +133,111 @@
         input.addEventListener("blur", () => { hint.hidden = true; });
       });
     } catch (e) { /* 纯增强 */ }
+  }
+
+  /* ---------- ⑨ 登录图幅：字段状态 / 提交扫描 / 图面视差 ---------- */
+  /* 登录页在 v69 被做成一张工程图幅，这里只做三件 DOM 层面的补充：
+   * 字段状态徽记、提交扫描条与出错抖动、图面随光标微动。
+   * 三条都不改登录流程本身（doLogin / doRegister 一行没动），失败也不影响登录。 */
+  function initAuthStage() {
+    const screen = document.getElementById("auth-screen");
+    if (!screen) return;
+    const card = screen.querySelector(".auth-card");
+    const plate = screen.querySelector(".auth-left");
+
+    /* ① 字段状态：边打字只报「通过」，失焦才报「不符」——
+       边打字边标红是最烦人的做法，用户还没输完就被判错。 */
+    const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    const RULES = {
+      "login-email": [v => EMAIL.test(v), "格式通过", "邮箱格式不符"],
+      "reg-email": [v => EMAIL.test(v), "格式通过", "邮箱格式不符"],
+      "reg-name": [v => v.trim().length > 0, "已填写", "请填写昵称"],
+      "login-pass": [v => v.length >= 6, "长度达标", "至少 6 位"],
+      "reg-pass": [v => v.length >= 6, "长度达标", "至少 6 位"],
+    };
+    Object.keys(RULES).forEach(id => {
+      const input = document.getElementById(id);
+      const field = input && input.closest(".auth-field");
+      if (!input || !field) return;
+      const test = RULES[id][0], okText = RULES[id][1], badText = RULES[id][2];
+      const sync = reportErrors => {
+        const v = input.value;
+        const pass = !!v && test(v);
+        if (!v || (!pass && !reportErrors)) {
+          field.removeAttribute("data-state");
+          field.removeAttribute("data-mark");
+          return;
+        }
+        field.setAttribute("data-state", pass ? "ok" : "bad");
+        field.setAttribute("data-mark", pass ? okText : badText);
+      };
+      input.addEventListener("input", () => sync(false));
+      input.addEventListener("blur", () => sync(true));
+    });
+
+    /* ② 提交扫描条：真实提交时点亮；一出现错误提示或离开登录页就收回，
+       否则下次进来按钮还停在「正在核对…」。 */
+    const clearBusy = () => {
+      [...screen.querySelectorAll(".auth-submit")].forEach(b => {
+        b.classList.remove("is-busy");
+        b.removeAttribute("aria-busy");
+        b.removeAttribute("data-busy");
+      });
+    };
+    ["form-login", "form-register"].forEach(fid => {
+      const form = document.getElementById(fid);
+      if (!form) return;
+      const btn = form.querySelector(".auth-submit");
+      const err = form.querySelector(".auth-error");
+      form.addEventListener("submit", () => {
+        if (!btn) return;
+        btn.setAttribute("data-busy", "正在核对…");
+        btn.classList.add("is-busy");
+        btn.setAttribute("aria-busy", "true");
+      });
+      if (err && typeof MutationObserver !== "undefined") {
+        new MutationObserver(() => {
+          if (!err.classList.contains("show")) return;
+          clearBusy();
+          if (!card || reduced()) return;
+          card.classList.remove("is-error");
+          void card.offsetWidth;   // 强制重排，让同一段动画能连续播放
+          card.classList.add("is-error");
+          setTimeout(() => card.classList.remove("is-error"), 360);
+        }).observe(err, { attributes: true, attributeFilter: ["class"] });
+      }
+    });
+    const view = document.getElementById("view-auth");
+    if (view && typeof MutationObserver !== "undefined") {
+      new MutationObserver(() => {
+        if (!view.classList.contains("active")) clearBusy();
+      }).observe(view, { attributes: true, attributeFilter: ["class"] });
+    }
+
+    /* ③ 图面视差：光标在卡片内移动时整套图形轻微追随（≤7px）。
+       只挂精细指针——触屏上手指拖动时的抖动比这个效果本身更明显。 */
+    let fine = false;
+    try { fine = !!(window.matchMedia && window.matchMedia("(pointer: fine)").matches); } catch (e) {}
+    if (card && plate && fine && !reduced()) {
+      let raf = 0, tx = 0, ty = 0;
+      const paint = () => {
+        raf = 0;
+        plate.style.setProperty("--af-x", tx.toFixed(3));
+        plate.style.setProperty("--af-y", ty.toFixed(3));
+      };
+      card.addEventListener("pointermove", e => {
+        const r = card.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        tx = ((e.clientX - r.left) / r.width - .5) * 2;
+        ty = ((e.clientY - r.top) / r.height - .5) * 2;
+        if (!raf) raf = requestAnimationFrame(paint);
+      }, { passive: true });
+      card.addEventListener("pointerleave", () => {
+        tx = 0; ty = 0;
+        if (!raf) raf = requestAnimationFrame(paint);
+      });
+    }
+    FX.authStage = true;
   }
 
   /* ---------- ③ 面试 LIVE：面试官徽章发言脉冲 ---------- */
@@ -568,6 +674,7 @@
   /* ---------- 入口 ---------- */
   function boot() {
     try { initAuthFx(); } catch (e) {}
+    try { initAuthStage(); } catch (e) {}
     try { initInterviewFx(); } catch (e) {}
     try { initCrosshair(); } catch (e) {}
     try { initCoordReadout(); } catch (e) {}
