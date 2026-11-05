@@ -267,10 +267,13 @@ function togglePlanTask(di, ti) {
   const pr = lpProgress(p);
   if (pr.pct === 100) toast("7 天计划全部完成——去评估报告看看进步曲线");
 }
-function syncPlanFromReport() {
+/* v71：把「按报告生成计划」从按钮里抽出来，供两条路径共用——
+ * ① 计划页的「同步评估报告」按钮；② 报告页的「进入学习计划板块」跳转。
+ * 返回是否真的按报告生成（false = 没有可用报告，调用方据此给不同提示）。 */
+function lpImportFromReport() {
   const prev = lpGet();
   const next = lpCreate("report");
-  if (next.source !== "report") { toast("尚未完成模拟面试——计划保持通用基线版，完成一次面试后可同步为个人版"); return; }
+  if (next.source !== "report") return false;
   next.budget = prev.budget;   // 保留用户选择的预算
   next.days.forEach((d, i) => {
     d.alloc = lpAlloc(d.mix, lpBudget(next.budget).min);
@@ -278,8 +281,30 @@ function syncPlanFromReport() {
     if (old) d.tasks.forEach((t, j) => { if (old.tasks[j]) t.done = old.tasks[j].done; });
   });
   lpSave(next);
+  return true;
+}
+
+function syncPlanFromReport() {
+  const done = lpImportFromReport();
   renderPlanPage();
-  toast("已按最新评估报告重新生成 7 天计划（已完成进度按日保留）");
+  toast(done
+    ? "已按最新评估报告重新生成 7 天计划（已完成进度按日保留）"
+    : "尚未完成模拟面试——计划保持通用基线版，完成一次面试后可同步为个人版");
+}
+
+/* v71：报告页「进入学习计划板块」= 先按本次报告生成计划，再切页。
+ * 旧实现只调 switchTab('plan')，而 lpGet() 首次读取会落一份**通用基线**，
+ * 于是用户跳过去看到的不是报告里那条 7 天路径，看着就像链接没生效。
+ * 现在把导入放在跳转之前，落地即可看到个人版计划。 */
+function openPlanFromReport() {
+  const done = (() => {
+    try { return lpImportFromReport(); } catch (e) { return false; }
+  })();
+  switchTab("plan");
+  try { renderPlanPage(); } catch (e) {}
+  toast(done
+    ? "已按本次评估报告生成 7 天计划：最弱维度排在 Day 1–3，进度可打卡保留"
+    : "已进入学习计划；当前没有可用报告，先展示通用 7 天基线");
 }
 function resetPlanProgress() {
   if (typeof confirm !== "function") return;

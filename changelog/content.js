@@ -28,7 +28,7 @@ export const changelogHtml = `
     <div class="ov-card"><div class="ov-num">40</div><div class="ov-label">面经知识库</div></div>
     <div class="ov-card"><div class="ov-num">5</div><div class="ov-label">题库分类</div></div>
     <div class="ov-card"><div class="ov-num">24</div><div class="ov-label">题库题目</div></div>
-    <div class="ov-card"><div class="ov-num">2953</div><div class="ov-label">前端断言</div></div>
+    <div class="ov-card"><div class="ov-num">2962</div><div class="ov-label">前端断言</div></div>
   </div>
 
   <!-- ========================================================
@@ -37,6 +37,7 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
+    <li><a href="#v71"><span class="cl-toc-tag">Beta 1.1.2 · v71</span><span class="cl-toc-title-txt">报告 → 学习计划 · 跳转必须带导入：把「链接无效」修成「落地即个人版计划」</span></a></li>
     <li><a href="#v70"><span class="cl-toc-tag">Beta 1.1.2 · v70</span><span class="cl-toc-title-txt">定位重写 + 评分方法页 · 可核查的评价链路 / 边界声明 / Vue 3 展示层 / 71 项双引擎对拍</span></a></li>
     <li><a href="#v68"><span class="cl-toc-tag">Beta 1.1.2 · v68</span><span class="cl-toc-title-txt">限额跨进程记账 · rate_hits 落库 / 三进程并发 6 : 6 / 库挂兜底</span></a></li>
     <li><a href="#v67"><span class="cl-toc-tag">Beta 1.1.2 · v67</span><span class="cl-toc-title-txt">AI 小助手接入后端 · 服务端检索 / 引用回传 / 访客限流 / 面板高度修复</span></a></li>
@@ -292,6 +293,36 @@ export const changelogHtml = `
         <div class="metric"><div class="m-val">2506</div><div class="m-label">前端断言总数</div></div>
         <div class="metric"><div class="m-val">44</div><div class="m-label">jsdom 套件</div></div>
         <div class="metric"><div class="m-val">+15</div><div class="m-label">追问带来的匹配分</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       Beta 1.1.2 · v71 · 报告 → 学习计划：跳转必须带导入
+       ======================================================== -->
+  <div class="version" id="v71">
+    <div class="version-head">
+      <span class="v-tag">Beta 1.1.2 · 缺陷修复（v71）</span>
+      <span class="v-title">「进入学习计划板块」跳过去却是通用计划——补上导入这一步</span>
+      <span class="v-date">2026.11.05</span>
+    </div>
+    <div class="version-body">
+      <div class="v-intro">
+        反馈是「评估报告 →「学习计划」的链接无效」。先按字面查：按钮在、<code>switchTab('plan')</code> 在、
+        <code>hash</code> 也确实变成了 <code>#/plan</code>，页面也切过去了——链接本身没坏。
+        真正的问题是<strong>跳过去之后看到的东西不对</strong>。
+      </div>
+      <div class="v-highlights">
+        <div class="vh-item"><b>根因：首次落地会先塞一份通用基线</b>：<code>lpGet()</code> 在没有存档时会 <code>lpCreate("baseline")</code> 并立即落盘。报告页的按钮若只做一次 <code>switchTab</code>，则用户看到的是通用 7 天计划，而报告里那条「按最弱维度生成」的路径要再手动点一次「同步评估报告」才会出现。观感上就是「点了没反应」</div>
+        <div class="vh-item"><b>修法：把导入放到跳转之前</b>：新增 <code>openPlanFromReport()</code>——先按本次报告生成计划（保留已选预算与已打卡进度），再切页，最后给一句明确回执「最弱维度排在 Day 1–3」；报告页按钮改指向它</div>
+        <div class="vh-item"><b>不倒退：没有报告时不降级</b>：无可用会话时导入返回失败，跳转照常但<strong>不覆盖</strong>已有的个性化计划，提示改为「当前没有可用报告，先展示通用基线」。避免为了修一个入口，把用户已经改过的计划冲掉</div>
+        <div class="vh-item"><b>两条路径共用一套逻辑</b>：把导入抽成 <code>lpImportFromReport()</code>，计划页的「同步评估报告」按钮与报告页的跳转都走它，行为不会分叉</div>
+        <div class="vh-item"><b>补 9 项断言守住它</b>：<code>test-v31</code> 新增——函数存在、按钮指向新入口且不再是裸 <code>switchTab</code>、清空计划后跳转能自己建出 <code>source=report</code> 的计划、页面切到 plan、7 张日卡渲染、无会话时不降级</div>
+      </div>
+      <div class="v-metrics">
+        <div class="metric"><div class="m-val">2962</div><div class="m-label">前端断言</div></div>
+        <div class="metric"><div class="m-val">9</div><div class="m-label">本次新增断言</div></div>
+        <div class="metric"><div class="m-val">52</div><div class="m-label">jsdom 套件</div></div>
       </div>
     </div>
   </div>

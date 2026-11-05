@@ -559,7 +559,7 @@ async function renderReport(force) {
         <div class="plan-banner">因你在【${weakest.dimension}】得分最低（${weakest.score} 分），Day 1-3 已为你安排专项训练</div>
         <div id="plan" class="plan-list">${plan.map((p, i) => `
           <div class="plan-day" data-day="${i}"><b>${p.day}</b><span>${p.task}</span></div>`).join("")}</div>
-        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="switchTab('plan')" title="把本路径导入学习计划板块：每日任务 + 时间分配 + 完成打卡">进入学习计划板块（每日任务 + 时间分配 + 打卡）→</button>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="openPlanFromReport()" title="按本次报告的 7 天路径生成学习计划（最弱维度优先，已完成进度按日保留）">进入学习计划板块（每日任务 + 时间分配 + 打卡）→</button>
       </div>
     </div>
     <div class="history card" style="padding:14px 16px">

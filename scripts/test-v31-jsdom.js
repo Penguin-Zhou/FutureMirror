@@ -229,6 +229,28 @@ async function runTests() {
     "lpMarkdown 导出含标题 / Day 1 / 时间分配"
   );
 
+  /* v71：报告页「进入学习计划板块」必须先导入再跳转。
+   * 旧实现只有 switchTab('plan')，而 lpGet() 首次会落一份通用基线，
+   * 用户跳过去看到的是通用计划，实际表现就是「链接无效」。 */
+  ok(w.eval("typeof openPlanFromReport") === "function", "openPlanFromReport 已定义");
+  const planBtnHtml = (html.match(/<button[^>]*>[^<]*进入学习计划板块[^<]*<\/button>/) || [""])[0];
+  ok(/openPlanFromReport\(\)/.test(planBtnHtml), "报告页按钮改为先导入再跳转（openPlanFromReport）");
+  ok(planBtnHtml !== "" && !/switchTab\('plan'\)/.test(planBtnHtml), "报告页按钮不再使用裸 switchTab('plan')");
+  /* 清空计划 → 跳转必须自己把个人版建出来，而不是留下通用基线 */
+  w.eval("store.set('fm_plan', null, true)");
+  ok(w.eval("lpGet()").source === "baseline", "清空后 lpGet 回落通用基线（前置条件）");
+  w.eval("openPlanFromReport()");
+  w.eval("applyRoute()");
+  ok(w.eval("lpGet()").source === "report", "从报告跳转后计划来源为 report（已自动导入，不需再点同步）");
+  ok(d.querySelector(".app-page.active")?.dataset.page === "plan", "跳转后当前页切到 plan");
+  ok(d.querySelectorAll("#lp-grid .lp-day").length === 7, "跳转后计划卡已渲染（7 天）");
+  /* 无面试记录时不能把已有计划降级成基线 */
+  w.eval("session.turns = []");
+  w.eval("openPlanFromReport()");
+  w.eval("applyRoute()");
+  ok(w.eval("lpGet()").source === "report", "无会话时跳转不把已有个性化计划降级");
+  ok(d.querySelector(".app-page.active")?.dataset.page === "plan", "无会话时仍能正常进入 plan 页");
+
   /* ================================================================
      ⑥ 全站蓝图风 SVG 图标系统
      ================================================================ */
