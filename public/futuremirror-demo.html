@@ -20975,6 +20975,9 @@ function runSelfCheck() {
 const EVAL_PASSWORD = "FM2026";
 const EVAL_UNLOCK_KEY = "g_eval_unlocked";
 const EVAL_LAST_TARGET_KEY = "g_eval_target";
+/* 退出开发者模式时要还原的标题：本文件加载时 document.title 还是 index.html 里那句原话。
+ * 直接写死字符串会把版本号又复制一份到代码里，改版时必漏。 */
+const EVAL_BASE_TITLE = document.title;
 
 function isEvaluatorUnlocked() {
   try { return sessionStorage.getItem(EVAL_UNLOCK_KEY) === "1"; } catch (e) { return false; }
@@ -21026,7 +21029,14 @@ function submitEvalPassword() {
 
 /* 进入开发者模式视图 */
 function enterEvaluator(target) {
+  /* 闸门放在这里而不是 showView 里：入口只有「密码 modal → 这里」和「#/evaluator 已解锁」
+   * 两条，都在调用前先验过；这一层是兜底，防止以后有人直接调进来。 */
+  if (!isEvaluatorUnlocked()) {
+    openEvaluatorGate(target);
+    return;
+  }
   showView("evaluator");
+  document.title = "面镜 FutureMirror · 开发者模式";
   // 更新材料清单状态（引用 CONFIG）
   try { updateEvalMaterials(); } catch (e) {}
   // 初始化 MCP 控制台（如果尚未初始化）
@@ -21045,6 +21055,7 @@ function enterEvaluator(target) {
 function exitEvaluator() {
   clearEvaluatorUnlocked();
   showView("landing");
+  document.title = EVAL_BASE_TITLE;
   // 清掉 hash
   try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
   toast("已退出开发者模式");
@@ -21150,33 +21161,17 @@ function runSelfCheckPanel() {
   toast(`工程自检完成：${passed}/${cases.length} 通过`);
 }
 
-/* showView 扩展：支持 evaluator */
+/* showView 扩展：只留密码闸门，视图切换交还 router。
+ * v73：旧写法在这一层自己 toggle .view —— 等于把「切视图」实现了两遍：
+ * g_view 不写（刷新丢视图）、body.in-app 不切、choreograph 不跑、applyRoute 不调，
+ * 和 v72 的白屏是同一个病根。现在只拦一道闸，其余原样委托，连返回值一起透传。 */
 const _originalShowView = typeof showView === "function" ? showView : null;
 showView = function (name) {
-  if (name === "evaluator") {
-    // 检查解锁状态
-    if (!isEvaluatorUnlocked()) {
-      // 尝试从 URL 参数（hash 或 search）解锁
-      const fromHash = (() => { const m = (location.hash || "").split("?"); return m[1] ? new URLSearchParams(m[1]).get("key") : null; })();
-      const fromSearch = new URLSearchParams(location.search).get("key");
-      const key = fromHash || fromSearch;
-      if (key && key.toUpperCase() === EVAL_PASSWORD.toUpperCase()) {
-        setEvaluatorUnlocked();
-      } else {
-        openEvaluatorGate();
-        return;
-      }
-    }
-    document.querySelectorAll(".view").forEach(v => {
-      v.classList.toggle("active", v.id === "view-evaluator");
-    });
-    window.scrollTo(0, 0);
-    try { updateEvalMaterials(); } catch (e) {}
-    try { if (typeof initMcpConsole === "function") initMcpConsole(); } catch (e) {}
-    document.title = "面镜 FutureMirror · 开发者模式";
-    return;
+  if (name === "evaluator" && !isEvaluatorUnlocked()) {
+    openEvaluatorGate();
+    return false;
   }
-  if (_originalShowView) _originalShowView(name);
+  return _originalShowView ? _originalShowView(name) : false;
 };
 
 /* hash 路由支持 #/evaluator（作为唯一 hashchange 处理器，避免重复触发 applyRoute） */

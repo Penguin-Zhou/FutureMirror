@@ -229,13 +229,43 @@ async function runTests() {
     blkChips.length === 9 && blkChips[0].textContent.indexOf("BLK-01") === 0,
     "落地页 9 张特性卡 BLK 编号仍在（迁移无回归）"
   );
+  /* 开发者模式只留密码闸门，切视图交还 router：
+   * ① 锁着时 showView('evaluator') 只能弹门，视图原封不动；
+   * ② 解锁后进入必须由 router 记账（.view 激活 + g_view 记名），否则刷新丢视图。
+   * 这与 v72 白屏是同一族问题——同一件事别有两处实现。 */
   wA.eval("showView('evaluator')");
+  await wait(40);
+  const evalViewOf = () => {
+    try {
+      return wA.sessionStorage.getItem("g_view");
+    } catch (e) {
+      return "";
+    }
+  };
+  const gateModal = dA.getElementById("eval-gate-modal");
+  const gateBlocked =
+    gateModal &&
+    gateModal.hidden === false &&
+    !dA.querySelector("#view-evaluator.active") &&
+    evalViewOf() !== "evaluator";
+  wA.eval("sessionStorage.setItem('g_eval_unlocked', '1'); showView('evaluator')");
   await wait(60);
   const secs = [...dA.querySelectorAll(".eval-section")];
   const secChips = [...dA.querySelectorAll(".eval-section .fb-coord")];
+  const evalActive = !!dA.querySelector("#view-evaluator.active");
   ok(
-    secs.length > 0 && secChips.length === secs.length,
-    "开发者节全部挂 SEC 编号（" + secChips.length + "/" + secs.length + "）"
+    secs.length > 0 && secChips.length === secs.length && gateBlocked && evalActive && evalViewOf() === "evaluator",
+    "开发者节全部挂 SEC 编号（" +
+      secChips.length +
+      "/" +
+      secs.length +
+      "）；锁着时闸门拦下（" +
+      gateBlocked +
+      "）、解锁后经 router 记账（active=" +
+      evalActive +
+      " · g_view=" +
+      evalViewOf() +
+      "）"
   );
   ok(secChips[0].textContent.indexOf("SEC-01") === 0, "编号 SEC-01 起（" + secChips[0].textContent + "）");
   ok(

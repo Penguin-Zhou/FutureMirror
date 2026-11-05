@@ -30,6 +30,7 @@
   "DEMO_RESUME": "writable",
   "DIM_DEFS": "writable",
   "ESC_MAP": "writable",
+  "EVAL_BASE_TITLE": "writable",
   "EVAL_LAST_TARGET_KEY": "writable",
   "EVAL_PASSWORD": "writable",
   "EVAL_UNLOCK_KEY": "writable",
