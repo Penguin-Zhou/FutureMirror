@@ -2375,362 +2375,6 @@ try {
   .auth-error { border-radius: 0; }
   .auth-note { border-radius: 0; }
 
-  /* ============================================================
-   * v69 · 登录页：制图台（Drafting Sheet）
-   * 不再把它当成一张「表单卡片」，而是当成一张工程图幅来做：
-   * 左半是图幅（图框 / 中心线 / 尺寸线 / 面镜 / 标题栏 / 左侧标尺），
-   * 右半是核验表（图注编号、规尺发丝线、字段状态徽记、扫描式提交条）。
-   * 动态只长在「制图」这件事上，而不是撒一层通用动效：
-   *   ① 图框起笔、中心线扫出、面镜闭合，三段接力；
-   *   ② 面镜呼吸（6.4s）与竖向扫描线（7.2s）常驻，给图面一点活气；
-   *   ③ 光标在图幅内移动时整套图形轻微追随（≤7px，仅精细指针）；
-   *   ④ 登录/注册的墨块滑块平移，不闪断；
-   *   ⑤ 字段聚焦时规尺线自左画出，失焦后按内容给状态徽记；
-   *   ⑥ 提交时按钮底部走一条扫描条，出错时整张卡横向轻抖。
-   * 纪律不变：零投影、全直角、单一朱红；reduced-motion 下全部静止。
-   * ============================================================ */
-  #view-auth .auth-screen {
-    padding: 22px 18px;
-    overflow-y: auto;
-    animation: authSheetIn .5s cubic-bezier(.16, 1, .3, 1) both;
-  }
-  @keyframes authSheetIn {
-    from { opacity: 0; clip-path: inset(0 0 100% 0); }
-    to { opacity: 1; clip-path: inset(0); }
-  }
-  #view-auth .auth-card {
-    margin: auto; max-width: 940px;
-    grid-template-columns: 1fr 1fr;
-    border: 1px solid var(--ink);
-  }
-  #view-auth .auth-card.is-error { animation: authShake .32s cubic-bezier(.36, .07, .19, .97) 1; }
-  @keyframes authShake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-3px); }
-    75% { transform: translateX(3px); }
-  }
-
-  /* ---------- 左半：图幅 ---------- */
-  #view-auth .auth-left {
-    padding: 28px 30px 0; gap: 16px;
-    justify-content: flex-start;
-    background-color: var(--plate);
-    background-image:
-      linear-gradient(rgba(244, 241, 232, .045) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(244, 241, 232, .045) 1px, transparent 1px);
-    background-size: 28px 28px;
-  }
-  /* 左侧标尺：每 18px 一道刻度，读图纸的人才看得见的那点细节 */
-  #view-auth .auth-ruler {
-    position: absolute; left: 0; top: 0; bottom: 0; width: 10px;
-    border-right: 1px solid rgba(244, 241, 232, .12);
-    background-image: repeating-linear-gradient(to bottom,
-      rgba(244, 241, 232, .3) 0 1px, transparent 1px 18px);
-    background-size: 5px 100%;
-    background-repeat: no-repeat;
-    pointer-events: none;
-  }
-
-  #view-auth .auth-sheet {
-    position: relative;
-    border: 1px solid rgba(244, 241, 232, .16);
-    padding: 20px 12px 8px;
-    overflow: hidden;
-  }
-  #view-auth .auth-sheet-tag {
-    position: absolute; top: 6px; left: 12px;
-    font-family: var(--mono); font-size: 9px; letter-spacing: .16em;
-    color: var(--on-plate-dim); text-transform: uppercase;
-  }
-  #view-auth .auth-sheet-tag-r { left: auto; right: 12px; color: var(--brand-light); }
-
-  #view-auth .auth-figure {
-    display: block; width: 100%; height: 120px;
-    transform: translate3d(calc(var(--af-x, 0) * 7px), calc(var(--af-y, 0) * 5px), 0);
-    transition: transform .45s cubic-bezier(.16, 1, .3, 1);
-  }
-  #view-auth .af-dim path {
-    fill: none; stroke: rgba(244, 241, 232, .28); stroke-width: 1;
-  }
-  #view-auth .af-frame { fill: none; stroke: rgba(244, 241, 232, .46); stroke-width: 1; }
-  #view-auth .af-axis { fill: none; stroke: rgba(244, 241, 232, .26); stroke-width: 1; stroke-dasharray: 3 3; }
-  #view-auth .af-eye { fill: rgba(244, 241, 232, .04); stroke: var(--brand-light); stroke-width: 1.5; }
-  #view-auth .af-glint { fill: none; stroke: rgba(244, 241, 232, .42); stroke-width: 1.2; }
-  #view-auth .af-core { fill: var(--brand-light); }
-  #view-auth .af-sweep { fill: var(--brand-light); opacity: .34; }
-
-  /* 起笔：图框 → 中心线 → 面镜（pathLength=100 归一化，不依赖几何长度） */
-  #view-auth .af-draw {
-    stroke-dasharray: 100; stroke-dashoffset: 100;
-    animation: afDraw .85s cubic-bezier(.22, 1, .36, 1) forwards;
-  }
-  #view-auth .af-frame { animation-delay: .16s; }
-  #view-auth .af-axis { animation-delay: .46s; animation-duration: .55s; }
-  #view-auth .af-glint { animation-delay: 1.12s; animation-duration: .5s; }
-  @keyframes afDraw { to { stroke-dashoffset: 0; } }
-
-  #view-auth .af-eye {
-    stroke-dasharray: 100; stroke-dashoffset: 100;
-    transform-box: fill-box; transform-origin: center;
-    animation: afDraw 1s cubic-bezier(.22, 1, .36, 1) .58s forwards,
-               afBreath 6.4s ease-in-out 1.9s infinite;
-  }
-  @keyframes afBreath {
-    0%, 100% { transform: scale(1, 1); }
-    50% { transform: scale(1.035, .94); }
-  }
-  #view-auth .af-core {
-    transform-box: fill-box; transform-origin: center;
-    animation: afPop .5s cubic-bezier(.34, 1.56, .64, 1) .95s both;
-  }
-  @keyframes afPop {
-    from { transform: scale(.2); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-  #view-auth .af-sweep {
-    animation: afSweep 7.2s cubic-bezier(.45, 0, .55, 1) 1.6s infinite;
-  }
-  @keyframes afSweep {
-    0% { transform: translateX(0); opacity: 0; }
-    10% { opacity: .5; }
-    88% { opacity: .5; }
-    100% { transform: translateX(292px); opacity: 0; }
-  }
-  #view-auth .auth-sheet-tag,
-  #view-auth .auth-figure-cap { animation: afFade .6s ease .9s both; }
-  @keyframes afFade { from { opacity: 0; } to { opacity: 1; } }
-
-  #view-auth .auth-figure-cap {
-    display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
-    margin-top: 6px; padding-top: 6px;
-    border-top: 1px solid rgba(244, 241, 232, .12);
-    font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em;
-    color: var(--on-plate-dim);
-  }
-  #view-auth .auth-figure-cap i { font-style: normal; color: var(--brand-light); }
-
-  /* 文案：只做透明度接力，不做上浮（上浮是模板站的做法） */
-  #view-auth .auth-copy > * { animation: afFade .55s ease both; }
-  #view-auth .auth-copy > :nth-child(1) { animation-delay: .2s; }
-  #view-auth .auth-copy > :nth-child(2) { animation-delay: .28s; }
-  #view-auth .auth-copy > :nth-child(3) { animation-delay: .36s; }
-  #view-auth .auth-copy > :nth-child(4) { animation-delay: .44s; }
-  #view-auth .auth-brand { font-family: var(--mono); letter-spacing: .1em; font-size: 17px; }
-  /* 朱红短规线：板块之间的分隔记号，比留白更「图纸」 */
-  #view-auth .auth-left h2::before {
-    content: ""; display: block; width: 34px; height: 2px;
-    background: var(--brand-light); margin-bottom: 11px;
-  }
-  #view-auth .auth-left h2 { font-size: 26px; margin-top: 14px; }
-  #view-auth .auth-left p.lead { font-size: 13px; line-height: 1.7; margin-top: 8px; }
-  #view-auth .auth-features { margin-top: 16px; }
-  #view-auth .auth-features li { font-size: 12.5px; line-height: 1.55; margin-bottom: 7px; }
-  #view-auth .auth-features .dot { font-size: 10px; }
-
-  /* 标题栏：工程图右下角那块，这里放到图幅底部——最有辨识度的一处 */
-  #view-auth .auth-titleblock {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    margin: 4px -30px 0;
-    border-top: 1px solid rgba(244, 241, 232, .26);
-    border-left: 1px solid rgba(244, 241, 232, .26);
-  }
-  #view-auth .tb-cell {
-    padding: 6px 9px 7px;
-    border-right: 1px solid rgba(244, 241, 232, .26);
-    border-bottom: none;
-  }
-  #view-auth .tb-cell span {
-    display: block; font-family: var(--mono); font-size: 8.5px;
-    letter-spacing: .18em; color: var(--on-plate-dim); margin-bottom: 1px;
-  }
-  #view-auth .tb-cell b {
-    display: block; font-family: var(--mono); font-size: 10.5px; font-weight: 600;
-    letter-spacing: .02em; color: var(--on-plate); white-space: nowrap;
-    overflow: hidden; text-overflow: ellipsis;
-  }
-  #view-auth .auth-foot {
-    margin-top: 6px; padding-bottom: 14px;
-    font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
-    color: var(--on-plate-dim); text-align: right;
-  }
-
-  /* ---------- 右半：核验表 ---------- */
-  #view-auth .auth-right { padding: 30px 34px 26px; justify-content: flex-start; }
-  /* 窄屏把左半图幅藏掉后，品牌不能跟着一起消失 */
-  #view-auth .auth-mobile-brand { display: none; }
-  #view-auth .auth-head {
-    display: flex; justify-content: space-between; align-items: baseline;
-    margin-bottom: 12px; padding-bottom: 6px;
-    border-bottom: 1px solid var(--line);
-    font-family: var(--mono); font-size: 9.5px; letter-spacing: .18em;
-  }
-  #view-auth .auth-head-k { color: var(--ink); }
-  #view-auth .auth-head-v { color: var(--faint); }
-
-  /* 标签：墨块滑块，靠 :active 兄弟选择器平移，无需 JS */
-  #view-auth .auth-tabs {
-    position: relative; display: flex; gap: 0; padding: 3px; margin-bottom: 18px;
-    background: var(--bg-deep); border: 1px solid var(--line-2);
-  }
-  #view-auth .auth-tab {
-    position: relative; z-index: 1; flex: 1; padding: 8px 10px;
-    border: none; background: transparent; cursor: pointer; font-family: var(--mono);
-    font-size: 11px; letter-spacing: .2em; color: var(--muted);
-    transition: color .22s ease;
-  }
-  #view-auth .auth-tab.active { background: transparent; color: var(--bg); }
-  #view-auth .auth-tab-ink {
-    position: absolute; top: 3px; bottom: 3px; left: 3px; z-index: 0;
-    width: calc(50% - 3px); background: var(--ink);
-    transition: transform .34s cubic-bezier(.16, 1, .3, 1);
-  }
-  #view-auth #tab-register.active ~ .auth-tab-ink { transform: translateX(100%); }
-
-  /* 注记：把安全提示做成图注，而不是一块黄色告警 */
-  #view-auth .auth-warn {
-    border: none; border-left: 2px solid var(--brand); border-radius: 0;
-    background: transparent; padding: 0 0 0 11px; margin-bottom: 14px;
-    font-size: 11.5px; line-height: 1.6; color: var(--muted);
-  }
-  #view-auth .auth-warn b { font-size: 11.5px; color: var(--ink); }
-  #view-auth .auth-warn .warn-k {
-    display: inline-block; margin-right: 6px; padding: 0 4px;
-    font-family: var(--mono); font-size: 9px; letter-spacing: .1em;
-    color: var(--brand); border: 1px solid var(--brand);
-  }
-  #view-auth .auth-warn p { margin-top: 4px; }
-
-  /* 字段：图注编号 + 下划线输入 + 规尺发丝线 */
-  #view-auth .auth-field { position: relative; margin-bottom: 14px; }
-  #view-auth .auth-field label {
-    display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px;
-    font-family: var(--mono); font-size: 9.5px; letter-spacing: .16em;
-    color: var(--faint);
-  }
-  #view-auth .auth-field label::before {
-    content: attr(data-no); color: var(--brand); letter-spacing: .06em;
-  }
-  #view-auth .auth-field:focus-within label { color: var(--brand); }
-  #view-auth .auth-input { position: relative; }
-  #view-auth .auth-field input {
-    width: 100%; padding: 7px 2px; border: none; border-bottom: 1px solid var(--line-2);
-    background: transparent; color: var(--ink); font-family: var(--mono); font-size: 14px;
-    line-height: 1.4; outline: none; transition: border-color .2s ease;
-  }
-  /* 输入框用等宽（邮箱/密码是 ASCII，等宽更像填表），
-     但占位符是中文——等宽回退中文字体每个字会撑开，改成系统中文栈 */
-  #view-auth .auth-field input::placeholder {
-    color: var(--faint); font-size: 12.5px; letter-spacing: 0;
-    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
-  }
-  #view-auth .auth-field input:focus { border-bottom-color: transparent; }
-  #view-auth .auth-input .bp-field-line {
-    height: 2px; background: var(--brand);
-    transform: scaleX(0); transform-origin: 0 50%;
-    transition: transform .34s cubic-bezier(.22, 1, .36, 1);
-  }
-  #view-auth .auth-input input:focus ~ .bp-field-line { transform: scaleX(1); }
-  /* 规尺两端的小刻度：线画出后才有意义 */
-  #view-auth .auth-input .bp-field-line::before,
-  #view-auth .auth-input .bp-field-line::after {
-    content: ""; position: absolute; top: -3px; width: 1px; height: 8px;
-    background: var(--brand); opacity: 0; transition: opacity .2s ease .18s;
-  }
-  #view-auth .auth-input .bp-field-line::before { left: 0; }
-  #view-auth .auth-input .bp-field-line::after { right: 0; }
-  #view-auth .auth-input input:focus ~ .bp-field-line::before,
-  #view-auth .auth-input input:focus ~ .bp-field-line::after { opacity: 1; }
-
-  /* 字段状态徽记：不拦提交，只把「这个框现在什么情况」说清楚 */
-  #view-auth .auth-field::after {
-    content: attr(data-mark); position: absolute; right: 0; top: 0;
-    font-family: var(--mono); font-size: 9px; letter-spacing: .1em;
-    color: var(--faint); opacity: 0; transform: translateX(6px);
-    transition: opacity .18s ease, transform .28s cubic-bezier(.16, 1, .3, 1);
-    pointer-events: none;
-  }
-  #view-auth .auth-field[data-state]::after { opacity: 1; transform: none; }
-  #view-auth .auth-field[data-state="ok"]::after { color: var(--green); }
-  #view-auth .auth-field[data-state="bad"]::after { color: var(--red); }
-  #view-auth .auth-field[data-state="bad"] input { border-bottom-color: var(--line-2); }
-
-  /* 提交：底部一条扫描条，忙碌时走起来 */
-  #view-auth .auth-submit {
-    position: relative; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-    height: 44px; margin-top: 4px; padding: 0 18px;
-    background: var(--brand); color: #fff; border: 1px solid var(--brand);
-    font-family: var(--mono); font-size: 12px; letter-spacing: .22em;
-    cursor: pointer; transition: background .18s ease, border-color .18s ease;
-  }
-  #view-auth .auth-submit::before {
-    content: ""; position: absolute; inset: 0; opacity: 0;
-    background-image: repeating-linear-gradient(90deg,
-      rgba(255, 255, 255, .16) 0 1px, transparent 1px 7px);
-    transition: opacity .2s ease;
-  }
-  #view-auth .auth-submit:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
-  #view-auth .auth-submit:hover::before { opacity: 1; }
-  #view-auth .auth-submit-t { position: relative; }
-  #view-auth .auth-submit-line {
-    position: absolute; left: 0; bottom: 0; width: 100%; height: 2px;
-    background: rgba(255, 255, 255, .92); opacity: 0;
-  }
-  #view-auth .auth-submit.is-busy .auth-submit-t { opacity: .3; }
-  #view-auth .auth-submit.is-busy::after {
-    content: attr(data-busy); position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--mono); font-size: 12px; letter-spacing: .22em; color: #fff;
-  }
-  #view-auth .auth-submit.is-busy .auth-submit-line {
-    opacity: 1; transform-origin: 0 50%;
-    animation: authScan 1.15s cubic-bezier(.45, 0, .55, 1) infinite;
-  }
-  @keyframes authScan {
-    0% { transform: translateX(-30%) scaleX(.3); }
-    100% { transform: translateX(100%) scaleX(.3); }
-  }
-
-  #view-auth .auth-error { margin-bottom: 12px; }
-  #view-auth .auth-demo { margin-top: 14px; padding-top: 12px; }
-  #view-auth .auth-demo button { letter-spacing: .02em; }
-  #view-auth .auth-note {
-    margin-top: auto; border-left: 2px solid var(--line-2); background: transparent;
-    padding: 12px 0 0 11px; font-size: 11px; line-height: 1.6; color: var(--faint);
-  }
-
-  @media (max-width: 780px) {
-    #view-auth .auth-card { grid-template-columns: 1fr; max-width: 440px; }
-    #view-auth .auth-left { display: none; }
-    #view-auth .auth-right { padding: 24px 22px 26px; }
-    #view-auth .auth-head { margin-bottom: 10px; }
-    #view-auth .auth-figure { height: 110px; }
-    #view-auth .auth-mobile-brand {
-      display: flex; align-items: center; gap: 7px; margin-bottom: 12px;
-      font-family: var(--mono); font-size: 12px; letter-spacing: .12em; color: var(--ink);
-    }
-    #view-auth .auth-mobile-brand i { font-style: normal; color: var(--brand); font-size: 12px; }
-  }
-
-  /* reduced-motion：三段起笔、呼吸、扫描、滑块、抖动全部停到终态 */
-  @media (prefers-reduced-motion: reduce) {
-    #view-auth .auth-screen { animation: none; }
-    #view-auth .af-draw,
-    #view-auth .af-eye,
-    #view-auth .af-core,
-    #view-auth .af-sweep,
-    #view-auth .auth-copy > *,
-    #view-auth .auth-sheet-tag,
-    #view-auth .auth-figure-cap,
-    #view-auth .auth-submit.is-busy .auth-submit-line,
-    #view-auth .auth-card.is-error { animation: none; }
-    #view-auth .af-draw, #view-auth .af-eye { stroke-dashoffset: 0; }
-    #view-auth .af-core { opacity: 1; }
-    #view-auth .af-sweep { opacity: .35; }
-    #view-auth .auth-figure { transform: none; transition: none; }
-    #view-auth .auth-tab-ink { transition: none; }
-  }
-
   /* ============ 面试 / 聊天：方形气泡 · 墨色用户侧 ============ */
   .chat-main, .chat-aside { border-radius: 0; border-color: var(--line-2); }
   .msg { border-radius: 0; }
@@ -9080,7 +8724,7 @@ body:has(#view-landing.active) {
         <div class="spec-chip"><span>LLM</span><b>GLM-4-Flash</b></div>
         <div class="spec-chip"><span>Agents</span><b>5 席圆桌</b></div>
         <div class="spec-chip"><span>Scoring</span><b>确定性引擎 + LLM 增强</b></div>
-        <div class="spec-chip"><span>Tests</span><b>jsdom 3002 ／ pytest 89</b></div>
+        <div class="spec-chip"><span>Tests</span><b>jsdom 2953 ／ pytest 89</b></div>
       </aside>
     </div>
   </section>
@@ -9101,7 +8745,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">3002 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2953 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -9111,7 +8755,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">3002 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">2953 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -9299,28 +8943,7 @@ body:has(#view-landing.active) {
 <div class="auth-screen view-inner" id="auth-screen">
   <div class="auth-card">
     <div class="auth-left">
-      <i class="auth-ruler" aria-hidden="true"></i>
-      <!-- 图幅：图框 / 中心线 / 尺寸线 / 面镜。纯装饰，读屏跳过 -->
-      <div class="auth-sheet" aria-hidden="true">
-        <span class="auth-sheet-tag">图幅 01 ／ FIGURE</span>
-        <span class="auth-sheet-tag auth-sheet-tag-r">FM-AUTH-01</span>
-        <svg class="auth-figure" viewBox="0 0 320 140" preserveAspectRatio="xMidYMid meet" focusable="false">
-          <g class="af-dim">
-            <path d="M12 8 H308"/>
-            <path d="M12 4 V12 M308 4 V12 M160 4 V12"/>
-            <path d="M12 13 V26 M308 13 V26"/>
-          </g>
-          <rect class="af-frame af-draw" pathLength="100" x="12" y="26" width="296" height="88"/>
-          <path class="af-axis af-draw" pathLength="100" d="M4 70 H316"/>
-          <path class="af-axis af-draw" pathLength="100" d="M160 34 V106"/>
-          <ellipse class="af-eye" pathLength="100" cx="160" cy="70" rx="78" ry="26"/>
-          <path class="af-glint af-draw" pathLength="100" d="M87 61 A 78 26 0 0 1 133 46"/>
-          <circle class="af-core" cx="160" cy="70" r="3.2"/>
-          <rect class="af-sweep" x="14" y="26" width="1.6" height="88"/>
-        </svg>
-        <span class="auth-figure-cap"><span><i>FIG. 01</i> 面镜 · 反射研究</span><span>1 : 1</span></span>
-      </div>
-      <div class="auth-copy">
+      <div>
         <div class="auth-brand">
           <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
             <rect x="1" y="1" width="24" height="24" rx="1" fill="none" stroke="var(--brand)" stroke-width="1.5"/>
@@ -9338,78 +8961,53 @@ body:has(#view-landing.active) {
           <li><span class="dot" data-ic="interview">🎙️</span><span><b>多模态交互</b>：语音输入 / TTS 朗读 / 简历上传</span></li>
         </ul>
       </div>
-      <div class="auth-titleblock">
-        <div class="tb-cell"><span>图号</span><b>FM-AUTH-01</b></div>
-        <div class="tb-cell"><span>比例</span><b>1 : 1</b></div>
-        <div class="tb-cell"><span>版本</span><b>Beta 1.1.2</b></div>
-        <div class="tb-cell"><span>日期</span><b>2026.11</b></div>
+      <div class="auth-foot">
+        演示级登录系统 · 数据仅存于当前浏览器<br>
+        © 2026 面镜 FutureMirror
       </div>
-      <div class="auth-foot">© 2026 面镜 FutureMirror</div>
     </div>
 
     <div class="auth-right">
-      <div class="auth-mobile-brand"><i aria-hidden="true">◉</i>面镜 FutureMirror</div>
-      <div class="auth-head">
-        <span class="auth-head-k">身份核验</span>
-        <span class="auth-head-v">SHEET 02 ／ AUTH</span>
-      </div>
-
       <div class="auth-tabs" role="tablist">
         <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录</button>
         <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册</button>
-        <span class="auth-tab-ink" aria-hidden="true"></span>
       </div>
 
       <div class="auth-warn" role="alert">
-        <b><span class="warn-k">注</span>请勿使用真实密码</b>
+        <b>🔒 请勿使用真实密码</b>
         <p>这是<b>演示级</b>登录系统：密码仅做本地简单混淆存储、不具备生产安全性。请使用<b>专用演示密码</b>（如 <code>demo1234</code>），<b>不要填写你在其他网站的账号密码</b>。账号与面试记录仅保存在当前浏览器，清除浏览器数据即丢失。</p>
       </div>
 
       <!-- 登录表单 -->
       <form class="auth-form" id="form-login" onsubmit="event.preventDefault();doLogin();">
         <div class="auth-field">
-          <label for="login-email" data-no="01">邮箱</label>
-          <div class="auth-input">
-            <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" required>
-            <i class="bp-field-line" aria-hidden="true"></i>
-          </div>
+          <label for="login-email">邮箱</label>
+          <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" required>
         </div>
         <div class="auth-field">
-          <label for="login-pass" data-no="02">密码</label>
-          <div class="auth-input">
-            <input type="password" id="login-pass" placeholder="至少 6 位" autocomplete="current-password" required>
-            <i class="bp-field-line" aria-hidden="true"></i>
-          </div>
+          <label for="login-pass">密码</label>
+          <input type="password" id="login-pass" placeholder="至少 6 位" autocomplete="current-password" required>
         </div>
         <div class="auth-error" id="login-error" role="alert"></div>
-        <button type="submit" class="auth-submit" id="login-submit"><span class="auth-submit-t">登录</span><i class="auth-submit-line" aria-hidden="true"></i></button>
+        <button type="submit" class="auth-submit" id="login-submit">登录</button>
       </form>
 
       <!-- 注册表单 -->
       <form class="auth-form" id="form-register" style="display:none" onsubmit="event.preventDefault();doRegister();">
         <div class="auth-field">
-          <label for="reg-name" data-no="01">昵称</label>
-          <div class="auth-input">
-            <input type="text" id="reg-name" placeholder="怎么称呼你？" maxlength="20" required>
-            <i class="bp-field-line" aria-hidden="true"></i>
-          </div>
+          <label for="reg-name">昵称</label>
+          <input type="text" id="reg-name" placeholder="怎么称呼你？" maxlength="20" required>
         </div>
         <div class="auth-field">
-          <label for="reg-email" data-no="02">邮箱</label>
-          <div class="auth-input">
-            <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" required>
-            <i class="bp-field-line" aria-hidden="true"></i>
-          </div>
+          <label for="reg-email">邮箱</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" required>
         </div>
         <div class="auth-field">
-          <label for="reg-pass" data-no="03">密码</label>
-          <div class="auth-input">
-            <input type="password" id="reg-pass" placeholder="至少 6 位" autocomplete="new-password" minlength="6" required>
-            <i class="bp-field-line" aria-hidden="true"></i>
-          </div>
+          <label for="reg-pass">密码</label>
+          <input type="password" id="reg-pass" placeholder="至少 6 位" autocomplete="new-password" minlength="6" required>
         </div>
         <div class="auth-error" id="reg-error" role="alert"></div>
-        <button type="submit" class="auth-submit" id="reg-submit"><span class="auth-submit-t">创建账号</span><i class="auth-submit-line" aria-hidden="true"></i></button>
+        <button type="submit" class="auth-submit" id="reg-submit">创建账号</button>
       </form>
 
       <div class="auth-demo">
@@ -10679,7 +10277,7 @@ body:has(#view-landing.active) {
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、3002 项前端断言 + 89 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2953 项前端断言 + 89 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -10859,7 +10457,7 @@ body:has(#view-landing.active) {
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（45 模块 + 4 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、3002 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（45 模块 + 4 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2953 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -18668,7 +18266,6 @@ function revealScan() {
     choreograph: null, countUpScan: null, reportIn: null,
     cross: false, coord: false, draw: false, speaking: false,
     reportViz: false, formFx: false, annotate: false,
-    authStage: false,
     setCrosshair: null,
   });
 
@@ -18779,111 +18376,6 @@ function revealScan() {
         input.addEventListener("blur", () => { hint.hidden = true; });
       });
     } catch (e) { /* 纯增强 */ }
-  }
-
-  /* ---------- ⑨ 登录图幅：字段状态 / 提交扫描 / 图面视差 ---------- */
-  /* 登录页在 v69 被做成一张工程图幅，这里只做三件 DOM 层面的补充：
-   * 字段状态徽记、提交扫描条与出错抖动、图面随光标微动。
-   * 三条都不改登录流程本身（doLogin / doRegister 一行没动），失败也不影响登录。 */
-  function initAuthStage() {
-    const screen = document.getElementById("auth-screen");
-    if (!screen) return;
-    const card = screen.querySelector(".auth-card");
-    const plate = screen.querySelector(".auth-left");
-
-    /* ① 字段状态：边打字只报「通过」，失焦才报「不符」——
-       边打字边标红是最烦人的做法，用户还没输完就被判错。 */
-    const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-    const RULES = {
-      "login-email": [v => EMAIL.test(v), "格式通过", "邮箱格式不符"],
-      "reg-email": [v => EMAIL.test(v), "格式通过", "邮箱格式不符"],
-      "reg-name": [v => v.trim().length > 0, "已填写", "请填写昵称"],
-      "login-pass": [v => v.length >= 6, "长度达标", "至少 6 位"],
-      "reg-pass": [v => v.length >= 6, "长度达标", "至少 6 位"],
-    };
-    Object.keys(RULES).forEach(id => {
-      const input = document.getElementById(id);
-      const field = input && input.closest(".auth-field");
-      if (!input || !field) return;
-      const test = RULES[id][0], okText = RULES[id][1], badText = RULES[id][2];
-      const sync = reportErrors => {
-        const v = input.value;
-        const pass = !!v && test(v);
-        if (!v || (!pass && !reportErrors)) {
-          field.removeAttribute("data-state");
-          field.removeAttribute("data-mark");
-          return;
-        }
-        field.setAttribute("data-state", pass ? "ok" : "bad");
-        field.setAttribute("data-mark", pass ? okText : badText);
-      };
-      input.addEventListener("input", () => sync(false));
-      input.addEventListener("blur", () => sync(true));
-    });
-
-    /* ② 提交扫描条：真实提交时点亮；一出现错误提示或离开登录页就收回，
-       否则下次进来按钮还停在「正在核对…」。 */
-    const clearBusy = () => {
-      [...screen.querySelectorAll(".auth-submit")].forEach(b => {
-        b.classList.remove("is-busy");
-        b.removeAttribute("aria-busy");
-        b.removeAttribute("data-busy");
-      });
-    };
-    ["form-login", "form-register"].forEach(fid => {
-      const form = document.getElementById(fid);
-      if (!form) return;
-      const btn = form.querySelector(".auth-submit");
-      const err = form.querySelector(".auth-error");
-      form.addEventListener("submit", () => {
-        if (!btn) return;
-        btn.setAttribute("data-busy", "正在核对…");
-        btn.classList.add("is-busy");
-        btn.setAttribute("aria-busy", "true");
-      });
-      if (err && typeof MutationObserver !== "undefined") {
-        new MutationObserver(() => {
-          if (!err.classList.contains("show")) return;
-          clearBusy();
-          if (!card || reduced()) return;
-          card.classList.remove("is-error");
-          void card.offsetWidth;   // 强制重排，让同一段动画能连续播放
-          card.classList.add("is-error");
-          setTimeout(() => card.classList.remove("is-error"), 360);
-        }).observe(err, { attributes: true, attributeFilter: ["class"] });
-      }
-    });
-    const view = document.getElementById("view-auth");
-    if (view && typeof MutationObserver !== "undefined") {
-      new MutationObserver(() => {
-        if (!view.classList.contains("active")) clearBusy();
-      }).observe(view, { attributes: true, attributeFilter: ["class"] });
-    }
-
-    /* ③ 图面视差：光标在卡片内移动时整套图形轻微追随（≤7px）。
-       只挂精细指针——触屏上手指拖动时的抖动比这个效果本身更明显。 */
-    let fine = false;
-    try { fine = !!(window.matchMedia && window.matchMedia("(pointer: fine)").matches); } catch (e) {}
-    if (card && plate && fine && !reduced()) {
-      let raf = 0, tx = 0, ty = 0;
-      const paint = () => {
-        raf = 0;
-        plate.style.setProperty("--af-x", tx.toFixed(3));
-        plate.style.setProperty("--af-y", ty.toFixed(3));
-      };
-      card.addEventListener("pointermove", e => {
-        const r = card.getBoundingClientRect();
-        if (!r.width || !r.height) return;
-        tx = ((e.clientX - r.left) / r.width - .5) * 2;
-        ty = ((e.clientY - r.top) / r.height - .5) * 2;
-        if (!raf) raf = requestAnimationFrame(paint);
-      }, { passive: true });
-      card.addEventListener("pointerleave", () => {
-        tx = 0; ty = 0;
-        if (!raf) raf = requestAnimationFrame(paint);
-      });
-    }
-    FX.authStage = true;
   }
 
   /* ---------- ③ 面试 LIVE：面试官徽章发言脉冲 ---------- */
@@ -19320,7 +18812,6 @@ function revealScan() {
   /* ---------- 入口 ---------- */
   function boot() {
     try { initAuthFx(); } catch (e) {}
-    try { initAuthStage(); } catch (e) {}
     try { initInterviewFx(); } catch (e) {}
     try { initCrosshair(); } catch (e) {}
     try { initCoordReadout(); } catch (e) {}

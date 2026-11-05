@@ -220,8 +220,6 @@ const ev = (code) => w.eval(code);
       "--d",
       "--gw0",
       "--l2b",
-      "--af-x",
-      "--af-y",
     ];
     const missing = [];
     allCss.replace(/var\(\s*(--[a-z0-9-]+)/g, (m, n) => {
