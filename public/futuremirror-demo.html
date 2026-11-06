@@ -7937,6 +7937,23 @@ body:has(#view-landing.active) {
   }
 }
 
+/* 超窄屏（≤360）：导航一行放不下「字标 + 登录胶囊」，会横向溢出 27px。
+ * 收掉英文字标与内边距，保留中文名与登录入口——功能优先于装饰。 */
+@media (max-width: 360px) {
+  #view-landing .landing-nav .wrap {
+    padding-left: 14px;
+    padding-right: 14px;
+    gap: 10px;
+  }
+  #view-landing .lp-logo b {
+    display: none;
+  }
+  #view-landing .landing-nav-meta .lp-pill-solid {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+}
+
 /* 无动效偏好：入场动画一并停掉 */
 @media (prefers-reduced-motion: reduce) {
   #view-landing .lp-pill,
