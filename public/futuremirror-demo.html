@@ -10290,7 +10290,7 @@ body:has(#view-landing.active) {
         <div class="eval-material">
           <div class="material-icon">▶️</div>
           <div>
-            <div class="material-name">演示视频（MP4 · 1080p）</div>
+            <div class="material-name">演示视频（B 站 · 1080p）</div>
             <div class="material-desc">含项目介绍、核心功能演示、代码沙盒、MCP 运行时验证、AI 技术亮点</div>
           </div>
           <span class="material-status pending" id="eval-status-video">待填写</span>
@@ -10496,7 +10496,7 @@ body:has(#view-landing.active) {
         <div class="boundary-item"><b>向量库双形态</b>：本地单文件版用浏览器内单机索引（localStorage 存 40 条面经向量，MiniLM 384 维，混合打分在浏览器内完成）；在线与离线共用同一套浏览器内混合打分与五特征重排策略。后续规划升级为 pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank。</div>
         <div class="boundary-item"><b>代码沙盒为浏览器 Worker 隔离</b>：具备 2s 超时熔断，仅支持纯 JS 逻辑题；后续规划集成 QuickJS WASM 沙盒，支持多语言与虚拟文件系统。</div>
         <div class="boundary-item"><b>MCP 为本地模拟 Server</b>：协议结构与真实 MCP 一致，后续规划接入跨进程真实 MCP，实现跨 Agent 工具发现。</div>
-        <div class="boundary-item"><b>演示视频已上线</b>：6 分 35 秒 / 1080p H.264，<a href="https://futuremirror-demo.app.workbuddy.host/media/demo.mp4" target="_blank" rel="noopener">在线播放 / 下载</a>。原始录制为 2562×1440 HEVC，浏览器兼容性差，已转码为 1920×1080 H.264（64.7MB，播放端无需装解码器）。</div>
+        <div class="boundary-item"><b>演示视频已发布</b>：6 分 36 秒 / 1920×1080，<a href="https://www.bilibili.com/video/BV1tZ4i6WEZL/" target="_blank" rel="noopener">B 站在线播放</a>；另留<a href="https://futuremirror-demo.app.workbuddy.host/media/demo.mp4" target="_blank" rel="noopener">站内直链</a>（64.7MB，可下载离线观看）。原始录制为 2562×1440 HEVC，浏览器兼容性差，已转码为 1920×1080 H.264，播放端无需装解码器。</div>
       </div>
     </section>
 
@@ -10609,7 +10609,7 @@ body:has(#view-landing.active) {
 const CONFIG = {
   repoUrl: "https://github.com/Penguin-Zhou/FutureMirror",      // GitHub / Gitee Public 仓库
   liveUrl: "https://penguin-zhou.github.io/FutureMirror/",  // 在线演示（GitHub Pages，单文件演示版）
-  videoUrl: "https://futuremirror-demo.app.workbuddy.host/media/demo.mp4",  // 演示视频（6 分 35 秒 / 1080p H.264，镜像站直连）
+  videoUrl: "https://www.bilibili.com/video/BV1tZ4i6WEZL/",  // 演示视频（6 分 36 秒 / 1080p，B 站正式发布；站内直链备份见 README）
   docsUrl: "https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html",  // 技术文档（HTML 在线版，PDF 版以附件提交）
   fullAppUrl: "https://github.com/Penguin-Zhou/FutureMirror",   // 项目仓库地址（可与 repoUrl 相同）
   testAccount: "演示账号：demo@futuremirror.app / Demo123456（可在登录页一键登录，或点「一键使用演示账号」）",

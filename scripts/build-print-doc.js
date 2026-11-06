@@ -167,7 +167,12 @@ const fileUrl = "file:///" + TMP.replace(/\\/g, "/").replace(/^\/?([A-Za-z]):/, 
  * 并在下面用 mtime 复核，绝不让静默失败伪装成成功。 */
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), "fm-pdf-"));
 const began = Date.now();
-const args = [`--user-data-dir=${profile}`, "--no-pdf-header-footer", "--print-to-pdf-no-header", `--print-to-pdf=${PDF}`];
+const args = [
+  `--user-data-dir=${profile}`,
+  "--no-pdf-header-footer",
+  "--print-to-pdf-no-header",
+  `--print-to-pdf=${PDF}`,
+];
 if (!isHeadlessShell) args.unshift("--headless=new");
 args.push(fileUrl);
 try {

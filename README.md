@@ -741,9 +741,9 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
 | 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 89 项 + 前端 2969 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
-| 演示视频 1080p MP4  | ✅  | <https://futuremirror-demo.app.workbuddy.host/media/demo.mp4> （6 分 35 秒 / 1920×1080 H.264 / 64.7MB；原始录制为 2562×1440 HEVC，已转码保证浏览器直放）                                                                                                                                                                       |
+| 演示视频 1080p MP4  | ✅  | <https://www.bilibili.com/video/BV1tZ4i6WEZL/> （6 分 36 秒 / 1920×1080；直链备份 <https://futuremirror-demo.app.workbuddy.host/media/demo.mp4> ，64.7MB 可下载；原始录制为 2562×1440 HEVC，已转码保证浏览器直放）                                                                                                    |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
-| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，约 29 页，**随项目材料以附件形式提交**；仓库 Release 同附（修复版 v1.0.0-beta.1）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0-beta.1/FutureMirror.Beta.pdf> |
+| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，30 页，**随项目材料以附件形式提交**；仓库 Release 同附（修复版 v1.0.0-beta.1）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0-beta.1/FutureMirror.Beta.pdf> |
 | 在线演示（公网可访问）            | ✅  | <https://penguin-zhou.github.io/FutureMirror/>                                                                                                                                    |
 | 在线演示镜像（国内直连）           | ✅  | <https://futuremirror-demo.app.workbuddy.host/>                                                                                                                                   |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456`                                                                                                                                              |
@@ -771,7 +771,7 @@ cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
 # 前端构建后用任意静态服务托管 frontend/，并在 CONFIG 中填写后端地址
 ```
 
-部署后把地址回填到 `frontend/js/data/config.js` 的 `CONFIG` 与本 README。当前 `repoUrl / fullAppUrl / liveUrl / docsUrl / videoUrl` 均已指向线上地址（`docsUrl` = Pages 上的 HTML 在线版；`videoUrl` = 镜像站 `/media/demo.mp4`）。视频源文件不入库（`media/` 已忽略），由 `build-backend-static.js` 复制进静态目录随镜像发布——64.7MB 超出了 git 单次提交与 Pages 产物的承受范围。
+部署后把地址回填到 `frontend/js/data/config.js` 的 `CONFIG` 与本 README。当前 `repoUrl / fullAppUrl / liveUrl / docsUrl / videoUrl` 均已指向线上地址（`docsUrl` = Pages 上的 HTML 在线版；`videoUrl` = B 站正式发布页 <https://www.bilibili.com/video/BV1tZ4i6WEZL/>，镜像站 `/media/demo.mp4` 作直链备份）。视频源文件不入库（`media/` 已忽略），由 `build-backend-static.js` 复制进静态目录随镜像发布——64.7MB 超出了 git 单次提交与 Pages 产物的承受范围。
 
 > `gh-pages` 是**纯产物分支**：每次发布重建单个提交并强推，不保留历史；项目主历史始终在 `main`。首次启用 Pages 只需在仓库 Settings → Pages 选择 `gh-pages` 分支根目录一次（当前已启用，`https_enforced`）。
 

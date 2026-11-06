@@ -5,7 +5,7 @@
 const CONFIG = {
   repoUrl: "https://github.com/Penguin-Zhou/FutureMirror",      // GitHub / Gitee Public 仓库
   liveUrl: "https://penguin-zhou.github.io/FutureMirror/",  // 在线演示（GitHub Pages，单文件演示版）
-  videoUrl: "https://futuremirror-demo.app.workbuddy.host/media/demo.mp4",  // 演示视频（6 分 35 秒 / 1080p H.264，镜像站直连）
+  videoUrl: "https://www.bilibili.com/video/BV1tZ4i6WEZL/",  // 演示视频（6 分 36 秒 / 1080p，B 站正式发布；站内直链备份见 README）
   docsUrl: "https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html",  // 技术文档（HTML 在线版，PDF 版以附件提交）
   fullAppUrl: "https://github.com/Penguin-Zhou/FutureMirror",   // 项目仓库地址（可与 repoUrl 相同）
   testAccount: "演示账号：demo@futuremirror.app / Demo123456（可在登录页一键登录，或点「一键使用演示账号」）",
