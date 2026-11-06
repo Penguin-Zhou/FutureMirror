@@ -1239,6 +1239,12 @@ try {
 }
 [data-theme="dark"] .boundary-item { color: var(--amber); }
 .boundary-item b { font-weight: 700; }
+/* 边界声明里的外链（如演示视频）：跟随正文色，靠发丝下划线识别；hover 只加深描边，不上浮不变色块 */
+.boundary-item a {
+  color: inherit; font-weight: 600; text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+.boundary-item a:hover { border-bottom-color: var(--ink); }
 
 /* 密码 modal */
 .eval-gate-modal { max-width: 440px; }
@@ -10490,7 +10496,7 @@ body:has(#view-landing.active) {
         <div class="boundary-item"><b>向量库双形态</b>：本地单文件版用浏览器内单机索引（localStorage 存 40 条面经向量，MiniLM 384 维，混合打分在浏览器内完成）；在线与离线共用同一套浏览器内混合打分与五特征重排策略。后续规划升级为 pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank。</div>
         <div class="boundary-item"><b>代码沙盒为浏览器 Worker 隔离</b>：具备 2s 超时熔断，仅支持纯 JS 逻辑题；后续规划集成 QuickJS WASM 沙盒，支持多语言与虚拟文件系统。</div>
         <div class="boundary-item"><b>MCP 为本地模拟 Server</b>：协议结构与真实 MCP 一致，后续规划接入跨进程真实 MCP，实现跨 Agent 工具发现。</div>
-        <div class="boundary-item"><b>演示视频录制中</b>：代码仓库 / 技术文档 / 在线演示地址均已就位（见本页「交付材料」区块），演示视频成片后补入。</div>
+        <div class="boundary-item"><b>演示视频已上线</b>：6 分 35 秒 / 1080p H.264，<a href="https://futuremirror-demo.app.workbuddy.host/media/demo.mp4" target="_blank" rel="noopener">在线播放 / 下载</a>。原始录制为 2562×1440 HEVC，浏览器兼容性差，已转码为 1920×1080 H.264（64.7MB，播放端无需装解码器）。</div>
       </div>
     </section>
 
@@ -10603,7 +10609,7 @@ body:has(#view-landing.active) {
 const CONFIG = {
   repoUrl: "https://github.com/Penguin-Zhou/FutureMirror",      // GitHub / Gitee Public 仓库
   liveUrl: "https://penguin-zhou.github.io/FutureMirror/",  // 在线演示（GitHub Pages，单文件演示版）
-  videoUrl: "",       // 演示视频（5-8 分钟 MP4）
+  videoUrl: "https://futuremirror-demo.app.workbuddy.host/media/demo.mp4",  // 演示视频（6 分 35 秒 / 1080p H.264，镜像站直连）
   docsUrl: "https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html",  // 技术文档（HTML 在线版，PDF 版以附件提交）
   fullAppUrl: "https://github.com/Penguin-Zhou/FutureMirror",   // 项目仓库地址（可与 repoUrl 相同）
   testAccount: "演示账号：demo@futuremirror.app / Demo123456（可在登录页一键登录，或点「一键使用演示账号」）",

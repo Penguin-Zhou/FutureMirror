@@ -61,3 +61,6 @@ next-env.d.ts
 # Vue 展示层（评分方法页）：依赖与中间产物不入库，docs/scoring-method.html 是提交的交付物
 /vue-scoring-method/node_modules/
 /vue-scoring-method/dist/
+
+# 演示视频源文件（64.7MB，由 build-backend-static 复制进静态目录，不入库）
+/media/

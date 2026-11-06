@@ -16,6 +16,7 @@
  * ============================================================ */
 "use strict";
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { execFileSync } = require("child_process");
 
@@ -151,17 +152,44 @@ const EDGE_CANDIDATES = [
   "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
   "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
 ];
-const edge = EDGE_CANDIDATES.find((p) => fs.existsSync(p));
-if (!edge) {
-  console.error("❌ 未找到 Edge 可执行文件，无法无头打印");
+/* 浏览器：FM_PDF_BROWSER 优先（Chrome for Testing / chrome-headless-shell），否则回退系统 Edge。
+ * 加这条是因为桌面版 Edge 在跑时，无头进程会把参数转交给既有实例后静默退出——
+ * 现象是「命令成功、PDF 没变」，比报错危险得多。 */
+const edge = process.env.FM_PDF_BROWSER || EDGE_CANDIDATES.find((p) => fs.existsSync(p));
+if (!edge || !fs.existsSync(edge)) {
+  console.error("❌ 未找到可用的无头浏览器（可设 FM_PDF_BROWSER 指向 chrome-headless-shell），无法打印");
   process.exit(1);
 }
+const isHeadlessShell = /chrome-headless-shell/i.test(edge);
 const fileUrl = "file:///" + TMP.replace(/\\/g, "/").replace(/^\/?([A-Za-z]):/, "$1:");
-execFileSync(
-  edge,
-  ["--headless=new", "--no-pdf-header-footer", "--print-to-pdf-no-header", `--print-to-pdf=${PDF}`, fileUrl],
-  { stdio: "pipe" }
-);
+/* 独立 user-data-dir：桌面上已有 Edge 时，新进程会把参数转交给既有实例后 exit 0，
+ * --print-to-pdf 被吞掉，PDF 停在旧版本却照样打印「已生成」——这里强制起独立实例，
+ * 并在下面用 mtime 复核，绝不让静默失败伪装成成功。 */
+const profile = fs.mkdtempSync(path.join(os.tmpdir(), "fm-pdf-"));
+const began = Date.now();
+const args = [`--user-data-dir=${profile}`, "--no-pdf-header-footer", "--print-to-pdf-no-header", `--print-to-pdf=${PDF}`];
+if (!isHeadlessShell) args.unshift("--headless=new");
+args.push(fileUrl);
+try {
+  execFileSync(edge, args, {
+    stdio: "pipe",
+    timeout: 180000,
+  });
+} catch (e) {
+  console.error("❌ 无头打印进程报错：" + String((e && (e.stderr || e.message)) || e).slice(0, 400));
+  process.exit(1);
+} finally {
+  /* Crashpad 子进程可能还占着目录，清不掉也不该影响产物 */
+  try {
+    fs.rmSync(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+  } catch (e) {
+    /* 忽略：临时 profile 残留无副作用 */
+  }
+}
+if (!fs.existsSync(PDF) || fs.statSync(PDF).mtimeMs < began - 2000) {
+  console.error("❌ PDF 未刷新：无头浏览器没有真正落盘（旧文件仍是上一次的），构建中止");
+  process.exit(1);
+}
 const kb = (fs.statSync(PDF).size / 1024).toFixed(0) + "KB";
 console.log(`✅ PDF 已生成 → docs/FutureMirror.Beta.pdf（${kb}）`);
 

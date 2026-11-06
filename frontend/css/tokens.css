@@ -1208,6 +1208,12 @@
 }
 [data-theme="dark"] .boundary-item { color: var(--amber); }
 .boundary-item b { font-weight: 700; }
+/* 边界声明里的外链（如演示视频）：跟随正文色，靠发丝下划线识别；hover 只加深描边，不上浮不变色块 */
+.boundary-item a {
+  color: inherit; font-weight: 600; text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+.boundary-item a:hover { border-bottom-color: var(--ink); }
 
 /* 密码 modal */
 .eval-gate-modal { max-width: 440px; }

@@ -64,6 +64,17 @@ if (fs.existsSync(MODELS)) {
   console.warn("⚠️ 未找到 public/models，端侧模型将退回外网镜像源；先执行 node scripts/fetch-model.js");
 }
 
+/* ---------- 4b) 演示视频（不进取仓库：48MB 级 MP4，git 与 Pages 都装不下） ----------
+ * 源文件放在仓库根的 media/（.gitignore 已忽略），构建时复制进静态目录；
+ * 不存在就跳过——纯前端演示包不含视频，链接指向镜像站，不影响其余产物。 */
+const MEDIA_SRC = path.join(ROOT, "media");
+if (fs.existsSync(path.join(MEDIA_SRC, "demo.mp4"))) {
+  fs.mkdirSync(path.join(OUT, "media"), { recursive: true });
+  fs.copyFileSync(path.join(MEDIA_SRC, "demo.mp4"), path.join(OUT, "media", "demo.mp4"));
+} else {
+  console.warn("⚠️ 未找到 media/demo.mp4，站内 /media/demo.mp4 将 404（仅影响视频内嵌播放）");
+}
+
 /* ---------- 5) 汇总 ---------- */
 const dirSize = (d) =>
   fs
