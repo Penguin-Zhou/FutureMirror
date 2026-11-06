@@ -3,7 +3,9 @@
  *   backend/static/
  *     ├── futuremirror-demo.html   单文件演示页（apiBase=same-origin）
  *     ├── docs/technical-doc.html  技术文档
+ *     ├── docs/作品介绍.docx        作品介绍（同 ASCII 名 works-intro.docx）
  *     ├── changelog.html           更新日志
+ *     ├── media/demo.mp4           演示视频（可拖动进度）
  *     └── models/                  端侧模型权重（Xenova + onnxruntime）
  *
  *   用途：FastAPI 后端（backend/app/main.py）在 static/ 存在时将其挂载到
@@ -75,6 +77,20 @@ if (fs.existsSync(path.join(MEDIA_SRC, "demo.mp4"))) {
   console.warn("⚠️ 未找到 media/demo.mp4，站内 /media/demo.mp4 将 404（仅影响视频内嵌播放）");
 }
 
+/* ---------- 4c) 作品介绍文档（DOCX，同样不进仓库） ----------
+ * 3.97MB 超过 GitHub Data API 的单次上传上限（≥3MB 的 blob 会 502），
+ * 也放不进 Pages，因此与视频一样只随镜像发布；源文件在 media/（已忽略）。
+ * 同时落两份名字：中文名给评委看，ASCII 名兜底——部分网关对非 ASCII
+ * 路径的百分号编码处理不一致，留一条稳的。 */
+const INTRO = path.join(MEDIA_SRC, "works-intro.docx");
+if (fs.existsSync(INTRO)) {
+  fs.mkdirSync(path.join(OUT, "docs"), { recursive: true });
+  fs.copyFileSync(INTRO, path.join(OUT, "docs", "作品介绍.docx"));
+  fs.copyFileSync(INTRO, path.join(OUT, "docs", "works-intro.docx"));
+} else {
+  console.warn("⚠️ 未找到 media/works-intro.docx，/docs/ 下的作品介绍将 404");
+}
+
 /* ---------- 5) 汇总 ---------- */
 const dirSize = (d) =>
   fs
@@ -85,5 +101,5 @@ const dirSize = (d) =>
     );
 console.log(`✅ 后端静态目录已就绪 → backend/static/（${(dirSize(OUT) / 1024 / 1024).toFixed(1)}MB）`);
 console.log(
-  "   演示页 / · 文档 /docs/technical-doc.html · 评分方法 /docs/scoring-method.html · 日志 /changelog.html · 模型 /models/"
+  "   演示页 / · 文档 /docs/technical-doc.html · 评分方法 /docs/scoring-method.html · 作品介绍 /docs/作品介绍.docx · 日志 /changelog.html · 模型 /models/ · 视频 /media/demo.mp4"
 );
