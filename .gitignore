@@ -64,3 +64,6 @@ next-env.d.ts
 
 # 演示视频源文件（64.7MB，由 build-backend-static 复制进静态目录，不入库）
 /media/
+
+# 打印版技术文档（9.8MB，超过 GitHub 单次上传上限，只作 Release 附件）
+/docs/*.pdf

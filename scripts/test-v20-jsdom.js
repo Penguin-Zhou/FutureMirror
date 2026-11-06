@@ -60,7 +60,7 @@ function runTests() {
   ok(!!document.getElementById("ai-fab"), "AI 小助手悬浮按钮存在");
   ok(!!document.getElementById("ai-assistant-panel"), "AI 助手抽屉存在");
   ok(document.getElementById("ai-assistant-panel").classList.contains("open") === false, "抽屉默认收起");
-  ok(document.querySelector(".sb-footer").textContent.includes("beta1.1"), "侧栏版本号 beta1.x");
+  ok(document.querySelector(".sb-footer").textContent.includes("1.0.0"), "侧栏版本号 1.0.0");
   ok(
     window.eval("QUIZ_MODES.exam.timed") === true && window.eval("QUIZ_MODES.practice.timed") === false,
     "模式配置：exam 计时 / practice 不限时"

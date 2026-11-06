@@ -1,4 +1,4 @@
-/* v32 jsdom 测试：面试轮次收尾 + 侧栏滚动回归（Beta 1.1.2）
+/* v32 jsdom 测试：面试轮次收尾 + 侧栏滚动回归（1.0.0）
  * 覆盖：① MAX_TURNS 常量与「实时能力追踪」口径统一为 5 轮
  *       ② 未达 5 轮不收尾（防止第 1 题就自动结束）
  *       ③ 第 5 题答完由面试官发通知并自动结束（文案 / 输入锁定 / 进度条 / 提示）
@@ -53,7 +53,7 @@ function makeDom() {
 setTimeout(runTests, 400);
 
 async function runTests() {
-  console.log("\n=== v32 jsdom 测试（面试 5 轮自动收尾 + 侧栏滚动回归 · Beta 1.1.2）===");
+  console.log("\n=== v32 jsdom 测试（面试 5 轮自动收尾 + 侧栏滚动回归 · 1.0.0）===");
   const { dom, errors, settle } = makeDom();
   const w = dom.window;
   const d = w.document;

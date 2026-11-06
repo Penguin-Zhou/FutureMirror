@@ -59,7 +59,7 @@ function makeDom() {
 setTimeout(runTests, 400);
 
 async function runTests() {
-  console.log("\n=== v34 jsdom 测试（报告纳入在场率 / 专注率 · Beta 1.1.2）===");
+  console.log("\n=== v34 jsdom 测试（报告纳入在场率 / 专注率 · 1.0.0）===");
   const { dom, errors, settle } = makeDom();
   const w = dom.window;
   await settle();

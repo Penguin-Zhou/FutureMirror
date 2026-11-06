@@ -1,4 +1,4 @@
-/* v33 jsdom 测试：摄像头面试状态监测（前端检测 + 后端聚合 · Beta 1.1.2）
+/* v33 jsdom 测试：摄像头面试状态监测（前端检测 + 后端聚合 · 1.0.0）
  * 覆盖：① 摄像头按钮 / 预览 / 状态条 DOM 齐备且初始隐藏
  *       ② toggleCamera / stopCamera 模块就绪，face-api 同源自托管优先 + CDN 兜底
  *       ③ 运行时开启摄像头：getUserMedia → 预览、状态条显示、向后端发心跳
@@ -55,7 +55,7 @@ function makeDom() {
 setTimeout(runTests, 400);
 
 async function runTests() {
-  console.log("\n=== v33 jsdom 测试（摄像头面试状态监测 · Beta 1.1.2）===");
+  console.log("\n=== v33 jsdom 测试（摄像头面试状态监测 · 1.0.0）===");
   const { dom, errors, settle } = makeDom();
   const w = dom.window;
   const d = w.document;

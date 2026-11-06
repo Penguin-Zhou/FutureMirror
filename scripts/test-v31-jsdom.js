@@ -1,11 +1,11 @@
-/* v31 jsdom 测试：体验修复层 + 学习计划 + 图标系统（Beta 1.1.2）
+/* v31 jsdom 测试：体验修复层 + 学习计划 + 图标系统（1.0.0）
  * 覆盖：① 面试页「重新面试」入口与登录守卫
  *       ② 滚动吸附作用域收窄到 landing 视图 + 题库子页签切换回顶
  *       ③ 能力分布看板随报告刷新（refreshReportPanel / removeReportPanel）
  *       ④ 偏好设置「十字鼠标追踪」开关（prefs.crosshair，默认开）
  *       ⑤ 学习计划板块（7 天路径 + 每日时间分配 + 报告同步 + 打卡进度）
  *       ⑥ 全站蓝图风 SVG 图标系统（data-ic 换装 + 主题钮 + favicon）
- *       ⑦ 版本串口径（BETA 1.1.2 / beta1.1.2）
+ *       ⑦ 版本串口径（正式版 1.0.0）
  * 用法：node scripts/test-v31-jsdom.js
  */
 const fs = require("fs");
@@ -53,7 +53,7 @@ function makeDom() {
 setTimeout(runTests, 400);
 
 async function runTests() {
-  console.log("\n=== v31 jsdom 测试（体验修复层 + 学习计划 + 图标系统 · Beta 1.1.2）===");
+  console.log("\n=== v31 jsdom 测试（体验修复层 + 学习计划 + 图标系统 · 1.0.0）===");
   const { dom, errors, settle } = makeDom();
   const w = dom.window;
   const d = w.document;
@@ -457,9 +457,9 @@ async function runTests() {
      ⑦ 版本串口径
      ================================================================ */
   console.log("\n—— ⑦ 版本口径 ——");
-  ok(/Beta 1\.1\.2/i.test(html), "页面版本串为 Beta 1.1.2（v61 收掉导航里的 BETA 胶囊后，仍由 title 与页脚承载）");
-  ok(/beta1\.1\.2/.test(html), "开发者模式版本串为 beta1.1.2");
-  ok(!/beta1\.1\.1/.test(html), "无 beta1.1.1 残留");
+  ok(/1\.0\.0/.test(html), "页面版本串为 1.0.0（v61 收掉导航里的 BETA 胶囊后，仍由 title 与页脚承载）");
+  ok(!/beta1\.1\.2/i.test(html), "开发者模式无 beta1.1.2 残留（Beta 1.0.x 历史版本号仍保留）");
+  ok(/版本 1\.0\.0 · 蓝图编辑风/.test(html), "开发者日志版本号 1.0.0");
 
   /* ================================================================
      汇总

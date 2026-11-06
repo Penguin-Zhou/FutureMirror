@@ -5,18 +5,18 @@ export const changelogHtml = `
   <!-- ============ 标题 ============ -->
   <div class="header">
     <h1>面镜 FutureMirror</h1>
-    <div class="sub">版本更新日志 · v1 → Beta 1.1.2</div>
+    <div class="sub">版本更新日志 · v1 → 1.0.0</div>
     <div class="meta">
       <span>已发布 <b>35</b> 个版本</span>
-      <span>当前版本 <b>Beta 1.1.2</b></span>
+      <span>当前版本 <b>1.0.0</b></span>
       <span>规划中 <b>1</b> 个版本</span>
-      <span>覆盖 <b>2026.08 → 2026.10</b></span>
+      <span>覆盖 <b>2026.08 → 2026.11</b></span>
     </div>
   </div>
 
   <!-- ============ 阅读指引 ============ -->
   <div class="reading-guide">
-    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 Beta 1.1.2，为当前正式发布版本（体验修复层：3 个主流程缺陷修复 + 学习计划板块 + 十字准线开关 + 36 枚自制图标；其后的 v36–v39 为<strong>同一版本的增量批次</strong>，覆盖求职闭环 / 可视化基建 / 求职材料与岗位闭环 / 反馈容错与无障碍，均不升版，详见下方对应版本块）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。
+    <b>阅读指引：</b>本日志按版本倒序排列。带 <span class="badge-pub">已发布</span> 标记的版本均已上线；带 <span class="badge-cur">当前版本</span> 标记的是 1.0.0，为当前正式发布版本（体验修复层：3 个主流程缺陷修复 + 学习计划板块 + 十字准线开关 + 36 枚自制图标；其后的 v36–v39 为<strong>同一版本的增量批次</strong>，覆盖求职闭环 / 可视化基建 / 求职材料与岗位闭环 / 反馈容错与无障碍，均不升版，详见下方对应版本块）；带 <span class="badge-plan">规划中</span> 标记的版本为下一步迭代计划，虚线边框与浅黄背景以便区分。所有数据指标均来自对应版本代码库的实际统计；本文档仅记录团队自研功能的演进，不含任何第三方内容。<br><b>编号说明：</b>Beta 阶段使用内部编号（Beta 1.0.x / 1.1.x），交付前统一收口为正式版 <b>1.0.0</b>——功能基线与原 Beta 1.1.2 完全一致，仅修订版本号与全站文案口径；本日志内各历史版本块中的旧编号已按此口径改写，不影响任何版本的发布时间与内容记录。
   </div>
 
   <!-- ============ 总览 ============ -->
@@ -37,42 +37,42 @@ export const changelogHtml = `
   <nav class="cl-toc" aria-label="版本索引">
   <div class="cl-toc-title">版本索引 · 点击跳转</div>
   <ul class="cl-toc-list">
-    <li><a href="#v72"><span class="cl-toc-tag">Beta 1.1.2 · v72</span><span class="cl-toc-title-txt">短板提示的「定向补强」点了白屏 —— 把应用内 tab 当成了顶层视图</span></a></li>
-    <li><a href="#v71"><span class="cl-toc-tag">Beta 1.1.2 · v71</span><span class="cl-toc-title-txt">报告 → 学习计划 · 跳转必须带导入：把「链接无效」修成「落地即个人版计划」</span></a></li>
-    <li><a href="#v70"><span class="cl-toc-tag">Beta 1.1.2 · v70</span><span class="cl-toc-title-txt">定位重写 + 评分方法页 · 可核查的评价链路 / 边界声明 / Vue 3 展示层 / 71 项双引擎对拍</span></a></li>
-    <li><a href="#v68"><span class="cl-toc-tag">Beta 1.1.2 · v68</span><span class="cl-toc-title-txt">限额跨进程记账 · rate_hits 落库 / 三进程并发 6 : 6 / 库挂兜底</span></a></li>
-    <li><a href="#v67"><span class="cl-toc-tag">Beta 1.1.2 · v67</span><span class="cl-toc-title-txt">AI 小助手接入后端 · 服务端检索 / 引用回传 / 访客限流 / 面板高度修复</span></a></li>
-    <li><a href="#v64"><span class="cl-toc-tag">Beta 1.1.2 · v64</span><span class="cl-toc-title-txt">能力网改造 · 逐帧位移场 / 端点咬合 / 焦点分组 / 绽开入场</span></a></li>
-    <li><a href="#v63"><span class="cl-toc-tag">Beta 1.1.2 · v63</span><span class="cl-toc-title-txt">能力网 · 中心 + 五主题 + 二十实现点 / CSS 浮动 / 悬停弹卡</span></a></li>
-    <li><a href="#v62"><span class="cl-toc-tag">Beta 1.1.2 · v62</span><span class="cl-toc-title-txt">首屏撑满一屏 · .lp-first 容器 / svh 视口 / 图幅退到折线以下</span></a></li>
-    <li><a href="#v61"><span class="cl-toc-tag">Beta 1.1.2 · v61</span><span class="cl-toc-title-txt">首屏只留一句话 · 三个小标签下线 / 打字机连定时器一起删 / 序列重排</span></a></li>
-    <li><a href="#v60"><span class="cl-toc-tag">Beta 1.1.2 · v60</span><span class="cl-toc-title-txt">落地页动效层 · 60px 缓出上浮 / 首屏序列 / 1px 微抬 / 实证三条降级</span></a></li>
-    <li><a href="#v59"><span class="cl-toc-tag">Beta 1.1.2 · v59</span><span class="cl-toc-title-txt">落地页整体重排 · 独立样式层 / 报告截面图幅 / 居中版式 / 旧窗栏带拆除</span></a></li>
-    <li><a href="#v57"><span class="cl-toc-tag">Beta 1.1.2 · v57</span><span class="cl-toc-title-txt">主标语两种笔性 · 文楷引子 / 墨渗入场 / 断点字距收敛</span></a></li>
-    <li><a href="#v56"><span class="cl-toc-tag">Beta 1.1.2 · v56</span><span class="cl-toc-title-txt">主标语字型重构 · 自托管可变宋体 / 楔形版式 / 朱红退回划痕</span></a></li>
-    <li><a href="#v55"><span class="cl-toc-tag">Beta 1.1.2 · v55</span><span class="cl-toc-title-txt">主标语焦点层 · 逐字落笔 / 四角取景 / 关键词逐字涂红 / 入场节奏重排</span></a></li>
-    <li><a href="#v54"><span class="cl-toc-tag">Beta 1.1.2 · v54</span><span class="cl-toc-title-txt">落地页动态层 · 尺寸线落笔 / 标题揭载 / 右侧标尺 / 跨行裁字</span></a></li>
-    <li><a href="#v53"><span class="cl-toc-tag">Beta 1.1.2 · v53</span><span class="cl-toc-title-txt">对话式匹配答满 4 问后没有落点 · 分数涨了缺口没变</span></a></li>
-    <li><a href="#v52"><span class="cl-toc-tag">Beta 1.1.2 · v52</span><span class="cl-toc-title-txt">PDF 简历导入只剩一个板块 · 四道坎都在「按行」这件事上</span></a></li>
-    <li><a href="#v51"><span class="cl-toc-tag">Beta 1.1.2 · v51</span><span class="cl-toc-title-txt">窄屏首屏 76px 空白 · 顶部让位按下层元素算，不再把顶栏数两遍</span></a></li>
-    <li><a href="#v50"><span class="cl-toc-tag">Beta 1.1.2 · v50</span><span class="cl-toc-title-txt">检测修复 · 计划与指挥台同源 / 重开竞态 / 暗色仪表 / 坏数据防御 / 策略卡口径</span></a></li>
-    <li><a href="#v49"><span class="cl-toc-tag">Beta 1.1.2 · v49</span><span class="cl-toc-title-txt">视觉升级 · 工作台指挥台（5 段仪表 + 4 格指标 + 下一步）+ 版式降噪</span></a></li>
-    <li><a href="#v48"><span class="cl-toc-tag">Beta 1.1.2 · v48</span><span class="cl-toc-title-txt">弹窗按钮不再被拖拽逻辑夺走点击（回车能进 / 鼠标点不进）</span></a></li>
-    <li><a href="#v47"><span class="cl-toc-tag">Beta 1.1.2 · v47</span><span class="cl-toc-title-txt">启动守卫 · 「点了没反应」变成明确载入提示 + 就绪补发</span></a></li>
-    <li><a href="#v46"><span class="cl-toc-tag">Beta 1.1.2 · v46</span><span class="cl-toc-title-txt">服务端语音转写 · 从「连不上」修成「真的能听见」</span></a></li>
-    <li><a href="#v45"><span class="cl-toc-tag">Beta 1.1.2 · v45</span><span class="cl-toc-title-txt">交互确定性层 · 按压当帧可见 + 证据单元绑定 + 设备档位降级</span></a></li>
+    <li><a href="#v72"><span class="cl-toc-tag">1.0.0 · v72</span><span class="cl-toc-title-txt">短板提示的「定向补强」点了白屏 —— 把应用内 tab 当成了顶层视图</span></a></li>
+    <li><a href="#v71"><span class="cl-toc-tag">1.0.0 · v71</span><span class="cl-toc-title-txt">报告 → 学习计划 · 跳转必须带导入：把「链接无效」修成「落地即个人版计划」</span></a></li>
+    <li><a href="#v70"><span class="cl-toc-tag">1.0.0 · v70</span><span class="cl-toc-title-txt">定位重写 + 评分方法页 · 可核查的评价链路 / 边界声明 / Vue 3 展示层 / 71 项双引擎对拍</span></a></li>
+    <li><a href="#v68"><span class="cl-toc-tag">1.0.0 · v68</span><span class="cl-toc-title-txt">限额跨进程记账 · rate_hits 落库 / 三进程并发 6 : 6 / 库挂兜底</span></a></li>
+    <li><a href="#v67"><span class="cl-toc-tag">1.0.0 · v67</span><span class="cl-toc-title-txt">AI 小助手接入后端 · 服务端检索 / 引用回传 / 访客限流 / 面板高度修复</span></a></li>
+    <li><a href="#v64"><span class="cl-toc-tag">1.0.0 · v64</span><span class="cl-toc-title-txt">能力网改造 · 逐帧位移场 / 端点咬合 / 焦点分组 / 绽开入场</span></a></li>
+    <li><a href="#v63"><span class="cl-toc-tag">1.0.0 · v63</span><span class="cl-toc-title-txt">能力网 · 中心 + 五主题 + 二十实现点 / CSS 浮动 / 悬停弹卡</span></a></li>
+    <li><a href="#v62"><span class="cl-toc-tag">1.0.0 · v62</span><span class="cl-toc-title-txt">首屏撑满一屏 · .lp-first 容器 / svh 视口 / 图幅退到折线以下</span></a></li>
+    <li><a href="#v61"><span class="cl-toc-tag">1.0.0 · v61</span><span class="cl-toc-title-txt">首屏只留一句话 · 三个小标签下线 / 打字机连定时器一起删 / 序列重排</span></a></li>
+    <li><a href="#v60"><span class="cl-toc-tag">1.0.0 · v60</span><span class="cl-toc-title-txt">落地页动效层 · 60px 缓出上浮 / 首屏序列 / 1px 微抬 / 实证三条降级</span></a></li>
+    <li><a href="#v59"><span class="cl-toc-tag">1.0.0 · v59</span><span class="cl-toc-title-txt">落地页整体重排 · 独立样式层 / 报告截面图幅 / 居中版式 / 旧窗栏带拆除</span></a></li>
+    <li><a href="#v57"><span class="cl-toc-tag">1.0.0 · v57</span><span class="cl-toc-title-txt">主标语两种笔性 · 文楷引子 / 墨渗入场 / 断点字距收敛</span></a></li>
+    <li><a href="#v56"><span class="cl-toc-tag">1.0.0 · v56</span><span class="cl-toc-title-txt">主标语字型重构 · 自托管可变宋体 / 楔形版式 / 朱红退回划痕</span></a></li>
+    <li><a href="#v55"><span class="cl-toc-tag">1.0.0 · v55</span><span class="cl-toc-title-txt">主标语焦点层 · 逐字落笔 / 四角取景 / 关键词逐字涂红 / 入场节奏重排</span></a></li>
+    <li><a href="#v54"><span class="cl-toc-tag">1.0.0 · v54</span><span class="cl-toc-title-txt">落地页动态层 · 尺寸线落笔 / 标题揭载 / 右侧标尺 / 跨行裁字</span></a></li>
+    <li><a href="#v53"><span class="cl-toc-tag">1.0.0 · v53</span><span class="cl-toc-title-txt">对话式匹配答满 4 问后没有落点 · 分数涨了缺口没变</span></a></li>
+    <li><a href="#v52"><span class="cl-toc-tag">1.0.0 · v52</span><span class="cl-toc-title-txt">PDF 简历导入只剩一个板块 · 四道坎都在「按行」这件事上</span></a></li>
+    <li><a href="#v51"><span class="cl-toc-tag">1.0.0 · v51</span><span class="cl-toc-title-txt">窄屏首屏 76px 空白 · 顶部让位按下层元素算，不再把顶栏数两遍</span></a></li>
+    <li><a href="#v50"><span class="cl-toc-tag">1.0.0 · v50</span><span class="cl-toc-title-txt">检测修复 · 计划与指挥台同源 / 重开竞态 / 暗色仪表 / 坏数据防御 / 策略卡口径</span></a></li>
+    <li><a href="#v49"><span class="cl-toc-tag">1.0.0 · v49</span><span class="cl-toc-title-txt">视觉升级 · 工作台指挥台（5 段仪表 + 4 格指标 + 下一步）+ 版式降噪</span></a></li>
+    <li><a href="#v48"><span class="cl-toc-tag">1.0.0 · v48</span><span class="cl-toc-title-txt">弹窗按钮不再被拖拽逻辑夺走点击（回车能进 / 鼠标点不进）</span></a></li>
+    <li><a href="#v47"><span class="cl-toc-tag">1.0.0 · v47</span><span class="cl-toc-title-txt">启动守卫 · 「点了没反应」变成明确载入提示 + 就绪补发</span></a></li>
+    <li><a href="#v46"><span class="cl-toc-tag">1.0.0 · v46</span><span class="cl-toc-title-txt">服务端语音转写 · 从「连不上」修成「真的能听见」</span></a></li>
+    <li><a href="#v45"><span class="cl-toc-tag">1.0.0 · v45</span><span class="cl-toc-title-txt">交互确定性层 · 按压当帧可见 + 证据单元绑定 + 设备档位降级</span></a></li>
     <li><a href="#vbeta1-10"><span class="cl-toc-tag">Beta 1.1.0</span><span class="cl-toc-title-txt">完整性补全层 · 骨架屏 + 媒体三层 + Excel + WebSocket + 键盘可达</span></a></li>
-    <li><a href="#vbeta1-12"><span class="cl-toc-tag">Beta 1.1.2</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
-    <li><a href="#v44"><span class="cl-toc-tag">Beta 1.1.2 · v44</span><span class="cl-toc-title-txt">感知密度层 · 报告首屏一句诊断 + 点阵/分歧标记 + MBTI 策略前置 + 语音链路错误分型 + 四处真实缺陷修复</span></a></li>
-    <li><a href="#v41"><span class="cl-toc-tag">Beta 1.1.2 · v41</span><span class="cl-toc-title-txt">移动端适配层 · 窄屏单栏任务流 + 导航收敛 5 格 + 对话区自适应 + 交互去 hover 化</span></a></li>
-    <li><a href="#v42"><span class="cl-toc-tag">Beta 1.1.2 · v42</span><span class="cl-toc-title-txt">移动端信息优先级裁剪 · 首屏单 CTA + 圆桌 chips + 报告渐进披露 + 键盘可见</span></a></li>
-    <li><a href="#v43"><span class="cl-toc-tag">Beta 1.1.2 · v43</span><span class="cl-toc-title-txt">人格参数化层 · MBTI 从「孤岛测评」变成面试的输入参数 + 报告的关联维度</span></a></li>
-    <li><a href="#v42b"><span class="cl-toc-tag">Beta 1.1.2 · v42b</span><span class="cl-toc-title-txt">降级演练（主动失效）· 三级降级从文档承诺变成可当场复现的动作</span></a></li>
-    <li><a href="#v40"><span class="cl-toc-tag">Beta 1.1.2 · v40</span><span class="cl-toc-title-txt">可解释性交互层 · 面试实时锚点 + Agent 分歧视图 + 语音流式转写 + 表达节奏</span></a></li>
-    <li><a href="#v39"><span class="cl-toc-tag">Beta 1.1.2 · v39</span><span class="cl-toc-title-txt">反馈闭环层 · 免责声明 + 骨架屏 + 表单校验 + 移动端 + 离线提示 + 空状态 + 无障碍 + 导出补全</span></a></li>
-    <li><a href="#v38"><span class="cl-toc-tag">Beta 1.1.2 · v38</span><span class="cl-toc-title-txt">求职材料闭环 · 简历自定义板块 + 模板库 + PDF 自动拆分 + 建议可视化 + 真实岗位入看板</span></a></li>
-    <li><a href="#v37"><span class="cl-toc-tag">Beta 1.1.2 · v37</span><span class="cl-toc-title-txt">可视化基建 · 通用图表模块（7 组件零依赖）</span></a></li>
-    <li><a href="#v36"><span class="cl-toc-tag">Beta 1.1.2 · v36</span><span class="cl-toc-title-txt">求职闭环增强 · 求职档案 + MBTI + 真实岗位 + 对话式匹配 + 报告追问</span></a></li>
+    <li><a href="#vbeta1-12"><span class="cl-toc-tag">1.0.0</span><span class="cl-toc-title-txt">体验修复层 · 重新面试 + 滚动吸附收窄 + 看板实时刷新 + 学习计划 + 图标系统</span></a></li>
+    <li><a href="#v44"><span class="cl-toc-tag">1.0.0 · v44</span><span class="cl-toc-title-txt">感知密度层 · 报告首屏一句诊断 + 点阵/分歧标记 + MBTI 策略前置 + 语音链路错误分型 + 四处真实缺陷修复</span></a></li>
+    <li><a href="#v41"><span class="cl-toc-tag">1.0.0 · v41</span><span class="cl-toc-title-txt">移动端适配层 · 窄屏单栏任务流 + 导航收敛 5 格 + 对话区自适应 + 交互去 hover 化</span></a></li>
+    <li><a href="#v42"><span class="cl-toc-tag">1.0.0 · v42</span><span class="cl-toc-title-txt">移动端信息优先级裁剪 · 首屏单 CTA + 圆桌 chips + 报告渐进披露 + 键盘可见</span></a></li>
+    <li><a href="#v43"><span class="cl-toc-tag">1.0.0 · v43</span><span class="cl-toc-title-txt">人格参数化层 · MBTI 从「孤岛测评」变成面试的输入参数 + 报告的关联维度</span></a></li>
+    <li><a href="#v42b"><span class="cl-toc-tag">1.0.0 · v42b</span><span class="cl-toc-title-txt">降级演练（主动失效）· 三级降级从文档承诺变成可当场复现的动作</span></a></li>
+    <li><a href="#v40"><span class="cl-toc-tag">1.0.0 · v40</span><span class="cl-toc-title-txt">可解释性交互层 · 面试实时锚点 + Agent 分歧视图 + 语音流式转写 + 表达节奏</span></a></li>
+    <li><a href="#v39"><span class="cl-toc-tag">1.0.0 · v39</span><span class="cl-toc-title-txt">反馈闭环层 · 免责声明 + 骨架屏 + 表单校验 + 移动端 + 离线提示 + 空状态 + 无障碍 + 导出补全</span></a></li>
+    <li><a href="#v38"><span class="cl-toc-tag">1.0.0 · v38</span><span class="cl-toc-title-txt">求职材料闭环 · 简历自定义板块 + 模板库 + PDF 自动拆分 + 建议可视化 + 真实岗位入看板</span></a></li>
+    <li><a href="#v37"><span class="cl-toc-tag">1.0.0 · v37</span><span class="cl-toc-title-txt">可视化基建 · 通用图表模块（7 组件零依赖）</span></a></li>
+    <li><a href="#v36"><span class="cl-toc-tag">1.0.0 · v36</span><span class="cl-toc-title-txt">求职闭环增强 · 求职档案 + MBTI + 真实岗位 + 对话式匹配 + 报告追问</span></a></li>
     <li><a href="#vbeta1-11"><span class="cl-toc-tag">Beta 1.1.1</span><span class="cl-toc-title-txt">审计加固层 · 文档一致性 + 安全加固 + XSS 收口 + 泄漏修复 + 视觉纪律</span></a></li>
     <li><a href="#v23"><span class="cl-toc-tag">v23 · 规划中</span><span class="cl-toc-title-txt">生产能力对齐 · 生产级 RAG · 多模态扩展</span></a></li>
     <li><a href="#vbeta1-9"><span class="cl-toc-tag">Beta 1.0.9</span><span class="cl-toc-title-txt">专家能力层 · 印刷风质感 + 微交互 + 滚动驱动 + 数据可视化</span></a></li>
@@ -140,7 +140,7 @@ export const changelogHtml = `
       <div class="cat">
         <span class="cat-title cat-plan">📊 评分增强</span>
         <ul class="changelog">
-          <li><b>确定性引擎 + LLM 质性增强（已在 Beta 1.1.2 落地）</b>：分数由确定性规则引擎给出（可复现、可解释），LLM 仅负责逐维度质性评语与教练总评的生成与兜底</li>
+          <li><b>确定性引擎 + LLM 质性增强（已在 1.0.0 落地）</b>：分数由确定性规则引擎给出（可复现、可解释），LLM 仅负责逐维度质性评语与教练总评的生成与兜底</li>
           <li><b>人工专家复核一致性验证（规划中）</b>：邀请领域专家对抽样面试独立打分，与引擎分数做点对点对比，定位分维度偏差</li>
         </ul>
       </div>
@@ -231,7 +231,7 @@ export const changelogHtml = `
        Beta 1.0.9 · 专家能力层（Blueprint Expert Layer）
        ======================================================== -->
   <div class="version vbeta1-12 current" id="vbeta1-12">    <div class="version-head">
-      <span class="v-tag v-tag-current">Beta 1.1.2</span>
+      <span class="v-tag v-tag-current">1.0.0</span>
       <span class="v-title">体验修复层 · 重新面试入口 + 滚动吸附收窄 + 看板实时刷新 + 学习计划板块 + 全站图标 + 摄像头面试状态监测</span>
       <span class="v-date">2026.10.24 <span class="cur-mark">当前版本</span></span>
     </div>
@@ -262,17 +262,17 @@ export const changelogHtml = `
 
   <!-- ========================================================
   <!-- ========================================================
-       Beta 1.1.2 · v50 · 全面检测：把「说得通」改成「对得上」
+       1.0.0 · v50 · 全面检测：把「说得通」改成「对得上」
        ======================================================== -->
   <!-- ========================================================
-       Beta 1.1.2 · v51 · 窄屏顶部让位：一份高度只算一次
+       1.0.0 · v51 · 窄屏顶部让位：一份高度只算一次
        ======================================================== -->
   <!-- ========================================================
-       Beta 1.1.2 · v53 · 对话式匹配：答满 4 问之后没有落点
+       1.0.0 · v53 · 对话式匹配：答满 4 问之后没有落点
        ======================================================== -->
   <div class="version" id="v53">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 可用性修复（v53）</span>
+      <span class="v-tag">1.0.0 · 可用性修复（v53）</span>
       <span class="v-title">答满 4 问，按钮和输入框一起消失了</span>
       <span class="v-date">2026.11.01</span>
     </div>
@@ -287,7 +287,7 @@ export const changelogHtml = `
         <div class="vh-item"><b>答满即断流</b>：<code>renderMatchQa</code> 的 <code>done</code> 分支渲染的是空串，把回答区与「结束并应用」一起收掉；而汇总卡只在 <code>finishMatchQa</code> 里渲染。答满 4 问 = 流程停在没有出口的位置。改为答完最后一问自动收尾，并在答满态保留一个「生成对话增强结果」的入口</div>
         <div class="vh-item"><b>三处数字不同源</b>：追问会把新证据并入 <code>matchResult.skills</code>、从 <code>gaps</code> 里剔除已补齐项，但屏幕上只重画了分数环，技能与缺口仍是首次渲染的文字——出现「86 分 / 缺口仍列着 Next.js」这种自相矛盾的画面。改为把结果卡抽成 <code>renderMatchResult</code>，分数、技能、缺口、建议一次同源渲染</div>
         <div class="vh-item"><b>空对象不覆盖</b>：结果卡在无数据时直接返回，不会把已有内容清成空白</div>
-        <div class="vh-item"><b>口径未变</b>：匹配分仍是「JD 技能覆盖率」，不理解语义；仍是 Beta 1.1.2，数据不出浏览器</div>
+        <div class="vh-item"><b>口径未变</b>：匹配分仍是「JD 技能覆盖率」，不理解语义；仍是 1.0.0，数据不出浏览器</div>
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">35</div><div class="m-label">v53 新增断言</div></div>
@@ -299,11 +299,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v72 · 短板提示「定向补强」白屏
+       1.0.0 · v72 · 短板提示「定向补强」白屏
        ======================================================== -->
   <div class="version" id="v72">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 缺陷修复（v72）</span>
+      <span class="v-tag">1.0.0 · 缺陷修复（v72）</span>
       <span class="v-title">「去练习计划定向补强」一点，整页变成空白</span>
       <span class="v-date">2026.11.05</span>
     </div>
@@ -336,11 +336,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v71 · 报告 → 学习计划：跳转必须带导入
+       1.0.0 · v71 · 报告 → 学习计划：跳转必须带导入
        ======================================================== -->
   <div class="version" id="v71">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 缺陷修复（v71）</span>
+      <span class="v-tag">1.0.0 · 缺陷修复（v71）</span>
       <span class="v-title">「进入学习计划板块」跳过去却是通用计划——补上导入这一步</span>
       <span class="v-date">2026.11.05</span>
     </div>
@@ -366,11 +366,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v70 · 定位重写 + 评分方法页
+       1.0.0 · v70 · 定位重写 + 评分方法页
        ======================================================== -->
   <div class="version" id="v70">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 定位（v70）</span>
+      <span class="v-tag">1.0.0 · 定位（v70）</span>
       <span class="v-title">把「可解释」从功能点提成产品存在的理由</span>
       <span class="v-date">2026.11.05</span>
     </div>
@@ -397,11 +397,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v68 · 限额跨进程记账
+       1.0.0 · v68 · 限额跨进程记账
        ======================================================== -->
   <div class="version" id="v68">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 修复（v68）</span>
+      <span class="v-tag">1.0.0 · 修复（v68）</span>
       <span class="v-title">限额跨进程记账：把「6 次/分」真正守住</span>
       <span class="v-date">2026.11.04</span>
     </div>
@@ -430,11 +430,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v67 · AI 小助手接入后端
+       1.0.0 · v67 · AI 小助手接入后端
        ======================================================== -->
   <div class="version" id="v67">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 架构增强（v67）</span>
+      <span class="v-tag">1.0.0 · 架构增强（v67）</span>
       <span class="v-title">AI 小助手接入后端：检索、引用与额度都搬到服务端</span>
       <span class="v-date">2026.11.04</span>
     </div>
@@ -463,11 +463,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v64 · 让网自己动起来：位移场、端点咬合与焦点分组
+       1.0.0 · v64 · 让网自己动起来：位移场、端点咬合与焦点分组
        ======================================================== -->
   <div class="version" id="v64">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 体验增强（v64）</span>
+      <span class="v-tag">1.0.0 · 体验增强（v64）</span>
       <span class="v-title">让网自己动起来：位移场、端点咬合与焦点分组</span>
       <span class="v-date">2026.11.03</span>
     </div>
@@ -497,11 +497,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v63 · 能力网：一张会呼吸的关系图
+       1.0.0 · v63 · 能力网：一张会呼吸的关系图
        ======================================================== -->
   <div class="version" id="v63">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 体验增强（v63）</span>
+      <span class="v-tag">1.0.0 · 体验增强（v63）</span>
       <span class="v-title">能力网：中心一个名字，四周二十条实现</span>
       <span class="v-date">2026.11.03</span>
     </div>
@@ -530,11 +530,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v62 · 首屏撑满一屏：图幅整体退到折线以下
+       1.0.0 · v62 · 首屏撑满一屏：图幅整体退到折线以下
        ======================================================== -->
   <div class="version" id="v62">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 体验增强（v62）</span>
+      <span class="v-tag">1.0.0 · 体验增强（v62）</span>
       <span class="v-title">首屏撑满一屏：标题独占第一眼，图幅退到折线以下</span>
       <span class="v-date">2026.11.03</span>
     </div>
@@ -561,11 +561,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v61 · 首屏只留一句话：三个小标签下线
+       1.0.0 · v61 · 首屏只留一句话：三个小标签下线
        ======================================================== -->
   <div class="version" id="v61">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 体验增强（v61）</span>
+      <span class="v-tag">1.0.0 · 体验增强（v61）</span>
       <span class="v-title">首屏只留一句话：三个小标签下线，标题从头接管</span>
       <span class="v-date">2026.11.03</span>
     </div>
@@ -580,7 +580,7 @@ export const changelogHtml = `
         <div class="vh-item"><b>打字机连定时器一起删</b>：节点没了还留着 68ms/字的 <code>setTimeout</code>，只是让它在后台空转。<code>initHeroRotator</code>、5 条文案、<code>__bpLanding.rotator / phrases</code> 两个打点字段一并下线，boot 里那行调用也去掉</div>
         <div class="vh-item"><b>上边距补回 32px</b>：抬头 + 轮播原本占掉约 75px 的堆叠高度（含各自间距），直接删会让标题贴在导航条下。首屏 <code>padding</code> 76 → 108px、窄屏 52 → 68px，数值是对着 1440 与 390 两张截图校准的，不是凭感觉给的</div>
         <div class="vh-item"><b>序列少了两站，节奏没变</b>：标题之后第一站直接是副标题 0.72s（原来中间还嵌着 0.04s 抬头与 0.1s 轮播），主按钮 0.82s、提示 0.92s、评分图幅 0.82s、五条横条 1.02s 起一概不动。一支笔连写下来的顺序还在，只是前缀那两笔没了</div>
-        <div class="vh-item"><b>版本串不靠胶囊站着</b>：<code>Beta 1.1.2</code> 仍出现在 <code>&lt;title&gt;</code>、页脚与开发者模式横条三处，<code>test-v31</code> 的版本口径断言改成大小写不敏感。删掉的是那颗胶囊，不是版本号本身</div>
+        <div class="vh-item"><b>版本串不靠胶囊站着</b>：<code>1.0.0</code> 仍出现在 <code>&lt;title&gt;</code>、页脚与开发者模式横条三处，<code>test-v31</code> 的版本口径断言改成大小写不敏感。删掉的是那颗胶囊，不是版本号本身</div>
         <div class="vh-item"><b>断言口径反过来钉</b>：原先是「这句文案在不在」，现在是「这三个节点在不在」。v17 / v25 / v31 / v59 / v60 五处共十四条改写为「已下线 + 标题是首屏首元素 + 降级不回填已删的东西」，覆盖率不减，也不再为不存在的节点留着假绿</div>
       </div>
       <div class="v-metrics">
@@ -592,11 +592,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v60 · 落地页动效层：照参考站实测的节奏，不靠「感觉快一点」
+       1.0.0 · v60 · 落地页动效层：照参考站实测的节奏，不靠「感觉快一点」
        ======================================================== -->
   <div class="version" id="v60">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 体验增强（v60）</span>
+      <span class="v-tag">1.0.0 · 体验增强（v60）</span>
       <span class="v-title">把参考站的动效节奏量下来，再长到自己的笔锋上</span>
       <span class="v-date">2026.11.02</span>
     </div>
@@ -627,11 +627,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v59 · 落地页整体重排：参考站的版式语言 + 把旧层收进独立样式表
+       1.0.0 · v59 · 落地页整体重排：参考站的版式语言 + 把旧层收进独立样式表
        ======================================================== -->
   <div class="version" id="v59">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 体验增强（v59）</span>
+      <span class="v-tag">1.0.0 · 体验增强（v59）</span>
       <span class="v-title">落地页按参考站重排，旧图纸层收进一页独立的样式表</span>
       <span class="v-date">2026.11.02</span>
     </div>
@@ -662,11 +662,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v57 · 主标语两种笔性：手写的渗进去，印刷的压上去
+       1.0.0 · v57 · 主标语两种笔性：手写的渗进去，印刷的压上去
        ======================================================== -->
   <div class="version" id="v57">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 体验增强（v57）</span>
+      <span class="v-tag">1.0.0 · 体验增强（v57）</span>
       <span class="v-title">引子行换成霞鹜文楷，两行用两种写法入场</span>
       <span class="v-date">2026.11.01</span>
     </div>
@@ -695,11 +695,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v56 · 主标语字型与版式重构：让这句话自己站住
+       1.0.0 · v56 · 主标语字型与版式重构：让这句话自己站住
        ======================================================== -->
   <div class="version" id="v56">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 体验增强（v56）</span>
+      <span class="v-tag">1.0.0 · 体验增强（v56）</span>
       <span class="v-title">换掉字体、重排版式：一句话拆成前提与结论，朱红退回去只做划痕</span>
       <span class="v-date">2026.11.01</span>
     </div>
@@ -730,11 +730,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v55 · 主标语焦点层：首屏只讲一句话
+       1.0.0 · v55 · 主标语焦点层：首屏只讲一句话
        ======================================================== -->
   <div class="version" id="v55">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 体验增强（v55）</span>
+      <span class="v-tag">1.0.0 · 体验增强（v55）</span>
       <span class="v-title">落地页首屏只讲一句话：标题被一笔一笔写出来，其余元素等它写完</span>
       <span class="v-date">2026.11.01</span>
     </div>
@@ -753,7 +753,7 @@ export const changelogHtml = `
         <div class="vh-item"><b>真缺陷：窄屏劈词</b>：38px 下第二行「都成为可量化的成长。」要 380px，390 屏只有 342px，把「成长」劈成「成」+「长。」两行。窄屏字号收到 <code>8.4vw</code>（≤38px）并把关键词设为不拆行，375 / 390 / 768 复验均为两行且无横向溢出</div>
         <div class="vh-item"><b>持续动效</b>：图幅尺寸线上加一枚 1px 朱红绘图针，7.6s 沿尺寸线走一趟，与角标呼吸不同频；鼠标划过标题可立即重扫一次批注，另有 12s 自动重扫（标题出视口或标签页在后台时空转）</div>
         <div class="vh-item"><b>降级纪律不变</b>：所有初态挂在 <code>.landing-enter</code> 下，无 JS 或 reduced-motion 一律是完整完成态；拆字失败自动退回 v54 的整行揭载</div>
-        <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2，不引入任何运行时依赖，动画全部落在 CSS 与既有动态层内</div>
+        <div class="vh-item"><b>口径未变</b>：仍是 1.0.0，不引入任何运行时依赖，动画全部落在 CSS 与既有动态层内</div>
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">71</div><div class="m-label">v55 新增断言</div></div>
@@ -765,11 +765,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v54 · 落地页动态层：把「图纸绘制」做成开场
+       1.0.0 · v54 · 落地页动态层：把「图纸绘制」做成开场
        ======================================================== -->
   <div class="version" id="v54">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 体验增强（v54）</span>
+      <span class="v-tag">1.0.0 · 体验增强（v54）</span>
       <span class="v-title">落地页不再是一张静态长图：尺寸线落笔、标题逐行揭载、右侧标尺走针</span>
       <span class="v-date">2026.11.01</span>
     </div>
@@ -790,7 +790,7 @@ export const changelogHtml = `
         <div class="vh-item"><b>数据条刻度尺</b>：四个数字下方各落 12 格刻度（首格朱红），入视口逐格立起；数字滚动从 <code>setInterval</code> 步进改成 rAF 缓出，末位不再「跳一格」</div>
         <div class="vh-item"><b>真缺陷 ①：跨行被裁字</b>：<code>.ht-inner</code> 原是行内元素，跨行时 <code>clip-path</code> 只按首段行盒计算——390px 下标题折到第三行的「长。」整段消失。改为块级后复验通过，断言里也钉住了这一条</div>
         <div class="vh-item"><b>真缺陷 ②：窄屏报头竖排字</b>：390px 下报头五个元素挤到每个字占一行，「免费体验 / 登录 / 注册」被压成竖排。收掉版本章与主题色钮、锁住按钮不换行、logo 降到 14px，一行摆下且无横向溢出</div>
-        <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2；不引入任何运行时依赖，动画全部落在 CSS 与既有模块内</div>
+        <div class="vh-item"><b>口径未变</b>：仍是 1.0.0；不引入任何运行时依赖，动画全部落在 CSS 与既有模块内</div>
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">55</div><div class="m-label">v54 新增断言</div></div>
@@ -802,11 +802,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v52 · PDF 简历导入：把文本还原成行
+       1.0.0 · v52 · PDF 简历导入：把文本还原成行
        ======================================================== -->
   <div class="version" id="v52">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 可用性修复（v52）</span>
+      <span class="v-tag">1.0.0 · 可用性修复（v52）</span>
       <span class="v-title">PDF 简历导进来只剩一个「简历正文」板块</span>
       <span class="v-date">2026.11.01</span>
     </div>
@@ -825,7 +825,7 @@ export const changelogHtml = `
         <div class="vh-item"><b>折行与条目边界</b>：一条经历的折行在下一行且不带符号时被整行丢弃；以年份开头的新条目反而被并进上一条，公司名与时间就这样没了。改为「符号 或 行首年份」开新条，其余并入上一条</div>
         <div class="vh-item"><b>技能匹配贪心</b>：<code>includes</code> 判定 JavaScript 命中 Java、MySQL 命中 SQL，一份前端简历的「已具备技能」里凭空多出一个 Java。改为词边界匹配（中文技能名不受限）</div>
         <div class="vh-item"><b>同源问题：报告两次分数</b>：同一场面试第二次进报告页会跳过同步请求、拿不到 payload，静默退化成本地引擎——服务端 66 分与本地 72 分同时存在，进步曲线还多一条记录。改为复用上一次的服务端结果</div>
-        <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2；数据不出浏览器，PDF 解析仍在端侧完成</div>
+        <div class="vh-item"><b>口径未变</b>：仍是 1.0.0；数据不出浏览器，PDF 解析仍在端侧完成</div>
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">39</div><div class="m-label">v52 新增断言</div></div>
@@ -838,7 +838,7 @@ export const changelogHtml = `
 
   <div class="version" id="v51">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 布局修正（v51）</span>
+      <span class="v-tag">1.0.0 · 布局修正（v51）</span>
       <span class="v-title">首屏那 76px 空白，是把顶栏高度数了两遍</span>
       <span class="v-date">2026.10.31</span>
     </div>
@@ -857,7 +857,7 @@ export const changelogHtml = `
         <div class="vh-item"><b>演示横幅不再被压</b>：641–900px 下横幅顶部 29px 此前藏在导航条背后，标题行整行看不见，现在完整可读</div>
         <div class="vh-item"><b><code>--hdr-h</code> 不再过期</b>：顶栏高度会随页面换行变化（320px 下从计划页切到面试页，81px → 55px），只在启动/切页量一次会留下旧值，导航条浮在顶栏下方 26px 的空中；改用 <code>ResizeObserver</code> 盯住顶栏与导航条</div>
         <div class="vh-item"><b>四个贴顶定位一并改为两级</b>：降级横幅、断网/慢网横幅、键盘态固定对话卡片此前只按「顶栏」算高度，窄屏会停在导航条背后或被它盖住</div>
-        <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2；零投影 / 零圆角 / 零玻璃拟态 / 单一朱红，一条没破</div>
+        <div class="vh-item"><b>口径未变</b>：仍是 1.0.0；零投影 / 零圆角 / 零玻璃拟态 / 单一朱红，一条没破</div>
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">38</div><div class="m-label">v51 新增断言</div></div>
@@ -870,7 +870,7 @@ export const changelogHtml = `
 
   <div class="version" id="v50">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 检测修复（v50）</span>
+      <span class="v-tag">1.0.0 · 检测修复（v50）</span>
       <span class="v-title">五处「界面说的和实际状态不一致」</span>
       <span class="v-date">2026.10.31</span>
     </div>
@@ -889,7 +889,7 @@ export const changelogHtml = `
         <div class="vh-item"><b>暗色主题仪表可辨</b>：空弧描边由 <code>--line</code> 换成 <code>--line-2</code>（#322D23 → #4B4433）</div>
         <div class="vh-item"><b>坏数据不炸整块</b>：<code>days</code> / <code>tasks</code> 逐层校验，坏项跳过、好项照常计数，指挥台不再只剩空壳</div>
         <div class="vh-item"><b>版本索引补齐</b>：v45–v50 六个版本此前未进「版本索引」，现已可点击跳转</div>
-        <div class="vh-item"><b>口径未变</b>：仍是 Beta 1.1.2；零投影 / 零圆角 / 零玻璃拟态 / 单一朱红，一条没破</div>
+        <div class="vh-item"><b>口径未变</b>：仍是 1.0.0；零投影 / 零圆角 / 零玻璃拟态 / 单一朱红，一条没破</div>
       </div>
       <div class="v-metrics">
         <div class="metric"><div class="m-val">41</div><div class="m-label">v50 新增断言</div></div>
@@ -900,11 +900,11 @@ export const changelogHtml = `
     </div>
   </div>
 
-       Beta 1.1.2 · v49 · 视觉升级：工程规格书质感
+       1.0.0 · v49 · 视觉升级：工程规格书质感
        ======================================================== -->
   <div class="version" id="v49">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 视觉升级（v49）</span>
+      <span class="v-tag">1.0.0 · 视觉升级（v49）</span>
       <span class="v-title">从「后台模板」到「一张工程规格书」</span>
       <span class="v-date">2026.10.31</span>
     </div>
@@ -936,11 +936,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v48 · 弹窗按钮不再被拖拽逻辑夺走点击
+       1.0.0 · v48 · 弹窗按钮不再被拖拽逻辑夺走点击
        ======================================================== -->
   <div class="version" id="v48">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 弹窗点击修复（v48）</span>
+      <span class="v-tag">1.0.0 · 弹窗点击修复（v48）</span>
       <span class="v-title">密码输完了，点「进入」却没反应</span>
       <span class="v-date">2026.10.31</span>
     </div>
@@ -971,11 +971,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v47 · 启动守卫
+       1.0.0 · v47 · 启动守卫
        ======================================================== -->
   <div class="version" id="v47">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 启动守卫（v47）</span>
+      <span class="v-tag">1.0.0 · 启动守卫（v47）</span>
       <span class="v-title">「点了没反应」不是坏了，是按钮比程序先到</span>
       <span class="v-date">2026.10.31</span>
     </div>
@@ -1006,11 +1006,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v46 · 服务端语音转写
+       1.0.0 · v46 · 服务端语音转写
        ======================================================== -->
   <div class="version" id="v46">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 服务端语音转写（v46）</span>
+      <span class="v-tag">1.0.0 · 服务端语音转写（v46）</span>
       <span class="v-title">语音输入从「基本连不上」修成「真的能听见」</span>
       <span class="v-date">2026.10.30</span>
     </div>
@@ -1039,11 +1039,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v45 · 交互确定性层
+       1.0.0 · v45 · 交互确定性层
        ======================================================== -->
   <div class="version" id="v45">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 交互确定性层（v45）</span>
+      <span class="v-tag">1.0.0 · 交互确定性层（v45）</span>
       <span class="v-title">从「设计得好看」到「在低端机上点得动」</span>
       <span class="v-date">2026.10.30</span>
     </div>
@@ -1075,11 +1075,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v44 · 感知密度层
+       1.0.0 · v44 · 感知密度层
        ======================================================== -->
   <div class="version" id="v44">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 感知密度层（v44）</span>
+      <span class="v-tag">1.0.0 · 感知密度层（v44）</span>
       <span class="v-title">把已经存在的纵深，摆到三秒能被看见的位置</span>
       <span class="v-date">2026.10.30</span>
     </div>
@@ -1122,11 +1122,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v43 · 人格参数化层（MBTI → 面试输入参数）
+       1.0.0 · v43 · 人格参数化层（MBTI → 面试输入参数）
        ======================================================== -->
   <div class="version" id="v43">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 人格参数化 · MBTI 接入面试（v43）</span>
+      <span class="v-tag">1.0.0 · 人格参数化 · MBTI 接入面试（v43）</span>
       <span class="v-title">把 MBTI 从「第 10 个功能」改成面试的输入参数</span>
       <span class="v-date">2026.10.30</span>
     </div>
@@ -1157,11 +1157,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v42b · 降级演练（主动失效）
+       1.0.0 · v42b · 降级演练（主动失效）
        ======================================================== -->
   <div class="version" id="v42b">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 降级演练 · 主动失效（v42b）</span>
+      <span class="v-tag">1.0.0 · 降级演练 · 主动失效（v42b）</span>
       <span class="v-title">把「三级降级」从文档承诺变成可当场复现的动作</span>
       <span class="v-date">2026.10.29</span>
     </div>
@@ -1186,11 +1186,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v42 · 移动端信息优先级裁剪
+       1.0.0 · v42 · 移动端信息优先级裁剪
        ======================================================== -->
   <div class="version" id="v42">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 移动端信息优先级裁剪（v42）</span>
+      <span class="v-tag">1.0.0 · 移动端信息优先级裁剪（v42）</span>
       <span class="v-title">首屏只留价值主张 + 一个主 CTA · 圆桌改角色 chips · 报告渐进披露 · 键盘可见</span>
       <span class="v-date">2026.10.29</span>
     </div>
@@ -1215,11 +1215,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v41 · 移动端适配层
+       1.0.0 · v41 · 移动端适配层
        ======================================================== -->
   <div class="version" id="v41">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 移动端适配层（v41）</span>
+      <span class="v-tag">1.0.0 · 移动端适配层（v41）</span>
       <span class="v-title">窄屏单栏任务流 + 导航收敛 + 对话区自适应 + 交互去 hover 化</span>
       <span class="v-date">2026.10.29</span>
     </div>
@@ -1245,11 +1245,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v40 · 可解释性交互层
+       1.0.0 · v40 · 可解释性交互层
        ======================================================== -->
   <div class="version" id="v40">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 可解释性交互层（v40）</span>
+      <span class="v-tag">1.0.0 · 可解释性交互层（v40）</span>
       <span class="v-title">面试中实时锚点 + Agent 分歧视图 + 语音流式转写 + 表达节奏</span>
       <span class="v-date">2026.10.29</span>
     </div>
@@ -1274,11 +1274,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v39 · 反馈/容错/模式提示/空状态/无障碍/导出
+       1.0.0 · v39 · 反馈/容错/模式提示/空状态/无障碍/导出
        ======================================================== -->
   <div class="version" id="v39">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 反馈闭环层（v39）</span>
+      <span class="v-tag">1.0.0 · 反馈闭环层（v39）</span>
       <span class="v-title">免责声明 + 骨架屏 + 表单校验 + 移动端触控 + 离线降级提示 + 空状态 + 无障碍 + 导出补全</span>
       <span class="v-date">2026.10.29</span>
     </div>
@@ -1304,11 +1304,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v38 · 求职材料与岗位闭环增强
+       1.0.0 · v38 · 求职材料与岗位闭环增强
        ======================================================== -->
   <div class="version" id="v38">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 求职材料闭环（v38）</span>
+      <span class="v-tag">1.0.0 · 求职材料闭环（v38）</span>
       <span class="v-title">简历自定义板块 + 模板库 + PDF 自动拆分填入 + AI 建议分块可视化 + 真实岗位一键入看板 + MBTI 结果页重做</span>
       <span class="v-date">2026.10.28</span>
     </div>
@@ -1332,11 +1332,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v37 · 可视化基建
+       1.0.0 · v37 · 可视化基建
        ======================================================== -->
   <div class="version" id="v37">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 可视化基建（v37）</span>
+      <span class="v-tag">1.0.0 · 可视化基建（v37）</span>
       <span class="v-title">通用图表模块 · 七个组件零第三方依赖（纯 SVG 字符串）</span>
       <span class="v-date">2026.10.28</span>
     </div>
@@ -1358,11 +1358,11 @@ export const changelogHtml = `
   </div>
 
   <!-- ========================================================
-       Beta 1.1.2 · v36 · 求职闭环增强
+       1.0.0 · v36 · 求职闭环增强
        ======================================================== -->
   <div class="version" id="v36">
     <div class="version-head">
-      <span class="v-tag">Beta 1.1.2 · 求职闭环增强（v36）</span>
+      <span class="v-tag">1.0.0 · 求职闭环增强（v36）</span>
       <span class="v-title">求职信息档案 + 简历 A4 导出 + MBTI 测评页 + 真实岗位库 + 对话式匹配 + 报告追问</span>
       <span class="v-date">2026.10.27</span>
     </div>

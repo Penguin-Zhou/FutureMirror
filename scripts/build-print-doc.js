@@ -3,7 +3,7 @@
  *   docs/technical-doc.html（完整在线版，10 章）
  *     → 临时打印版：删除第 9 章附录、原第 10 章版本日志上移重编号为 09
  *       并压成摘要表
- *     → Edge 无头打印为 docs/FutureMirror.Beta.pdf（含封面，约 29-30 页）
+ *     → Edge 无头打印为 docs/FutureMirror.TechDoc.pdf（含封面，约 29-30 页）
  *
  *   背景：在线版面向屏幕阅读（信息完整）；PDF 附件随项目材料提交，
  *   需要控制页数——附录（环境配置/账号/代码索引/交付清单）在仓库
@@ -22,7 +22,7 @@ const { execFileSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
 const SRC = path.join(ROOT, "docs", "technical-doc.html");
-const PDF = path.join(ROOT, "docs", "FutureMirror.Beta.pdf");
+const PDF = path.join(ROOT, "docs", "FutureMirror.TechDoc.pdf");
 const TMP = path.join(ROOT, "docs", ".print-version.html");
 
 let html = fs.readFileSync(SRC, "utf8");
@@ -196,7 +196,7 @@ if (!fs.existsSync(PDF) || fs.statSync(PDF).mtimeMs < began - 2000) {
   process.exit(1);
 }
 const kb = (fs.statSync(PDF).size / 1024).toFixed(0) + "KB";
-console.log(`✅ PDF 已生成 → docs/FutureMirror.Beta.pdf（${kb}）`);
+console.log(`✅ PDF 已生成 → docs/FutureMirror.TechDoc.pdf（${kb}）`);
 
 /* ---------- 5) 页数门禁：页数要求「不超过 30 页（含封面）」 ----------
  * Chromium 输出的 PDF 里页面对象是明文 /Type /Page，可直接计数；

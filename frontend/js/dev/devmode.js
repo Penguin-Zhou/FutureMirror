@@ -401,7 +401,7 @@ function exportDiagnostic() {
     const report = {
       exportedAt: new Date().toISOString(),
       project: "面镜 FutureMirror",
-      version: "beta1.1.2",
+      version: "1.0.0",
       env,
       state: {
         currentUser: (typeof currentUser !== "undefined" && currentUser) ? { id: currentUser.id, email: currentUser.email, name: currentUser.name } : null,
@@ -603,7 +603,7 @@ runSelfCheckPanel = function () {
     }
   } catch (e) {}
   // 记录一次启动日志
-  try { logDev("ok", "页面初始化完成 · 版本 beta1.1.2 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
+  try { logDev("ok", "页面初始化完成 · 版本 1.0.0 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
 })();
 
 

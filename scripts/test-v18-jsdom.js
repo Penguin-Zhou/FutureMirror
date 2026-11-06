@@ -229,7 +229,7 @@ function runTests() {
 
       /* ============ J. 版本号与游客态 ============ */
       console.log("\n-- J. 版本号与游客态 --");
-      ok(document.querySelector(".sb-footer").textContent.includes("beta1.1"), "侧栏版本号 beta1.x");
+      ok(document.querySelector(".sb-footer").textContent.includes("1.0.0"), "侧栏版本号 1.0.0");
       window.eval("logout()");
       window.location.hash = "#/jobs";
       setTimeout(() => {

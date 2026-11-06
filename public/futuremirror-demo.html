@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>面镜 FutureMirror · AI 模拟面试与能力成长平台（Beta 1.1.2 演示版）</title>
+<title>面镜 FutureMirror · AI 模拟面试与能力成长平台（1.0.0 演示版）</title>
 <meta name="description" content="面镜 FutureMirror · AI 驱动的模拟面试与能力成长平台：简历匹配、多轮面试、可解释评分报告与个性化学习路径（在线演示版）。">
 <meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1C1913" media="(prefers-color-scheme: dark)">
@@ -8935,7 +8935,7 @@ body:has(#view-landing.active) {
   <footer class="site-foot">
     <div class="wrap">
       <div class="lp-foot-mark">面镜 <b>FutureMirror</b></div>
-      <div class="lp-foot-line">多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.1.2</div>
+      <div class="lp-foot-line">多 Agent 驱动的 AI 模拟面试与能力成长平台 · 1.0.0</div>
       <p class="lp-foot-note">AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</p>
     </div>
   </footer>
@@ -9098,7 +9098,7 @@ body:has(#view-landing.active) {
 <!-- ===== 演示版声明横幅（可关闭） ===== -->
 <div class="banner" id="demo-banner" role="note">
   <div class="wrap">
-    <b>本页 = 在线演示版首页 · Beta 1.1.2</b>
+    <b>本页 = 在线演示版首页 · 1.0.0</b>
     <span>（已接通真实后端：LLM 流式对话 / JWT 登录 / 服务端评分均在线可验；无后端或断网时自动降级本地 Mock，流程不中断）</span>
     <button class="btn btn-primary btn-sm" onclick="openMaterial('full')" style="margin-left:auto">前往完整项目 →</button>
     <button class="btn btn-ghost btn-sm" onclick="dismissBanner()" aria-label="关闭横幅">✕</button>
@@ -9155,7 +9155,7 @@ body:has(#view-landing.active) {
       </a>
 
       <div class="sb-footer">
-        面镜 FutureMirror · beta1.1.2<br>
+        面镜 FutureMirror · 1.0.0<br>
         <a href="https://github.com/Penguin-Zhou/FutureMirror" target="_blank" rel="noopener">代码仓库</a> ·
         <a href="docs/technical-doc.html">技术文档</a> ·
         <a href="changelog.html">更新日志</a> ·
@@ -9395,7 +9395,7 @@ body:has(#view-landing.active) {
 
   <footer>
     <div style="padding:0">
-      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · Beta 1.1.2<br>
+      <b style="color:var(--muted)">面镜 FutureMirror</b> · 多 Agent 驱动的 AI 模拟面试与能力成长平台 · 1.0.0<br>
       <span>AI辅助开发说明：本项目使用AI工具作为开发辅助，页面样式样板、工具函数、部分文案由AI辅助生成，全部经过团队审查修改；多Agent调度、可解释评分引擎、业务架构、测试体系由团队独立设计实现。演示数据为合成示例，非真实爬取。</span>
     </div>
   </footer>
@@ -10557,7 +10557,7 @@ body:has(#view-landing.active) {
     </section>
 
     <footer class="site-foot">
-      面镜 FutureMirror · 开发者模式 · Beta 1.1.2 · 仅对访客与开发者开放<br>
+      面镜 FutureMirror · 开发者模式 · 1.0.0 · 仅对访客与开发者开放<br>
       <span>AI辅助开发说明：AI仅辅助样式、工具函数与文案，多Agent、评分引擎、业务架构、测试体系由团队独立设计实现，演示数据为合成示例。</span><br>
       解锁凭据保存在 sessionStorage，关闭标签页自动失效
     </footer>
@@ -20973,6 +20973,7 @@ function runSelfCheck() {
     run();
   }
 })();
+"use strict";
 /* ============================================================
  * v13 · 开发者模式（加密 + 一键进入）
  * ============================================================ */
@@ -21375,7 +21376,7 @@ function exportDiagnostic() {
     const report = {
       exportedAt: new Date().toISOString(),
       project: "面镜 FutureMirror",
-      version: "beta1.1.2",
+      version: "1.0.0",
       env,
       state: {
         currentUser: (typeof currentUser !== "undefined" && currentUser) ? { id: currentUser.id, email: currentUser.email, name: currentUser.name } : null,
@@ -21577,7 +21578,7 @@ runSelfCheckPanel = function () {
     }
   } catch (e) {}
   // 记录一次启动日志
-  try { logDev("ok", "页面初始化完成 · 版本 beta1.1.2 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
+  try { logDev("ok", "页面初始化完成 · 版本 1.0.0 · 蓝图编辑风 · 全站交互层已就绪"); } catch (e) {}
 })();
 
 
