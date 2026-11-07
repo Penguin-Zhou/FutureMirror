@@ -1283,8 +1283,7 @@
     <strong>关键实现</strong>：<code>heuristicParse()</code> 从简历和 JD 中分别提取技能词集合，<code>matchScore = (1 - gaps/jdSkills) × 100</code>。
   </p>
 
-  <h2>5.2 多 Agent 模拟面试</h2>
-  <p>已在 4.2 详细说明。此处补充 UI 层的设计：</p>
+  <h2>5.2 多 Agent 模拟面试（算法见 4.2，此处只讲 UI 层）</h2>
   <ul>
     <li><strong>实时能力追踪器</strong>：右侧面板实时显示五维雷达、字数、量化数、AI 置信度——每轮回答后即时更新；</li>
     <li><strong>Agent 时间线</strong>：规划 / 工具调用 / 观察员记录三类事件分色显示，可折叠；</li>
@@ -1742,12 +1741,9 @@ cd frontend && python -m http.server 5173
 
   <h2>8.1 已完成</h2>
   <ul>
-    <li><strong>5 个 Agent 协作 + 动态派发 + 连环追问</strong>的完整面试引擎；</li>
-    <li><strong>BM25 + 端侧向量混合检索</strong>的 RAG 层，含缓存、降级、可解释得分；</li>
-    <li><strong>可解释评分 + 证据链 + 动态学习路径</strong>的报告引擎；</li>
-    <li><strong>三级降级</strong>的完整链路（后端 → 直连 → Mock），演示不中断；</li>
-    <li><strong>2969 + 89 项自动化测试</strong>，覆盖所有功能；</li>
-    <li><strong>开发者模式</strong>作为面向访客的技术透明度工具。</li>
+    <li><strong>5 个 Agent 协作 + 动态派发 + 连环追问</strong>的完整面试引擎；<strong>BM25 + 端侧向量混合检索</strong>的 RAG 层，含缓存、降级与可解释得分；</li>
+    <li><strong>可解释评分 + 证据链 + 动态学习路径</strong>的报告引擎；<strong>三级降级</strong>完整链路（后端 → 直连 → Mock），演示不中断；</li>
+    <li><strong>2969 + 89 项自动化测试</strong>覆盖全部功能；<strong>开发者模式</strong>作为面向访客的技术透明度工具。</li>
   </ul>
 
   <h2>8.2 已知边界</h2>
@@ -1756,12 +1752,10 @@ cd frontend && python -m http.server 5173
       <tr><th style="width:24%">边界</th><th>说明</th></tr>
     </thead>
     <tbody>
-      <tr><td>演示版向量库</td><td>浏览器内 localStorage 单机索引（40 条），非分布式向量数据库</td></tr>
-      <tr><td>端侧模型</td><td>首次加载需下载 ~23MB；纯离线环境降级为 hashing 向量（仅词面）</td></tr>
+      <tr><td>检索与模型</td><td>浏览器内 localStorage 单机索引（40 条）；端侧模型首次加载约 23MB，纯离线降级为 hashing 向量（仅词面）</td></tr>
       <tr><td>MCP</td><td>本地模拟 Server，协议一致但非跨进程真实 MCP</td></tr>
       <tr><td>代码沙盒</td><td>Web Worker 隔离，仅支持纯 JS 逻辑题</td></tr>
-      <tr><td>登录系统</td><td>演示级（本地混淆），非生产级认证</td></tr>
-      <tr><td>数据库</td><td>SQLite 单机，生产需替换 PostgreSQL</td></tr>
+      <tr><td>部署形态</td><td>演示级登录（本地混淆）+ SQLite 单机，生产需 JWT/OAuth 与 PostgreSQL</td></tr>
     </tbody>
   </table>
 
@@ -1776,13 +1770,33 @@ cd frontend && python -m http.server 5173
       <tr><td>评分增强</td><td>在已落地的确定性引擎 + LLM 质性增强基础上，引入人工专家复核样本量化分维度偏差（替代黑箱打分）</td></tr>
       <tr><td>多模态</td><td>Whisper ASR + 语速 / 停顿分析 + 白板代码识别</td></tr>
       <tr><td>部署</td><td>多租户隔离 + 限流 + PostgreSQL + 对象存储</td></tr>
-      <tr><td>商业模式</td><td>院校就业中心合作 / 企业校招 SaaS / C 端订阅</td></tr>
     </tbody>
   </table>
 
-  <h2>8.4 致谢与声明</h2>
+  <h2>8.4 社会价值与商业潜力</h2>
   <p>
-    本项目开发过程中使用 AI 编程工具作为辅助手段，<strong>CSS 主题样板、通用工具函数、测试用例骨架、部分页面文案由 AI 辅助生成</strong>；<strong>多 Agent 角色设计与派发策略、可解释评分规则与证据链、RAG 检索层参数调优与融合策略、业务架构与前后端契约、安全方案、测试体系均为团队独立设计与实现</strong>。所有 AI 生成内容均经过团队逐行审查、修改与测试，完整 Git 提交记录可见演进过程。演示数据全部为人工合成示例，无爬取真实网络数据。
+    <strong>社会价值：把「练得起」变成默认。</strong>真人模拟面试 200–500 元/次且需预约，就业中心一位老师面对数百名学生——本项目把单次练习成本压到近零，有浏览器就能练，练完能看懂哪句话扣了分。对缺少校友与内推网络的非一线院校学生，这层可及性比功能本身更重要。
+  </p>
+  <table>
+    <thead>
+      <tr><th style="width:18%">维度</th><th>主张</th><th style="width:34%">已有支撑（非规划）</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>机会公平</td><td>训练资源不取决于学校层次与付费能力</td><td>免费额度 + 零安装 + 三级降级离线可跑</td></tr>
+      <tr><td>过程透明</td><td>候选人知道自己为什么被这样评价</td><td>证据链引用原话 + 71 项双引擎对拍</td></tr>
+      <tr><td>隐私边界</td><td>高敏感场景下的数据最小化</td><td>PII 本地脱敏零请求 + 摄像头帧不出浏览器</td></tr>
+    </tbody>
+  </table>
+  <p>
+    <strong>商业潜力：三层结构，成本可控。</strong>① <b>院校侧</b>：就业中心与训练营按校采购，要的正是可批量、可留痕的工具；② <b>企业侧</b>：校招前候选人自助练习，只训练不参与录用决策；③ <b>个人侧</b>：订阅制，VIP 已含专属题库与成绩档案。五维分数由规则引擎给出、不消耗 Token，LLM 仅补评语且失败即降级。
+  </p>
+  <p class="note">
+    <strong>边界：</strong>本系统定位为训练与自评工具，不参与真实录用决策，不做人群维度的偏见审计；社会价值主张止于「让训练可及、让评价可查」，不宣称解决了 AI 招聘公平性这一更大命题。
+  </p>
+
+  <h2>8.5 致谢与声明</h2>
+  <p>
+    本项目使用 AI 编程工具辅助：<strong>CSS 主题样板、通用工具函数、测试骨架与部分文案由 AI 生成</strong>；<strong>多 Agent 派发策略、可解释评分规则与证据链、RAG 参数调优、架构与前后端契约、安全方案、测试体系均为团队独立实现</strong>。生成内容均经逐行审查与测试，Git 记录可见演进；演示数据全部人工合成。
   </p>
 
   <div class="chapter-footer">

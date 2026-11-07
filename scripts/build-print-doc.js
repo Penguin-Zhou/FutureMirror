@@ -137,6 +137,20 @@ const PRINT_TUNE = `<style id="bp-print-tune">
   .callout { padding: 5px 8px !important; margin: 6px 0 !important; }
   li { margin-bottom: 0 !important; }
   p { margin-bottom: 3px !important; }
+  /* 长表（如第 9 章 36 行版本摘要）默认被整体推到下页，上一页会空出大半张。
+     允许表格跨页、行不拆、表头每页重复，把空白收回来。 */
+  table { page-break-inside: auto !important; }
+  tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+  thead { display: table-header-group !important; }
+  /* 章尾页脚在网页版留 10mm 呼吸位、两行分行显示；打印版压成一行紧凑式。
+     原因：正文排满时，仅页脚会被挤到下一页，生成一页「只有页脚的空白页」——
+     既浪费页数，翻页观感也很差。压成一行后可直接收回上一页。 */
+  .chapter-footer {
+    margin-top: 2mm !important; padding-top: 1.5mm !important; line-height: 1.35 !important;
+  }
+  .chapter-footer .cf-brand { display: inline !important; margin-bottom: 0 !important; }
+  .chapter-footer .cf-chapter { display: inline !important; }
+  .chapter-footer .cf-chapter::before { content: " · "; }
 }
 </style>`;
 if (html.indexOf("</head>") > 0) html = html.replace("</head>", PRINT_TUNE + "\n</head>");
