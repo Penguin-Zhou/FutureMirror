@@ -3,7 +3,7 @@
  *   docs/technical-doc.html（完整在线版，10 章）
  *     → 临时打印版：删除第 9 章附录、原第 10 章版本日志上移重编号为 09
  *       并压成摘要表
- *     → Edge 无头打印为 docs/FutureMirror.TechDoc.pdf（含封面，约 29-30 页）
+ *     → Edge 无头打印为 docs/FutureMirror.TechDoc.pdf（含封面，28 页，上限 30）
  *
  *   背景：在线版面向屏幕阅读（信息完整）；PDF 附件随项目材料提交，
  *   需要控制页数——附录（环境配置/账号/代码索引/交付清单）在仓库

@@ -622,7 +622,7 @@ futuremirror/
 ├── docs/
 ├── vue-scoring-method/             # 评分方法展示层：Vue 3 + Vite，构建为 docs/scoring-method.html
 │   ├── technical-doc.html          # 技术文档（10 章正式版，可在线阅读）
-│   ├── FutureMirror.TechDoc.pdf    # 打印版技术文档（含封面，30 页；不入库，见 Release）
+│   ├── FutureMirror.TechDoc.pdf    # 打印版技术文档（含封面，28 页；不入库，见 Release）
 │   ├── FutureMirror.Deck.pptx        # 项目演示文稿
 │   └── archive/                    # 技术文档早期草稿（仅供演进追溯）
 ├── types/models.d.ts               # 前端数据模型类型声明（配合 JSDoc，无编译步骤）
@@ -757,7 +757,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ✅  | <https://www.bilibili.com/video/BV1tZ4i6WEZL/> （6 分 36 秒 / 1920×1080；直链备份 <https://futuremirror-demo.app.workbuddy.host/media/demo.mp4> ，64.7MB 可下载；原始录制为 2562×1440 HEVC，已转码保证浏览器直放）                                                                                                    |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
-| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，30 页，**随项目材料以附件形式提交**；仓库 Release 同附（正式版 v1.0.0）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0/FutureMirror.TechDoc.pdf> |
+| 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，28 页，**随项目材料以附件形式提交**；仓库 Release 同附（正式版 v1.0.0）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0/FutureMirror.TechDoc.pdf> |
 | 在线演示（公网可访问）            | ✅  | <https://penguin-zhou.github.io/FutureMirror/>                                                                                                                                    |
 | 在线演示镜像（国内直连）           | ✅  | <https://futuremirror-demo.app.workbuddy.host/>                                                                                                                                   |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456`                                                                                                                                              |
