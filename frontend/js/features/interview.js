@@ -236,7 +236,8 @@ function onPresetChange() {
   if (p.baseUrl) $("llm-base").value = p.baseUrl;
   if (p.model) $("llm-model").value = p.model;
 }
-function openApiKeyPanel() { $("llm-panel").hidden = !$("llm-panel").hidden; }
+/* v81：接入面板已独立成页（#/gateway），这里只负责跳转；保留函数名兼容开发者模式的旧调用 */
+function openApiKeyPanel() { navTo("gateway"); }
 function hostOf(url) { try { return new URL(url).host; } catch { return url.replace(/^https?:\/\//, "").split("/")[0]; } }
 function saveLlm() {
   const baseUrl = $("llm-base").value.trim().replace(/\/+$/, "");

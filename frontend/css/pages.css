@@ -1206,6 +1206,9 @@ img, svg, video, canvas { max-width: 100%; }
   .chat-input #chat-send { min-width: 56px; padding-left: 12px; padding-right: 12px; }
   .voice-live { font-size: 11px; padding: 6px 8px; }
   .voice-live .vl-meta { display: none; }   /* 窄屏只保留转写正文，避免挤成两行 */
+  /* v81：顶栏新增「模型接入」后只留图标，否则会把「开发者模式」挤出可视区 */
+  #view-app header .gateway-text { display: none; }
+  #view-app header .devmode-text { display: none; }
 }
 /* 横屏：以视口高度为准，保证对话区仍可滚动、输入栏不被裁掉 */
 @media (max-width: 900px) and (orientation: landscape) {

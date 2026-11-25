@@ -143,7 +143,7 @@ function trackLight(e) {
 /* ============================================================
  * 0.6 应用内子路由（hash 路由）
  * ============================================================ */
-const APP_PAGES = ["dashboard", "match", "resume", "mbti", "career", "interview", "rag", "report", "profile", "jobs", "quiz", "plan"];
+const APP_PAGES = ["dashboard", "match", "resume", "mbti", "career", "interview", "rag", "report", "profile", "jobs", "quiz", "plan", "gateway"];
 const APP_PAGE_TITLES = {
   dashboard: "工作台",
   match: "简历匹配",
@@ -157,6 +157,7 @@ const APP_PAGE_TITLES = {
   jobs: "求职管理",
   quiz: "题库小测",
   plan: "学习计划",
+  gateway: "模型接入",
 };
 
 function currentPage() {

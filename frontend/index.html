@@ -104,7 +104,7 @@ try {
         <a href="#features">功能</a>
         <a href="#workflow">流程</a>
         <a href="#stats">数据</a>
-        <a href="#api">API 接入</a>
+        <a href="#api">开放接口</a>
         <a href="changelog.html">更新日志</a>
       </div>
       <div class="landing-nav-meta">
@@ -601,6 +601,9 @@ curl "$BASE/api/interviews?sharecode=$SC" \
         </div>
       </div>
 
+      <button class="btn btn-ghost btn-sm" onclick="navTo('gateway')" title="模型接入：后端地址、服务商与 API Key" style="font-size:12px">
+        🔌 <span class="gateway-text">模型接入</span>
+      </button>
       <button class="btn btn-ghost btn-sm" onclick="openEvaluatorGate()" title="仅访客与技术验证使用" style="font-size:12px">
         🎛 <span class="devmode-text">开发者模式</span>
       </button>
@@ -670,6 +673,11 @@ curl "$BASE/api/interviews?sharecode=$SC" \
       </a>
       <a class="sb-item" href="#/quiz" data-nav="quiz">
         <span class="sb-icon" data-ic="quiz">📝</span> 题库小测
+      </a>
+
+      <div class="sb-group-label">接入与设置</div>
+      <a class="sb-item" href="#/gateway" data-nav="gateway">
+        <span class="sb-icon" data-ic="bolt">🔌</span> 模型接入
       </a>
 
       <div class="sb-group-label">我的</div>
@@ -1007,7 +1015,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
           <button class="mode-btn active" data-mode="general" onclick="setMode('general')">综合面</button>
           <button class="mode-btn" data-mode="tech" onclick="setMode('tech')">技术面</button>
           <button class="mode-btn" data-mode="pressure" onclick="setMode('pressure')">压力面</button>
-          <button class="btn btn-outline btn-sm" onclick="openApiKeyPanel()" style="margin-left:8px">🔑 接入我的 API Key（真实 LLM）</button>
+          <button class="btn btn-outline btn-sm" onclick="navTo('gateway')" style="margin-left:8px">🔌 模型接入（真实 LLM）</button>
           <span class="badge badge-amber" id="llm-status">Mock 模式</span>
         </div>
 
@@ -1037,36 +1045,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fallback-banner').hidden=true">知道了</button>
         </div>
 
-        <!-- 真实 LLM 接入面板 -->
-        <div class="llm-panel" id="llm-panel" hidden>
-          <div class="llm-backend-row">
-            <span class="lb-title">🚀 后端模型网关</span>
-            <span class="badge badge-amber" id="llm-backend-status">检测中…</span>
-            <input type="text" id="llm-api-base" placeholder="http://localhost:8000" aria-label="后端地址">
-            <button class="btn btn-outline btn-sm" id="llm-api-test" onclick="testApiBase()">检测连接</button>
-            <span class="hint">🔒 推荐模式：API Key 只保存在后端环境变量（backend/.env），前端零接触；后端未启动时自动回退「面板直连 Key」或「Mock 模式」，演示不中断。CONFIG.apiBase 留空时在线演示为纯前端版本（未部署后端属预期）；填入后端地址后自动切换为真实后端模式（JWT 登录 / 会话持久化 / 服务端评分）。</span>
-          </div>
-          <div class="llm-grid">
-            <label>服务商预设
-              <select id="llm-preset" onchange="onPresetChange()" aria-label="选择服务商预设"></select>
-            </label>
-            <label>Base URL（OpenAI 兼容）
-              <input type="text" id="llm-base" placeholder="https://open.bigmodel.cn/api/paas/v4" aria-label="Base URL">
-            </label>
-            <label>模型名
-              <input type="text" id="llm-model" placeholder="glm-4-flash" aria-label="模型名">
-            </label>
-            <label>API Key
-              <input type="password" id="llm-key" placeholder="粘贴 Key，仅存本地" aria-label="API Key">
-            </label>
-          </div>
-          <div class="llm-actions">
-            <button class="btn btn-primary btn-sm" onclick="saveLlm()">启用真实模型</button>
-            <button class="btn btn-outline btn-sm" onclick="showPromptViewer()">👁 查看当前 Prompt</button>
-            <button class="btn btn-outline btn-sm" onclick="clearLlm()">清除并回到 Mock</button>
-            <span class="hint">🔒 Key 仅保存于当前标签页 sessionStorage，关闭即清除；请求由浏览器直连所选服务商，不经过任何第三方服务器。</span>
-          </div>
-        </div>
+        <!-- 模型接入面板已独立成页（#/gateway），此处只留入口按钮 -->
 
         <div class="chat">
           <div class="chat-main">
@@ -1444,6 +1423,44 @@ curl "$BASE/api/interviews?sharecode=$SC" \
   <!-- ========================================================
        页面：个人中心（profile · v16 新增）
        ======================================================== -->
+  <!-- 模型接入（v81）：原本折叠在面试页里的 LLM 面板，独立成页，顶栏与侧栏都能直达 -->
+  <div class="app-page" data-page="gateway">
+    <div class="page-header">
+      <h2><span class="ph-icon" data-ic="bolt">🔌</span> 模型接入</h2>
+      <p>三种运行方式随时切换：后端托管（推荐）、面板直连 Key、本地 Mock。切换即时生效，不影响进行中的面试。</p>
+    </div>
+
+    <div class="llm-panel" id="llm-panel">
+      <div class="llm-backend-row">
+        <span class="lb-title">🚀 后端模型网关</span>
+        <span class="badge badge-amber" id="llm-backend-status">检测中…</span>
+        <input type="text" id="llm-api-base" placeholder="http://localhost:8000" aria-label="后端地址">
+        <button class="btn btn-outline btn-sm" id="llm-api-test" onclick="testApiBase()">检测连接</button>
+        <span class="hint">🔒 推荐模式：API Key 只保存在后端环境变量（backend/.env），前端零接触；后端未启动时自动回退「面板直连 Key」或「Mock 模式」，演示不中断。CONFIG.apiBase 留空时在线演示为纯前端版本（未部署后端属预期）；填入后端地址后自动切换为真实后端模式（JWT 登录 / 会话持久化 / 服务端评分）。</span>
+      </div>
+      <div class="llm-grid">
+        <label>服务商预设
+          <select id="llm-preset" onchange="onPresetChange()" aria-label="选择服务商预设"></select>
+        </label>
+        <label>Base URL（OpenAI 兼容）
+          <input type="text" id="llm-base" placeholder="https://open.bigmodel.cn/api/paas/v4" aria-label="Base URL">
+        </label>
+        <label>模型名
+          <input type="text" id="llm-model" placeholder="glm-4-flash" aria-label="模型名">
+        </label>
+        <label>API Key
+          <input type="password" id="llm-key" placeholder="粘贴 Key，仅存本地" aria-label="API Key">
+        </label>
+      </div>
+      <div class="llm-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveLlm()">启用真实模型</button>
+        <button class="btn btn-outline btn-sm" onclick="showPromptViewer()">👁 查看当前 Prompt</button>
+        <button class="btn btn-outline btn-sm" onclick="clearLlm()">清除并回到 Mock</button>
+        <span class="hint">🔒 Key 仅保存于当前标签页 sessionStorage，关闭即清除；请求由浏览器直连所选服务商，不经过任何第三方服务器。</span>
+      </div>
+    </div>
+  </div>
+
   <div class="app-page" data-page="profile">
     <div class="page-header">
       <h2><span class="ph-icon" data-ic="profile">👤</span> 个人中心</h2>

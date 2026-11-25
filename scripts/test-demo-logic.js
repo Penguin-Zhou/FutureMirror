@@ -475,8 +475,8 @@ guardSrc.forEach((g) => check(`${g.n}() 含登录拦截`, g.ok));
 console.log("== 15. v8 多页面路由 / 导航系统 ==");
 // 路由表
 check(
-  "APP_PAGES 共 12 个页面（v36 新增 mbti）",
-  api.APP_PAGES.length === 12 &&
+  "APP_PAGES 共 13 个页面（v81 新增 gateway）",
+  api.APP_PAGES.length === 13 &&
     ["dashboard", "match", "interview", "rag", "resume", "career", "report", "profile", "jobs", "quiz", "plan"].every(
       (p) => api.APP_PAGES.includes(p)
     )
@@ -510,7 +510,7 @@ locationStub.hash = "";
 
 // 结构断言：8 个 app-page 均已生成，且旧的 tabs/pane 已清除
 const pageDivs = [...html.matchAll(/<div class="app-page[^"]*" data-page="([a-z]+)"/g)].map((m) => m[1]);
-check("HTML 中存在 12 个 .app-page", pageDivs.length === 12);
+check("HTML 中存在 13 个 .app-page", pageDivs.length === 13);
 check(
   ".app-page 覆盖全部路由",
   api.APP_PAGES.every((p) => pageDivs.includes(p))
@@ -520,14 +520,20 @@ check("旧的 .pane 已移除", !/<div class="pane[ "]/i.test(html));
 // 每个页面都应有 page-header + page-card
 const pageBlocks = html.split(/<div class="app-page/).slice(1);
 check(
-  "10 个子页面均有 page-header",
+  "12 个子页面均有 page-header",
   pageBlocks.slice(1).every((b) => b.includes("page-header"))
 );
 check(
-  "10 个子页面均有 page-card（quiz/plan 面板由 JS 渲染，豁免）",
+  "12 个子页面均有 page-card（quiz/plan 由 JS 渲染、gateway 面板自带卡片，豁免）",
   pageBlocks
     .slice(1)
-    .every((b) => b.includes("page-card") || b.includes('data-page="quiz"') || b.includes('data-page="plan"'))
+    .every(
+      (b) =>
+        b.includes("page-card") ||
+        b.includes('data-page="quiz"') ||
+        b.includes('data-page="plan"') ||
+        b.includes('id="llm-panel"')
+    )
 );
 check(
   "quiz 页含五个子面板容器（学习 / 小测 / 数据 / 错题 / 收藏）",
@@ -547,7 +553,7 @@ check(
 );
 // v10：导航入口由「横向子导航 + 顶栏下拉」收敛为「左侧栏 + 底部 Tab」
 const navItems = [...html.matchAll(/class="sb-item[^"]*"[^>]*data-nav="([a-z]+)"/g)].map((m) => m[1]);
-check("左侧栏含 12 个入口", navItems.length === 12);
+check("左侧栏含 13 个入口（v81 新增 gateway）", navItems.length === 13);
 check("顶栏已精简（无「功能导航」按钮）", !html.includes('id="nav-func-btn"'));
 check(
   "顶栏保留 状态胶囊 + 主题 + 主题色 + 用户菜单",
@@ -581,7 +587,7 @@ const pageIdxs = [];
 divToks.forEach((t, i) => {
   if (t.open && /class="app-page/.test(t.raw)) pageIdxs.push(i);
 });
-check("共 12 个 .app-page 容器", pageIdxs.length === 12);
+check("共 13 个 .app-page 容器", pageIdxs.length === 13);
 const nested = pageIdxs.filter((i) => {
   const c = matchClose(divToks, i);
   return pageIdxs.some((j) => j > i && j < c);
@@ -589,14 +595,14 @@ const nested = pageIdxs.filter((i) => {
 check("app-page 之间无嵌套（切页不会白屏）", nested.length === 0);
 // 每个 app-page 都带唯一 data-page
 const dpKeys = [...html.matchAll(/class="app-page[^"]*"\s+data-page="([a-z]+)"/g)].map((m) => m[1]);
-check("每个 app-page 都有合法 data-page", dpKeys.length === 12 && dpKeys.every((k) => api.APP_PAGES.includes(k)));
+check("每个 app-page 都有合法 data-page", dpKeys.length === 13 && dpKeys.every((k) => api.APP_PAGES.includes(k)));
 check("data-page 无重复", new Set(dpKeys).size === dpKeys.length);
 // 每个子页面都应有 page-header + page-card
 check(
-  "11 个子页面均有 page-header",
-  pageIdxs.length === 12 &&
-    dpKeys.filter((k) => k !== "dashboard").length === 11 &&
-    (html.match(/page-header/g) || []).length >= 11
+  "12 个子页面均有 page-header",
+  pageIdxs.length === 13 &&
+    dpKeys.filter((k) => k !== "dashboard").length === 12 &&
+    (html.match(/page-header/g) || []).length >= 12
 );
 check("page-card 数量 >= 6", (html.match(/class="page-card"/g) || []).length >= 6);
 // v10：导航入口收敛为「左侧栏 + 底部 Tab 栏」两处，二者均须与路由表一一对应
@@ -607,7 +613,10 @@ check(
   "左侧栏 data-nav 覆盖全部路由且无多余",
   new Set(sbNavs).size === api.APP_PAGES.length && sbNavs.every((n) => api.APP_PAGES.includes(n))
 );
-check("左侧栏分 3 组（输入与准备 / 训练与评估 / 我的）", (html.match(/class="sb-group-label"/g) || []).length === 3);
+check(
+  "左侧栏分 4 组（输入与准备 / 训练与评估 / 接入与设置 / 我的）",
+  (html.match(/class="sb-group-label"/g) || []).length === 4
+);
 check(
   "底部 Tab 栏 10 项且均在路由表内",
   tbNavs.length === 10 &&
