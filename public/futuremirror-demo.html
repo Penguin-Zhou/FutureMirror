@@ -10633,6 +10633,9 @@ const CONFIG = {
   apiBase: "",       // 后端 API 地址：填完整 URL（如 https://xxx.app.workbuddy.host）走跨域连接；
                      // 填 "same-origin" 表示与 API 同源部署（构建时由 FM_API_BASE=same-origin 注入）；
                      // 留空 = 本地 localhost:8000，在线演示保持纯前端
+  apiShare: "",      // 托管平台的分享码：镜像站点裸域名会返回 403「链接缺少必要信息」，
+                     // 只有带 ?sharecode=xxx 才放行；跨域调用拿不到 Cookie，故每个请求显式附加。
+                     // 构建时由 FM_API_SHARE 注入，留空则请求地址与原来完全一致。
 };
 /* v23 · 后端接线：把 CONFIG.apiBase 注入 window.FM_API_BASE（core/api.js 的 fmApi.init 读取）。
    "same-origin" 转换为当前站点 origin——演示页由 FastAPI 同源托管时使用，彻底免除跨域；
@@ -10641,6 +10644,11 @@ if (CONFIG.apiBase === "same-origin") {
   try { window.FM_API_BASE = window.location.origin; } catch (e) {}
 } else if (CONFIG.apiBase) {
   try { window.FM_API_BASE = String(CONFIG.apiBase).replace(/\/+$/, ""); } catch (e) {}
+}
+/* 分享码与 apiBase 分开注入：镜像侧同源访问不需要它（首次访问已种 Cookie），
+   只有跨域的那份构建（GitHub Pages）才需要带上。 */
+if (CONFIG.apiShare) {
+  try { window.FM_API_SHARE = String(CONFIG.apiShare); } catch (e) {}
 }
 const MATERIAL_LABEL = { repo: "代码仓库", live: "在线演示", video: "演示视频", docs: "技术文档", full: "完整项目", account: "演示账号信息" };
 
@@ -12455,7 +12463,7 @@ async function postAsr(wav) {
     headers["X-Auth-Token"] = fmApi.token;
     headers["Authorization"] = "Bearer " + fmApi.token;
   }
-  const res = await fetch(fmApi.base + "/api/asr", { method: "POST", headers, body: wav });
+  const res = await fetch(fmApi.q("/api/asr"), { method: "POST", headers, body: wav });
   if (res.status === 401) throw new Error("asr_unauthorized");
   if (!res.ok) throw new Error("asr_http_" + res.status);
   const j = await res.json();
@@ -14002,7 +14010,7 @@ function setCamState(label, cls) {
 async function ensureInterviewId() {
   if (session.interviewId) return session.interviewId;
   try {
-    const res = await fetch(fmApi.base + "/api/interviews", {
+    const res = await fetch(fmApi.q("/api/interviews"), {
       method: "POST",
       headers: fmApi.authHeaders(),
       body: JSON.stringify({ mode: session.mode || "general", job: "" }),
@@ -14143,7 +14151,7 @@ async function camSend(status) {
   if (!camInterviewId) camInterviewId = await ensureInterviewId();
   if (!camInterviewId) return;   // 无后端则仅本地显示
   try {
-    const res = await fetch(fmApi.base + "/api/interviews/" + camInterviewId + "/status", {
+    const res = await fetch(fmApi.q("/api/interviews/" + camInterviewId + "/status"), {
       method: "POST",
       headers: fmApi.authHeaders(),
       body: JSON.stringify({
@@ -24586,6 +24594,11 @@ function reportFollowupCard() {
 const FM_API_DEFAULT_BASE = "http://localhost:8000";
 const fmApi = {
   base: "",
+  /* 镜像站点（WorkBuddy 托管）要求带分享码才能访问 /api/*：
+   * 裸域名一律 403「链接缺少必要信息」，带 ?sharecode=xxx 才放行。
+   * 跨域调用拿不到首次访问留下的 __wb_rsc Cookie，所以每个请求都显式带上。
+   * 同源部署与本地开发保持空字符串，拼接结果与改动前完全一致。 */
+  share: "",
   token: "",
   health: null,
   healthAt: 0,
@@ -24594,9 +24607,18 @@ const fmApi = {
     let saved = "";
     try { saved = localStorage.getItem("fm_api_base") || ""; } catch (e) {}
     this.base = (window.FM_API_BASE || saved || FM_API_DEFAULT_BASE).replace(/\/+$/, "");
+    this.share = String(window.FM_API_SHARE || "").trim();
     /* sessionStorage 在隐私模式 / 沙箱 iframe 下可能直接抛异常，
      * 与上面的 localStorage 一样必须包起来，否则整个 init() 会中断。 */
     try { this.token = sessionStorage.getItem("fm_token") || ""; } catch (e) { this.token = ""; }
+  },
+  /* 统一拼请求地址：配置了分享码就附加 sharecode，没配则原样返回。
+   * 所有 fetch 都必须走这里，否则镜像侧会被网关挡成 403。 */
+  q(path) {
+    const p = path || "";
+    if (!this.share) return this.base + p;
+    const sep = p.includes("?") ? "&" : "?";
+    return this.base + p + sep + "sharecode=" + encodeURIComponent(this.share);
   },
   backendReady() { return this.ready && !!this.health && this.health.ok; },
   backendModel() { return (this.health && this.health.model) || "后端模型"; },
@@ -24654,7 +24676,7 @@ const fmApi = {
     /* 超时定时器必须在请求结束后清掉，否则每次健康检测都会留下一个 8 秒的空转定时器 */
     const kill = setTimeout(() => ctrl.abort(), 8000);
     try {
-      const res = await fetch(this.base + "/api/health", { signal: ctrl.signal });
+      const res = await fetch(this.q("/api/health"), { signal: ctrl.signal });
       const j = await res.json();
       /* asr_ready 决定语音走服务端转写还是浏览器接口：浏览器接口在境内连不上厂商云端，
        * 所以后端具备转写能力时要优先用后端。 */
@@ -24682,7 +24704,7 @@ const fmApi = {
     try { localStorage.setItem("fm_api_base", this.base); } catch (e) {}
   },
   async chat(messages, onDelta, signal) {
-    const res = await fetch(this.base + "/api/chat/stream", {
+    const res = await fetch(this.q("/api/chat/stream"), {
       method: "POST",
       signal,
       headers: this.authHeaders(),
@@ -24723,7 +24745,7 @@ const fmApi = {
    * 与通用 chat() 的差别是流首多一帧 meta（模型名 / 引用 / 剩余额度），
    * 以及 429 要能区分出「额度」而不是笼统的「调用失败」。 */
   async assistantChat(question, history, onDelta, onMeta, signal) {
-    const res = await fetch(this.base + "/api/assistant/chat", {
+    const res = await fetch(this.q("/api/assistant/chat"), {
       method: "POST",
       signal,
       headers: this.authHeaders(),
@@ -24769,7 +24791,7 @@ const fmApi = {
     }
   },
   async login(email, pass) {
-    const res = await fetch(this.base + "/api/auth/login", {
+    const res = await fetch(this.q("/api/auth/login"), {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password: pass }),
     });
@@ -24784,7 +24806,7 @@ const fmApi = {
     return user;
   },
   async register(name, email, pass) {
-    const res = await fetch(this.base + "/api/auth/register", {
+    const res = await fetch(this.q("/api/auth/register"), {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password: pass }),
     });
@@ -24801,7 +24823,7 @@ const fmApi = {
   async syncAndReport(sess, match) {
     // 1) 建会话（无 interviewId 时）
     if (!sess.interviewId) {
-      const res = await fetch(this.base + "/api/interviews", {
+      const res = await fetch(this.q("/api/interviews"), {
         method: "POST", headers: this.authHeaders(),
         body: JSON.stringify({ mode: sess.mode || "general", job: "" }),
       });
@@ -24809,7 +24831,7 @@ const fmApi = {
       sess.interviewId = (await res.json()).id;
     }
     // 2) 批量同步问答
-    const sync = await fetch(this.base + "/api/interviews/" + sess.interviewId + "/sync", {
+    const sync = await fetch(this.q("/api/interviews/" + sess.interviewId + "/sync"), {
       method: "POST", headers: this.authHeaders(),
       body: JSON.stringify({ turns: sess.turns.map((t, i) => ({
         seq: i + 1, agent: t.agent, question: t.question,
@@ -24818,7 +24840,7 @@ const fmApi = {
     });
     if (!sync.ok) throw new Error("同步问答失败 HTTP " + sync.status);
     // 3) 服务端生成报告
-    const rep = await fetch(this.base + "/api/interviews/" + sess.interviewId + "/report", {
+    const rep = await fetch(this.q("/api/interviews/" + sess.interviewId + "/report"), {
       method: "POST", headers: this.authHeaders(),
       body: JSON.stringify({
         match_score: match ? match.matchScore : null,
