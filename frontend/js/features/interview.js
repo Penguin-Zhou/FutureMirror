@@ -1396,7 +1396,7 @@ function setCamState(label, cls) {
 async function ensureInterviewId() {
   if (session.interviewId) return session.interviewId;
   try {
-    const res = await fetch(fmApi.base + "/api/interviews", {
+    const res = await fetch(fmApi.q("/api/interviews"), {
       method: "POST",
       headers: fmApi.authHeaders(),
       body: JSON.stringify({ mode: session.mode || "general", job: "" }),
@@ -1537,7 +1537,7 @@ async function camSend(status) {
   if (!camInterviewId) camInterviewId = await ensureInterviewId();
   if (!camInterviewId) return;   // 无后端则仅本地显示
   try {
-    const res = await fetch(fmApi.base + "/api/interviews/" + camInterviewId + "/status", {
+    const res = await fetch(fmApi.q("/api/interviews/" + camInterviewId + "/status"), {
       method: "POST",
       headers: fmApi.authHeaders(),
       body: JSON.stringify({

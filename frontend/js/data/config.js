@@ -12,6 +12,9 @@ const CONFIG = {
   apiBase: "",       // 后端 API 地址：填完整 URL（如 https://xxx.app.workbuddy.host）走跨域连接；
                      // 填 "same-origin" 表示与 API 同源部署（构建时由 FM_API_BASE=same-origin 注入）；
                      // 留空 = 本地 localhost:8000，在线演示保持纯前端
+  apiShare: "",      // 托管平台的分享码：镜像站点裸域名会返回 403「链接缺少必要信息」，
+                     // 只有带 ?sharecode=xxx 才放行；跨域调用拿不到 Cookie，故每个请求显式附加。
+                     // 构建时由 FM_API_SHARE 注入，留空则请求地址与原来完全一致。
 };
 /* v23 · 后端接线：把 CONFIG.apiBase 注入 window.FM_API_BASE（core/api.js 的 fmApi.init 读取）。
    "same-origin" 转换为当前站点 origin——演示页由 FastAPI 同源托管时使用，彻底免除跨域；
@@ -20,6 +23,11 @@ if (CONFIG.apiBase === "same-origin") {
   try { window.FM_API_BASE = window.location.origin; } catch (e) {}
 } else if (CONFIG.apiBase) {
   try { window.FM_API_BASE = String(CONFIG.apiBase).replace(/\/+$/, ""); } catch (e) {}
+}
+/* 分享码与 apiBase 分开注入：镜像侧同源访问不需要它（首次访问已种 Cookie），
+   只有跨域的那份构建（GitHub Pages）才需要带上。 */
+if (CONFIG.apiShare) {
+  try { window.FM_API_SHARE = String(CONFIG.apiShare); } catch (e) {}
 }
 const MATERIAL_LABEL = { repo: "代码仓库", live: "在线演示", video: "演示视频", docs: "技术文档", full: "完整项目", account: "演示账号信息" };
 

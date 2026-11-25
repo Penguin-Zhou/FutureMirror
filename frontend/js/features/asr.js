@@ -92,7 +92,7 @@ async function postAsr(wav) {
     headers["X-Auth-Token"] = fmApi.token;
     headers["Authorization"] = "Bearer " + fmApi.token;
   }
-  const res = await fetch(fmApi.base + "/api/asr", { method: "POST", headers, body: wav });
+  const res = await fetch(fmApi.q("/api/asr"), { method: "POST", headers, body: wav });
   if (res.status === 401) throw new Error("asr_unauthorized");
   if (!res.ok) throw new Error("asr_http_" + res.status);
   const j = await res.json();

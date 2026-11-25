@@ -48,6 +48,12 @@ const INJECT_API_BASE = String(process.env.FM_API_BASE || "")
   .trim()
   .replace(/\/+$/, "");
 
+/* 托管平台的分享码：镜像站点的裸域名一律 403「链接缺少必要信息」，
+ * 只有带 ?sharecode=xxx 才放行。跨域调用拿不到首次访问种的 __wb_rsc Cookie，
+ * 所以构建跨域那份（GitHub Pages）时必须把分享码注入进去，由 fmApi.q() 附加。
+ * 同源构建（镜像）不设此项——首次访问已带分享码，Cookie 足以放行。 */
+const INJECT_API_SHARE = String(process.env.FM_API_SHARE || "").trim();
+
 /* ---------- 1) CSS：link 序列 → <style> ---------- */
 const linkRe = new RegExp(
   manifest.css
@@ -76,6 +82,10 @@ const jsBody = manifest.jsOriginalOrder
     if (INJECT_API_BASE && /apiBase:\s*""/.test(txt)) {
       txt = txt.replace(/apiBase:\s*""/, `apiBase: ${JSON.stringify(INJECT_API_BASE)}`);
       console.log(`🔌 已注入后端地址 → ${f.file}: apiBase = ${INJECT_API_BASE}`);
+    }
+    if (INJECT_API_SHARE && /apiShare:\s*""/.test(txt)) {
+      txt = txt.replace(/apiShare:\s*""/, `apiShare: ${JSON.stringify(INJECT_API_SHARE)}`);
+      console.log(`🔑 已注入分享码 → ${f.file}: apiShare = ${INJECT_API_SHARE}`);
     }
     if (txt.startsWith('"use strict";\n')) {
       if (firstUseStrict) {

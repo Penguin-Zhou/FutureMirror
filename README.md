@@ -8,9 +8,9 @@
 
 **版本定位：1.0.0 · 原型演示版**（单文件演示版 / 模块版前端 / FastAPI 同源后端）· 开源许可：**MIT**（见 [`LICENSE`](LICENSE)）
 
-**技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 29 页。**PDF 版由该文档 A4 打印导出，随项目材料以附件形式提交**（仓库 Release 亦提供下载）。
+**技术文档**：[在线阅读（HTML 版）](https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html) · [国内镜像](https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html?sharecode=ZU6FKJDEK7) · 仓库内 [`docs/technical-doc.html`](docs/technical-doc.html) —— 9 章完整技术说明书（项目概述 / 需求分析 / 系统架构 / AI 技术方案 / 核心功能实现 / 测试与部署 / 创新点 / 总结展望 / 附录），约 29 页。**PDF 版由该文档 A4 打印导出，随项目材料以附件形式提交**（仓库 Release 亦提供下载）。
 
-**在线演示（免安装，浏览器直接打开）：<https://penguin-zhou.github.io/FutureMirror/>**（GitHub Pages）· **国内直连镜像：<https://futuremirror-demo.app.workbuddy.host/>** · 演示账号 `demo@futuremirror.app / Demo123456`
+**在线演示（免安装，浏览器直接打开）：<https://penguin-zhou.github.io/FutureMirror/>**（GitHub Pages）· **国内直连镜像：<https://futuremirror-demo.app.workbuddy.host/?sharecode=ZU6FKJDEK7>** · 演示账号 `demo@futuremirror.app / Demo123456`
 
 上传简历与目标岗位 JD，由 HR / 技术 / 压力面 / 观察员 / 教练五个 Agent 协作完成模拟面试，生成**可解释**的评分报告、能力雷达图与个性化学习路径；内置题库小测、错题本、求职看板与 AI 小助手。
 
@@ -127,7 +127,7 @@
 | 入口               | 地址                                              | 说明                                        |
 | ---------------- | ----------------------------------------------- | ----------------------------------------- |
 | 主站（GitHub Pages） | <https://penguin-zhou.github.io/FutureMirror/>  | 与仓库同源，随 `gh-pages` 分支更新；构建时注入后端地址，跨域连接真实 API       |
-| 国内直连镜像           | <https://futuremirror-demo.app.workbuddy.host/> | 由 FastAPI 后端同源托管（页面 + API + 文档 + 模型同一域名），国内网络直连更快；github.io 打不开时用这个 |
+| 国内直连镜像           | <https://futuremirror-demo.app.workbuddy.host/?sharecode=ZU6FKJDEK7> | 由 FastAPI 后端同源托管（页面 + API + 文档 + 模型同一域名），国内网络直连更快；github.io 打不开时用这个 |
 
 **方式 2（本地离线）**：打开仓库内的 `public/futuremirror-demo.html`（约 1.1MB，所有 CSS/JS 内联，默认零外部请求）。
 
@@ -138,7 +138,7 @@
 
 > 两个在线入口均已接通真实后端（Beta 1.0.1 起）：JWT 登录、面试会话持久化、服务端评分全部真实可用；未配置模型 Key 时聊天自动回退 Mock，演示不中断。
 >
-> - 主站由 GitHub Pages 托管 `gh-pages` 分支（`.nojekyll` 跳过 Jekyll 处理），重新发布：`FM_API_BASE=https://futuremirror-demo.app.workbuddy.host node scripts/deploy-pages.js --build`（构建时把后端地址写进演示页）；
+> - 主站由 GitHub Pages 托管 `gh-pages` 分支（`.nojekyll` 跳过 Jekyll 处理），重新发布：`FM_API_BASE=https://futuremirror-demo.app.workbuddy.host FM_API_SHARE=<分享码> node scripts/deploy-pages.js --build`（构建时把后端地址与分享码写进演示页；托管平台的镜像裸域名会返回 403「链接缺少必要信息」，必须带 `?sharecode=` 才能访问，故跨域那份构建需要注入分享码）；
 > - 镜像由 FastAPI 后端同源托管，重新发布：`node scripts/build-backend-static.js` 组装 `backend/static/` 后发布 `backend/` 目录（一个域名同时提供页面与 `/api/*`，彻底免除 CORS）。`backend/static/` 为纯产物，已被 `.gitignore` 忽略，不参与版本管理；
 > - 本地调试用的 `.mirror-site/` 静态装配脚本（`stage-mirror.js`）保留，但在线镜像已改由后端托管，不再需要单独发布静态目录。
 >
@@ -222,7 +222,7 @@ npm run test:demo
 
 ### 4.1 登录
 
-打开 <https://penguin-zhou.github.io/FutureMirror/>（国内网络可改用镜像 <https://futuremirror-demo.app.workbuddy.host/>，或本地 `public/futuremirror-demo.html`），使用演示账号：
+打开 <https://penguin-zhou.github.io/FutureMirror/>（国内网络可改用镜像 <https://futuremirror-demo.app.workbuddy.host/?sharecode=ZU6FKJDEK7>，或本地 `public/futuremirror-demo.html`），使用演示账号：
 
 - 账号：`demo@futuremirror.app`
 - 密码：`Demo123456`
@@ -755,11 +755,11 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
 | 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 89 项 + 前端 2969 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
-| 演示视频 1080p MP4  | ✅  | <https://www.bilibili.com/video/BV1tZ4i6WEZL/> （6 分 36 秒 / 1920×1080；直链备份 <https://futuremirror-demo.app.workbuddy.host/media/demo.mp4> ，64.7MB 可下载；原始录制为 2562×1440 HEVC，已转码保证浏览器直放）                                                                                                    |
-| 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html；仓库内> `docs/technical-doc.html`） |
+| 演示视频 1080p MP4  | ✅  | <https://www.bilibili.com/video/BV1tZ4i6WEZL/> （6 分 36 秒 / 1920×1080；直链备份 <https://futuremirror-demo.app.workbuddy.host/media/demo.mp4?sharecode=ZU6FKJDEK7> ，64.7MB 可下载；原始录制为 2562×1440 HEVC，已转码保证浏览器直放）                                                                                                    |
+| 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html?sharecode=ZU6FKJDEK7；仓库内> `docs/technical-doc.html`） |
 | 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，28 页，**随项目材料以附件形式提交**；仓库 Release 同附（正式版 v1.0.0）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0/FutureMirror.TechDoc.pdf> |
 | 在线演示（公网可访问）            | ✅  | <https://penguin-zhou.github.io/FutureMirror/>                                                                                                                                    |
-| 在线演示镜像（国内直连）           | ✅  | <https://futuremirror-demo.app.workbuddy.host/>                                                                                                                                   |
+| 在线演示镜像（国内直连）           | ✅  | <https://futuremirror-demo.app.workbuddy.host/?sharecode=ZU6FKJDEK7>                                                                                                                                   |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456`                                                                                                                                              |
 | 开源许可证                  | ✅  | MIT，见仓库根目录 `LICENSE`                                                                                                                                                              |
 

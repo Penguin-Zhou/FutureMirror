@@ -8,6 +8,11 @@
 const FM_API_DEFAULT_BASE = "http://localhost:8000";
 const fmApi = {
   base: "",
+  /* 镜像站点（WorkBuddy 托管）要求带分享码才能访问 /api/*：
+   * 裸域名一律 403「链接缺少必要信息」，带 ?sharecode=xxx 才放行。
+   * 跨域调用拿不到首次访问留下的 __wb_rsc Cookie，所以每个请求都显式带上。
+   * 同源部署与本地开发保持空字符串，拼接结果与改动前完全一致。 */
+  share: "",
   token: "",
   health: null,
   healthAt: 0,
@@ -16,9 +21,18 @@ const fmApi = {
     let saved = "";
     try { saved = localStorage.getItem("fm_api_base") || ""; } catch (e) {}
     this.base = (window.FM_API_BASE || saved || FM_API_DEFAULT_BASE).replace(/\/+$/, "");
+    this.share = String(window.FM_API_SHARE || "").trim();
     /* sessionStorage 在隐私模式 / 沙箱 iframe 下可能直接抛异常，
      * 与上面的 localStorage 一样必须包起来，否则整个 init() 会中断。 */
     try { this.token = sessionStorage.getItem("fm_token") || ""; } catch (e) { this.token = ""; }
+  },
+  /* 统一拼请求地址：配置了分享码就附加 sharecode，没配则原样返回。
+   * 所有 fetch 都必须走这里，否则镜像侧会被网关挡成 403。 */
+  q(path) {
+    const p = path || "";
+    if (!this.share) return this.base + p;
+    const sep = p.includes("?") ? "&" : "?";
+    return this.base + p + sep + "sharecode=" + encodeURIComponent(this.share);
   },
   backendReady() { return this.ready && !!this.health && this.health.ok; },
   backendModel() { return (this.health && this.health.model) || "后端模型"; },
@@ -76,7 +90,7 @@ const fmApi = {
     /* 超时定时器必须在请求结束后清掉，否则每次健康检测都会留下一个 8 秒的空转定时器 */
     const kill = setTimeout(() => ctrl.abort(), 8000);
     try {
-      const res = await fetch(this.base + "/api/health", { signal: ctrl.signal });
+      const res = await fetch(this.q("/api/health"), { signal: ctrl.signal });
       const j = await res.json();
       /* asr_ready 决定语音走服务端转写还是浏览器接口：浏览器接口在境内连不上厂商云端，
        * 所以后端具备转写能力时要优先用后端。 */
@@ -104,7 +118,7 @@ const fmApi = {
     try { localStorage.setItem("fm_api_base", this.base); } catch (e) {}
   },
   async chat(messages, onDelta, signal) {
-    const res = await fetch(this.base + "/api/chat/stream", {
+    const res = await fetch(this.q("/api/chat/stream"), {
       method: "POST",
       signal,
       headers: this.authHeaders(),
@@ -145,7 +159,7 @@ const fmApi = {
    * 与通用 chat() 的差别是流首多一帧 meta（模型名 / 引用 / 剩余额度），
    * 以及 429 要能区分出「额度」而不是笼统的「调用失败」。 */
   async assistantChat(question, history, onDelta, onMeta, signal) {
-    const res = await fetch(this.base + "/api/assistant/chat", {
+    const res = await fetch(this.q("/api/assistant/chat"), {
       method: "POST",
       signal,
       headers: this.authHeaders(),
@@ -191,7 +205,7 @@ const fmApi = {
     }
   },
   async login(email, pass) {
-    const res = await fetch(this.base + "/api/auth/login", {
+    const res = await fetch(this.q("/api/auth/login"), {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password: pass }),
     });
@@ -206,7 +220,7 @@ const fmApi = {
     return user;
   },
   async register(name, email, pass) {
-    const res = await fetch(this.base + "/api/auth/register", {
+    const res = await fetch(this.q("/api/auth/register"), {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password: pass }),
     });
@@ -223,7 +237,7 @@ const fmApi = {
   async syncAndReport(sess, match) {
     // 1) 建会话（无 interviewId 时）
     if (!sess.interviewId) {
-      const res = await fetch(this.base + "/api/interviews", {
+      const res = await fetch(this.q("/api/interviews"), {
         method: "POST", headers: this.authHeaders(),
         body: JSON.stringify({ mode: sess.mode || "general", job: "" }),
       });
@@ -231,7 +245,7 @@ const fmApi = {
       sess.interviewId = (await res.json()).id;
     }
     // 2) 批量同步问答
-    const sync = await fetch(this.base + "/api/interviews/" + sess.interviewId + "/sync", {
+    const sync = await fetch(this.q("/api/interviews/" + sess.interviewId + "/sync"), {
       method: "POST", headers: this.authHeaders(),
       body: JSON.stringify({ turns: sess.turns.map((t, i) => ({
         seq: i + 1, agent: t.agent, question: t.question,
@@ -240,7 +254,7 @@ const fmApi = {
     });
     if (!sync.ok) throw new Error("同步问答失败 HTTP " + sync.status);
     // 3) 服务端生成报告
-    const rep = await fetch(this.base + "/api/interviews/" + sess.interviewId + "/report", {
+    const rep = await fetch(this.q("/api/interviews/" + sess.interviewId + "/report"), {
       method: "POST", headers: this.authHeaders(),
       body: JSON.stringify({
         match_score: match ? match.matchScore : null,
