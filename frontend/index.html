@@ -104,6 +104,7 @@ try {
         <a href="#features">功能</a>
         <a href="#workflow">流程</a>
         <a href="#stats">数据</a>
+        <a href="#api">API 接入</a>
         <a href="changelog.html">更新日志</a>
       </div>
       <div class="landing-nav-meta">
@@ -359,6 +360,54 @@ try {
           <div class="val" data-count="3">0</div>
           <div class="lbl">面试模式</div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- API 接入：页面上每个动作对应的真实 HTTP 端点，可直接用 curl 复现 -->
+  <section class="landing-section" id="api">
+    <div class="wrap">
+      <div class="landing-section-head">
+        <h2 class="landing-section-title">能力不止在页面里</h2>
+        <p class="landing-section-sub">
+          页面上每个动作，后端都是同一套 HTTP 接口。下面这些路径可以直接用 curl 打，
+          返回结构与页面所见一致——没有为演示另开一套假后端。
+        </p>
+      </div>
+
+      <div class="lp-api-grid">
+        <div class="lp-api-col">
+          <div class="lp-api-kicker">ENDPOINTS · 已上线</div>
+          <div class="lp-api-list">
+            <div class="lp-api-row"><span class="lp-api-m">GET</span><span class="lp-api-p">/api/health<em>运行状态、模型与知识库计数</em></span></div>
+            <div class="lp-api-row"><span class="lp-api-m">POST</span><span class="lp-api-p">/api/auth/login<em>口令 scrypt 校验，签发 JWT</em></span></div>
+            <div class="lp-api-row"><span class="lp-api-m">POST</span><span class="lp-api-p">/api/chat/stream<em>SSE 流式对话，逐 token 返回</em></span></div>
+            <div class="lp-api-row"><span class="lp-api-m">GET</span><span class="lp-api-p">/api/interviews<em>当前账号的面试记录与回合</em></span></div>
+            <div class="lp-api-row"><span class="lp-api-m">POST</span><span class="lp-api-p">/api/interviews/{id}/report<em>服务端评分，五维加权落库</em></span></div>
+            <div class="lp-api-row"><span class="lp-api-m">GET</span><span class="lp-api-p">/api/live/stats<em>看板聚合指标，WS 断线时的轮询通道</em></span></div>
+            <div class="lp-api-row"><span class="lp-api-m">WS</span><span class="lp-api-p">/ws/live<em>每 3 秒推送一次实时指标</em></span></div>
+          </div>
+        </div>
+        <div class="lp-api-col">
+          <div class="lp-api-kicker">TRY IT · 可直接复制</div>
+          <pre class="lp-api-code">BASE="https://futuremirror-demo.app.workbuddy.host"
+SC="ZU6FKJDEK7"
+
+# 1. 免鉴权：确认后端与模型是否就绪
+curl "$BASE/api/health?sharecode=$SC"
+
+# 2. 需要令牌：边缘网关会覆盖 Authorization，
+#    客户端令牌走自定义头
+curl "$BASE/api/interviews?sharecode=$SC" \
+  -H "X-Auth-Token: $TOKEN"</pre>
+          <p class="lp-api-note">镜像入口需带分享码；GitHub Pages 入口已内置，无需手动拼接。</p>
+        </div>
+      </div>
+
+      <div class="lp-api-facts">
+        <div class="lp-api-fact"><b>REST + SSE</b><p>流式对话走 Server-Sent Events，前端逐 token 渲染，不靠轮询。</p></div>
+        <div class="lp-api-fact"><b>自定义头鉴权</b><p>托管平台的边缘网关会改写 Authorization，令牌改用 X-Auth-Token 传递。</p></div>
+        <div class="lp-api-fact"><b>按设备计额</b><p>限流按 X-Anon-Id 落到 SQLite，不依赖来源 IP——代理换出口也不漏计。</p></div>
       </div>
     </div>
   </section>
