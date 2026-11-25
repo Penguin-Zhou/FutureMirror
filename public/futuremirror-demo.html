@@ -25576,10 +25576,18 @@ try { fmApi.init(); } catch (e) { /* 存储不可用时保持 base 为空，后�
     }
     return b.replace(/^http/, "ws").replace(/\/+$/, "") + "/ws/live";
   }
+  /* 托管平台的镜像域名只认带分享码的请求：裸地址会被网关挡成 403，
+   * 拿到非 JSON 响应后看板会一直显示「本地」。分享码由构建时注入，
+   * 未注入时 URL 与改动前完全一致。 */
+  function shareCode() {
+    try { return String(win.FM_API_SHARE || "").trim(); } catch (e) { return ""; }
+  }
   function statsEndpoint() {
     const b = apiBase();
-    if (!b || b === "same-origin") return win.location ? "/api/live/stats" : "";
-    return b.replace(/\/+$/, "") + "/api/live/stats";
+    const s = shareCode();
+    const tail = "/api/live/stats" + (s ? "?sharecode=" + encodeURIComponent(s) : "");
+    if (!b || b === "same-origin") return win.location ? tail : "";
+    return b.replace(/\/+$/, "") + tail;
   }
   function startLive(host, read, ms, o) {
     if (!host) return null;
