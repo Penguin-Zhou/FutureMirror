@@ -7691,6 +7691,16 @@ body:has(#view-landing.active) {
   padding-top: 8px;
 }
 
+/* 页脚两个静默入口（开发者模式 / 科技版展示页）并排，中间一个间隔点 */
+#view-landing .lp-devfoot-sep {
+  margin: 0 4px;
+  color: var(--lp-faint);
+}
+
+#view-landing a.lp-link-quiet {
+  text-decoration: none;
+}
+
 #view-landing .site-foot {
   margin-top: 40px;
   padding: 44px 0 56px;
@@ -8787,6 +8797,7 @@ body:has(#view-landing.active) {
         <a href="#stats">数据</a>
         <a href="#api">开放接口</a>
         <a href="changelog.html">更新日志</a>
+        <a href="landing-tech/" data-static-link>科技版</a>
       </div>
       <div class="landing-nav-meta">
         <button class="lp-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式"><span data-ic="moon">🌙</span></button>
@@ -9137,6 +9148,8 @@ curl "$BASE/api/interviews?sharecode=$SC" \
     <button class="lp-link-quiet" onclick="openEvaluatorGate()" title="仅访客与开发者可见">
       开发者模式 →
     </button>
+    <span class="lp-devfoot-sep" aria-hidden="true">·</span>
+    <a class="lp-link-quiet" href="landing-tech/" data-static-link>科技版展示页 →</a>
   </section>
 
   <footer class="site-foot">
@@ -10720,7 +10733,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
         <div class="boundary-item"><b>向量库双形态</b>：本地单文件版用浏览器内单机索引（localStorage 存 40 条面经向量，MiniLM 384 维，混合打分在浏览器内完成）；在线与离线共用同一套浏览器内混合打分与五特征重排策略。后续规划升级为 pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank。</div>
         <div class="boundary-item"><b>代码沙盒为浏览器 Worker 隔离</b>：具备 2s 超时熔断，仅支持纯 JS 逻辑题；后续规划集成 QuickJS WASM 沙盒，支持多语言与虚拟文件系统。</div>
         <div class="boundary-item"><b>MCP 为本地模拟 Server</b>：协议结构与真实 MCP 一致，后续规划接入跨进程真实 MCP，实现跨 Agent 工具发现。</div>
-        <div class="boundary-item"><b>演示视频已发布</b>：6 分 36 秒 / 1920×1080，<a href="https://www.bilibili.com/video/BV1tZ4i6WEZL/" target="_blank" rel="noopener">B 站在线播放</a>；另留<a href="https://futuremirror-demo.app.workbuddy.host/media/demo.mp4" target="_blank" rel="noopener">站内直链</a>（64.7MB，可下载离线观看）。原始录制为 2562×1440 HEVC，浏览器兼容性差，已转码为 1920×1080 H.264，播放端无需装解码器。</div>
+        <div class="boundary-item"><b>演示视频已发布</b>：6 分 36 秒 / 1920×1080，<a href="https://www.bilibili.com/video/BV1tZ4i6WEZL/" target="_blank" rel="noopener">B 站在线播放</a>；另留<a href="https://futuremirror-demo.app.workbuddy.host/media/demo.mp4?sharecode=ZU6FKJDEK7" target="_blank" rel="noopener">站内直链</a>（64.7MB，可下载离线观看）。原始录制为 2562×1440 HEVC，浏览器兼容性差，已转码为 1920×1080 H.264，播放端无需装解码器。</div>
       </div>
     </section>
 
@@ -25116,6 +25129,28 @@ function refreshBackendUi() {
 try { fmApi.init(); } catch (e) { /* 存储不可用时保持 base 为空，后续请求自然降级 */ }
 
 
+
+/* 静态页入口补码：科技版落地页（landing-tech/）是独立静态文件，不是 hash 路由，
+ * 跳过去会重新发一次文档请求——镜像网关只认带 sharecode 的地址，裸路径 403。
+ * 页面里这类链接写的仍是相对地址，加载后统一补上当前地址带的码；
+ * GitHub Pages 与本地开发没有该参数，链接原样保留。 */
+fmApi.staticHref = function (href) {
+  let share = this.share;
+  if (!share) {
+    try { share = new URLSearchParams(location.search).get("sharecode") || ""; } catch (e) { share = ""; }
+  }
+  if (!share) return href;
+  try {
+    const u = new URL(href, location.href);
+    u.searchParams.set("sharecode", share);
+    return u.href;
+  } catch (e) { return href; }
+};
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("a[data-static-link]").forEach((a) => {
+    a.setAttribute("href", fmApi.staticHref(a.getAttribute("href")));
+  });
+});
 /* ============================================================
  * X. 动效与交互层 v29（Beta 1.1.0 · 完整性补全层）
  * 印刷风纪律：位移只用水平/scale，禁止 translateY 上浮入场；

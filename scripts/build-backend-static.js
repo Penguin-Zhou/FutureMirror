@@ -58,6 +58,16 @@ if (fs.existsSync(CHANGELOG)) {
   console.warn("⚠️ 未找到 public/changelog.html，跳过更新日志页");
 }
 
+/* ---------- 3b) 科技版落地页（独立静态页，自带 assets/） ----------
+ * 与单文件演示页并存：主站导航与页脚各留一个入口，站内跳转走相对路径。
+ * 整目录原样复制，入口 /landing-tech/（StaticFiles(html=True) 认目录下的 index.html）。 */
+const TECH = path.join(ROOT, "frontend", "landing-tech");
+if (fs.existsSync(path.join(TECH, "index.html"))) {
+  fs.cpSync(TECH, path.join(OUT, "landing-tech"), { recursive: true });
+} else {
+  console.warn("⚠️ 未找到 frontend/landing-tech，跳过科技版落地页");
+}
+
 /* ---------- 4) 端侧模型权重 ---------- */
 const MODELS = path.join(ROOT, "public", "models");
 if (fs.existsSync(MODELS)) {
@@ -101,5 +111,5 @@ const dirSize = (d) =>
     );
 console.log(`✅ 后端静态目录已就绪 → backend/static/（${(dirSize(OUT) / 1024 / 1024).toFixed(1)}MB）`);
 console.log(
-  "   演示页 / · 文档 /docs/technical-doc.html · 评分方法 /docs/scoring-method.html · 作品介绍 /docs/作品介绍.docx · 日志 /changelog.html · 模型 /models/ · 视频 /media/demo.mp4"
+  "   演示页 / · 文档 /docs/technical-doc.html · 评分方法 /docs/scoring-method.html · 作品介绍 /docs/作品介绍.docx · 日志 /changelog.html · 科技版 /landing-tech/ · 模型 /models/ · 视频 /media/demo.mp4"
 );

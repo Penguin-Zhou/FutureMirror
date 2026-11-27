@@ -603,6 +603,7 @@ futuremirror/
 │   └── .env.example                # 复制为 .env 填 Key；.env 永不进仓库
 ├── frontend/                       # 模块版前端（由单文件版拆分，行为逐字节等价）
 │   ├── index.html                  # 骨架 + 3 张 link + 44 个 script（按依赖序）
+│   ├── landing-tech/               # 科技版落地页（独立静态页 + 自带 assets/，随同一发布链路上线）
 │   ├── css/                        # tokens / theme / app 三层
 │   ├── js/
 │   │   ├── core/                   # store / auth / theme / router / api / boot / reveal …
@@ -760,6 +761,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，28 页，**随项目材料以附件形式提交**；仓库 Release 同附（正式版 v1.0.0）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0/FutureMirror.TechDoc.pdf> |
 | 在线演示（公网可访问）            | ✅  | <https://penguin-zhou.github.io/FutureMirror/>                                                                                                                                    |
 | 在线演示镜像（国内直连）           | ✅  | <https://futuremirror-demo.app.workbuddy.host/?sharecode=ZU6FKJDEK7>                                                                                                                                   |
+| 科技版落地页（公网）            | ✅  | <https://penguin-zhou.github.io/FutureMirror/landing-tech/> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/landing-tech/?sharecode=ZU6FKJDEK7>）。与演示页并存的另一套版式，主站导航与页脚各有入口 |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456`                                                                                                                                              |
 | 开源许可证                  | ✅  | MIT，见仓库根目录 `LICENSE`                                                                                                                                                              |
 
@@ -769,7 +771,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 # 方案 0：GitHub Pages（当前在线演示 + 在线技术文档所用，纯静态、零成本、随仓库更新）
 node scripts/fetch-model.js             # 首次：拉端侧模型权重到 public/models/（约 23MB，已 gitignore）
 node scripts/deploy-pages.js --build    # 重建单文件版 → 强推 gh-pages 分支
-                                        # 产物：index.html / 404.html / .nojekyll / docs/technical-doc.html / models/
+                                        # 产物：index.html / 404.html / .nojekyll / docs/technical-doc.html / landing-tech/ / models/
 
 # 方案 0b：国内直连镜像（同一份产物 + 同源后端，托管 backend/ 目录，Python 服务）
 node scripts/build-backend-static.js   # 把演示页 / 文档 / 日志 / 端侧模型装配进 backend/static/（已 gitignore）

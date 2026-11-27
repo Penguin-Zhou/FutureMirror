@@ -48,6 +48,20 @@ if (fs.existsSync(CHANGELOG)) {
   console.warn("⚠️ 未找到 public/changelog.html，跳过更新日志页");
 }
 
+/* 科技版落地页（独立静态页 + 自带 assets/）：整目录原样复制，入口 /landing-tech/ */
+const TECH = path.join(ROOT, "frontend", "landing-tech");
+let techKB = 0;
+if (fs.existsSync(path.join(TECH, "index.html"))) {
+  fs.cpSync(TECH, path.join(OUT_DIR, "landing-tech"), { recursive: true });
+  const walk = (d) =>
+    fs
+      .readdirSync(d, { withFileTypes: true })
+      .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
+  techKB = walk(path.join(OUT_DIR, "landing-tech")) / 1024;
+} else {
+  console.warn("⚠️ 未找到 frontend/landing-tech，跳过科技版落地页");
+}
+
 /* 端侧模型权重随站点自托管：同源读取，彻底绕开 CORS 与 huggingface 不可达 */
 let modelMB = 0;
 const MODEL_SRC = path.join(ROOT, "public", "models");
@@ -67,5 +81,6 @@ const version = (html.match(/beta\s*1\.0/i) || ["Beta 1.0"])[0];
 console.log(`✅ 镜像目录已就绪 → .mirror-site/（index.html + 404.html，${sizeKB}KB，${version}）`);
 if (docKB) console.log(`   技术文档 → .mirror-site/docs/technical-doc.html（${docKB.toFixed(1)}KB）`);
 if (clKB) console.log(`   更新日志 → .mirror-site/changelog.html（${clKB.toFixed(1)}KB）`);
+if (techKB) console.log(`   科技版落地页 → .mirror-site/landing-tech/（${(techKB / 1024).toFixed(1)}MB）`);
 if (modelMB) console.log(`   端侧模型 → .mirror-site/models/（${modelMB.toFixed(1)}MB，同源可读）`);
 console.log("   发布：在 WorkBuddy 中对该目录执行「发布为应用」（静态站点）");

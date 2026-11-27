@@ -35,6 +35,17 @@ const CHANGED = [
   "models/pdfjs/pdf.worker.min.js",
 ];
 
+/* 目录型产物：整棵子树递归枚举后追加进上传列表。
+ * 科技版落地页含 130+ 个小文件（CSS/JS/SVG 各自按需 fetch），
+ * 不能像单文件页那样塞成一坨，只能逐个建 blob。 */
+const DIRS = ["landing-tech"];
+
+/* 依据本地内容算 git blob sha，和远端树对一下：内容没变的文件直接跳过，
+ * 免得每次发版都把 1MB 级静态资源重传一遍。 */
+function blobSha(abs) {
+  return execFileSync("git", ["hash-object", "--", abs], { encoding: "utf8" }).trim();
+}
+
 function gh(args, input) {
   return execFileSync("gh", ["api", ...args, ...(input ? ["--input", "-"] : [])], {
     input: input || undefined,
@@ -48,9 +59,34 @@ const headSha = gh([`repos/${REPO}/commits/${BRANCH}`, "--jq", ".sha"]);
 const baseTree = gh([`repos/${REPO}/commits/${BRANCH}`, "--jq", ".commit.tree.sha"]);
 console.log(`gh-pages 头: ${headSha.slice(0, 7)}，base_tree: ${baseTree.slice(0, 7)}`);
 
+/* 1b) 远端现有文件 sha（用于跳过内容未变的文件） */
+const remoteSha = new Map();
+try {
+  const full = JSON.parse(gh([`repos/${REPO}/git/trees/${baseTree}?recursive=1`]));
+  for (const e of full.tree || []) if (e.type === "blob") remoteSha.set(e.path, e.sha);
+} catch (e) {
+  console.warn("⚠️ 读取远端树失败，本次全量上传");
+}
+
+/* 1c) 目录型产物展开为文件列表 */
+const FILES = CHANGED.slice();
+for (const dir of DIRS) {
+  const abs = path.join(STAGED, dir);
+  if (!fs.existsSync(abs)) continue;
+  const walk = (d, prefix) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const rel = `${prefix}/${e.name}`;
+      if (e.isDirectory()) walk(path.join(d, e.name), rel);
+      else FILES.push(rel);
+    }
+  };
+  walk(abs, dir);
+}
+
 /* 2) 为每个变化文件建 blob（base64，支持二进制） */
 const entries = [];
-for (const rel of CHANGED) {
+let reused = 0;
+for (const rel of FILES) {
   const abs = path.join(STAGED, rel);
   if (!fs.existsSync(abs)) {
     if (rel.indexOf("models/") === 0) {
@@ -60,11 +96,20 @@ for (const rel of CHANGED) {
     console.error(`❌ 缺少 ${rel}`);
     process.exit(1);
   }
+  if (remoteSha.get(rel) === blobSha(abs)) {
+    reused++;
+    continue;
+  }
   const b64 = fs.readFileSync(abs).toString("base64");
   const body = JSON.stringify({ content: b64, encoding: "base64" });
   const sha = JSON.parse(gh([`repos/${REPO}/git/blobs`, "-X", "POST"], body)).sha;
   console.log(`blob ${rel}: ${sha.slice(0, 7)}（${(b64.length / 1024 / 1024).toFixed(2)}MB base64）`);
   entries.push({ path: rel, mode: "100644", type: "blob", sha });
+}
+if (reused) console.log(`↺ 远端已有同内容文件 ${reused} 个，跳过上传`);
+if (!entries.length) {
+  console.log("✅ 无内容变化，gh-pages 保持不动");
+  process.exit(0);
 }
 
 /* 3) 基于 base_tree 建新树（嵌套路径由 API 自动展开） */

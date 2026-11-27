@@ -79,7 +79,17 @@ const browserGlobals = {
 };
 
 module.exports = [
-  { ignores: ["node_modules/**", "public/**", "backend/static/**", "dist/**", ".mirror-site/**"] },
+  {
+    ignores: [
+      "node_modules/**",
+      "public/**",
+      "backend/static/**",
+      "dist/**",
+      ".mirror-site/**",
+      // 科技版落地页的 assets/ 是第三方视觉库原样自托管（MIT），不本地改写，不参与 lint
+      "frontend/landing-tech/assets/**",
+    ],
+  },
 
   js.configs.recommended,
 
