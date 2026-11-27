@@ -1,4 +1,4 @@
-/* v21 jsdom 功能测试：AI 悬浮球拖拽贴边冻结（位置记忆）+ 移动端页面美化
+/* v21 jsdom 功能测试：AI 悬浮球自由拖动（坐标记忆，不吸附边缘）+ 移动端页面美化
  * 用法：NODE_PATH=<managed-node-workspace>/node_modules node scripts/test-v21-jsdom.js
  */
 const fs = require("fs");
@@ -81,7 +81,7 @@ function cssMedia(cond) {
 setTimeout(runTests, 300);
 
 function runTests() {
-  console.log("\n=== v21 jsdom 功能测试（悬浮球拖拽冻结 + 移动端美化）===");
+  console.log("\n=== v21 jsdom 功能测试（悬浮球自由拖动 + 移动端美化）===");
   const fab = document.getElementById("ai-fab");
   const panel = document.getElementById("ai-assistant-panel");
   const flat = cssFlat();
@@ -94,20 +94,20 @@ function runTests() {
   window.eval("renderUserMenu()");
 
   /* ============ A. 结构与默认态 ============ */
-  console.log("\n-- A. 结构：FAB 托管与默认冻结位 --");
+  console.log("\n-- A. 结构：FAB 托管与默认位置 --");
   ok(!!fab && !!panel, "悬浮球与抽屉存在");
   ok(fab.getAttribute("onclick") === null, "FAB 内联 onclick 已移除（点击/拖拽由 JS 统一托管）");
   ok(
-    /拖动/.test(fab.getAttribute("title") || "") && /冻结/.test(fab.getAttribute("title") || ""),
-    "title 提示「拖动可贴边冻结」"
+    /拖/.test(fab.getAttribute("title") || "") && !/冻结/.test(fab.getAttribute("title") || ""),
+    "title 提示可拖动，且不再宣称「冻结」"
   );
   ok(fab.getAttribute("aria-label") === "AI 小助手", "aria-label 保留");
   ok(!panel.classList.contains("open"), "抽屉默认收起");
   ok(fab.style.left !== "" && fab.style.right === "auto", "启动后 FAB 切换为 left/top 管理（可拖拽基础）");
-  ok(parseFloat(fab.style.left) === window.innerWidth - 16 - 52, "默认冻结在右侧（距右 16px）");
+  ok(parseFloat(fab.style.left) === window.innerWidth - 16 - 52, "默认落在右下角（距右 16px）");
   ok(parseFloat(fab.style.top) === window.innerHeight - 20 - 52, "默认距底 20px");
   ok(fab.classList.contains("hint"), "首次进入显示可拖动提示光环");
-  ok(!window.eval("store.get('fm_ai_fab')"), "无历史冻结位时不读取旧值");
+  ok(!window.eval("store.get('fm_ai_fab')"), "首次进入不写入位置记忆");
   ok(document.querySelector(".sb-footer").textContent.includes("1.0.0"), "侧栏版本号 1.0.0");
 
   /* ============ B. 点击开合 ============ */
@@ -122,18 +122,18 @@ function runTests() {
   ok(!panel.classList.contains("open"), "再次点击收起抽屉");
   ok(!document.body.classList.contains("ai-open"), "body.ai-open 同步（抽屉收起）");
 
-  /* ============ C. 拖拽冻结到左侧 ============ */
-  console.log("\n-- C. 拖拽冻结：左侧 + 位置记忆 --");
+  /* ============ C. 自由拖动：停在松手处 + 位置记忆 ============ */
+  console.log("\n-- C. 自由拖动：停在松手处 + 位置记忆 --");
   dragFab(956, 696, 40, 300);
   const saved = window.eval("store.get('fm_ai_fab')");
-  ok(saved && saved.side === "left" && typeof saved.y === "number", "冻结位写入 store（side=left）");
+  ok(saved && saved.x === 40 && saved.y === 300, "松手坐标写入 store（x=40, y=300）");
   ok(
-    (window.localStorage.getItem("u_test_fm_ai_fab") || "").includes("left"),
-    "冻结位持久化到 localStorage（跨会话保留）"
+    (window.localStorage.getItem("u_test_fm_ai_fab") || "").includes('"x":40'),
+    "坐标持久化到 localStorage（跨会话保留）"
   );
-  ok(document.body.classList.contains("ai-fab-left"), "body.ai-fab-left 镜像标记");
-  ok(fab.style.left === "16px", "松手后贴边吸附到左侧 16px");
-  ok(document.getElementById("toast").classList.contains("show"), "冻结后 toast 提示");
+  ok(document.body.classList.contains("ai-fab-left"), "球在左半区 → 抽屉从左滑出（body.ai-fab-left）");
+  ok(fab.style.left === "40px" && fab.style.top === "300px", "不做贴边吸附：就停在松手的 40/300");
+  ok(!document.getElementById("toast").classList.contains("show"), "松手不再弹「已冻结」提示");
   clickFab(); // 拖动结束伴随的 click 应被吞掉
   ok(!panel.classList.contains("open"), "拖动后误触的 click 被抑制（不弹抽屉）");
   clickFab();
@@ -142,43 +142,48 @@ function runTests() {
 
   /* ============ D. 边界钳制 ============ */
   console.log("\n-- D. 拖拽边界钳制 --");
-  dragFab(16, 300, 16, -5000);
+  dragFab(40, 300, 40, -5000);
   ok(parseFloat(fab.style.top) >= 72, "向上拖出视口时钳制在 72px（顶栏+导航之下）");
-  dragFab(16, 300, 16, 9000);
+  dragFab(40, 300, 40, 9000);
   ok(parseFloat(fab.style.top) <= window.innerHeight - 72, "向下拖出视口时钳制在底边留白内");
-  dragFab(16, 300, 5000, 300);
+  dragFab(40, 300, 5000, 300);
   ok(parseFloat(fab.style.left) <= window.innerWidth - 52 - 4, "向右拖出视口时钳制在右边缘内");
-  ok(window.eval("store.get('fm_ai_fab').side") === "right", "越界后仍按中心点判定左右");
+  ok(window.eval("store.get('fm_ai_fab').x") > window.innerWidth / 2, "越界后按实际坐标判定左右半区");
 
-  /* ============ E. 右侧冻结 ============ */
-  console.log("\n-- E. 拖拽冻结：右侧 --");
+  /* ============ E. 右侧自由位 ============ */
+  console.log("\n-- E. 右侧：钳制而非吸附 --");
   dragFab(500, 300, 980, 300);
-  ok(window.eval("store.get('fm_ai_fab').side") === "right", "右侧冻结写入 store");
-  ok(!document.body.classList.contains("ai-fab-left"), "右侧冻结移除镜像标记");
-  ok(fab.style.left === window.innerWidth - 16 - 52 + "px", "右侧贴边吸附（距右 16px）");
+  ok(window.eval("store.get('fm_ai_fab').x") > window.innerWidth / 2, "右侧坐标写入 store");
+  ok(!document.body.classList.contains("ai-fab-left"), "球在右半区 → 移除镜像标记");
+  ok(fab.style.left === window.innerWidth - 52 - 4 + "px", "右边界停在钳制位（距边 4px），不吸附回 16px 贴边");
   clickFab(); // 消费本次拖动残留的 click 抑制标记，避免影响后续用例
 
   /* ============ F. 位置记忆 API 与视口变化 ============ */
   console.log("\n-- F. 位置记忆与 resize 重钳制 --");
   ok(!!window.FmAiFab && typeof window.FmAiFab.apply === "function", "暴露 FmAiFab 调试 API");
-  window.eval("FmAiFab.apply({ side: 'left', y: 300 }, false)");
-  ok(fab.style.left === "16px" && fab.style.top === "300px", "按记忆位恢复（left=16, top=300）");
-  window.eval("FmAiFab.apply({ side: 'right', y: 300 }, false)");
+  window.eval("FmAiFab.apply({ x: 200, y: 260 }, false)");
   ok(
-    fab.style.left === window.innerWidth - 16 - 52 + "px" && !document.body.classList.contains("ai-fab-left"),
-    "右侧记忆位恢复并移除镜像"
+    fab.style.left === "200px" && fab.style.top === "260px" && document.body.classList.contains("ai-fab-left"),
+    "按坐标还原（left=200, top=260）并在左半区"
+  );
+  window.eval("FmAiFab.apply({ side: 'left', y: 300 }, false)");
+  const legacyLeft = fab.style.left;
+  window.eval("FmAiFab.apply({ x: 800, y: 300 }, false)");
+  ok(
+    legacyLeft === "16px" && fab.style.left === "800px" && !document.body.classList.contains("ai-fab-left"),
+    "兼容早期贴边位 { side, y }；坐标恢复后移除镜像"
   );
   window.dispatchEvent(new window.Event("resize"));
   setTimeout(() => {
     const y = parseFloat(fab.style.top);
     ok(y >= 72 && y <= window.innerHeight - 72, "resize 后位置重新钳制在合法区间");
 
-    /* ============ G. 冻结相关样式（CSSOM） ============ */
-    console.log("\n-- G. 冻结相关样式 --");
+    /* ============ G. 悬浮球样式（CSSOM） ============ */
+    console.log("\n-- G. 悬浮球样式 --");
     ok(/body\.ai-open \.ai-fab \{[^}]*opacity:\s*0/.test(flat), "抽屉打开时悬浮球隐藏");
     ok(
       /body\.ai-fab-left \.ai-panel \{\s*left:\s*20px;\s*right:\s*auto;\s*\}/.test(flat),
-      "桌面端左侧冻结时抽屉镜像（min-width:901 媒体内）"
+      "球在左半区时抽屉镜像（min-width:901 媒体内）"
     );
     ok(/\.ai-fab\.dragging \{[^}]*transition:\s*none/.test(flat), "拖拽中禁用过渡（跟手）");
     ok(/\.ai-fab\.dragging \{[^}]*transform:\s*scale\(1\.12\)/.test(flat), "拖拽中放大反馈");

@@ -583,7 +583,7 @@
  * ============================================================ */
 :root { --sai-bottom: env(safe-area-inset-bottom, 0px); }
 
-/* ---------- 1) 悬浮球：可拖动 + 贴边冻结 ---------- */
+/* ---------- 1) 悬浮球：自由拖动（停在任何位置，不吸附边缘） ---------- */
 .ai-fab {
   touch-action: none;                        /* 指针事件接管拖动，不触发页面滚动 */
   -webkit-user-select: none; user-select: none;
@@ -1383,15 +1383,18 @@ img, svg, video, canvas { max-width: 100%; }
   .chat-input .btn { min-width: 44px; padding-left: 8px; padding-right: 8px; }
 }
 
-/* ---------- 11) 面试页悬浮球避让输入栏 ---------- */
+/* ---------- 11) 面试页悬浮球默认避让输入栏 ---------- */
 @media (max-width: 900px) {
-  /* 悬浮球由 JS 写内联 left/top 定位，只有 !important 能覆盖；
-   * 面试页让它浮在输入栏上方，避免盖住「发送」。其余页面保持可拖拽。 */
-  body[data-page="interview"] .ai-fab {
+  /* 悬浮球由 JS 写内联 left/top 定位，只有 !important 能覆盖。
+   * 只在用户还没自己摆过位置时生效：一旦拖动（data-fab="free"）就交回自由定位，
+   * 否则面试页会变成「球拖不动」的冻结态。 */
+  body[data-page="interview"] .ai-fab:not([data-fab="free"]) {
     top: auto !important;
     left: auto !important;
     right: 14px !important;
     bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body[data-page="interview"] .ai-fab {
     width: 44px; height: 44px; font-size: 19px;
   }
   .chat-input input { min-width: 0; }

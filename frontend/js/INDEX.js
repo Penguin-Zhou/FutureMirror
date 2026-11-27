@@ -15,7 +15,7 @@
  *   ⑪ 题库与 VIP(v19) … QUIZ_BANK / isVip / renderQuizPage / startQuiz / renderVipCard
  *   ⑫ 题库增强与 AI 助手(v20) … QUIZ_MODES / beginQuiz / fm_wrong / fm_fav / fm_daily
  *                     / runQuizSearch / recordAnswer / toggleAiAssistant / sendAiAssistant
- *   ⑬ 悬浮球拖拽冻结(v21) … applyAiFabPos / initAiFabDrag / fm_ai_fab / 移动端美化
+ *   ⑬ 悬浮球自由拖动(v21) … applyAiFabPos / initAiFabDrag / fm_ai_fab / 移动端美化
  *   ⑭ 后端适配层(v22) … fmApi / checkHealth / syncAndReport / llmLabel / testApiBase
  *   ⑮ 体验层(v23–v24) … 打字指示器 / 空状态 / 滚动进度线 / 粒子场 / 视差 / 涟漪
  *   ⑯ 滚动驱动层(v26) … 返回顶部进度环 / 滚动侦测 / 蓝图绘制线

@@ -286,11 +286,14 @@ function appendAiMsg(role, text, isHtml) {
 }
 
 /* ============================================================
- * v21 · AI 悬浮球：拖拽移动 + 贴边冻结（位置记忆，刷新/换账号保留）
+ * v21 · AI 悬浮球：自由拖动（停在松手处，位置记忆，刷新/换账号保留）
+ *   拖动只跟手，不吸附边缘、不弹「已冻结」提示；松手停在原地，
+ *   下次进入按坐标还原。也兼容 v21 早期写入的贴边位 { side, y }。
  * ============================================================ */
 (function () {
   const FAB_KEY = "fm_ai_fab";
-  const EDGE = 16;        // 贴边留白
+  const EDGE = 16;        // 默认位置距右留白
+  const MIN_EDGE = 4;     // 拖动贴边的最小留白（不让球贴着视口边）
   const TOP_MIN = 72;     // 顶栏（58px）+ 移动端导航（44px）之下
   const BOTTOM_MIN = 72;  // 距视图底边留白（给底部弹层/手势区让位）
   const MOVE_THRESHOLD = 6;
@@ -300,6 +303,7 @@ function appendAiMsg(role, text, isHtml) {
   function fabEl() { return (typeof document !== "undefined" && document) ? $("ai-fab") : null; }
   function vw() { return (typeof window !== "undefined" && window && window.innerWidth) || 1024; }
   function vh() { return (typeof window !== "undefined" && window && window.innerHeight) || 768; }
+  function isNum(v) { return typeof v === "number" && isFinite(v); }
   function safeBottom() {
     try {
       const n = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sai-bottom"));
@@ -307,25 +311,36 @@ function appendAiMsg(role, text, isHtml) {
     } catch (e) { return 0; }
   }
   function clampY(y) { return Math.max(TOP_MIN, Math.min(y, vh() - BOTTOM_MIN)); }
+  function clampX(x, size) { return Math.max(MIN_EDGE, Math.min(x, vw() - size - MIN_EDGE)); }
   function setBodyFlag(cls, on) {
     try { if (document && document.body) document.body.classList.toggle(cls, on); } catch (e) {}
   }
 
-  /* 应用冻结位置：pos = { side: "left"|"right", y: <px> }；pos 为空时回默认右下角 */
+  /* 还原位置：pos = { x, y }（像素坐标，任意位置都合法，只在出界时拉回）。
+   * pos 为空 → 默认右下角；pos.side 是 v21 早期格式，换算成对应边缘的坐标。 */
   function applyAiFabPos(pos, animate) {
     const el = fabEl();
     if (!el) return;
     const size = el.offsetWidth || 52;
-    const side = pos && pos.side === "left" ? "left" : "right";
     const inset = safeBottom();
-    const y = clampY(pos && typeof pos.y === "number" ? pos.y : vh() - (20 + inset) - size);
-    const x = side === "left" ? EDGE : vw() - EDGE - size;
+    let x = vw() - EDGE - size;
+    let y = vh() - (20 + inset) - size;
+    if (pos && isNum(pos.x)) {
+      x = pos.x;
+      if (isNum(pos.y)) y = pos.y;
+    } else if (pos && pos.side) {
+      x = pos.side === "left" ? EDGE : vw() - EDGE - size;
+      if (isNum(pos.y)) y = pos.y;
+    }
+    x = clampX(x, size);
+    y = clampY(y);
     if (!animate) el.style.transition = "none";
     el.style.right = "auto";
     el.style.bottom = "auto";
     el.style.left = Math.round(x) + "px";
     el.style.top = Math.round(y) + "px";
-    setBodyFlag("ai-fab-left", side === "left");
+    /* 只用来决定抽屉从哪一侧滑出（球在左半区就从左出），不影响球能否再拖 */
+    setBodyFlag("ai-fab-left", x + size / 2 < vw() / 2);
     if (!animate) { void el.offsetWidth; el.style.transition = ""; }
   }
   function saveAiFabPos(pos) { try { store.set(FAB_KEY, pos, true); } catch (e) {} }
@@ -358,13 +373,15 @@ function appendAiMsg(role, text, isHtml) {
       if (!dragMoved) {
         if (Math.sqrt(dx * dx + dy * dy) < MOVE_THRESHOLD) return;
         dragMoved = true;
+        /* 真的开始拖了，位置就归用户：面试页那条默认避让（CSS !important）随之失效 */
+        el.dataset.fab = "free";
       }
       if (e.cancelable) e.preventDefault();
       el.style.transition = "none";
       el.style.right = "auto";
       el.style.bottom = "auto";
       const w = el.offsetWidth || 52;
-      el.style.left = Math.max(4, Math.min(ox + dx, vw() - w - 4)) + "px";
+      el.style.left = clampX(ox + dx, w) + "px";
       el.style.top = clampY(oy + dy) + "px";
     });
 
@@ -374,15 +391,16 @@ function appendAiMsg(role, text, isHtml) {
       pid = null;
       el.classList.remove("dragging");
       if (!dragMoved) return;               // 未移动 → 交给 click 处理（开/合抽屉）
-      /* 以 style 中的实时位置判定贴边（不依赖布局，触屏/无头环境一致） */
-      const w = el.offsetWidth || 52;
-      const curLeft = parseFloat(el.style.left) || 0;
-      const curTop = parseFloat(el.style.top) || 0;
-      const side = (curLeft + w / 2) < vw() / 2 ? "left" : "right";
-      const pos = { side: side, y: Math.round(curTop) };
-      applyAiFabPos(pos, true);
-      saveAiFabPos(pos);
-      toast(side === "left" ? "🧊 已冻结在左侧" : "🧊 已冻结在右侧");
+      /* 松手就停在那儿：只做出界拉回，不做贴边吸附、不弹提示 */
+      applyAiFabPos(
+        { x: parseFloat(el.style.left) || 0, y: parseFloat(el.style.top) || 0 },
+        false
+      );
+      saveAiFabPos({
+        x: Math.round(parseFloat(el.style.left) || 0),
+        y: Math.round(parseFloat(el.style.top) || 0),
+      });
+      el.dataset.fab = "free";
       /* 兜底复位：异常终止（如 pointercancel 无 click）时避免吞掉下一次点击 */
       setTimeout(() => { dragMoved = false; }, 400);
     };
@@ -402,9 +420,11 @@ function appendAiMsg(role, text, isHtml) {
   }
 
   function bootAiFab() {
-    applyAiFabPos(store.get(FAB_KEY, null), false);
+    const saved = store.get(FAB_KEY, null);
+    applyAiFabPos(saved, false);
     const el = fabEl();
-    if (el && !store.get(FAB_KEY, null)) {           // 首次进入：提示可拖动
+    if (el && saved) el.dataset.fab = "free";        // 有自定义位置：不再套默认避让
+    if (el && !saved) {                              // 首次进入：提示可拖动
       el.classList.add("hint");
       setTimeout(() => el.classList.remove("hint"), 3400);
     }
