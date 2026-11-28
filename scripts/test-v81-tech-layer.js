@@ -35,7 +35,6 @@ function ok(cond, name) {
 }
 
 const techCss = rd("frontend/css/tech-layer.css");
-const landingCss = rd("frontend/css/landing.css");
 const indexHtml = rd("frontend/index.html");
 const manifest = JSON.parse(rd("frontend/build-manifest.json"));
 const demoHtml = rd("public/futuremirror-demo.html");
@@ -83,23 +82,15 @@ ok(cssList[cssList.length - 1] === "css/tech-layer.css", "它是最后一层（�
 ok(/css\/landing\.css[\s\S]{0,200}?css\/tech-layer\.css/.test(indexHtml), "index.html 里排在 landing.css 之后");
 ok(/--fm-neon/.test(demoHtml) && /fm-voice-bars/.test(demoHtml), "单文件产物里带着新层与声波锚点");
 
-/* ============ ② 锚色：只有一个霓虹 ============ */
-console.log("\n-- ② 锚色：一个霓虹，不撒彩虹 --");
-ok(/--fm-neon:\s*#00e5ff/.test(techCss), "主霓虹是青 #00e5ff（与「面镜 / 反射」的气质匹配）");
-const hexColors = (techNoComment.match(/#[0-9a-fA-F]{3,8}\b/g) || []).map((s) => s.toLowerCase());
-const saturated = [...new Set(hexColors)].filter((h) => {
-  const v = h.slice(1);
-  if (v.length !== 6) return false;
-  const r = parseInt(v.slice(0, 2), 16);
-  const g = parseInt(v.slice(2, 4), 16);
-  const b = parseInt(v.slice(4, 6), 16);
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  return max > 200 && max - min > 90; // 高饱和
-});
+/* ============ ② 锚色：一个 hue，三档主题色 ============ */
+console.log("\n-- ② 锚色：一个 hue，三档主题色 --");
+ok(/--fm-hue:\s*187/.test(techCss), "默认色相 187（青，与「面镜 / 反射」的气质匹配）");
+ok(/--fm-neon:\s*hsl\(var\(--fm-hue\)/.test(techCss), "主色由 hue 三元组派生（写死十六进制时切主题色就动不了）");
+ok(!/--fm-neon:\s*#/.test(techNoComment), "主色没有被钉成某个固定十六进制");
+ok(!/rgba\(0,\s*229,\s*255/.test(techNoComment), "正文零写死的青 rgba —— 否则换色相时这一处不跟");
 ok(
-  saturated.every((h) => h === "#00e5ff" || h === "#5cf2ff" || h === "#04121a"),
-  "高饱和色只有青系一支（实测 " + (saturated.join(" ") || "无") + "）"
+  (techNoComment.match(/hsl\(var\(--fm-hue\)/g) || []).length >= 20,
+  "锚色透明度梯度全部走变量（实测 " + (techNoComment.match(/hsl\(var\(--fm-hue\)/g) || []).length + " 处）"
 );
 ok(
   !/#8b5cf6|#a855f7|#7c3aed|\bpurple\b|\bviolet\b|lavender/i.test(techNoComment),
@@ -107,22 +98,32 @@ ok(
 );
 ok(!/linear-gradient\([^)]*(#ff|rgb\(255,\s*0)/i.test(techNoComment), "没有暖色渐变（沿用暖纸的配色逻辑）");
 ok(
-  (techNoComment.match(/rgba\(0,\s*229,\s*255/g) || []).length >= 8 &&
-    (techNoComment.match(/var\(--fm-neon\)/g) || []).length >= 10,
-  "锚色被真正复用（rgba 与 var 两种写法各十处以上）"
+  /:root\[data-accent="green"\] #view-landing\s*\{\s*--fm-hue:\s*150/.test(techCss),
+  "绿档只换色相（与内页牛客绿同一色相区间）"
+);
+ok(
+  /:root\[data-accent="blue"\] #view-landing\s*\{\s*--fm-hue:\s*216/.test(techCss),
+  "蓝档只换色相（与内页科技蓝同一色相区间）"
 );
 
-/* ============ ③ 令牌：两套主题同一个深空 ============ */
-console.log("\n-- ③ 令牌：深浅都落进深空 --");
+/* ============ ③ 令牌：亮色暖纸 / 暗色深空 ============ */
+console.log("\n-- ③ 令牌：两套主题真的不同 --");
 const root = rule(techCss, "#view-landing");
-ok(/--lp-bg:\s*var\(--fm-void\)/.test(root), "底色令牌指向深空（不再指向暖纸）");
 ok(/--lp-r:\s*12px/.test(root), "圆角收到 12px（24px 太软）");
-ok(/--fm-void:\s*#06080f/.test(root), "深空底 #06080f（比纯黑多一层蓝）");
-ok(/--brand:\s*var\(--fm-neon\)/.test(root), "蓝图品牌色在落地页内转青（雷达 / 下划线跟着变）");
+ok(/--fm-void:\s*#fcfaf8/.test(root), "亮色底是暖纸 #fcfaf8（不再把亮色也钉成深空）");
+ok(!/--fm-void:\s*#06080f/.test(root), "亮色块里不存在深空底");
+ok(/--fm-lit:\s*28%/.test(root), "亮色明度 28%（青字在暖纸上对比 ≈4.6:1）");
+ok(/--brand:\s*var\(--fm-neon\)/.test(root), "蓝图品牌色跟着锚色走（切主题色时雷达一起变）");
 const dark = rule(techCss, '[data-theme="dark"] #view-landing');
-ok(/--lp-bg:\s*var\(--fm-void\)/.test(dark), "暗色主题也重设 --lp-bg（否则会翻回暖纸 #131311）");
-ok(/--lp-ink:\s*#e8f6fb/.test(dark), "暗色主题的字色与浅色一致");
+ok(/--fm-void:\s*#06080f/.test(dark), "暗色主题落深空 #06080f（比纯黑多一层蓝）");
+ok(/--fm-lit:\s*50%/.test(dark), "暗色明度 50%（正好是 #00e5ff 本身）");
+ok(/--lp-bg:\s*var\(--fm-void\)/.test(dark), "暗色重设 --lp-bg（否则会翻回 landing.css 的 #131311）");
+ok(/--lp-ink:\s*#e8f6fb/.test(dark), "暗色字色提亮到 #e8f6fb");
 ok(!/--lp-r:\s*24px/.test(techCss), "全层没有任何地方把圆角改回 24px");
+ok(
+  !/(^|\n)body:has\(#view-landing\.active\)\s*\{[^}]*color-scheme:\s*dark/.test(techCss),
+  "color-scheme: dark 只写在暗色块（否则亮色也配深色滚动条）"
+);
 
 /* ============ ④ 地平线 ============ */
 console.log("\n-- ④ 地平线：挂在首屏，不铺到图幅后面 --");
@@ -165,8 +166,9 @@ ok(/box-shadow:[^;]*--fm-glow/.test(mock), "外壳带霓虹光晕");
 ok(/\.mock-bubble\.ai:last-child::before/.test(techCss), "当前轮次左侧一根 2px 霓虹竖线");
 ok(/@keyframes fmBreathe/.test(techCss), "竖线做呼吸（不是每行都动）");
 ok(
-  /\.mock-bubble\.user\s*\{[^}]*rgba\(255, 255, 255, 0\.1\)/.test(techCss),
-  "我方气泡改成半透明亮面（深色页里白底会刺眼）"
+  /\.mock-bubble\.user\s*\{[^}]*var\(--fm-bub-user\)/.test(techCss) &&
+    /\[data-theme="dark"\] #view-landing \{[\s\S]*?--fm-bub-user:\s*rgba\(255, 255, 255, 0\.1\)/.test(techCss),
+  "我方气泡的底随主题互换（亮色淡青 / 暗色半透明亮面）"
 );
 
 /* ============ ⑦ 到达感 ============ */

@@ -8716,33 +8716,90 @@ body:has(#view-landing.active) {
   box-shadow: inset 0 0 0 1px rgba(244, 241, 232, 0.28);
 }
 /* ============================================================
- * v81 · 科技视觉强化层（霓虹青锚点 / 透视网格 / 声波锚点 / 终端壳）
+ * v82 · 科技视觉强化层（霓虹锚点 / 透视网格 / 声波锚点 / 终端壳）
  * ------------------------------------------------------------
  * 排位：landing.css 之后。整层只作用于 #view-landing，不改版式——
  * 容器宽、栅格列数、clamp 字号仍由 v58 层决定，这里只做视觉信号。
  *
- * 三条硬规则（写死在本层，改动前先看这一节）：
- *   1) 全站只有一个霓虹：青 #00E5FF。不撒彩虹，不引入第二个高饱和色；
- *   2) 边框一律 1px 半透明霓虹，hover 只提亮与发光，不位移；
+ * 三条硬规则（改动前先看这一节）：
+ *   1) 全站只有一个锚色。色相由 --fm-hue 决定，明度由主题决定，
+ *      其余全是同一个 hue 的透明度梯度。不撒彩虹，不引入第二个高饱和色；
+ *   2) 边框一律 1px 半透明锚色，hover 只提亮与发光，不位移；
  *   3) 圆角收到 12px —— 科技感偏好更锋利的几何，24px 太软。
  *
- * 霓虹只在三处出现：焦点元素、当前轮次、可交互描边。其余保持低对比，
- * 让「哪里能点、哪里正在发生」一眼可辨。
+ * v82 修正：这一层原先把亮色也钉成深空、把 --brand 钉成青，#theme 与
+ * #accent 两个开关在落地页上双双失效。现在全程变量驱动：
+ *   色相 --fm-hue  ← :root[data-accent]（默认青 / 青绿 / 电蓝）
+ *   明度 --fm-lit  ← [data-theme]（亮 28% / 暗 50%）
+ *   底色 --lp-bg   ← 亮色回暖纸，暗色落深空
  * ============================================================ */
 
 #view-landing {
-  /* 霓虹三档：主色 / 描边 / 光晕 */
-  --fm-neon: #00e5ff;
-  --fm-neon-lift: #5cf2ff;
-  --fm-line: rgba(0, 229, 255, 0.18);
-  --fm-line-strong: rgba(0, 229, 255, 0.42);
-  --fm-glow: 0 0 24px rgba(0, 229, 255, 0.16);
-  --fm-glow-strong: 0 0 34px rgba(0, 229, 255, 0.3);
+  /* ---- 锚色：hue 跟主题色走，明度跟亮暗走 ----
+   * 亮色把明度压到 28%，青字在暖纸上的对比才够（≈4.6:1）；
+   * 暗色抬到 50%，就是 #00e5ff 本身。 */
+  --fm-hue: 187;
+  --fm-sat: 100%;
+  --fm-lit: 28%;
+  --fm-lit-lift: 38%;
+  --fm-neon: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit));
+  --fm-neon-lift: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit-lift));
+  --fm-line: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.18);
+  --fm-line-strong: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.42);
+  --fm-glow: 0 0 0 1px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.04),
+    0 6px 20px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.06);
+  --fm-glow-strong: 0 0 0 1px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.12),
+    0 8px 26px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.12);
 
-  /* 深空三级：底 / 面 / 浮面。比纯黑多一层蓝，才有纵深 */
+  /* ---- 底色：亮色仍是暖纸（和内页同一张纸），暗色才落深空 ---- */
+  --fm-void: #fcfaf8;
+  --fm-surface: #ffffff;
+  --fm-surface-2: #f2f0ec;
+
+  /* ---- 明暗互换的那几个值：纸上不能有白字，墨上不能有黑字 ---- */
+  --fm-ink-strong: #0a0a0a;
+  --fm-on-neon: #ffffff;
+  --fm-bub: rgba(255, 255, 255, 0.72);
+  --fm-bub-user: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.1);
+  --fm-bub-user-line: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.28);
+  --fm-toplight: rgba(255, 255, 255, 0.5);
+  --fm-code-bg: #eef3f5;
+  --fm-nav: rgba(252, 250, 248, 0.94);
+  --fm-code-ink: hsl(var(--fm-hue) var(--fm-sat) 22%);
+  --fm-drop: 0 18px 44px rgba(10, 20, 30, 0.14);
+
+  /* 图幅是仪器面板，亮色取冷调浅青，与暖纸形成一层区分 */
+  --lp-panel-a: #f7fafb;
+  --lp-panel-b: #e6eff2;
+  --lp-panel-ink: #0a0a0a;
+  --lp-r: 12px;
+  --lp-r-sm: 10px;
+
+  /* 蓝图令牌：雷达 / 刻度 / 下划线仍在用 var(--brand)，让它们跟着主题色走 */
+  --brand: var(--fm-neon);
+}
+
+/* 暗色：只改明度与底材，色相不动 —— 切主题色时两套主题一起变 */
+[data-theme="dark"] #view-landing {
+  --fm-lit: 50%;
+  --fm-lit-lift: 62%;
+  --fm-glow: 0 0 24px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.16);
+  --fm-glow-strong: 0 0 34px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.3);
+
   --fm-void: #06080f;
   --fm-surface: #0a0f18;
   --fm-surface-2: #0e1622;
+
+  --fm-ink-strong: #f0fdff;
+  --fm-on-neon: #04121a;
+  --fm-bub: rgba(255, 255, 255, 0.035);
+  --fm-bub-user: rgba(255, 255, 255, 0.1);
+  --fm-bub-user-line: rgba(255, 255, 255, 0.14);
+  --fm-toplight: rgba(255, 255, 255, 0.05);
+  --fm-code-bg: #04121a;
+  --fm-nav: rgba(4, 6, 12, 0.94);
+  --fm-code-ink: #a8eefc;
+  --fm-drop: 0 18px 44px rgba(0, 0, 0, 0.55);
 
   --lp-bg: var(--fm-void);
   --lp-ink: #e8f6fb;
@@ -8754,77 +8811,61 @@ body:has(#view-landing.active) {
   --lp-panel-a: #071019;
   --lp-panel-b: #0a1a24;
   --lp-panel-ink: #e8f6fb;
-  --lp-r: 12px;
-  --lp-r-sm: 10px;
-
-  /* 蓝图令牌同步：雷达 SVG、ticker、标尺仍在用 var(--line) / var(--brand)，
-   * 不跟着翻深就会在深底上「墨线看不见」 */
-  --ink: #e8f6fb;
-  --ink-2: rgba(232, 246, 251, 0.72);
-  --muted: rgba(210, 236, 245, 0.58);
-  --faint: rgba(210, 236, 245, 0.34);
-  --line: var(--fm-line);
-  --line-2: rgba(0, 229, 255, 0.1);
-  --card: var(--fm-surface);
-  --soft: var(--fm-surface-2);
-  --brand: var(--fm-neon);
-}
-
-/* 暗色主题只再压一档：两套主题都落在深色里，切换不会把人送回浅色纸面。
- * 差异保持在「更黑一点 + 光晕略强」，避免同一个页面出现两种气质。 */
-[data-theme="dark"] #view-landing {
-  --fm-void: #04060c;
-  --fm-surface: #080d15;
-  --fm-surface-2: #0b121c;
-
-  --lp-bg: var(--fm-void);
-  --lp-ink: #e8f6fb;
-  --lp-mute: rgba(210, 236, 245, 0.66);
-  --lp-faint: rgba(210, 236, 245, 0.44);
-  --lp-hair: var(--fm-line);
-  --lp-card: var(--fm-surface);
-  --lp-soft: var(--fm-surface-2);
-  --lp-panel-a: #05101a;
-  --lp-panel-b: #081722;
-  --lp-panel-ink: #e8f6fb;
 
   --ink: #e8f6fb;
   --ink-2: rgba(232, 246, 251, 0.72);
   --muted: rgba(210, 236, 245, 0.58);
   --faint: rgba(210, 236, 245, 0.34);
   --line: var(--fm-line);
-  --line-2: rgba(0, 229, 255, 0.1);
+  --line-2: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.1);
   --card: var(--fm-surface);
   --soft: var(--fm-surface-2);
   --brand: var(--fm-neon);
 }
 
+/* 主题色：只换色相。default 档在落地页取青（这是科技版的身份），
+ * 绿 / 蓝与内页同名变体同色相，切过去两页是同一个调子。 */
+:root[data-accent="green"] #view-landing {
+  --fm-hue: 150;
+}
+
+:root[data-accent="blue"] #view-landing {
+  --fm-hue: 216;
+}
+
+/* 电蓝在 50% 明度上比青暗一档，深字压上去几乎看不见 —— 只有这一档翻白字。
+ * 青与绿仍是亮底深字，对比都在 7:1 以上。 */
+:root[data-theme="dark"][data-accent="blue"] #view-landing {
+  --fm-on-neon: #ffffff;
+}
+
+/* body 底色：亮色交给 landing.css（暖纸），只把暗色压到深空 */
 body:has(#view-landing.active) {
-  background-color: #06080f;
   background-image: none;
+}
+
+[data-theme="dark"] body:has(#view-landing.active) {
+  background-color: #06080f;
   /* 深色页配浅色滚动条会像贴了一条白边 */
   color-scheme: dark;
 }
 
-[data-theme="dark"] body:has(#view-landing.active) {
-  background-color: #04060c;
-}
 
 /* ------------------------------------------------------------
  * ① 导航：半透明深空 + 一条霓虹底线
  * ------------------------------------------------------------ */
 #view-landing .landing-nav {
-  background: rgba(6, 8, 15, 0.94);
+  background: var(--fm-nav);
   border-bottom: 1px solid var(--fm-line);
 }
 
 [data-theme="dark"] #view-landing .landing-nav {
-  background: rgba(4, 6, 12, 0.94);
+  background: var(--fm-nav);
 }
 
 #view-landing .lp-logo-dot {
   background: var(--fm-neon);
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
+  box-shadow: 0 0 10px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.7);
 }
 
 #view-landing .landing-nav-links a:hover,
@@ -8833,7 +8874,7 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .lp-icon:hover {
-  background: rgba(0, 229, 255, 0.08);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.08);
   border-color: var(--fm-line-strong);
   color: var(--fm-neon);
 }
@@ -8844,16 +8885,16 @@ body:has(#view-landing.active) {
 #view-landing .lp-pill-solid {
   background: var(--fm-neon);
   border-color: var(--fm-neon);
-  color: #04121a;
-  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.3), 0 0 22px rgba(0, 229, 255, 0.22);
+  color: var(--fm-on-neon);
+  box-shadow: 0 0 0 1px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.3), 0 0 22px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.22);
 }
 
 #view-landing .lp-pill-solid:hover {
   background: var(--fm-neon-lift);
   border-color: var(--fm-neon-lift);
-  color: #04121a;
+  color: var(--fm-on-neon);
   opacity: 1;
-  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.42), var(--fm-glow-strong);
+  box-shadow: 0 0 0 1px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.42), var(--fm-glow-strong);
 }
 
 #view-landing .lp-pill-quiet {
@@ -8871,14 +8912,14 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .lp-pill-line:hover {
-  background: rgba(0, 229, 255, 0.1);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.1);
   border-color: var(--fm-neon);
   color: var(--fm-neon);
 }
 
 #view-landing .hero-kbd-hint kbd {
   border-color: var(--fm-line);
-  background: rgba(0, 229, 255, 0.06);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.06);
   color: var(--lp-mute);
 }
 
@@ -9031,10 +9072,10 @@ body:has(#view-landing.active) {
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 38%, rgba(0, 229, 255, 0.24), rgba(0, 229, 255, 0.03) 68%);
+  background: radial-gradient(circle at 50% 38%, hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.24), hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.03) 68%);
   border: 1px solid var(--fm-line-strong);
   color: var(--fm-neon);
-  box-shadow: var(--fm-glow), inset 0 0 18px rgba(0, 229, 255, 0.12);
+  box-shadow: var(--fm-glow), inset 0 0 18px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.12);
 }
 
 #view-landing .fm-voice-mic svg {
@@ -9062,7 +9103,7 @@ body:has(#view-landing.active) {
   line-height: 1.4;
   text-align: center;
   text-transform: uppercase;
-  color: rgba(210, 236, 245, 0.62);
+  color: var(--lp-mute);
   white-space: nowrap;
   pointer-events: none;
 }
@@ -9073,7 +9114,7 @@ body:has(#view-landing.active) {
 #view-landing .hero-title .grad {
   color: var(--fm-neon);
   background-image: none;
-  text-shadow: 0 0 26px rgba(0, 229, 255, 0.3);
+  text-shadow: 0 0 26px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.3);
 }
 
 /* 逐字下划线（.ch 同时带 .gw 类）在这句里是冗余的：整句已经转青，
@@ -9087,7 +9128,7 @@ body:has(#view-landing.active) {
  * ------------------------------------------------------------ */
 #view-landing .lp-banner {
   border: 1px solid var(--fm-line);
-  background: radial-gradient(120% 90% at 8% 0%, rgba(0, 229, 255, 0.09), transparent 58%),
+  background: radial-gradient(120% 90% at 8% 0%, hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.09), transparent 58%),
     linear-gradient(158deg, var(--lp-panel-a), var(--lp-panel-b));
   box-shadow: var(--fm-glow);
 }
@@ -9098,7 +9139,7 @@ body:has(#view-landing.active) {
   inset: 0 0 auto;
   height: 1px;
   z-index: 2;
-  background: linear-gradient(90deg, var(--fm-neon), rgba(0, 229, 255, 0.28) 34%, transparent 68%);
+  background: linear-gradient(90deg, var(--fm-neon), hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.28) 34%, transparent 68%);
   pointer-events: none;
 }
 
@@ -9110,33 +9151,33 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .lp-banner-kicker {
-  color: rgba(0, 229, 255, 0.72);
+  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.72);
 }
 
 #view-landing .lp-banner-num {
-  color: #f0fdff;
-  text-shadow: 0 0 30px rgba(0, 229, 255, 0.42), 0 0 68px rgba(0, 229, 255, 0.16);
+  color: var(--fm-ink-strong);
+  text-shadow: 0 0 30px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.42), 0 0 68px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.16);
 }
 
 #view-landing .lp-banner-cap {
-  color: rgba(210, 236, 245, 0.66);
+  color: var(--lp-mute);
 }
 
 #view-landing .lp-dim {
-  border-top-color: rgba(0, 229, 255, 0.12);
+  border-top-color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.12);
 }
 
 #view-landing .lp-dim span {
-  color: rgba(210, 236, 245, 0.72);
+  color: var(--lp-mute);
 }
 
 #view-landing .lp-dim i {
-  background: rgba(0, 229, 255, 0.1);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.1);
 }
 
 #view-landing .lp-dim i b {
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.5), var(--fm-neon));
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.45);
+  background: linear-gradient(90deg, hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.5), var(--fm-neon));
+  box-shadow: 0 0 10px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.45);
 }
 
 #view-landing .lp-dim em {
@@ -9144,18 +9185,18 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .lp-banner-foot {
-  border-top-color: rgba(0, 229, 255, 0.12);
-  color: rgba(210, 236, 245, 0.5);
+  border-top-color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.12);
+  color: var(--lp-faint);
 }
 
 #view-landing .bp-sheet .bs-rule,
 #view-landing .bp-sheet .bs-tick {
-  background: rgba(0, 229, 255, 0.28);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.28);
 }
 
 #view-landing .bp-sheet .bs-label {
   background: var(--fm-void);
-  color: rgba(0, 229, 255, 0.62);
+  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.75);
 }
 
 /* ------------------------------------------------------------
@@ -9169,15 +9210,15 @@ body:has(#view-landing.active) {
   background: var(--fm-surface);
   border: 1px solid var(--fm-line);
   border-radius: 12px;
-  box-shadow: var(--fm-glow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: var(--fm-glow), inset 0 1px 0 var(--fm-toplight);
   overflow: hidden;
 }
 
 #view-landing .hero-mock-head {
   position: relative;
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.08), transparent 72%);
+  background: linear-gradient(90deg, hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.08), transparent 72%);
   border-bottom: 1px solid var(--fm-line);
-  color: rgba(0, 229, 255, 0.78);
+  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.78);
 }
 
 #view-landing .hero-mock-head::after {
@@ -9203,27 +9244,27 @@ body:has(#view-landing.active) {
 
 #view-landing .mock-bubble {
   position: relative;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--fm-bub);
   border: 1px solid var(--lp-hair);
   color: var(--lp-ink);
 }
 
 #view-landing .mock-bubble.ai {
-  background: rgba(0, 229, 255, 0.05);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.05);
   border-color: var(--fm-line);
 }
 
 /* 我方回答：原来靠「深底 + 浅字」的明暗反相区分，翻成深色页后反相会变成
  * 一块刺眼白板。改用更高的白度 + 右侧对齐来区分，明暗关系保持一致。 */
 #view-landing .mock-bubble.user {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.14);
-  color: #f4fbfe;
+  background: var(--fm-bub-user);
+  border-color: var(--fm-bub-user-line);
+  color: var(--lp-ink);
 }
 
 #view-landing .mock-bubble .agent-tag {
   font-family: var(--mono);
-  color: rgba(0, 229, 255, 0.78);
+  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.78);
   letter-spacing: 0.06em;
 }
 
@@ -9242,7 +9283,7 @@ body:has(#view-landing.active) {
   width: 2px;
   border-radius: 2px;
   background: var(--fm-neon);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
+  box-shadow: 0 0 12px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.8);
   animation: fmBreathe 2.6s ease-in-out infinite;
   pointer-events: none;
 }
@@ -9259,11 +9300,11 @@ body:has(#view-landing.active) {
 
 /* 雷达：线发光、填充压到极低 —— 精确靠线，不靠色块 */
 #view-landing .mock-radar svg polygon[stroke] {
-  filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.55));
+  filter: drop-shadow(0 0 5px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.55));
 }
 
 #view-landing .mock-radar .radar-sweep line {
-  filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.9));
+  filter: drop-shadow(0 0 4px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.9));
 }
 
 
@@ -9274,15 +9315,15 @@ body:has(#view-landing.active) {
  * （白卡在深底上是一块刺眼的正方形）。顺手补上原来缺的焦点描边。
  * ------------------------------------------------------------ */
 #view-landing .fv-link {
-  stroke: rgba(0, 229, 255, 0.3);
+  stroke: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.3);
 }
 
 #view-landing .fv-link-hub {
-  stroke: rgba(0, 229, 255, 0.5);
+  stroke: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.5);
 }
 
 #view-landing .fv-node {
-  color: rgba(214, 238, 247, 0.78);
+  color: var(--lp-mute);
 }
 
 #view-landing .fv-group {
@@ -9303,18 +9344,18 @@ body:has(#view-landing.active) {
 
 /* 焦点描边：原来那圈 rgba(10,10,10,.28) 在深底上等于没有 */
 #view-landing .fv-node:focus-visible {
-  outline: 2px solid rgba(0, 229, 255, 0.55);
+  outline: 2px solid hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.55);
   outline-offset: 3px;
 }
 
 #view-landing .fv-tip {
   background: var(--fm-surface-2);
   border: 1px solid var(--fm-line);
-  box-shadow: var(--fm-glow), 0 18px 44px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--fm-glow), 0 18px 44px var(--fm-drop);
 }
 
 #view-landing .fv-tip-idx {
-  background: rgba(0, 229, 255, 0.12);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.12);
   color: var(--fm-neon);
 }
 
@@ -9323,11 +9364,11 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .fv-tip-body {
-  color: rgba(210, 236, 245, 0.78);
+  color: var(--lp-mute);
 }
 
 #view-landing .fv-tip-group {
-  color: rgba(0, 229, 255, 0.62);
+  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.72);
 }
 
 /* ------------------------------------------------------------
@@ -9340,7 +9381,7 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .spec-chip span {
-  color: rgba(0, 229, 255, 0.6);
+  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.72);
   letter-spacing: 0.12em;
 }
 
@@ -9349,25 +9390,25 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .feature-block {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 46%), var(--fm-surface);
+  background: linear-gradient(180deg, var(--fm-toplight), transparent 46%), var(--fm-surface);
   border: 1px solid var(--fm-line);
   transition: border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
 }
 
 #view-landing .feature-block:hover {
-  background: linear-gradient(180deg, rgba(0, 229, 255, 0.08), transparent 50%), var(--fm-surface-2);
+  background: linear-gradient(180deg, hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.08), transparent 50%), var(--fm-surface-2);
   border-color: var(--fm-line-strong);
   box-shadow: var(--fm-glow);
 }
 
 #view-landing .feature-block .fb-icon {
   font-family: var(--mono);
-  color: rgba(0, 229, 255, 0.55);
+  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.68);
   letter-spacing: 0.1em;
 }
 
 #view-landing .workflow-step .ws-num {
-  color: rgba(0, 229, 255, 0.6);
+  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.72);
 }
 
 #view-landing .workflow-step .ws-draw {
@@ -9375,20 +9416,20 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .workflow-step:hover {
-  background: rgba(0, 229, 255, 0.04);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.04);
 }
 
 #view-landing .landing-stat .val {
-  color: #f0fdff;
-  text-shadow: 0 0 26px rgba(0, 229, 255, 0.3);
+  color: var(--fm-ink-strong);
+  text-shadow: 0 0 26px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.3);
 }
 
 #view-landing .landing-stat .ls-scale i {
-  background: rgba(0, 229, 255, 0.26);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.26);
 }
 
 #view-landing .landing-stat .ls-scale i:nth-child(4n + 1) {
-  background: rgba(0, 229, 255, 0.5);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.5);
 }
 
 #view-landing .landing-stat .lbl {
@@ -9409,7 +9450,7 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .lp-api-kicker {
-  color: rgba(0, 229, 255, 0.62);
+  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.72);
 }
 
 #view-landing .lp-api-row {
@@ -9421,9 +9462,9 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .lp-api-code {
-  background: #04121a;
+  background: var(--fm-code-bg);
   border-color: var(--fm-line);
-  color: #a8eefc;
+  color: var(--fm-code-ink);
 }
 
 #view-landing .lp-api-note,
@@ -9432,7 +9473,7 @@ body:has(#view-landing.active) {
 }
 
 #view-landing .landing-cta {
-  background: radial-gradient(120% 140% at 50% 0%, rgba(0, 229, 255, 0.1), transparent 62%),
+  background: radial-gradient(120% 140% at 50% 0%, hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.1), transparent 62%),
     var(--fm-surface);
   border: 1px solid var(--fm-line);
   box-shadow: var(--fm-glow);
@@ -9440,11 +9481,11 @@ body:has(#view-landing.active) {
 
 #view-landing .site-foot {
   border-top: 1px solid var(--fm-line);
-  color: rgba(210, 236, 245, 0.5);
+  color: var(--lp-faint);
 }
 
 #view-landing .lp-foot-note {
-  color: rgba(210, 236, 245, 0.46);
+  color: var(--lp-faint);
 }
 
 /* 页脚品牌名保持白：12–14px 的青色小字在深底上会被次像素抗锯齿染出彩边，
@@ -9457,11 +9498,11 @@ body:has(#view-landing.active) {
  * ⑩ 跑马灯 / 区块标尺
  * ------------------------------------------------------------ */
 #view-landing .bp-ticker .tk {
-  color: rgba(210, 236, 245, 0.5);
+  color: var(--lp-faint);
 }
 
 #view-landing .bp-ticker .tk-sep {
-  color: rgba(0, 229, 255, 0.45);
+  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.45);
 }
 
 #view-landing .bp-rail .rail-track {
@@ -9470,7 +9511,7 @@ body:has(#view-landing.active) {
 
 #view-landing .bp-rail .rail-fill {
   background: var(--fm-neon);
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+  box-shadow: 0 0 10px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.6);
 }
 
 #view-landing .bp-rail .rail-item.is-on .ri-dot {
@@ -9528,7 +9569,7 @@ body:has(#view-landing.active) {
   }
 
   #view-landing .lp-banner-num {
-    text-shadow: 0 0 22px rgba(0, 229, 255, 0.36);
+    text-shadow: 0 0 22px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.36);
   }
 }
 
@@ -9576,28 +9617,28 @@ body:has(#view-landing.active) {
  * 目标只有一个：两套主题落进同一个深空。
  * ------------------------------------------------------------ */
 [data-theme="dark"] #view-landing .mock-bubble.ai {
-  background: rgba(0, 229, 255, 0.05);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.05);
   border-color: var(--fm-line);
 }
 
 [data-theme="dark"] #view-landing .mock-bubble.user {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.14);
-  color: #f4fbfe;
+  background: var(--fm-bub-user);
+  border-color: var(--fm-bub-user-line);
+  color: var(--lp-ink);
 }
 
 [data-theme="dark"] #view-landing .fv-link {
-  stroke: rgba(0, 229, 255, 0.3);
+  stroke: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.3);
 }
 
 [data-theme="dark"] #view-landing .fv-link-hub {
-  stroke: rgba(0, 229, 255, 0.5);
+  stroke: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.5);
 }
 
 [data-theme="dark"] #view-landing .fv-tip {
   background: var(--fm-surface-2);
   border: 1px solid var(--fm-line);
-  box-shadow: var(--fm-glow), 0 18px 44px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--fm-glow), 0 18px 44px var(--fm-drop);
 }
 
 [data-theme="dark"] #view-landing .fv-tip-name {
@@ -9605,11 +9646,11 @@ body:has(#view-landing.active) {
 }
 
 [data-theme="dark"] #view-landing .fv-tip-body {
-  color: rgba(210, 236, 245, 0.78);
+  color: var(--lp-mute);
 }
 
 [data-theme="dark"] #view-landing .fv-tip-idx {
-  background: rgba(0, 229, 255, 0.12);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.12);
   color: var(--fm-neon);
 }
 
@@ -9814,7 +9855,7 @@ body:has(#view-landing.active) {
         <div class="spec-chip"><span>LLM</span><b>GLM-4-Flash</b></div>
         <div class="spec-chip"><span>Agents</span><b>5 席圆桌</b></div>
         <div class="spec-chip"><span>Scoring</span><b>确定性引擎 + LLM 增强</b></div>
-        <div class="spec-chip"><span>Tests</span><b>jsdom 3016 ／ pytest 89</b></div>
+        <div class="spec-chip"><span>Tests</span><b>jsdom 3024 ／ pytest 89</b></div>
       </aside>
     </div>
   </section>
@@ -9835,7 +9876,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">3016 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">3024 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -9845,7 +9886,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">3016 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">3024 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -11432,7 +11473,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、3016 项前端断言 + 89 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、3024 项前端断言 + 89 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -11612,7 +11653,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（45 模块 + 5 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、3016 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（45 模块 + 5 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、3024 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
