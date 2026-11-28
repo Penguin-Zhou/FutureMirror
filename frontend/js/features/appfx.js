@@ -21,7 +21,7 @@
   const FX = (window.__bpApp = {
     choreograph: null, countUpScan: null, reportIn: null,
     cross: false, coord: false, draw: false, speaking: false,
-    reportViz: false, formFx: false, annotate: false,
+    reportViz: false, formFx: false, annotate: false, hero3d: false,
     setCrosshair: null,
   });
 
@@ -311,6 +311,34 @@
     FX.coord = true;
   }
 
+  /* ---------- ⑧ 封面 3D：鼠标经过首屏时整块轻微转动 ----------
+   * 只写两个 CSS 变量，其余交给 CSS；触屏与 reduced-motion 不绑，
+   * 静态角度由样式兜底，所以「没有 JS」也立得住。
+   * 移动时把过渡关掉，离开时恢复——不然每次都从上一个角度追过来。 */
+  function initHero3D() {
+    const first = document.querySelector("#view-landing .lp-first");
+    const stage = first && first.querySelector(".fm3d-stage");
+    if (!first || !stage) return;
+    if (reduced()) return;
+    try { if (matchMedia("(hover: none)").matches) return; } catch (e) {}
+    first.addEventListener("pointermove", e => {
+      if (e.pointerType === "touch") return;
+      const r = first.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const nx = (e.clientX - r.left) / r.width - 0.5;   // -0.5 … 0.5
+      const ny = (e.clientY - r.top) / r.height - 0.5;
+      stage.style.transition = "none";
+      stage.style.setProperty("--ry", (-13 + nx * 16).toFixed(1) + "deg");
+      stage.style.setProperty("--rx", (8 - ny * 12).toFixed(1) + "deg");
+    }, { passive: true });
+    first.addEventListener("pointerleave", () => {
+      stage.style.transition = "";
+      stage.style.removeProperty("--ry");
+      stage.style.removeProperty("--rx");
+    }, { passive: true });
+    FX.hero3d = true;
+  }
+
   /* ---------- ⑦ 开发者模式绘制线（eval-section 顶部 2px 墨线） ---------- */
   function initEvalDraw() {
     const secs = [...document.querySelectorAll(".eval-section")];
@@ -573,6 +601,7 @@
     try { initInterviewFx(); } catch (e) {}
     try { initCrosshair(); } catch (e) {}
     try { initCoordReadout(); } catch (e) {}
+    try { initHero3D(); } catch (e) {}
     try { initEvalDraw(); } catch (e) {}
     try { initFormFx(); } catch (e) {}
     try { initAnnotation(); } catch (e) {}

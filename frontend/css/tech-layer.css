@@ -967,40 +967,36 @@ body:has(#view-landing.active) {
 }
 
 /* ============================================================
- * v83 · 功能卡：悬停翻转 + 放大，背面是一个「拟真小窗口」
+ * v84 · 功能卡：翻过来读功能；3D 只留给封面
  * ------------------------------------------------------------
- * 只加结构，不改文案与版式：正面仍是 v58 那张卡，背面换成
- * 一张 300×200 量级的窗口截图——标题栏、交通灯、内容区、界面细节。
+ * v83 把背面做成九屏拟真界面，翻过来还是「看图」。这一版把背面
+ * 换成一份说明书：一句定位 + 三条能力（名称 / 一句解释）+ 一行
+ * 输入输出。翻的是同一块面积，读的是功能本身。
  *
- * 为什么是翻转而不是放大浮层：
- *   九宫格里做 hover 浮层，鼠标一动就遮住邻居，阅读节奏被打断。
- *   翻转把「更多信息」放在同一块面积上，鼠标不动也能看完。
- *
- * 三条约束：
- *   1) 交通灯只用锚色的三档透明度，不引入红黄绿（第二色相会破掉单锚色）；
- *   2) 视频画面（02）固定深色——真实画面不会因为切浅色主题就变白；
- *   3) 只给 (hover: hover) 且精细指针的设备开翻转，触屏与降级走淡入。
+ * 翻转退回「翻页」：不放大、不抬 Z、不压邻居。立体感整块移到
+ * 封面页（见本节末尾的 .fm3d），两处不抢同一件事。
  * ============================================================ */
 
-/* ---- 卡片外壳退成纯容器：视觉全部交给两个面 ---- */
+/* ---- 卡片外壳：纯容器 ---- */
 #view-landing .feature-block.fb3d,
 #view-landing .feature-block.fb3d:hover {
   position: relative;
   z-index: 1;
+  min-height: 240px;
   padding: 0;
   background: none;
   border: 0;
   box-shadow: none;
   border-radius: var(--lp-r);
-  perspective: 1100px;
-  transition: opacity 0.3s ease;
+  perspective: 1400px;
 }
 
 #view-landing .fb3d-inner {
   position: relative;
   height: 100%;
+  min-height: inherit;
   transform-style: preserve-3d;
-  transition: transform 0.66s cubic-bezier(0.2, 0.72, 0.24, 1);
+  transition: transform 0.56s cubic-bezier(0.22, 0.68, 0.24, 1);
 }
 
 #view-landing .fb3d-face,
@@ -1014,7 +1010,7 @@ body:has(#view-landing.active) {
   border-radius: inherit;
 }
 
-/* ---- 正面：原来的卡，加一行「可翻转」提示 ---- */
+/* ---- 正面 ---- */
 #view-landing .fb3d-front {
   position: relative;
   transform: translateZ(0.6px);
@@ -1027,8 +1023,7 @@ body:has(#view-landing.active) {
   transition: border-color 0.28s ease;
 }
 
-/* 坐标标注是「图纸正面」的读数：翻转后是产品窗口，不该带过来。
- * 卡片 hover 即翻转，所以它在翻转卡里始终不出现。 */
+/* 坐标读数属于「图纸正面」，翻转后是功能说明，不该跟过去 */
 #view-landing .fb3d .fb-coord {
   display: none;
 }
@@ -1048,7 +1043,7 @@ body:has(#view-landing.active) {
   letter-spacing: 0;
 }
 
-/* ---- 背面：一块面板 + 浮在上面的窗口 ---- */
+/* ---- 背面：一块面板 + 浮在上面的说明卡 ---- */
 #view-landing .fb3d-back {
   position: absolute;
   inset: 0;
@@ -1058,740 +1053,181 @@ body:has(#view-landing.active) {
   overflow: hidden;
   background: linear-gradient(180deg, var(--fm-toplight), transparent 46%), var(--fm-surface);
   border: 1px solid var(--fm-line);
-  transition: border-color 0.28s ease, box-shadow 0.28s ease;
 }
 
-/* ---- 窗口本身：标题栏 / 交通灯 / 内容区 ---- */
+/* ============================================================
+ * 说明卡：标题栏 / 内容 / 状态栏，三段式；不再是界面仿真
+ * ============================================================ */
 #view-landing .fbw {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  min-width: 0;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   background: var(--fm-win);
   border: 1px solid var(--fm-line);
-  border-radius: 7px;
+  border-radius: 6px;
   box-shadow: var(--fm-win-shadow);
 }
 
 #view-landing .fbw-bar {
   display: flex;
-  gap: 6px;
   align-items: center;
-  height: 21px;
-  padding: 0 8px;
-  flex-shrink: 0;
+  gap: 8px;
+  flex: 0 0 auto;
+  height: 25px;
+  padding: 0 10px;
   background: var(--fm-win-bar);
   border-bottom: 1px solid var(--fm-line);
+  border-radius: 0;
 }
 
 #view-landing .fbw-dots {
   display: flex;
-  gap: 3.5px;
-  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
 }
 
 #view-landing .fbw-dots i {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.55);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.22);
+  border-radius: 50%;
 }
 
+/* 交通灯只用锚色的三档，不引红黄绿——第二色相会破掉单锚色 */
 #view-landing .fbw-dots i:nth-child(2) {
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.36);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.38);
 }
 
 #view-landing .fbw-dots i:nth-child(3) {
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.2);
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.56);
 }
 
 #view-landing .fbw-t {
-  margin-left: 3px;
+  flex: 1;
+  min-width: 0;
   font-family: var(--mono);
-  font-size: 8.5px;
-  letter-spacing: 0.04em;
-  color: var(--fm-win-mute);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--fm-win-mute);
 }
 
-/* 右上角三道斜纹：窗口的「抓手」，拟真的小暗号 */
 #view-landing .fbw-grip {
-  width: 8px;
-  height: 8px;
-  margin-left: auto;
-  flex-shrink: 0;
-  opacity: 0.5;
-  background: repeating-linear-gradient(
-    135deg,
-    hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.5) 0 1px,
-    transparent 1px 2.5px
+  flex: 0 0 auto;
+  width: 14px;
+  height: 7px;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.45) 0 1px,
+    transparent 1px 3px
   );
+  border-radius: 0;
+  opacity: 0.7;
 }
 
 #view-landing .fbw-body {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-  padding: 10px 11px;
-  overflow: hidden;
-  font-size: 9.5px;
-  line-height: 1.5;
-  color: var(--fm-win-ink);
-}
-
-/* 聊天类保留自然流（气泡不能为了铺满被拉开） */
-#view-landing .fbw-body-flow {
   justify-content: flex-start;
-}
-
-/* ---- 通用零件：行 / 标签 / 进度 / 键值 ---- */
-#view-landing .fbw-row {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-#view-landing .fbw-file {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  min-width: 0;
-  font-family: var(--mono);
-  font-size: 8.5px;
-  color: var(--fm-win-ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-#view-landing .fbw-file::before {
-  content: "";
-  width: 7px;
-  height: 9px;
-  flex-shrink: 0;
-  border: 1px solid hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.6);
-  border-radius: 1px;
-}
-
-#view-landing .fbw-tag {
-  flex-shrink: 0;
-  padding: 0 5px;
-  font-family: var(--mono);
-  font-size: 8px;
-  line-height: 1.7;
-  color: var(--fm-neon);
-  border: 1px solid var(--fm-line-strong);
-  border-radius: 3px;
-}
-
-#view-landing .fbw-meter {
-  height: 3px;
-  overflow: hidden;
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.12);
-  border-radius: 2px;
-}
-
-#view-landing .fbw-meter i {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.4), var(--fm-neon));
-}
-
-#view-landing .fbw-kv {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  justify-content: space-between;
-  font-size: 9px;
-  color: var(--fm-win-mute);
-}
-
-#view-landing .fbw-kv b {
-  font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 500;
-  color: var(--fm-win-ink);
-  white-space: nowrap;
-}
-
-#view-landing .fbw-kv b.warn,
-#view-landing .fbw-evi .warn {
-  color: var(--fm-neon);
-}
-
-#view-landing .fbw-chips {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-#view-landing .fbw-chips em {
-  padding: 0 5px;
-  font-size: 8px;
-  font-style: normal;
-  line-height: 1.7;
-  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.9);
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.09);
-  border-radius: 3px;
-}
-
-/* ---- 02 面试画面：固定深色，与主题无关 ---- */
-#view-landing .fbw-stage {
-  position: relative;
-  flex: 1;
-  min-height: 62px;
-  overflow: hidden;
-  background: radial-gradient(120% 90% at 50% 8%, hsl(var(--fm-hue) 42% 14%), #070f14 72%);
-  border-radius: 4px;
-}
-
-#view-landing .fbw-stage::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 46%;
-  content: "";
-  background: linear-gradient(transparent, rgba(4, 10, 14, 0.72));
-  pointer-events: none;
-}
-
-#view-landing .fbw-head {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 30px;
-  height: 30px;
-  margin: -20px 0 0 -15px;
-  border: 1px solid hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.55);
-  border-radius: 50%;
-}
-
-#view-landing .fbw-head::after {
-  position: absolute;
-  left: 50%;
-  top: 29px;
-  width: 52px;
-  height: 22px;
-  margin-left: -26px;
-  content: "";
-  border: 1px solid hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.34);
-  border-bottom: 0;
-  border-radius: 26px 26px 0 0;
-}
-
-/* 两个 2px 的点当眼睛：剪影级抽象，离恐怖谷最远 */
-#view-landing .fbw-head i {
-  position: absolute;
-  left: 8px;
-  top: 12px;
-  width: 2px;
-  height: 2px;
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.55);
-  border-radius: 50%;
-  box-shadow: 10px 0 0 hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.55);
-}
-
-#view-landing .fbw-rec {
-  position: absolute;
-  top: 5px;
-  right: 6px;
-  display: flex;
-  gap: 3px;
-  align-items: center;
-  font-family: var(--mono);
-  font-size: 7px;
-  letter-spacing: 0.14em;
-  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.9);
-}
-
-#view-landing .fbw-rec::before {
-  content: "";
-  width: 4px;
-  height: 4px;
-  background: var(--fm-neon);
-  border-radius: 50%;
-  animation: fbwRec 1.8s steps(1, end) infinite;
-}
-
-#view-landing .fbw-cam {
-  position: absolute;
-  left: 6px;
-  top: 5px;
-  font-family: var(--mono);
-  font-size: 7px;
-  letter-spacing: 0.08em;
-  color: rgba(232, 246, 251, 0.42);
-}
-
-#view-landing .fbw-cap {
-  position: absolute;
-  z-index: 2;
-  left: 6px;
-  right: 6px;
-  bottom: 5px;
-  font-size: 8.5px;
-  line-height: 1.4;
-  text-align: center;
-  color: rgba(232, 246, 251, 0.92);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-}
-
-#view-landing .fbw-foot {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-#view-landing .fbw-who {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  font-size: 8.5px;
-  color: var(--fm-win-mute);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-#view-landing .fbw-foot b {
-  font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 500;
-  color: var(--fm-win-ink);
-}
-
-#view-landing .fbw-wave {
-  display: flex;
-  gap: 2px;
-  align-items: flex-end;
-  flex-shrink: 0;
-  height: 10px;
-}
-
-#view-landing .fbw-wave i {
-  width: 2px;
-  height: 30%;
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.55);
-  border-radius: 1px;
-}
-
-#view-landing .fbw-wave i:nth-child(2n) {
-  height: 68%;
-}
-
-#view-landing .fbw-wave i:nth-child(3n) {
-  height: 96%;
-}
-
-#view-landing .fbw-wave i:nth-child(4n) {
-  height: 48%;
-}
-
-/* ---- 03 / 09 对话气泡 ---- */
-#view-landing .fbw-bub {
-  max-width: 94%;
-  padding: 4px 7px;
-  font-size: 9px;
-  line-height: 1.55;
-  border-radius: 6px;
-}
-
-#view-landing .fbw-bub.q {
-  align-self: flex-end;
-  color: var(--fm-win-ink);
-  background: var(--fm-bub-user);
-  border: 1px solid var(--fm-bub-user-line);
-  border-bottom-right-radius: 2px;
-}
-
-#view-landing .fbw-bub.a {
-  align-self: flex-start;
-  color: var(--fm-win-ink);
-  background: var(--fm-bub);
-  border: 1px solid var(--fm-line);
-  border-bottom-left-radius: 2px;
-}
-
-#view-landing .fbw-bub sup {
-  font-family: var(--mono);
-  font-size: 6.5px;
-  color: var(--fm-neon);
-  vertical-align: super;
-}
-
-#view-landing .fbw-src {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-  font-family: var(--mono);
-  font-size: 7.5px;
-  color: var(--fm-win-mute);
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-#view-landing .fbw-src span::before {
-  content: "";
-  display: inline-block;
-  width: 3px;
-  height: 3px;
-  margin-right: 4px;
-  vertical-align: middle;
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.6);
-  border-radius: 50%;
-}
-
-/* ---- 04 改写对照 ---- */
-#view-landing .fbw-line {
-  padding: 3px 6px;
-  overflow: hidden;
-  font-size: 8.5px;
-  line-height: 1.5;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  border-radius: 3px;
-}
-
-#view-landing .fbw-line.del {
-  color: var(--fm-win-mute);
-  text-decoration: line-through;
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.04);
-}
-
-#view-landing .fbw-line.add {
-  color: var(--fm-win-ink);
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.1);
-  border-left: 2px solid var(--fm-neon);
-}
-
-#view-landing .fbw-six {
-  display: flex;
-  gap: 5px;
-}
-
-#view-landing .fbw-six span {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 3px;
-  font-size: 7px;
-  line-height: 1.2;
-  text-align: center;
-  color: var(--fm-win-mute);
-}
-
-#view-landing .fbw-six i {
-  height: 3px;
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.2);
-  border-radius: 2px;
-}
-
-#view-landing .fbw-six span.on {
-  color: var(--fm-win-ink);
-}
-
-#view-landing .fbw-six span.on i {
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.62);
-}
-
-/* ---- 05 岗位列表 ---- */
-#view-landing .fbw-item {
-  position: relative;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding-bottom: 5px;
-  font-size: 9px;
-  color: var(--fm-win-ink);
-}
-
-#view-landing .fbw-item b {
-  font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 500;
-  color: var(--fm-neon);
-}
-
-#view-landing .fbw-item i {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 2px;
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.42);
-  border-radius: 1px;
-}
-
-/* ---- 06 雷达 ---- */
-#view-landing .fbw-split {
-  display: flex;
-  flex: 1;
   gap: 10px;
-  align-items: center;
-  min-height: 0;
-}
-
-#view-landing .fbw-radar {
-  display: flex;
-  flex: 0 0 37%;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  min-height: 0;
-}
-
-#view-landing .fbw-radar svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-#view-landing .fbw-radar-grid {
-  fill: none;
-  stroke: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.16);
-  stroke-width: 0.8;
-}
-
-#view-landing .fbw-radar-fill {
-  fill: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.14);
-  stroke: var(--fm-neon);
-  stroke-width: 1.1;
-  stroke-linejoin: round;
-}
-
-#view-landing .fbw-radar-dot {
-  fill: var(--fm-neon);
-}
-
-/* 深底上同样的透明度会「消失」：网格与填充各抬一档 */
-[data-theme="dark"] #view-landing .fbw-radar-grid {
-  stroke: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.24);
-}
-
-[data-theme="dark"] #view-landing .fbw-radar-fill {
-  fill: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.22);
-}
-
-#view-landing .fbw-evi {
-  display: flex;
   flex: 1;
+  min-height: 0;
+  padding: 11px 12px;
+  border-radius: 0;
+}
+
+#view-landing .fbw-lead {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: var(--fm-win-ink);
+}
+
+#view-landing .fbw-list {
+  display: flex;
   flex-direction: column;
-  gap: 7px;
-  min-width: 0;
-  font-size: 8.5px;
-  line-height: 1.45;
-  color: var(--fm-win-mute);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-#view-landing .fbw-evi div {
-  display: flex;
-  gap: 5px;
-  align-items: flex-start;
-}
-
-#view-landing .fbw-evi i {
-  width: 3px;
-  height: 3px;
-  flex-shrink: 0;
-  margin-top: 4px;
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.6);
-  border-radius: 50%;
-}
-
-#view-landing .fbw-evi .warn i {
-  background: var(--fm-neon);
-}
-
-/* ---- 07 题目 ---- */
-#view-landing .fbw-q {
-  font-size: 9px;
-  line-height: 1.5;
-  color: var(--fm-win-ink);
-}
-
-#view-landing .fbw-opt {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  padding: 2px 5px;
-  font-family: var(--mono);
-  font-size: 8px;
-  color: var(--fm-win-mute);
-  border: 1px solid var(--fm-line);
-  border-radius: 3px;
-}
-
-#view-landing .fbw-opt i {
+#view-landing .fbw-list li {
   display: grid;
-  width: 11px;
-  height: 11px;
-  flex-shrink: 0;
-  place-items: center;
-  font-style: normal;
-  font-size: 7px;
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.1);
-  border-radius: 2px;
+  /* 62px：五个汉字的能力名（雷达与趋势）也要排在一行 */
+  grid-template-columns: 62px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--fm-line);
 }
 
-#view-landing .fbw-opt.on {
+#view-landing .fbw-list li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+#view-landing .fbw-list b {
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
   color: var(--fm-win-ink);
-  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.07);
-  border-color: var(--fm-line-strong);
 }
 
-#view-landing .fbw-opt.on i {
-  color: var(--fm-on-neon);
-  background: var(--fm-neon);
-}
-
-/* ---- 08 会员 ---- */
-#view-landing .fbw-vip {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-}
-
-#view-landing .fbw-vip span {
-  padding: 0 6px;
-  font-family: var(--mono);
-  font-size: 8px;
-  font-weight: 500;
-  line-height: 1.7;
-  letter-spacing: 0.16em;
-  color: var(--fm-on-neon);
-  background: var(--fm-neon);
-  border-radius: 3px;
-}
-
-#view-landing .fbw-vip b {
-  font-size: 9px;
-  font-weight: 400;
+#view-landing .fbw-list span {
+  font-size: 10.5px;
+  line-height: 1.5;
   color: var(--fm-win-mute);
-}
-
-#view-landing .fbw-check {
-  position: relative;
-  padding-left: 13px;
-  font-size: 9px;
-  color: var(--fm-win-ink);
-}
-
-#view-landing .fbw-check::before {
-  position: absolute;
-  left: 1px;
-  top: 4px;
-  width: 4px;
-  height: 7px;
-  content: "";
-  border-right: 1.5px solid var(--fm-neon);
-  border-bottom: 1.5px solid var(--fm-neon);
-  transform: rotate(42deg);
-}
-
-/* ---- 09 输入框 ---- */
-#view-landing .fbw-btn {
-  height: 21px;
-  margin-top: auto;
-  font-size: 8.5px;
-  line-height: 21px;
-  text-align: center;
-  color: var(--fm-neon);
-  border: 1px solid var(--fm-line-strong);
-  border-radius: 4px;
 }
 
 #view-landing .fbw-status {
   display: flex;
-  flex: none;
   align-items: center;
   justify-content: space-between;
-  height: 17px;
-  padding: 0 9px;
-  font-family: var(--mono);
-  font-size: 7.5px;
-  letter-spacing: 0.04em;
-  color: var(--fm-win-mute);
-  background: var(--fm-win-bar);
+  gap: 8px;
+  flex: 0 0 auto;
+  height: 18px;
+  padding: 0 10px;
   border-top: 1px solid var(--fm-line);
+  border-radius: 0;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  color: var(--fm-win-mute);
 }
 
 #view-landing .fbw-status span:first-child::before {
   content: "";
   display: inline-block;
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
   margin-right: 5px;
-  vertical-align: middle;
-  background: var(--fm-neon);
   border-radius: 50%;
-}
-
-#view-landing .fbw-input {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 20px;
-  margin-top: auto;
-  padding: 0 7px;
-  font-size: 8px;
-  color: var(--fm-win-mute);
-  border: 1px solid var(--fm-line);
-  border-radius: 4px;
-}
-
-#view-landing .fbw-input span {
-  font-family: var(--mono);
-  color: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.7);
-}
-
-@keyframes fbwRec {
-  0%,
-  55% {
-    opacity: 1;
-  }
-  56%,
-  100% {
-    opacity: 0.18;
-  }
+  background: var(--fm-neon);
+  vertical-align: 1px;
 }
 
 /* ---- 交互：只给有真指针的设备 ---- */
 @media (hover: hover) and (pointer: fine) {
   #view-landing .feature-block.fb3d:hover {
-    z-index: 9;
-    box-shadow: var(--fm-lift);
-  }
-
-  /* 九宫格里没有多余空间给投影，用「邻居后退」把焦点让出来：
-   * 只降不透明度，不动位置——整片不会跟着晃。 */
-  #view-landing .feature-grid:has(.fb3d:hover) .fb3d:not(:hover) {
-    opacity: 0.72;
-  }
-
-  /* 深底上黑色投影等于没有：改用锚色环 + 光晕把卡片托起来，
-   * 同时把邻居再压一档（深色卡片淡出 0.72 几乎看不出来）。 */
-  [data-theme="dark"] #view-landing .feature-block.fb3d:hover {
-    box-shadow: var(--fm-lift), 0 0 0 1px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.5),
-      0 0 44px hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.2);
-  }
-
-  [data-theme="dark"] #view-landing .feature-grid:has(.fb3d:hover) .fb3d:not(:hover) {
-    opacity: 0.6;
+    z-index: 3;
   }
 
   #view-landing .fb3d:hover .fb3d-inner {
-    transform: translateZ(40px) rotateY(180deg) scale(1.1);
+    transform: rotateY(180deg);
   }
 
   #view-landing .fb3d:hover .fb3d-back {
     border-color: var(--fm-line-strong);
-    box-shadow: var(--fm-glow-strong);
   }
 }
 
@@ -1821,5 +1257,469 @@ body:has(#view-landing.active) {
 
   #view-landing .fb3d:hover .fb3d-back {
     opacity: 1;
+  }
+}
+
+/* ============================================================
+ * 封面页 3D：一块斜置的面试现场面板
+ * ------------------------------------------------------------
+ * 全站唯一一处立体：四层平面（面板 / 三张浮标）各在不同的 Z 上，
+ * 鼠标经过首屏时整块跟着转 ±9°，浮标因视差各自错开。
+ *
+ * 三条约束：
+ *   1) 不引 Three.js——面板是 DOM，文字是真文字，可选中、可读屏；
+ *   2) 转动由 JS 写两个变量（--rx / --ry），CSS 负责过渡；无 JS
+ *      时用默认角度，静态也成立；
+ *   3) prefers-reduced-motion 不绑 JS，角度固定。
+ * ============================================================ */
+#view-landing .fm-voice {
+  position: relative;
+  display: block;
+  width: min(100%, 700px);
+  height: auto;
+  margin: 24px auto 10px;
+  z-index: 1;
+}
+
+#view-landing .fm3d {
+  /* 显式 100%：auto 在这个 flex item 里会算成 fit-content，面板会被压成 0 宽 */
+  width: 100%;
+  perspective: 1300px;
+  perspective-origin: 50% 42%;
+}
+
+#view-landing .fm3d-stage {
+  position: relative;
+  width: 100%;
+  height: 212px;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 8deg)) rotateY(var(--ry, -13deg));
+  transition: transform 0.5s cubic-bezier(0.22, 0.68, 0.24, 1);
+}
+
+/* ---- 面板 ---- */
+#view-landing .fm3d-deck {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 440px;
+  height: 200px;
+  margin-left: -220px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--fm-line-strong);
+  border-radius: var(--lp-r);
+  background: var(--fm-surface);
+  box-shadow: var(--fm-glow-strong), 0 26px 44px -22px rgba(12, 28, 36, 0.45);
+  transform: translateZ(0);
+}
+
+[data-theme="dark"] #view-landing .fm3d-deck {
+  box-shadow: var(--fm-glow-strong), 0 26px 50px -18px rgba(0, 0, 0, 0.75);
+}
+
+#view-landing .fm3d-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  height: 28px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--fm-line);
+  background: var(--fm-win-bar);
+  border-radius: 0;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  color: var(--fm-win-mute);
+}
+
+#view-landing .fm3d-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--fm-neon);
+}
+
+#view-landing .fm3d-live i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fm-neon);
+  animation: fmHeroLive 1.6s steps(1, end) infinite;
+}
+
+@keyframes fmHeroLive {
+  0%,
+  52% {
+    opacity: 1;
+  }
+  53%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+#view-landing .fm3d-room {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#view-landing .fm3d-rec {
+  padding: 1px 5px;
+  border: 1px solid hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.4);
+  border-radius: 3px;
+  font-size: 7.5px;
+  letter-spacing: 0.1em;
+  color: var(--fm-neon);
+}
+
+#view-landing .fm3d-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  padding: 0 18px;
+  border-radius: 0;
+}
+
+/* 剪影头像：一个圆加两点，不做写实人脸 */
+#view-landing .fm3d-av {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(
+      circle at 50% 118%,
+      hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.5) 0 34%,
+      transparent 35%
+    ),
+    hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.08);
+  border: 1px solid var(--fm-line-strong);
+}
+
+#view-landing .fm3d-av i {
+  position: absolute;
+  top: 20px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--fm-neon);
+  opacity: 0.85;
+}
+
+#view-landing .fm3d-av i:first-child {
+  left: 17px;
+}
+
+#view-landing .fm3d-av i:last-child {
+  left: 29px;
+}
+
+#view-landing .fm3d-q {
+  margin: 0;
+  font-family: "FM Kai", "LXGW WenKai TC", var(--serif);
+  font-size: 17px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: var(--fm-ink-strong);
+  text-align: left;
+}
+
+#view-landing .fm3d-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  height: 44px;
+  padding: 0 14px;
+  border-top: 1px solid var(--fm-line);
+  border-radius: 0;
+}
+
+#view-landing .fm3d-foot .fm-voice-mic {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  box-shadow: none;
+  background: hsl(var(--fm-hue) var(--fm-sat) var(--fm-lit) / 0.14);
+}
+
+#view-landing .fm3d-foot .fm-voice-mic svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 1.8;
+}
+
+/* 24 根条改成横向波形：--i 只定相位，不做角度 */
+#view-landing .fm3d-foot .fm-voice-bars {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  inset: auto;
+}
+
+#view-landing .fm3d-foot .fm-voice-bars i {
+  position: static;
+  width: 2px;
+  height: 16px;
+  margin: 0;
+  border-radius: 1px;
+  background: var(--fm-neon);
+  opacity: 0.55;
+  transform-origin: 50% 50%;
+  transform: none;
+  animation: fmHeroBar 1.5s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * -0.075s);
+}
+
+@keyframes fmHeroBar {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+    opacity: 0.22;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 0.75;
+  }
+}
+
+#view-landing .fm3d-who {
+  flex: 0 0 auto;
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--fm-win-mute);
+}
+
+/* ---- 浮标：三张不同 Z 的小卡 ---- */
+#view-landing .fm3d-tag {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 132px;
+  padding: 8px 10px;
+  border: 1px solid var(--fm-line-strong);
+  border-radius: 6px;
+  background: var(--fm-surface);
+  box-shadow: 0 12px 22px -14px rgba(12, 28, 36, 0.4);
+  border-radius: 6px;
+}
+
+[data-theme="dark"] #view-landing .fm3d-tag {
+  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.7);
+}
+
+#view-landing .fm3d-tag b {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  color: var(--fm-neon);
+}
+
+#view-landing .fm3d-tag span {
+  font-size: 9.5px;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  color: var(--fm-mute, var(--lp-mute));
+}
+
+#view-landing .fm3d-t1 {
+  left: 0;
+  top: 26px;
+  transform: translateZ(58px);
+}
+
+#view-landing .fm3d-t2 {
+  right: 0;
+  top: 4px;
+  transform: translateZ(96px);
+}
+
+#view-landing .fm3d-t3 {
+  left: 34px;
+  bottom: 2px;
+  transform: translateZ(34px);
+}
+
+/* 两环套在面板左下角的麦克风上：纯装饰，随面板一起转 */
+#view-landing .fm3d-stage > .fm-voice-ring {
+  inset: auto;
+  left: calc(50% - 217px);
+  top: 148px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
+/* 标签回到文档流：原本绝对定位挂在球下方，会压到面板 */
+#view-landing .fm-voice-cap {
+  position: static;
+  width: 100%;
+  margin: 12px 0 0;
+  transform: none;
+  text-align: center;
+}
+
+/* 触屏：不做跟随，给一个固定的轻角度（保持「这是一块立起来的板」） */
+@media (hover: none) {
+  #view-landing .fm3d-stage {
+    transform: rotateX(4deg) rotateY(0deg);
+  }
+}
+
+/* 降级：角度固定，浮标不再随鼠标动 */
+@media (prefers-reduced-motion: reduce) {
+  #view-landing .fm3d-stage {
+    transform: rotateX(4deg) rotateY(0deg);
+    transition: none;
+  }
+
+  #view-landing .fm3d-foot .fm-voice-bars i,
+  #view-landing .fm3d-live i {
+    animation: none;
+  }
+}
+
+/* ---- 窄屏：面板撑满、浮标收起（浮标在 375 宽会盖住正文） ---- */
+@media (max-width: 900px) {
+  #view-landing .fm-voice {
+    width: 100%;
+    margin: 20px auto 14px;
+  }
+
+  #view-landing .fm3d-stage {
+    height: 178px;
+  }
+
+  #view-landing .fm3d-deck {
+    left: 0;
+    top: 4px;
+    width: 100%;
+    height: 164px;
+    margin-left: 0;
+  }
+
+  #view-landing .fm3d-tag {
+    display: none;
+  }
+
+  #view-landing .fm3d-bar {
+    height: 24px;
+    padding: 0 10px;
+    font-size: 8px;
+  }
+
+  #view-landing .fm3d-body {
+    gap: 12px;
+    padding: 0 12px;
+  }
+
+  #view-landing .fm3d-av {
+    width: 40px;
+    height: 40px;
+  }
+
+  #view-landing .fm3d-av i {
+    top: 15px;
+  }
+
+  #view-landing .fm3d-av i:first-child {
+    left: 13px;
+  }
+
+  #view-landing .fm3d-av i:last-child {
+    left: 23px;
+  }
+
+  #view-landing .fm3d-q {
+    font-size: 14.5px;
+    line-height: 1.45;
+  }
+
+  #view-landing .fm3d-foot {
+    height: 40px;
+    padding: 0 10px;
+    gap: 10px;
+  }
+
+  #view-landing .fm3d-foot .fm3d-who {
+    display: none;
+  }
+
+  #view-landing .fm3d-stage > .fm-voice-ring {
+    left: 6px;
+    top: 120px;
+    width: 40px;
+    height: 40px;
+  }
+
+  #view-landing .fm-voice-cap {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    margin-top: 8px;
+  }
+}
+
+/* ---- 三列变窄（≈1024）：能力名与解释改上下排，说明不再被挤成三行 ---- */
+@media (max-width: 1100px) {
+  #view-landing .feature-block.fb3d,
+  #view-landing .feature-block.fb3d:hover {
+    min-height: 266px;
+  }
+
+  #view-landing .fbw-list li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+
+  #view-landing .fbw-lead {
+    font-size: 11px;
+  }
+
+  #view-landing .fbw-list b,
+  #view-landing .fbw-list span {
+    font-size: 10px;
+  }
+}
+
+/* ---- 手机：两列一张卡只剩 164 宽，说明书放不下——不翻，只留正面 ---- */
+@media (max-width: 640px) {
+  #view-landing .fb3d-back {
+    display: none;
+  }
+
+  /* 背面不渲染，翻转就必须一起关掉——否则正面被 backface 藏起来，只剩一块空白 */
+  #view-landing .fb3d:hover .fb3d-inner {
+    transform: none;
+  }
+
+  /* 手机卡高交给正面内容决定，不再沿用三列的 266px（会剩一大截空白） */
+  #view-landing .feature-block.fb3d,
+  #view-landing .feature-block.fb3d:hover,
+  #view-landing .fb3d-inner {
+    min-height: 0;
+  }
+
+  #view-landing .fb3d-front {
+    padding: 20px 16px 18px;
+  }
+
+  #view-landing .fb3d-hint {
+    display: none;
   }
 }
