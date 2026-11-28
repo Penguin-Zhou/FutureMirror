@@ -167,6 +167,12 @@ try {
         </div>
 
         <div class="hero-kbd-hint">按 <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> 打开命令面板 · 直达任意功能页</div>
+
+        <!-- 封面银河：♾ 的粒子轨道。WebGL 在顶点着色器里按 gl_VertexID 推导位置，
+             不占 CPU；无 WebGL 时退成同一曲线的 2D 点阵静帧。
+             放在正文之后：绝对定位不占位，靠 z-index 压到文字下面，
+             阅读顺序里它仍然是最后一块装饰。 -->
+        <canvas class="lp-galaxy" aria-hidden="true"></canvas>
       </div>
 
       <!-- 图幅标注：一条尺寸线给下面的评分图幅定界（图纸编号 + 网格 + 时长） -->
@@ -242,7 +248,7 @@ try {
         <div class="spec-chip"><span>LLM</span><b>GLM-4-Flash</b></div>
         <div class="spec-chip"><span>Agents</span><b>5 席圆桌</b></div>
         <div class="spec-chip"><span>Scoring</span><b>确定性引擎 + LLM 增强</b></div>
-        <div class="spec-chip"><span>Tests</span><b>jsdom 3080 ／ pytest 89</b></div>
+        <div class="spec-chip"><span>Tests</span><b>jsdom 3136 ／ pytest 89</b></div>
       </aside>
     </div>
   </section>
@@ -263,7 +269,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">3080 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">3136 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -273,7 +279,7 @@ try {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">3080 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">3136 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -2067,7 +2073,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、3080 项前端断言 + 89 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、3136 项前端断言 + 89 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -2247,7 +2253,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（45 模块 + 5 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、3080 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（45 模块 + 5 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、3136 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>

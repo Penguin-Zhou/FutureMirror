@@ -10440,6 +10440,68 @@ body:has(#view-landing.active) {
     display: none;
   }
 }
+
+/* ------------------------------------------------------------
+ * ⑨ 封面银河（v85）：♾ 的粒子轨道
+ * ------------------------------------------------------------
+ * 画布铺满首屏容器，压在地平线网格之上、正文之下。
+ * 只做视觉：pointer-events: none，不参与点击与阅读顺序；
+ * 交互事件挂在父容器上（鼠标斥力 / 点击脉冲），不靠画布自己接。
+ * ------------------------------------------------------------ */
+#view-landing .lp-galaxy {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 画布是定位元素（z-index: 0），静态排版的正文会被它盖住，
+ * 必须把首屏的几块正文抬到同一层再按序绘制 */
+#view-landing .lp-first > .hero-title,
+#view-landing .lp-first > .hero-sub,
+#view-landing .lp-first > .hero-cta,
+#view-landing .lp-first > .hero-kbd-hint {
+  position: relative;
+  z-index: 1;
+}
+
+/* 亮色：细点 + 半像素模糊 = 一层墨晕，而不是一片噪点。
+ * 暗色不做模糊——粒子要靠锐利的小点才有「星」的感觉。 */
+:root:not([data-theme="dark"]) #view-landing .lp-galaxy {
+  /* 亮色不做模糊：这里是「绘图仪点线」，糊了就变噪点 */
+  filter: none;
+}
+
+/* 暗色下调亮副标题：银河的亮粒子会从字后面穿过，正文得比粒子硬 */
+[data-theme="dark"] #view-landing .hero-sub {
+  color: rgba(228, 236, 242, 0.82);
+}
+
+/* ------------------------------------------------------------
+ * ⑨b 封面纵向节奏：给银河腾出 CTA 与面板之间的空档
+ * ------------------------------------------------------------
+ * 一屏里塞不下「标题 + 一段完整的 ♾ + 面试面板」——几何上必然重叠。
+ * 所以把面板下移，让 ♾ 独占中间那条空档；首屏改成从上往下排，
+ * 内容超过一屏时向下溢（下面就是图幅），不会把标题顶到导航底下。
+ * ------------------------------------------------------------ */
+@media (min-width: 901px) {
+  #view-landing .lp-first {
+    /* 一屏装得下就居中，装不下就从上往下排（safe center 溢出时退回起点）。
+     * 不支持 safe 的浏览器留在上一行，行为与旧版一致 */
+    justify-content: flex-start;
+    justify-content: safe center;
+    padding-top: clamp(24px, 6vh, 64px);
+  }
+
+  #view-landing .fm-voice {
+    /* 短屏（720/768 这类笔记本）按「整屏减去标题与面板」封顶，
+     否则面板会被推到折线以下 */
+    margin: clamp(88px, min(24vh, calc(100vh - 620px)), 250px) auto 10px;
+  }
+}
 </style>
 <script>
 /* ============================================================
@@ -10575,6 +10637,12 @@ body:has(#view-landing.active) {
         </div>
 
         <div class="hero-kbd-hint">按 <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> 打开命令面板 · 直达任意功能页</div>
+
+        <!-- 封面银河：♾ 的粒子轨道。WebGL 在顶点着色器里按 gl_VertexID 推导位置，
+             不占 CPU；无 WebGL 时退成同一曲线的 2D 点阵静帧。
+             放在正文之后：绝对定位不占位，靠 z-index 压到文字下面，
+             阅读顺序里它仍然是最后一块装饰。 -->
+        <canvas class="lp-galaxy" aria-hidden="true"></canvas>
       </div>
 
       <!-- 图幅标注：一条尺寸线给下面的评分图幅定界（图纸编号 + 网格 + 时长） -->
@@ -10650,7 +10718,7 @@ body:has(#view-landing.active) {
         <div class="spec-chip"><span>LLM</span><b>GLM-4-Flash</b></div>
         <div class="spec-chip"><span>Agents</span><b>5 席圆桌</b></div>
         <div class="spec-chip"><span>Scoring</span><b>确定性引擎 + LLM 增强</b></div>
-        <div class="spec-chip"><span>Tests</span><b>jsdom 3080 ／ pytest 89</b></div>
+        <div class="spec-chip"><span>Tests</span><b>jsdom 3136 ／ pytest 89</b></div>
       </aside>
     </div>
   </section>
@@ -10671,7 +10739,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">3080 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">3136 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -10681,7 +10749,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">3080 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">3136 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -12475,7 +12543,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、3080 项前端断言 + 89 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、3136 项前端断言 + 89 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -12655,7 +12723,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（45 模块 + 5 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、3080 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（45 模块 + 5 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、3136 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -21055,6 +21123,609 @@ function revealScan() {
 
   FX.renderCmdBand = renderCmdBand;
 
+  /* ============================================================
+   * ⑧ 封面银河：♾ 的粒子轨道（WebGL 2）
+   * ============================================================
+   * 路线 B：不用顶点缓冲。粒子位置全部在顶点着色器里由 gl_VertexID 推导——
+   * 每个 id 哈希出稳定种子，沿 Gerono 双纽线（x = cos t, y = 0.62 sin 2t）
+   * 行进，CPU 每帧只写时间、鼠标、脉冲几个 uniform。
+   *
+   * 为什么是粒子而不是一张星空图：
+   *   贴图只能「看起来像」，粒子能对光标起反应、能随主题换色、
+   *   能在 reduced-motion 下停在成形的那一帧。
+   *   叙事上它替首屏先说话：可能性是流动的，也是可以被触碰的。
+   *
+   * 形状选择：Gerono 比 Bernoulli 更接近「∞」的书写习惯——两瓣宽度一致，
+   * 交叉点干净；用 sin 2t 的倍角关系，u 走一圈正好回到原点，粒子首尾相接。
+   *
+   * 性能：32k 点一个 draw call，无属性缓冲；离开视口 / 切后台即停帧。
+   * 降级：无 WebGL2 → 同一曲线的 2D 点阵静帧；连 2D 都没有 → 不画。
+   * ============================================================ */
+  const galaxy = (window.__bpGalaxy = {
+    ok: false,
+    webgl: false,
+    mode: "idle",
+    count: 0,
+    reduced: false,
+    scale: 0,
+  });
+  let galaxyBooted = false;
+
+  /* HSL → [0..1] RGB，着色器只收线性三元组，颜色在这里算完 */
+  function galaxyHsl(h, s, l) {
+    const S = s / 100;
+    const L = l / 100;
+    const k = (n) => (n + h / 30) % 12;
+    const a = S * Math.min(L, 1 - L);
+    const f = (n) =>
+      L - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return [f(0), f(8), f(4)];
+  }
+
+  /* 读主题色：银河跟着强调色走，不另起一套配色。
+   * 亮色底下粒子要比纸深（墨青点阵），暗色底下要比底亮（发光点）。 */
+  function galaxyInk() {
+    const landing = document.getElementById("view-landing") || document.documentElement;
+    let hue = 187;
+    try {
+      hue = parseFloat(getComputedStyle(landing).getPropertyValue("--fm-hue")) || 187;
+    } catch (e) { /* 取不到就用默认青 */ }
+    const dark = document.documentElement.getAttribute("data-theme") === "dark";
+    return dark
+      ? { core: galaxyHsl(hue, 96, 72), edge: galaxyHsl(hue, 100, 44), alpha: 0.72, dust: 0.28, mag: 1, spread: 1, share: 1, add: true }
+      : { core: galaxyHsl(hue, 84, 24), edge: galaxyHsl(hue, 58, 38), alpha: 0.88, dust: 0, mag: 0.5, spread: 0.16, share: 1, add: false };
+  }
+
+  function initGalaxy() {
+    if (galaxyBooted) return;
+    galaxyBooted = true;
+    const cv = document.querySelector("#view-landing .lp-galaxy");
+    if (!cv) return;
+
+    /* 手机上一屏被标题、按钮、面板占满，银河挤进去只剩一圈噪点：
+     * 不放。省下的 GPU 留给面板，也省得标题周围发脏。 */
+    if (window.innerWidth < 720) {
+      cv.style.display = "none";
+      galaxy.mode = "off";
+      return;
+    }
+
+    let reduced = false;
+    try { reduced = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    galaxy.reduced = reduced;
+
+    const gl = cv.getContext("webgl2", {
+      antialias: false,
+      alpha: true,
+      premultipliedAlpha: true,
+      depth: false,
+      stencil: false,
+      powerPreference: "low-power",
+    });
+
+    /* ---------- 无 WebGL：同一曲线的 2D 点阵静帧 ---------- */
+    function paintStill() {
+      let c2 = null;
+      try { c2 = cv.getContext("2d"); } catch (e) {}
+      if (!c2) {
+        cv.style.display = "none";
+        galaxy.mode = "off";
+        return;
+      }
+      /* 尺寸自己算：降级分支在 resize() 之前就返回了，
+       * 不补这一步画布会停在默认 300×150，被 CSS 拉伸成一团糊 */
+      const box = cv.parentElement.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cv.width = Math.max(1, Math.round(box.width * dpr));
+      cv.height = Math.max(1, Math.round(box.height * dpr));
+      const w = cv.width;
+      const h = cv.height;
+      // 与着色器共用 place()：位置、大小、遮挡关系都跟正常版本一致
+      const pos = place(box);
+      let halfH = pos.halfH * dpr;
+      let halfW = halfH / 0.62;
+      if (halfW > 0.43 * w) halfW = 0.43 * w;
+      const scale = halfW;
+      const ink = galaxyInk();
+      const cU = ink.core.map((v) => Math.round(v * 255));
+      const cE = ink.edge.map((v) => Math.round(v * 255));
+      const cx = w / 2;
+      const cy = pos.cy * dpr;
+      const ct = Math.cos(-0.38);
+      const rgb = (a) => "rgba(" + a[0] + "," + a[1] + "," + a[2] + ",";
+      // 稳定随机：同一画布尺寸每次重绘的点位一致，不闪
+      let seed = 20261128;
+      const rnd = () => {
+        seed = (seed * 1664525 + 1013904223) % 4294967296;
+        return seed / 4294967296;
+      };
+      c2.clearRect(0, 0, w, h);
+      for (let i = 0; i < 3200; i++) {
+        const u = rnd();
+        const t = u * Math.PI * 2;
+        const jitter = Math.pow(rnd(), 2.2) * 0.055;
+        const ang = rnd() * Math.PI * 2;
+        const x = Math.cos(t) + Math.cos(ang) * jitter;
+        const y = (0.62 * Math.sin(2 * t) + Math.sin(ang) * jitter) * ct;
+        const px = cx + x * scale;
+        const py = cy - y * scale;
+        const mag = 0.35 + 0.65 * rnd();
+        c2.fillStyle = rgb(mag > 0.62 ? cU : cE) + (0.25 + 0.5 * mag) * ink.alpha + ")";
+        c2.beginPath();
+        c2.arc(px, py, (0.5 + 1.7 * mag) * dpr, 0, 6.2832);
+        c2.fill();
+      }
+      galaxy.mode = "still";
+      galaxy.ok = true;
+      cv.setAttribute("data-galaxy", "canvas2d");
+    }
+
+    if (!gl) {
+      galaxy.webgl = false;
+      paintStill();
+      // 尺寸变了、主题换了都要重画：静帧不会自己更新
+      let rz = 0;
+      window.addEventListener(
+        "resize",
+        () => {
+          clearTimeout(rz);
+          rz = setTimeout(paintStill, 120);
+        },
+        { passive: true }
+      );
+      if ("MutationObserver" in window) {
+        new MutationObserver(paintStill).observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ["data-theme", "data-accent"],
+        });
+      }
+      return;
+    }
+    galaxy.webgl = true;
+
+    /* ---------- 着色器 ---------- */
+    const VERT = [
+      "#version 300 es",
+      "precision highp float;",
+      "uniform mat4 uProj;",
+      "uniform mat3 uRot;",
+      "uniform vec3 uCore;",
+      "uniform vec3 uEdge;",
+      "uniform vec2 uShift;",
+      "uniform vec2 uMouse;",
+      "uniform float uTime;",
+      "uniform float uForm;",
+      "uniform float uScale;",
+      "uniform float uAmp;",
+      "uniform float uPulse;",
+      "uniform float uPixel;",
+      "uniform float uAlpha;",
+      "uniform float uDust;",
+      "uniform float uMag;",
+      "uniform float uSpread;",
+      "uniform vec4 uQuiet;",
+      "out vec4 vColor;",
+      "",
+      "float hash11(float p) {",
+      "  p = fract(p * 0.1031);",
+      "  p *= p + 33.33;",
+      "  p *= p + p;",
+      "  return fract(p);",
+      "}",
+      "vec3 hash31(float p) {",
+      "  vec3 q = fract(vec3(p) * vec3(0.1031, 0.1030, 0.0973));",
+      "  q += dot(q, q.yzx + 33.33);",
+      "  return fract((q.xxy + q.yzz) * q.zyx);",
+      "}",
+      "",
+      "void main() {",
+      "  float id = float(gl_VertexID);",
+      "  vec3 r = hash31(id * 1.13 + 0.37);",
+      "  float r2 = hash11(id * 7.77 + 1.90);",
+      "",
+      "  /* 沿双纽线走：整体同速，个体 ±26% 抖动 —— 星系旋转曲线的极简版 */",
+      "  float sp = 0.74 + 0.52 * r.x;",
+      "  float u = fract(r.y + uTime * 0.0125 * sp);",
+      "  float t = u * 6.28318530718;",
+      "  vec2 core = vec2(cos(t), 0.62 * sin(2.0 * t));",
+      "  vec2 tang = normalize(vec2(-sin(t), 1.24 * cos(2.0 * t)));",
+      "  vec2 nrm = vec2(-tang.y, tang.x);",
+      "",
+      "  /* 管状厚度：法向为主、切向拉长一点，看起来是流动的带而不是描边 */",
+      "  float w = pow(r.z, 1.7) * 0.095 * uSpread;",
+      "  float a = r2 * 6.28318530718;",
+      "  vec2 off = nrm * (cos(a) * w) + tang * (sin(a) * w * 1.8);",
+      "",
+      "  /* 一成粒子做成外围星尘：贴着轨道但散得远、压得暗，给轮廓外面留一层雾 */",
+      "  float dust = step(0.90, r.x);",
+      "  off *= mix(1.0, 1.9, dust) * uSpread;",
+      "",
+      "  /* 呼吸：整体 2.2% 缩放，两瓣相位错开，像在缓慢起伏 */",
+      "  float breath = 1.0 + 0.022 * sin(uTime * 0.55 - u * 4.0);",
+      "  vec3 pos = vec3((core + off) * breath, (r2 - 0.5) * (0.085 + dust * 0.5));",
+      "",
+      "  /* 成形：从球壳散落聚到轨道上 */",
+      "  vec3 sc = normalize(r * 2.0 - 1.0 + vec3(0.0001)) * (1.05 + 1.45 * r2);",
+      "  pos = mix(sc, pos, uForm);",
+      "",
+      "  pos = uRot * (pos * uScale);",
+      "  vec4 clip = uProj * vec4(pos, 1.0);",
+      "  clip.xy += uShift * clip.w;",
+      "  vec2 ndc = clip.xy / clip.w;",
+      "",
+      "  /* 鼠标斥力：屏幕空间推开，半径 0.30、边缘衰减到 0 —— 散开又聚拢 */",
+      "  vec2 md = ndc - uMouse;",
+      "  float mdist = length(md);",
+      "  float mf = (1.0 - smoothstep(0.0, 0.30, mdist)) * uAmp;",
+      "  clip.xy += (md / max(mdist, 0.0001)) * mf * 0.065 * clip.w;",
+      "",
+      "  /* 点击脉冲：一束光沿曲线跑一圈，跑完自己淡掉 */",
+      "  float pw = 0.0;",
+      "  if (uPulse >= 0.0) {",
+      "    float head = fract(uPulse * 0.36);",
+      "    float du = abs(u - head);",
+      "    du = min(du, 1.0 - du);",
+      "    pw = smoothstep(0.045, 0.0, du) * clamp(1.0 - uPulse * 0.42, 0.0, 1.0);",
+      "  }",
+      "  gl_Position = clip;",
+      "",
+      "  float tw = 0.76 + 0.24 * sin(uTime * (0.6 + r.y * 1.7) + r.z * 6.283);",
+      "  float mag = pow(0.30 + 1.15 * r.x, 1.35);",
+      "  float depth = clamp(1.25 - (pos.z + 0.7) * 0.5, 0.55, 1.25);",
+      "  float star = step(0.985, hash11(id * 11.3));",
+      "  float size = (0.8 + 3.0 * mag) * (0.55 + 0.45 * uForm) * (0.6 + 0.4 * depth);",
+      "  size *= mix(1.0, 1.5, dust) * (1.0 + star * 1.6);",
+      "  /* 双纽线在交叉臂上速度最快、点最稀 —— 按局部速度补点径，",
+      "     通篇才是一条粗细连贯的带子，而不是细线接一团雾 */",
+      "  float spd = length(vec2(sin(t), 1.24 * cos(2.0 * t))) / 1.15;",
+      "  size *= clamp(pow(spd, 0.5), 0.82, 1.42);",
+      "  gl_PointSize = clamp(size * uMag * uPixel, 0.8 * uPixel, 7.5 * uPixel);",
+      "",
+      "  float alpha = (0.10 + 0.66 * mag) * (0.3 + 0.7 * uForm) * tw;",
+      "  alpha *= mix(0.6, 1.0, clamp(depth - 0.55, 0.0, 1.0));",
+      "  alpha *= mix(1.0, uDust, dust);",
+      "  alpha += star * 0.35 * step(0.001, uDust);",
+      "  alpha += mf * 0.3 + pw * 0.7;",
+      "",
+      "  /* 文字区是一片静水：椭圆内粒子让开，字不必跟亮点抢对比；",
+      "     边界走斜线渐变，避免留下一个硬边的洞 */",
+      "  vec2 qd = (ndc - uQuiet.xy) / max(uQuiet.zw, vec2(0.0001));",
+      "  alpha *= mix(0.08, 1.0, smoothstep(0.70, 1.16, length(qd)));",
+      "  vec3 col = mix(uEdge, uCore, clamp(mag * 0.9 + pw, 0.0, 1.0));",
+      "  vColor = vec4(col, clamp(alpha, 0.0, 1.0) * uAlpha);",
+      "}",
+    ].join("\n");
+
+    const FRAG = [
+      "#version 300 es",
+      "precision mediump float;",
+      "in vec4 vColor;",
+      "out vec4 oColor;",
+      "void main() {",
+      "  vec2 p = gl_PointCoord - 0.5;",
+      "  float r = dot(p, p);",
+      "  if (r > 0.25) discard;",
+      "  float d = sqrt(r) * 2.0;",
+      "  float a = 1.0 - d;",
+      "  a = a * a * (3.0 - 2.0 * a);",
+      "  float core = 1.0 - smoothstep(0.0, 0.55, d);",
+      "  vec3 c = vColor.rgb + core * 0.3;",
+      "  float alpha = vColor.a * a;",
+      "  oColor = vec4(c * alpha, alpha);",
+      "}",
+    ].join("\n");
+
+    function compile(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+        if (window.console) console.warn("[galaxy]", gl.getShaderInfoLog(s));
+        return null;
+      }
+      return s;
+    }
+    const vs = compile(gl.VERTEX_SHADER, VERT);
+    const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+    if (!vs || !fs) {
+      paintStill();
+      return;
+    }
+    const prog = gl.createProgram();
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      if (window.console) console.warn("[galaxy]", gl.getProgramInfoLog(prog));
+      paintStill();
+      return;
+    }
+    gl.useProgram(prog);
+    gl.bindVertexArray(gl.createVertexArray());
+    gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+
+    const U = {};
+    ["uProj", "uRot", "uCore", "uEdge", "uShift", "uMouse", "uTime", "uForm", "uScale", "uAmp", "uPulse", "uPixel", "uAlpha", "uDust", "uMag", "uSpread", "uQuiet"].forEach((n) => {
+      U[n] = gl.getUniformLocation(prog, n);
+    });
+
+    /* ---------- 矩阵：只需要透视与两次旋转，手写比引库便宜 ---------- */
+    const DIST = 3.2;
+    const FOV = (42 * Math.PI) / 180;
+    const F = 1 / Math.tan(FOV / 2);
+
+    function perspective(aspect) {
+      const near = 0.1;
+      const far = 20;
+      const nf = 1 / (near - far);
+      const A = (far + near) * nf;
+      const B = 2 * far * near * nf;
+      // 列主序；同时把相机推到 z = DIST —— 把视图平移折进投影的 [14]，
+      // 省掉一次 4×4 乘法（clip.z 需要跟着平移，所以是 B - A·DIST 不是 B - DIST）
+      return new Float32Array([
+        F / aspect, 0, 0, 0,
+        0, F, 0, 0,
+        0, 0, A, -1,
+        0, 0, B - A * DIST, DIST,
+      ]);
+    }
+
+    function rotMat(yaw, pitch) {
+      const cy = Math.cos(yaw), sy = Math.sin(yaw);
+      const cp = Math.cos(pitch), sp = Math.sin(pitch);
+      // R = Ry * Rx，列主序
+      const ry = [cy, 0, -sy, 0, 1, 0, sy, 0, cy];
+      const rx = [1, 0, 0, 0, cp, sp, 0, -sp, cp];
+      const out = new Float32Array(9);
+      for (let c = 0; c < 3; c++) {
+        for (let r = 0; r < 3; r++) {
+          out[c * 3 + r] = ry[r] * rx[c * 3] + ry[3 + r] * rx[c * 3 + 1] + ry[6 + r] * rx[c * 3 + 2];
+        }
+      }
+      return out;
+    }
+
+    /* ---------- 画布尺寸与点数量 ---------- */
+    let proj = perspective(1.9);
+    /* 银河在画布里的纵向位置（NDC）：跟着 CTA 与面板之间的空档走 */
+    let shiftY = 0.24;
+    /* 静水区：标题与副标题文字的外接椭圆（NDC） */
+    const quiet = { cx: 0, cy: 0, rx: 0, ry: 0 };
+    let scale = 1;
+    let dpr = 1;
+    let time0 = 0;
+    let formAt = 0;
+
+    function countFor(w) {
+      let n = 32000;
+      if (w < 1280) n = 20000;
+      if (w < 960) n = 12000;
+      if (w < 640) n = 7000;
+      // 低配设备再砍一半：粒子是纯视觉层，少一半也读得出形状
+      const cores = navigator.hardwareConcurrency || 8;
+      if (cores <= 4) n = Math.round(n * 0.55);
+      return n;
+    }
+
+    /* 银河摆在哪、多大：桌面落在「CTA 与面板之间」的空档里 —— 中心取空档
+     * 中点，高度是空档的 1.5 倍（下瓣压到面板后面，交叉点仍看得见）。
+     * 手机没有这条空档，退回「高度六成、略偏上」的老构图。
+     * WebGL 与 2D 静帧共用这一处，降级时位置不会跳。 */
+    function place(r) {
+      const out = { halfH: r.height * 0.3, cy: r.height * 0.42 };
+      if (r.width < 901) return out;
+      const cta = document.querySelector("#view-landing .hero-cta");
+      const voice = document.querySelector("#view-landing .fm-voice");
+      if (!cta || !voice) return out;
+      const cb = cta.getBoundingClientRect();
+      const vb = voice.getBoundingClientRect();
+      const gap = Math.max(160, vb.top - cb.bottom);
+      out.halfH = Math.min(gap * 1.5, r.height * 0.55) / 2;
+      /* 中心再往下偏 5%，把上瓣从按钮上让开 */
+      out.cy = (cb.bottom + vb.top) / 2 + gap * 0.05 - r.top;
+      return out;
+    }
+
+    function resize() {
+      const host = cv.parentElement;
+      const r = host.getBoundingClientRect();
+      const w = Math.max(1, Math.round(r.width));
+      const h = Math.max(1, Math.round(r.height));
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cv.width = Math.round(w * dpr);
+      cv.height = Math.round(h * dpr);
+      proj = perspective(w / h);
+      /* 半高 → 世界坐标缩放；宽度超限（超宽屏）再收，符号不会被裁成两截 */
+      const pos = place(r);
+      let s = (2 * pos.halfH * DIST) / (h * F * 0.62);
+      const halfW = (F * s) / (DIST * (w / h));
+      if (halfW > 0.84) s *= 0.84 / halfW;
+      shiftY = 1 - (pos.cy / h) * 2;
+      scale = s;
+      galaxy.scale = s;
+      galaxy.count = countFor(w);
+      galaxy.narrow = w < 720;
+
+      /* 文字「静水区」：取标题与副标题每一行文字的实际外框（Range 的逐行 rect
+       * 贴着字，不是整块宽度），并起来换算到画布 NDC。每次 resize 重算。 */
+      const cr2 = cv.getBoundingClientRect();
+      const lines = [];
+      ["#view-landing .hero-title", "#view-landing .hero-sub"].forEach((sel) => {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        const rg = document.createRange();
+        rg.selectNodeContents(el);
+        for (const r of rg.getClientRects()) {
+          if (r.width > 2 && r.height > 2) lines.push(r);
+        }
+      });
+      if (lines.length && cr2.height > 0 && cr2.width > 0) {
+        const left = Math.min(...lines.map((r) => r.left));
+        const right = Math.max(...lines.map((r) => r.right));
+        const top = Math.min(...lines.map((r) => r.top));
+        const bot = Math.max(...lines.map((r) => r.bottom));
+        quiet.cx = ((left + right) / 2 - cr2.left) / cr2.width * 2 - 1;
+        quiet.cy = 1 - ((top + bot) / 2 - cr2.top) / cr2.height * 2;
+        quiet.rx = ((right - left) / 2 / cr2.width) * 2 * 1.1;
+        quiet.ry = ((bot - top) / 2 / cr2.height) * 2 * 1.18;
+      }
+      gl.viewport(0, 0, cv.width, cv.height);
+    }
+
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+
+    /* ---------- 状态 ---------- */
+    const ink = galaxyInk();
+    let mouse = { x: 0, y: 0, tx: 0, ty: 0, amp: 0, target: 0 };
+    let pulseAt = -1;
+    let raf = 0;
+    let visible = true;
+    let dead = false;
+
+    function applyBlend() {
+      if (ink.add) gl.blendFunc(gl.ONE, gl.ONE);
+      else gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    }
+    applyBlend();
+
+    function render(t) {
+      const time = reduced ? 1.4 : Math.max(0, (t - time0) / 1000);
+      const form = reduced ? 1 : Math.min(1, Math.max(0, (t - formAt) / 1500));
+      const ease = 1 - Math.pow(1 - form, 3);
+      const pu = pulseAt < 0 ? -1 : Math.min(3.4, (t - pulseAt) / 1000);
+
+      galaxy.form = ease;
+      galaxy.amp = mouse.amp;
+      /* 倾角小一点：∞ 形的带子侧对镜头时会被压成一条细线，
+         近正对才是一条粗细一致的臂；3D 感交给面板和浮标 */
+      const rot = rotMat(0.16 + mouse.x * 0.09, -0.16 - mouse.y * 0.05);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.uniformMatrix4fv(U.uProj, false, proj);
+      gl.uniformMatrix3fv(U.uRot, false, rot);
+      gl.uniform3fv(U.uCore, ink.core);
+      gl.uniform3fv(U.uEdge, ink.edge);
+      gl.uniform2f(U.uShift, 0, galaxy.narrow ? 0.5 : shiftY);
+      gl.uniform2f(U.uMouse, mouse.x, mouse.y);
+      gl.uniform1f(U.uTime, time);
+      gl.uniform1f(U.uForm, ease);
+      gl.uniform1f(U.uScale, scale);
+      gl.uniform1f(U.uAmp, reduced ? 0 : mouse.amp);
+      gl.uniform1f(U.uPulse, pu);
+      gl.uniform1f(U.uPixel, dpr);
+      // 手机上整屏都是字，银河只能当底纹：压掉一半不透明度
+      gl.uniform1f(U.uAlpha, ink.alpha * (galaxy.narrow ? 0.42 : 1));
+      gl.uniform1f(U.uDust, ink.dust);
+      gl.uniform1f(U.uMag, ink.mag);
+      gl.uniform1f(U.uSpread, ink.spread);
+      gl.uniform4f(U.uQuiet, quiet.cx, quiet.cy, quiet.rx, quiet.ry);
+      gl.drawArrays(gl.POINTS, 0, Math.round(galaxy.count * ink.share));
+    }
+
+    function frame(t) {
+      raf = 0;
+      galaxy.frames = (galaxy.frames || 0) + 1;
+      if (dead || document.hidden || !visible) return;
+      if (!time0) {
+        time0 = t;
+        formAt = t + 120;
+      }
+      // 鼠标与斥力做插值：直接跟 raw 值会很「硬」
+      mouse.x += (mouse.tx - mouse.x) * 0.12;
+      mouse.y += (mouse.ty - mouse.y) * 0.12;
+      mouse.amp += (mouse.target - mouse.amp) * 0.1;
+      render(t);
+      if (!reduced) raf = requestAnimationFrame(frame);
+    }
+
+    function kick() {
+      if (raf || dead || reduced) return;
+      raf = requestAnimationFrame(frame);
+    }
+
+    galaxy.ok = true;
+    galaxy.mode = reduced ? "still" : "live";
+    cv.setAttribute("data-galaxy", reduced ? "still" : "webgl");
+
+    /* 主题 / 强调色变化：重算颜色，暗色切叠加混合。
+     * 静帧也必须挂 —— 主题往往是启动之后才写进 data-theme 的，
+     * 不重画就会停在亮色那一套墨青上，暗底看着像褪了色。 */
+    if ("MutationObserver" in window) {
+      const mo = new MutationObserver(() => {
+        const next = galaxyInk();
+        ink.core = next.core;
+        ink.edge = next.edge;
+        ink.alpha = next.alpha;
+        ink.dust = next.dust;
+        ink.mag = next.mag;
+        ink.spread = next.spread;
+        ink.share = next.share;
+        ink.add = next.add;
+        applyBlend();
+        if (reduced) render(performance.now() + 2000);
+      });
+      const opts = { attributes: true, attributeFilter: ["data-theme", "data-accent"] };
+      mo.observe(document.documentElement, opts);
+    }
+
+    window.addEventListener(
+      "resize",
+      () => {
+        if (reduced) render(performance.now() + 2000);
+      },
+      { passive: true }
+    );
+
+    if (reduced) {
+      time0 = 0;
+      render(performance.now() + 2000);
+      return;
+    }
+
+    /* ---------- 交互：斥力 + 脉冲 ---------- */
+    const host = cv.parentElement;
+    host.addEventListener(
+      "pointermove",
+      (e) => {
+        const r = cv.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        mouse.tx = ((e.clientX - r.left) / r.width) * 2 - 1;
+        mouse.ty = 1 - ((e.clientY - r.top) / r.height) * 2;
+        mouse.target = 1;
+      },
+      { passive: true }
+    );
+    host.addEventListener("pointerleave", () => { mouse.target = 0; }, { passive: true });
+    host.addEventListener("click", (e) => {
+      // 按钮、链接、卡片上的点击是导航，不是放烟花
+      if (e.target.closest && e.target.closest("button, a, input, textarea, select, kbd, .fm3d-tag")) return;
+      pulseAt = performance.now();
+      kick();
+    });
+
+    /* ---------- 何时跑：进视口才跑，切后台就停 ---------- */
+    function onVis() {
+      if (document.hidden) return;
+      kick();
+    }
+    document.addEventListener("visibilitychange", onVis);
+
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver(
+        (es) => {
+          visible = !!(es[0] && es[0].isIntersecting);
+          if (visible) kick();
+        },
+        { threshold: 0.01 }
+      );
+      io.observe(cv);
+    }
+
+    kick();
+  }
+
   /* ---------- 入口 ---------- */
   function boot() {
     try { initAuthFx(); } catch (e) {}
@@ -21062,6 +21733,7 @@ function revealScan() {
     try { initCrosshair(); } catch (e) {}
     try { initCoordReadout(); } catch (e) {}
     try { initHero3D(); } catch (e) {}
+    try { initGalaxy(); } catch (e) {}
     try { initEvalDraw(); } catch (e) {}
     try { initFormFx(); } catch (e) {}
     try { initAnnotation(); } catch (e) {}

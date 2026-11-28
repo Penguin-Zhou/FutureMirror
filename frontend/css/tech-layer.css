@@ -1723,3 +1723,65 @@ body:has(#view-landing.active) {
     display: none;
   }
 }
+
+/* ------------------------------------------------------------
+ * ⑨ 封面银河（v85）：♾ 的粒子轨道
+ * ------------------------------------------------------------
+ * 画布铺满首屏容器，压在地平线网格之上、正文之下。
+ * 只做视觉：pointer-events: none，不参与点击与阅读顺序；
+ * 交互事件挂在父容器上（鼠标斥力 / 点击脉冲），不靠画布自己接。
+ * ------------------------------------------------------------ */
+#view-landing .lp-galaxy {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 画布是定位元素（z-index: 0），静态排版的正文会被它盖住，
+ * 必须把首屏的几块正文抬到同一层再按序绘制 */
+#view-landing .lp-first > .hero-title,
+#view-landing .lp-first > .hero-sub,
+#view-landing .lp-first > .hero-cta,
+#view-landing .lp-first > .hero-kbd-hint {
+  position: relative;
+  z-index: 1;
+}
+
+/* 亮色：细点 + 半像素模糊 = 一层墨晕，而不是一片噪点。
+ * 暗色不做模糊——粒子要靠锐利的小点才有「星」的感觉。 */
+:root:not([data-theme="dark"]) #view-landing .lp-galaxy {
+  /* 亮色不做模糊：这里是「绘图仪点线」，糊了就变噪点 */
+  filter: none;
+}
+
+/* 暗色下调亮副标题：银河的亮粒子会从字后面穿过，正文得比粒子硬 */
+[data-theme="dark"] #view-landing .hero-sub {
+  color: rgba(228, 236, 242, 0.82);
+}
+
+/* ------------------------------------------------------------
+ * ⑨b 封面纵向节奏：给银河腾出 CTA 与面板之间的空档
+ * ------------------------------------------------------------
+ * 一屏里塞不下「标题 + 一段完整的 ♾ + 面试面板」——几何上必然重叠。
+ * 所以把面板下移，让 ♾ 独占中间那条空档；首屏改成从上往下排，
+ * 内容超过一屏时向下溢（下面就是图幅），不会把标题顶到导航底下。
+ * ------------------------------------------------------------ */
+@media (min-width: 901px) {
+  #view-landing .lp-first {
+    /* 一屏装得下就居中，装不下就从上往下排（safe center 溢出时退回起点）。
+     * 不支持 safe 的浏览器留在上一行，行为与旧版一致 */
+    justify-content: flex-start;
+    justify-content: safe center;
+    padding-top: clamp(24px, 6vh, 64px);
+  }
+
+  #view-landing .fm-voice {
+    /* 短屏（720/768 这类笔记本）按「整屏减去标题与面板」封顶，
+     否则面板会被推到折线以下 */
+    margin: clamp(88px, min(24vh, calc(100vh - 620px)), 250px) auto 10px;
+  }
+}
