@@ -1131,16 +1131,6 @@ body:has(#view-landing.active) {
   padding-top: 8px;
 }
 
-/* 页脚两个静默入口（开发者模式 / 科技版展示页）并排，中间一个间隔点 */
-#view-landing .lp-devfoot-sep {
-  margin: 0 4px;
-  color: var(--lp-faint);
-}
-
-#view-landing a.lp-link-quiet {
-  text-decoration: none;
-}
-
 #view-landing .site-foot {
   margin-top: 40px;
   padding: 44px 0 56px;

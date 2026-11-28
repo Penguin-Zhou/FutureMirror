@@ -602,9 +602,8 @@ futuremirror/
 │   ├── requirements.txt            # 后端依赖清单（版本固定）
 │   └── .env.example                # 复制为 .env 填 Key；.env 永不进仓库
 ├── frontend/                       # 模块版前端（由单文件版拆分，行为逐字节等价）
-│   ├── index.html                  # 骨架 + 3 张 link + 44 个 script（按依赖序）
-│   ├── landing-tech/               # 科技版落地页（独立静态页 + 自带 assets/，随同一发布链路上线）
-│   ├── css/                        # tokens / theme / app 三层
+│   ├── index.html                  # 骨架 + 5 张 link + 45 个 script（按依赖序）
+│   ├── css/                        # tokens / theme / pages / landing / tech-layer 五层
 │   ├── js/
 │   │   ├── core/                   # store / auth / theme / router / api / boot / reveal …
 │   │   ├── data/                   # config / kb（含 BM25 + 端侧向量检索层与缓存）
@@ -646,7 +645,7 @@ cd backend && pytest -q                 # 冒烟 + 鉴权 + 评分引擎 + LLM �
 # 前端（Node 直跑，无需浏览器；jsdom 测试需先执行 npm install，jsdom 已在 devDependencies）
 
 # 一条命令跑完「规范 + 全部断言」的门禁（提交前必过）
-npm run verify                          # globals 校验 → 知识库一致性 → ESLint 0 error → Prettier 检查 → 2969 项断言
+npm run verify                          # globals 校验 → 知识库一致性 → ESLint 0 error → Prettier 检查 → 3016 项断言
 npm run validate:demo                   # 静态验证：JS 语法 / DOM id 引用 / onclick 处理器 / 标签配平
 npm run test:demo                       # 无头逻辑测试（217 项）
 node scripts/test-v15-jsdom.js          # 工作台互动（32 项）
@@ -676,7 +675,7 @@ node scripts/test-v53-jsdom.js          # 对话式匹配：答满态出口 / �
 node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / 标尺同源 / 刻度 / 窄屏报头（55 项）
 ```
 
-合计 **2969 项前端断言 + 89 项后端单测**，全部通过。
+合计 **3016 项前端断言 + 89 项后端单测**，全部通过。
 
 前端浏览器内还内置「开发者模式 → 工程自检」断言（快捷键 `Ctrl+Shift+J`，密码 `FM2026`）。
 
@@ -754,14 +753,13 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 | README（问题/功能/安装/使用/示例） | ✅  | 本文件                                                                                                                                                                               |
 | `.env.example`（无真实密钥）  | ✅  | `backend/.env.example` + 根目录                                                                                                                                                      |
 | Git 真实提交历史             | ✅  | 分阶段提交，非一次性推送                                                                                                                                                                      |
-| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 89 项 + 前端 2969 项断言                                                                                                                                                        |
+| 单元测试 + 演示版测试体系         | ✅  | 后端 pytest 89 项 + 前端 3016 项断言                                                                                                                                                        |
 | 单文件静态演示页               | ✅  | `public/futuremirror-demo.html`                                                                                                                                                   |
 | 演示视频 1080p MP4  | ✅  | <https://www.bilibili.com/video/BV1tZ4i6WEZL/> （6 分 36 秒 / 1920×1080；直链备份 <https://futuremirror-demo.app.workbuddy.host/media/demo.mp4?sharecode=ZU6FKJDEK7> ，64.7MB 可下载；原始录制为 2562×1440 HEVC，已转码保证浏览器直放）                                                                                                    |
 | 技术文档（HTML 在线版）         | ✅  | <https://penguin-zhou.github.io/FutureMirror/docs/technical-doc.html> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/docs/technical-doc.html?sharecode=ZU6FKJDEK7；仓库内> `docs/technical-doc.html`） |
 | 技术文档 PDF（附件）           | ✅  | 由上述 HTML 文档 A4 打印导出，28 页，**随项目材料以附件形式提交**；仓库 Release 同附（正式版 v1.0.0）：<https://github.com/Penguin-Zhou/FutureMirror/releases/download/v1.0.0/FutureMirror.TechDoc.pdf> |
 | 在线演示（公网可访问）            | ✅  | <https://penguin-zhou.github.io/FutureMirror/>                                                                                                                                    |
 | 在线演示镜像（国内直连）           | ✅  | <https://futuremirror-demo.app.workbuddy.host/?sharecode=ZU6FKJDEK7>                                                                                                                                   |
-| 科技版落地页（公网）            | ✅  | <https://penguin-zhou.github.io/FutureMirror/landing-tech/> （国内镜像：<https://futuremirror-demo.app.workbuddy.host/landing-tech/?sharecode=ZU6FKJDEK7>）。与演示页并存的另一套版式，主站导航与页脚各有入口 |
 | 演示测试账号                 | ✅  | `demo@futuremirror.app / Demo123456`                                                                                                                                              |
 | 开源许可证                  | ✅  | MIT，见仓库根目录 `LICENSE`                                                                                                                                                              |
 
@@ -771,7 +769,7 @@ node scripts/test-v54-jsdom.js          # 落地页动态层：图纸开场 / �
 # 方案 0：GitHub Pages（当前在线演示 + 在线技术文档所用，纯静态、零成本、随仓库更新）
 node scripts/fetch-model.js             # 首次：拉端侧模型权重到 public/models/（约 23MB，已 gitignore）
 node scripts/deploy-pages.js --build    # 重建单文件版 → 强推 gh-pages 分支
-                                        # 产物：index.html / 404.html / .nojekyll / docs/technical-doc.html / landing-tech/ / models/
+                                        # 产物：index.html / 404.html / .nojekyll / docs/technical-doc.html / models/
 
 # 方案 0b：国内直连镜像（同一份产物 + 同源后端，托管 backend/ 目录，Python 服务）
 node scripts/build-backend-static.js   # 把演示页 / 文档 / 日志 / 端侧模型装配进 backend/static/（已 gitignore）

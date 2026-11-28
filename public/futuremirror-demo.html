@@ -7694,16 +7694,6 @@ body:has(#view-landing.active) {
   padding-top: 8px;
 }
 
-/* 页脚两个静默入口（开发者模式 / 科技版展示页）并排，中间一个间隔点 */
-#view-landing .lp-devfoot-sep {
-  margin: 0 4px;
-  color: var(--lp-faint);
-}
-
-#view-landing a.lp-link-quiet {
-  text-decoration: none;
-}
-
 #view-landing .site-foot {
   margin-top: 40px;
   padding: 44px 0 56px;
@@ -8725,6 +8715,917 @@ body:has(#view-landing.active) {
   background: var(--lp-card);
   box-shadow: inset 0 0 0 1px rgba(244, 241, 232, 0.28);
 }
+/* ============================================================
+ * v81 · 科技视觉强化层（霓虹青锚点 / 透视网格 / 声波锚点 / 终端壳）
+ * ------------------------------------------------------------
+ * 排位：landing.css 之后。整层只作用于 #view-landing，不改版式——
+ * 容器宽、栅格列数、clamp 字号仍由 v58 层决定，这里只做视觉信号。
+ *
+ * 三条硬规则（写死在本层，改动前先看这一节）：
+ *   1) 全站只有一个霓虹：青 #00E5FF。不撒彩虹，不引入第二个高饱和色；
+ *   2) 边框一律 1px 半透明霓虹，hover 只提亮与发光，不位移；
+ *   3) 圆角收到 12px —— 科技感偏好更锋利的几何，24px 太软。
+ *
+ * 霓虹只在三处出现：焦点元素、当前轮次、可交互描边。其余保持低对比，
+ * 让「哪里能点、哪里正在发生」一眼可辨。
+ * ============================================================ */
+
+#view-landing {
+  /* 霓虹三档：主色 / 描边 / 光晕 */
+  --fm-neon: #00e5ff;
+  --fm-neon-lift: #5cf2ff;
+  --fm-line: rgba(0, 229, 255, 0.18);
+  --fm-line-strong: rgba(0, 229, 255, 0.42);
+  --fm-glow: 0 0 24px rgba(0, 229, 255, 0.16);
+  --fm-glow-strong: 0 0 34px rgba(0, 229, 255, 0.3);
+
+  /* 深空三级：底 / 面 / 浮面。比纯黑多一层蓝，才有纵深 */
+  --fm-void: #06080f;
+  --fm-surface: #0a0f18;
+  --fm-surface-2: #0e1622;
+
+  --lp-bg: var(--fm-void);
+  --lp-ink: #e8f6fb;
+  --lp-mute: rgba(210, 236, 245, 0.66);
+  --lp-faint: rgba(210, 236, 245, 0.44);
+  --lp-hair: var(--fm-line);
+  --lp-card: var(--fm-surface);
+  --lp-soft: var(--fm-surface-2);
+  --lp-panel-a: #071019;
+  --lp-panel-b: #0a1a24;
+  --lp-panel-ink: #e8f6fb;
+  --lp-r: 12px;
+  --lp-r-sm: 10px;
+
+  /* 蓝图令牌同步：雷达 SVG、ticker、标尺仍在用 var(--line) / var(--brand)，
+   * 不跟着翻深就会在深底上「墨线看不见」 */
+  --ink: #e8f6fb;
+  --ink-2: rgba(232, 246, 251, 0.72);
+  --muted: rgba(210, 236, 245, 0.58);
+  --faint: rgba(210, 236, 245, 0.34);
+  --line: var(--fm-line);
+  --line-2: rgba(0, 229, 255, 0.1);
+  --card: var(--fm-surface);
+  --soft: var(--fm-surface-2);
+  --brand: var(--fm-neon);
+}
+
+/* 暗色主题只再压一档：两套主题都落在深色里，切换不会把人送回浅色纸面。
+ * 差异保持在「更黑一点 + 光晕略强」，避免同一个页面出现两种气质。 */
+[data-theme="dark"] #view-landing {
+  --fm-void: #04060c;
+  --fm-surface: #080d15;
+  --fm-surface-2: #0b121c;
+
+  --lp-bg: var(--fm-void);
+  --lp-ink: #e8f6fb;
+  --lp-mute: rgba(210, 236, 245, 0.66);
+  --lp-faint: rgba(210, 236, 245, 0.44);
+  --lp-hair: var(--fm-line);
+  --lp-card: var(--fm-surface);
+  --lp-soft: var(--fm-surface-2);
+  --lp-panel-a: #05101a;
+  --lp-panel-b: #081722;
+  --lp-panel-ink: #e8f6fb;
+
+  --ink: #e8f6fb;
+  --ink-2: rgba(232, 246, 251, 0.72);
+  --muted: rgba(210, 236, 245, 0.58);
+  --faint: rgba(210, 236, 245, 0.34);
+  --line: var(--fm-line);
+  --line-2: rgba(0, 229, 255, 0.1);
+  --card: var(--fm-surface);
+  --soft: var(--fm-surface-2);
+  --brand: var(--fm-neon);
+}
+
+body:has(#view-landing.active) {
+  background-color: #06080f;
+  background-image: none;
+  /* 深色页配浅色滚动条会像贴了一条白边 */
+  color-scheme: dark;
+}
+
+[data-theme="dark"] body:has(#view-landing.active) {
+  background-color: #04060c;
+}
+
+/* ------------------------------------------------------------
+ * ① 导航：半透明深空 + 一条霓虹底线
+ * ------------------------------------------------------------ */
+#view-landing .landing-nav {
+  background: rgba(6, 8, 15, 0.94);
+  border-bottom: 1px solid var(--fm-line);
+}
+
+[data-theme="dark"] #view-landing .landing-nav {
+  background: rgba(4, 6, 12, 0.94);
+}
+
+#view-landing .lp-logo-dot {
+  background: var(--fm-neon);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
+}
+
+#view-landing .landing-nav-links a:hover,
+#view-landing .landing-nav-links a.active {
+  color: var(--fm-neon);
+}
+
+#view-landing .lp-icon:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: var(--fm-line-strong);
+  color: var(--fm-neon);
+}
+
+/* ------------------------------------------------------------
+ * ② 按钮：主按钮走霓虹实心，次级只提亮描边
+ * ------------------------------------------------------------ */
+#view-landing .lp-pill-solid {
+  background: var(--fm-neon);
+  border-color: var(--fm-neon);
+  color: #04121a;
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.3), 0 0 22px rgba(0, 229, 255, 0.22);
+}
+
+#view-landing .lp-pill-solid:hover {
+  background: var(--fm-neon-lift);
+  border-color: var(--fm-neon-lift);
+  color: #04121a;
+  opacity: 1;
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.42), var(--fm-glow-strong);
+}
+
+#view-landing .lp-pill-quiet {
+  border-color: var(--fm-line);
+}
+
+#view-landing .lp-pill-quiet:hover {
+  border-color: var(--fm-line-strong);
+  color: var(--fm-neon);
+}
+
+#view-landing .lp-pill-line {
+  border-color: var(--fm-line-strong);
+  color: var(--lp-ink);
+}
+
+#view-landing .lp-pill-line:hover {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: var(--fm-neon);
+  color: var(--fm-neon);
+}
+
+#view-landing .hero-kbd-hint kbd {
+  border-color: var(--fm-line);
+  background: rgba(0, 229, 255, 0.06);
+  color: var(--lp-mute);
+}
+
+/* ------------------------------------------------------------
+ * ③ Hero：透视网格地平线
+ * ------------------------------------------------------------
+ * 叠在首屏底部，与粒子场共存。mask 让网格从视线下方浮起又消隐，
+ * 比全屏铺满安静得多；纯 CSS，零 JS 开销。
+ * ------------------------------------------------------------ */
+#view-landing .landing-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* 地平线挂在「首屏容器」而不是整个 hero 上：hero 还包着评分图幅，
+ * 如果挂 hero，网格会一路铺到图幅后面，露出一块比背景亮的矩形。 */
+#view-landing .lp-first {
+  position: relative;
+  padding: 16px 0 44px;
+}
+
+#view-landing .lp-first::after {
+  content: "";
+  position: absolute;
+  left: -40%;
+  right: -40%;
+  bottom: -24px;
+  height: 56%;
+  z-index: -1;
+  background-image: linear-gradient(var(--fm-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--fm-line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  transform: perspective(420px) rotateX(64deg);
+  transform-origin: 50% 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 62%, rgba(0, 0, 0, 0.5) 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 62%, rgba(0, 0, 0, 0.5) 88%, transparent 100%);
+  opacity: 0.72;
+  animation: fmFloorDrift 9s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes fmFloorDrift {
+  to {
+    background-position: 0 56px, 56px 0;
+  }
+}
+
+/* 内容压在地平线之上：文字与图幅都抬到 z-index 1 以上 */
+#view-landing .landing-hero .wrap,
+#view-landing .landing-hero .lp-first {
+  position: relative;
+  z-index: 1;
+}
+
+#view-landing .landing-hero .bp-sheet {
+  position: relative;
+  z-index: 2;
+}
+
+#view-landing .landing-hero .lp-banner {
+  z-index: 2;
+}
+
+/* ------------------------------------------------------------
+ * ④ 声波锚点：第一眼说清「这是语音 AI 面试」
+ * ------------------------------------------------------------
+ * 24 根径向条按 --i 均分 360°，错相做 scaleY 呼吸，看上去就是一圈声波。
+ * 中心麦克风常亮，外圈两道扩散环提示「正在接收」。纯 CSS。
+ * ------------------------------------------------------------ */
+#view-landing .fm-voice {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 118px;
+  height: 118px;
+  margin: 26px auto 36px;
+  z-index: 1;
+}
+
+#view-landing .fm-voice-ring {
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--fm-line-strong);
+  border-radius: 50%;
+  opacity: 0;
+  animation: fmVoiceRing 3.4s ease-out infinite;
+  pointer-events: none;
+}
+
+#view-landing .fm-voice-ring.is-2 {
+  animation-delay: 1.7s;
+}
+
+@keyframes fmVoiceRing {
+  0% {
+    transform: scale(0.62);
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(1.34);
+    opacity: 0;
+  }
+}
+
+#view-landing .fm-voice-bars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#view-landing .fm-voice-bars i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 10px;
+  margin: -5px 0 0 -1px;
+  border-radius: 1px;
+  background: var(--fm-neon);
+  /* 近心端固定：scaleY 只往外长，条的内端对齐在同一圈上。
+   * 默认 origin 是中心，两端同时伸展，看起来就像从圆心炸开的放射线。 */
+  transform-origin: 50% 100%;
+  transform: rotate(calc(var(--i, 0) * 15deg)) translate(0, -38px);
+  animation: fmVoiceWave 1.9s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * -0.07s);
+  opacity: 0.4;
+}
+
+@keyframes fmVoiceWave {
+  0%,
+  100% {
+    transform: rotate(calc(var(--i, 0) * 15deg)) translate(0, -38px) scaleY(0.25);
+    opacity: 0.18;
+  }
+  50% {
+    transform: rotate(calc(var(--i, 0) * 15deg)) translate(0, -38px) scaleY(2.2);
+    opacity: 0.9;
+  }
+}
+
+#view-landing .fm-voice-mic {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, rgba(0, 229, 255, 0.24), rgba(0, 229, 255, 0.03) 68%);
+  border: 1px solid var(--fm-line-strong);
+  color: var(--fm-neon);
+  box-shadow: var(--fm-glow), inset 0 0 18px rgba(0, 229, 255, 0.12);
+}
+
+#view-landing .fm-voice-mic svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 标签挂在球下方，不占布局高度（否则首屏会被顶出可视区）。
+ * 中文不吃 0.2em 字距——那会把「实时转写」拆成四个孤字，收到 0.06em。 */
+#view-landing .fm-voice-cap {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 14px);
+  width: 300px;
+  margin: 0;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-align: center;
+  text-transform: uppercase;
+  color: rgba(210, 236, 245, 0.62);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* 关键词：朱红时期靠「下半截荧光笔」打标记，那是浅纸上的做法。
+ * 深底上这条半透明横杠会盖住白字的下半截，看起来像字脏了。
+ * 科技层改成「整句转青 + 极淡底光」——一个霓虹色，只给这一句。 */
+#view-landing .hero-title .grad {
+  color: var(--fm-neon);
+  background-image: none;
+  text-shadow: 0 0 26px rgba(0, 229, 255, 0.3);
+}
+
+/* 逐字下划线（.ch 同时带 .gw 类）在这句里是冗余的：整句已经转青，
+ * 再压一条 42% 的横线只会像「被划掉」。直接关掉背景，只留文字色。 */
+#view-landing .hero-title .gw {
+  background-image: none;
+}
+
+/* ------------------------------------------------------------
+ * ⑤ 评分图幅：深空玻璃 + 顶边信号线 + 霓虹刻度
+ * ------------------------------------------------------------ */
+#view-landing .lp-banner {
+  border: 1px solid var(--fm-line);
+  background: radial-gradient(120% 90% at 8% 0%, rgba(0, 229, 255, 0.09), transparent 58%),
+    linear-gradient(158deg, var(--lp-panel-a), var(--lp-panel-b));
+  box-shadow: var(--fm-glow);
+}
+
+#view-landing .lp-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  z-index: 2;
+  background: linear-gradient(90deg, var(--fm-neon), rgba(0, 229, 255, 0.28) 34%, transparent 68%);
+  pointer-events: none;
+}
+
+#view-landing .lp-banner-tex {
+  background-image: linear-gradient(var(--fm-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--fm-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.55;
+}
+
+#view-landing .lp-banner-kicker {
+  color: rgba(0, 229, 255, 0.72);
+}
+
+#view-landing .lp-banner-num {
+  color: #f0fdff;
+  text-shadow: 0 0 30px rgba(0, 229, 255, 0.42), 0 0 68px rgba(0, 229, 255, 0.16);
+}
+
+#view-landing .lp-banner-cap {
+  color: rgba(210, 236, 245, 0.66);
+}
+
+#view-landing .lp-dim {
+  border-top-color: rgba(0, 229, 255, 0.12);
+}
+
+#view-landing .lp-dim span {
+  color: rgba(210, 236, 245, 0.72);
+}
+
+#view-landing .lp-dim i {
+  background: rgba(0, 229, 255, 0.1);
+}
+
+#view-landing .lp-dim i b {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.5), var(--fm-neon));
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.45);
+}
+
+#view-landing .lp-dim em {
+  color: var(--fm-neon);
+}
+
+#view-landing .lp-banner-foot {
+  border-top-color: rgba(0, 229, 255, 0.12);
+  color: rgba(210, 236, 245, 0.5);
+}
+
+#view-landing .bp-sheet .bs-rule,
+#view-landing .bp-sheet .bs-tick {
+  background: rgba(0, 229, 255, 0.28);
+}
+
+#view-landing .bp-sheet .bs-label {
+  background: var(--fm-void);
+  color: rgba(0, 229, 255, 0.62);
+}
+
+/* ------------------------------------------------------------
+ * ⑥ 面试实录：轻量终端壳
+ * ------------------------------------------------------------
+ * 转化力最强的模块，原来是个普通文本框。给壳、给信号带、
+ * 只让「当前轮次」那一条亮 —— 每行都动的话焦点就不成立了。
+ * ------------------------------------------------------------ */
+#view-landing .hero-mock {
+  position: relative;
+  background: var(--fm-surface);
+  border: 1px solid var(--fm-line);
+  border-radius: 12px;
+  box-shadow: var(--fm-glow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+#view-landing .hero-mock-head {
+  position: relative;
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.08), transparent 72%);
+  border-bottom: 1px solid var(--fm-line);
+  color: rgba(0, 229, 255, 0.78);
+}
+
+#view-landing .hero-mock-head::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--fm-neon), transparent 58%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+#view-landing .hmh-live {
+  color: var(--fm-neon);
+}
+
+#view-landing .hero-mock-head .hmh-live::before {
+  background: var(--fm-neon);
+  box-shadow: 0 0 8px var(--fm-neon);
+}
+
+#view-landing .mock-bubble {
+  position: relative;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--lp-hair);
+  color: var(--lp-ink);
+}
+
+#view-landing .mock-bubble.ai {
+  background: rgba(0, 229, 255, 0.05);
+  border-color: var(--fm-line);
+}
+
+/* 我方回答：原来靠「深底 + 浅字」的明暗反相区分，翻成深色页后反相会变成
+ * 一块刺眼白板。改用更高的白度 + 右侧对齐来区分，明暗关系保持一致。 */
+#view-landing .mock-bubble.user {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f4fbfe;
+}
+
+#view-landing .mock-bubble .agent-tag {
+  font-family: var(--mono);
+  color: rgba(0, 229, 255, 0.78);
+  letter-spacing: 0.06em;
+}
+
+#view-landing .mock-bubble .agent-tag::before {
+  content: "▸ ";
+  opacity: 0.7;
+}
+
+/* 当前轮次：左侧一根 2px 霓虹竖线，只呼吸这一条 */
+#view-landing .mock-chat .mock-bubble.ai:last-child::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--fm-neon);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
+  animation: fmBreathe 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes fmBreathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 雷达：线发光、填充压到极低 —— 精确靠线，不靠色块 */
+#view-landing .mock-radar svg polygon[stroke] {
+  filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.55));
+}
+
+#view-landing .mock-radar .radar-sweep line {
+  filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.9));
+}
+
+
+/* ------------------------------------------------------------
+ * ⑦ 能力网：这张网在浅纸上靠「深墨细线」成立，翻深后线全没了
+ * ------------------------------------------------------------
+ * 三件事：线换霓虹、节点文字提亮、说明卡从白卡换成深卡
+ * （白卡在深底上是一块刺眼的正方形）。顺手补上原来缺的焦点描边。
+ * ------------------------------------------------------------ */
+#view-landing .fv-link {
+  stroke: rgba(0, 229, 255, 0.3);
+}
+
+#view-landing .fv-link-hub {
+  stroke: rgba(0, 229, 255, 0.5);
+}
+
+#view-landing .fv-node {
+  color: rgba(214, 238, 247, 0.78);
+}
+
+#view-landing .fv-group {
+  color: var(--lp-ink);
+}
+
+#view-landing .fv-center {
+  background: var(--fm-surface);
+  box-shadow: inset 0 0 0 1px var(--fm-line-strong), var(--fm-glow);
+}
+
+#view-landing .fv-center.is-hot,
+#view-landing .fv-center:hover,
+#view-landing .fv-center:focus-visible {
+  background: var(--fm-surface-2);
+  box-shadow: inset 0 0 0 1px var(--fm-neon), var(--fm-glow-strong);
+}
+
+/* 焦点描边：原来那圈 rgba(10,10,10,.28) 在深底上等于没有 */
+#view-landing .fv-node:focus-visible {
+  outline: 2px solid rgba(0, 229, 255, 0.55);
+  outline-offset: 3px;
+}
+
+#view-landing .fv-tip {
+  background: var(--fm-surface-2);
+  border: 1px solid var(--fm-line);
+  box-shadow: var(--fm-glow), 0 18px 44px rgba(0, 0, 0, 0.55);
+}
+
+#view-landing .fv-tip-idx {
+  background: rgba(0, 229, 255, 0.12);
+  color: var(--fm-neon);
+}
+
+#view-landing .fv-tip-name {
+  color: var(--lp-ink);
+}
+
+#view-landing .fv-tip-body {
+  color: rgba(210, 236, 245, 0.78);
+}
+
+#view-landing .fv-tip-group {
+  color: rgba(0, 229, 255, 0.62);
+}
+
+/* ------------------------------------------------------------
+ * ⑧ 规格胶囊 / 功能卡 / 流程 / 数字
+ * ------------------------------------------------------------ */
+#view-landing .spec-chip {
+  background: var(--fm-surface);
+  border: 1px solid var(--lp-hair);
+  color: var(--lp-mute);
+}
+
+#view-landing .spec-chip span {
+  color: rgba(0, 229, 255, 0.6);
+  letter-spacing: 0.12em;
+}
+
+#view-landing .spec-chip b {
+  color: var(--lp-ink);
+}
+
+#view-landing .feature-block {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 46%), var(--fm-surface);
+  border: 1px solid var(--fm-line);
+  transition: border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+}
+
+#view-landing .feature-block:hover {
+  background: linear-gradient(180deg, rgba(0, 229, 255, 0.08), transparent 50%), var(--fm-surface-2);
+  border-color: var(--fm-line-strong);
+  box-shadow: var(--fm-glow);
+}
+
+#view-landing .feature-block .fb-icon {
+  font-family: var(--mono);
+  color: rgba(0, 229, 255, 0.55);
+  letter-spacing: 0.1em;
+}
+
+#view-landing .workflow-step .ws-num {
+  color: rgba(0, 229, 255, 0.6);
+}
+
+#view-landing .workflow-step .ws-draw {
+  background: linear-gradient(90deg, var(--fm-line-strong), transparent);
+}
+
+#view-landing .workflow-step:hover {
+  background: rgba(0, 229, 255, 0.04);
+}
+
+#view-landing .landing-stat .val {
+  color: #f0fdff;
+  text-shadow: 0 0 26px rgba(0, 229, 255, 0.3);
+}
+
+#view-landing .landing-stat .ls-scale i {
+  background: rgba(0, 229, 255, 0.26);
+}
+
+#view-landing .landing-stat .ls-scale i:nth-child(4n + 1) {
+  background: rgba(0, 229, 255, 0.5);
+}
+
+#view-landing .landing-stat .lbl {
+  color: var(--lp-mute);
+}
+
+/* ------------------------------------------------------------
+ * ⑨ 开放接口 / CTA / 页脚
+ * ------------------------------------------------------------ */
+#view-landing .lp-api-grid {
+  background: var(--fm-surface);
+  border: 1px solid var(--fm-line);
+  box-shadow: var(--fm-glow);
+}
+
+#view-landing .lp-api-col + .lp-api-col {
+  border-left-color: var(--fm-line);
+}
+
+#view-landing .lp-api-kicker {
+  color: rgba(0, 229, 255, 0.62);
+}
+
+#view-landing .lp-api-row {
+  border-bottom-color: var(--lp-hair);
+}
+
+#view-landing .lp-api-m {
+  color: var(--fm-neon);
+}
+
+#view-landing .lp-api-code {
+  background: #04121a;
+  border-color: var(--fm-line);
+  color: #a8eefc;
+}
+
+#view-landing .lp-api-note,
+#view-landing .lp-api-facts {
+  border-color: var(--lp-hair);
+}
+
+#view-landing .landing-cta {
+  background: radial-gradient(120% 140% at 50% 0%, rgba(0, 229, 255, 0.1), transparent 62%),
+    var(--fm-surface);
+  border: 1px solid var(--fm-line);
+  box-shadow: var(--fm-glow);
+}
+
+#view-landing .site-foot {
+  border-top: 1px solid var(--fm-line);
+  color: rgba(210, 236, 245, 0.5);
+}
+
+#view-landing .lp-foot-note {
+  color: rgba(210, 236, 245, 0.46);
+}
+
+/* 页脚品牌名保持白：12–14px 的青色小字在深底上会被次像素抗锯齿染出彩边，
+ * 品牌名读清楚比染成霓虹重要，霓虹留给真正的焦点元素。 */
+#view-landing .lp-foot-mark b {
+  color: var(--lp-ink);
+}
+
+/* ------------------------------------------------------------
+ * ⑩ 跑马灯 / 区块标尺
+ * ------------------------------------------------------------ */
+#view-landing .bp-ticker .tk {
+  color: rgba(210, 236, 245, 0.5);
+}
+
+#view-landing .bp-ticker .tk-sep {
+  color: rgba(0, 229, 255, 0.45);
+}
+
+#view-landing .bp-rail .rail-track {
+  background: var(--fm-line);
+}
+
+#view-landing .bp-rail .rail-fill {
+  background: var(--fm-neon);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+}
+
+#view-landing .bp-rail .rail-item.is-on .ri-dot {
+  background: var(--fm-neon);
+}
+
+/* ------------------------------------------------------------
+ * ⑪ 滚动到达感：模糊收敛
+ * ------------------------------------------------------------
+ * 单纯位移淡入太常见。blur(6px) → 0 会让锐度在到达瞬间释放，
+ * 这点差别就是「有质感」和「会动」之间的距离。
+ * ------------------------------------------------------------ */
+#view-landing.lp-motion .lp-rv {
+  filter: blur(6px);
+  transition: opacity var(--lp-mo-dur) var(--lp-mo-ease),
+    translate var(--lp-mo-dur) var(--lp-mo-ease), filter var(--lp-mo-dur) var(--lp-mo-ease);
+}
+
+#view-landing.lp-motion .lp-rv.is-in {
+  filter: none;
+}
+
+/* ------------------------------------------------------------
+ * ⑫ 窄屏：网格收窄、声波缩一号、终端壳保留描边
+ * ------------------------------------------------------------ */
+@media (max-width: 900px) {
+  #view-landing .lp-first::after {
+    left: -70%;
+    right: -70%;
+    bottom: -8px;
+    height: 44%;
+    background-size: 44px 44px;
+    opacity: 0.5;
+  }
+
+  #view-landing .fm-voice {
+    width: 88px;
+    height: 88px;
+    margin: 24px auto 32px;
+  }
+
+  #view-landing .fm-voice-bars i {
+    transform: rotate(calc(var(--i, 0) * 15deg)) translate(0, -29px);
+  }
+
+  #view-landing .fm-voice-mic {
+    width: 46px;
+    height: 46px;
+  }
+
+  #view-landing .fm-voice-cap {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    width: 240px;
+  }
+
+  #view-landing .lp-banner-num {
+    text-shadow: 0 0 22px rgba(0, 229, 255, 0.36);
+  }
+}
+
+@media (max-width: 640px) {
+  #view-landing .lp-first::after {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------
+ * ⑬ 降级：reduced-motion 全部静态落位
+ * ------------------------------------------------------------
+ * 网格、声波、呼吸线、扩散环一律停掉，只保留描边与发光——
+ * 那几处是「配色」不是「动效」，静止时依然成立。
+ * ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  #view-landing .lp-first::after,
+  #view-landing .fm-voice-bars i,
+  #view-landing .fm-voice-ring,
+  #view-landing .mock-chat .mock-bubble.ai:last-child::before {
+    animation: none;
+  }
+
+  #view-landing .fm-voice-ring {
+    opacity: 0.24;
+    transform: none;
+  }
+
+  #view-landing .fm-voice-bars i {
+    opacity: 0.6;
+    transform: rotate(calc(var(--i, 0) * 15deg)) translate(0, -38px) scaleY(1);
+  }
+
+  #view-landing.lp-motion .lp-rv {
+    filter: none;
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------
+ * ⑭ 暗色主题：把 v58 的 16 条暗色规则拉平
+ * ------------------------------------------------------------
+ * landing.css 用 [data-theme="dark"] #view-landing … 写了一套「墨绿纸面」暗色，
+ * 特异性比本层的单前缀高——不逐条覆盖，一切到暗色就会又变回暖纸。
+ * 目标只有一个：两套主题落进同一个深空。
+ * ------------------------------------------------------------ */
+[data-theme="dark"] #view-landing .mock-bubble.ai {
+  background: rgba(0, 229, 255, 0.05);
+  border-color: var(--fm-line);
+}
+
+[data-theme="dark"] #view-landing .mock-bubble.user {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f4fbfe;
+}
+
+[data-theme="dark"] #view-landing .fv-link {
+  stroke: rgba(0, 229, 255, 0.3);
+}
+
+[data-theme="dark"] #view-landing .fv-link-hub {
+  stroke: rgba(0, 229, 255, 0.5);
+}
+
+[data-theme="dark"] #view-landing .fv-tip {
+  background: var(--fm-surface-2);
+  border: 1px solid var(--fm-line);
+  box-shadow: var(--fm-glow), 0 18px 44px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="dark"] #view-landing .fv-tip-name {
+  color: var(--lp-ink);
+}
+
+[data-theme="dark"] #view-landing .fv-tip-body {
+  color: rgba(210, 236, 245, 0.78);
+}
+
+[data-theme="dark"] #view-landing .fv-tip-idx {
+  background: rgba(0, 229, 255, 0.12);
+  color: var(--fm-neon);
+}
+
+[data-theme="dark"] #view-landing .fv-node.is-hot,
+[data-theme="dark"] #view-landing .fv-node:hover,
+[data-theme="dark"] #view-landing .fv-node:focus-visible {
+  background: var(--lp-soft);
+  color: var(--lp-ink);
+}
+
+[data-theme="dark"] #view-landing .fv-center.is-hot,
+[data-theme="dark"] #view-landing .fv-center:hover,
+[data-theme="dark"] #view-landing .fv-center:focus-visible {
+  background: var(--fm-surface-2);
+  box-shadow: inset 0 0 0 1px var(--fm-neon), var(--fm-glow-strong);
+}
 </style>
 <script>
 /* ============================================================
@@ -8800,7 +9701,6 @@ body:has(#view-landing.active) {
         <a href="#stats">数据</a>
         <a href="#api">开放接口</a>
         <a href="changelog.html">更新日志</a>
-        <a href="landing-tech/" data-static-link>科技版</a>
       </div>
       <div class="landing-nav-meta">
         <button class="lp-icon" id="theme-btn-l" onclick="toggleTheme()" aria-label="切换暗色/亮色模式" title="切换暗色/亮色模式"><span data-ic="moon">🌙</span></button>
@@ -8827,6 +9727,17 @@ body:has(#view-landing.active) {
           <button class="lp-pill lp-pill-solid lp-pill-lg" onclick="enterAppOrAuth()"><span class="cta-wide">立即体验 →</span><span class="cta-narrow">上传简历，开始一场可溯源的模拟面试 →</span></button>
           <button class="lp-pill lp-pill-line lp-pill-lg" onclick="showView('app')">先看看界面</button>
         </div>
+
+        <!-- 声波锚点：第一眼说清「这是语音 AI 面试」。24 根径向条按 --i 均分一圈，
+             错相呼吸成声波；中心麦克风常亮。纯 CSS，不占运行时 -->
+        <div class="fm-voice" aria-hidden="true">
+          <i class="fm-voice-ring"></i>
+          <i class="fm-voice-ring is-2"></i>
+          <div class="fm-voice-bars"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11"></i><i style="--i:12"></i><i style="--i:13"></i><i style="--i:14"></i><i style="--i:15"></i><i style="--i:16"></i><i style="--i:17"></i><i style="--i:18"></i><i style="--i:19"></i><i style="--i:20"></i><i style="--i:21"></i><i style="--i:22"></i><i style="--i:23"></i></div>
+          <span class="fm-voice-mic"><svg viewBox="0 0 24 24"><rect x="9" y="2.6" width="6" height="10.8" rx="3"/><path d="M5.6 11.4a6.4 6.4 0 0 0 12.8 0M12 17.8v3.6M8.6 21.4h6.8"/></svg></span>
+          <span class="fm-voice-cap">VOICE INPUT · 实时转写 · 5 AGENTS</span>
+        </div>
+
         <div class="hero-kbd-hint">按 <kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> 打开命令面板 · 直达任意功能页</div>
       </div>
 
@@ -8903,7 +9814,7 @@ body:has(#view-landing.active) {
         <div class="spec-chip"><span>LLM</span><b>GLM-4-Flash</b></div>
         <div class="spec-chip"><span>Agents</span><b>5 席圆桌</b></div>
         <div class="spec-chip"><span>Scoring</span><b>确定性引擎 + LLM 增强</b></div>
-        <div class="spec-chip"><span>Tests</span><b>jsdom 2969 ／ pytest 89</b></div>
+        <div class="spec-chip"><span>Tests</span><b>jsdom 3016 ／ pytest 89</b></div>
       </aside>
     </div>
   </section>
@@ -8924,7 +9835,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2969 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">3016 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -8934,7 +9845,7 @@ body:has(#view-landing.active) {
       <span class="tk">五维可解释评分 · 证据引用原话</span><span class="tk tk-sep">✦</span>
       <span class="tk">RAG 混合检索 + 五特征重排</span><span class="tk tk-sep">✦</span>
       <span class="tk">三级降级兜底</span><span class="tk tk-sep">✦</span>
-      <span class="tk">2969 项自动化断言</span><span class="tk tk-sep">✦</span>
+      <span class="tk">3016 项自动化断言</span><span class="tk tk-sep">✦</span>
       <span class="tk">真实 LLM 流式 · GLM-4-FLASH</span><span class="tk tk-sep">✦</span>
       <span class="tk">服务端评分落库</span><span class="tk tk-sep">✦</span>
       <span class="tk">端侧 MINILM 384 维向量</span><span class="tk tk-sep">✦</span>
@@ -9151,8 +10062,6 @@ curl "$BASE/api/interviews?sharecode=$SC" \
     <button class="lp-link-quiet" onclick="openEvaluatorGate()" title="仅访客与开发者可见">
       开发者模式 →
     </button>
-    <span class="lp-devfoot-sep" aria-hidden="true">·</span>
-    <a class="lp-link-quiet" href="landing-tech/" data-static-link>科技版展示页 →</a>
   </section>
 
   <footer class="site-foot">
@@ -10523,7 +11432,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
           <div class="material-icon">💻</div>
           <div>
             <div class="material-name">代码仓库（GitHub / Gitee Public）</div>
-            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、2969 项前端断言 + 89 项后端测试</div>
+            <div class="material-desc">原生 JS 前端 + FastAPI 后端的完整源码，含 README、3016 项前端断言 + 89 项后端测试</div>
           </div>
           <span class="material-status pending" id="eval-status-repo">待填写</span>
         </div>
@@ -10703,7 +11612,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
             </tr>
             <tr>
               <td><b>前端工程质量</b></td>
-              <td>原生 JS 模块化（45 模块 + 4 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、2969 项 jsdom 断言、本页内联自检</td>
+              <td>原生 JS 模块化（45 模块 + 5 层 CSS）、状态隔离、性能优化（懒加载 / 骨架屏 / 悬停预览）、3016 项 jsdom 断言、本页内联自检</td>
               <td><button class="btn btn-outline btn-sm" onclick="runSelfCheckPanel()">运行自检 →</button></td>
             </tr>
             <tr>
@@ -10736,7 +11645,7 @@ curl "$BASE/api/interviews?sharecode=$SC" \
         <div class="boundary-item"><b>向量库双形态</b>：本地单文件版用浏览器内单机索引（localStorage 存 40 条面经向量，MiniLM 384 维，混合打分在浏览器内完成）；在线与离线共用同一套浏览器内混合打分与五特征重排策略。后续规划升级为 pgvector 持久化 + RRF 融合 + Cross-Encoder Rerank。</div>
         <div class="boundary-item"><b>代码沙盒为浏览器 Worker 隔离</b>：具备 2s 超时熔断，仅支持纯 JS 逻辑题；后续规划集成 QuickJS WASM 沙盒，支持多语言与虚拟文件系统。</div>
         <div class="boundary-item"><b>MCP 为本地模拟 Server</b>：协议结构与真实 MCP 一致，后续规划接入跨进程真实 MCP，实现跨 Agent 工具发现。</div>
-        <div class="boundary-item"><b>演示视频已发布</b>：6 分 36 秒 / 1920×1080，<a href="https://www.bilibili.com/video/BV1tZ4i6WEZL/" target="_blank" rel="noopener">B 站在线播放</a>；另留<a href="https://futuremirror-demo.app.workbuddy.host/media/demo.mp4?sharecode=ZU6FKJDEK7" target="_blank" rel="noopener">站内直链</a>（64.7MB，可下载离线观看）。原始录制为 2562×1440 HEVC，浏览器兼容性差，已转码为 1920×1080 H.264，播放端无需装解码器。</div>
+        <div class="boundary-item"><b>演示视频已发布</b>：6 分 36 秒 / 1920×1080，<a href="https://www.bilibili.com/video/BV1tZ4i6WEZL/" target="_blank" rel="noopener">B 站在线播放</a>；另留<a href="https://futuremirror-demo.app.workbuddy.host/media/demo.mp4" target="_blank" rel="noopener">站内直链</a>（64.7MB，可下载离线观看）。原始录制为 2562×1440 HEVC，浏览器兼容性差，已转码为 1920×1080 H.264，播放端无需装解码器。</div>
       </div>
     </section>
 
@@ -21223,7 +22132,6 @@ function runSelfCheck() {
     run();
   }
 })();
-"use strict";
 /* ============================================================
  * v13 · 开发者模式（加密 + 一键进入）
  * ============================================================ */
@@ -25152,28 +26060,6 @@ function refreshBackendUi() {
 try { fmApi.init(); } catch (e) { /* 存储不可用时保持 base 为空，后续请求自然降级 */ }
 
 
-
-/* 静态页入口补码：科技版落地页（landing-tech/）是独立静态文件，不是 hash 路由，
- * 跳过去会重新发一次文档请求——镜像网关只认带 sharecode 的地址，裸路径 403。
- * 页面里这类链接写的仍是相对地址，加载后统一补上当前地址带的码；
- * GitHub Pages 与本地开发没有该参数，链接原样保留。 */
-fmApi.staticHref = function (href) {
-  let share = this.share;
-  if (!share) {
-    try { share = new URLSearchParams(location.search).get("sharecode") || ""; } catch (e) { share = ""; }
-  }
-  if (!share) return href;
-  try {
-    const u = new URL(href, location.href);
-    u.searchParams.set("sharecode", share);
-    return u.href;
-  } catch (e) { return href; }
-};
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("a[data-static-link]").forEach((a) => {
-    a.setAttribute("href", fmApi.staticHref(a.getAttribute("href")));
-  });
-});
 /* ============================================================
  * X. 动效与交互层 v29（Beta 1.1.0 · 完整性补全层）
  * 印刷风纪律：位移只用水平/scale，禁止 translateY 上浮入场；

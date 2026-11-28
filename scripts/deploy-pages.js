@@ -2,10 +2,9 @@
  * deploy-pages.js —— 把单文件演示版与技术文档发布到 GitHub Pages
  *   public/futuremirror-demo.html  →  分支 gh-pages（index.html / 404.html）
  *   docs/technical-doc.html        →  分支 gh-pages（docs/technical-doc.html）
- * 发布后地址：
+ *   发布后地址：
  *     https://<user>.github.io/<repo>/                      演示
  *     https://<user>.github.io/<repo>/docs/technical-doc.html 技术文档
- *     https://<user>.github.io/<repo>/landing-tech/         科技版落地页（独立静态页）
  *
  *   用法：
  *     node scripts/deploy-pages.js             # 发布当前 public/ 下的产物
@@ -92,22 +91,6 @@ if (HAS_CL) {
   fs.writeFileSync(path.join(tmp, "changelog.html"), cl);
 }
 
-/* 科技版落地页（独立静态页，自带 assets/）：整目录原样发布，
- * 入口 /landing-tech/ 由目录下的 index.html 承担，无需改写任何相对路径。
- * 它与单文件演示版并存，主站导航与页脚各留一个入口。 */
-const TECH = path.join(ROOT, "frontend", "landing-tech");
-let techKB = 0;
-if (fs.existsSync(path.join(TECH, "index.html"))) {
-  fs.cpSync(TECH, path.join(tmp, "landing-tech"), { recursive: true });
-  const walk = (d) =>
-    fs
-      .readdirSync(d, { withFileTypes: true })
-      .reduce((s, e) => s + (e.isDirectory() ? walk(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).size), 0);
-  techKB = walk(path.join(tmp, "landing-tech")) / 1024;
-} else {
-  log("warn", "未找到 frontend/landing-tech，跳过科技版落地页");
-}
-
 /* 端侧模型权重随站点自托管：Pages 会返回 Access-Control-Allow-Origin: *，
    既满足本站同源读取，也能作为 file:// 或其他站点打开时的跨域兜底 */
 let modelMB = 0;
@@ -134,7 +117,6 @@ fs.writeFileSync(
       ? `- 评分方法：\`docs/scoring-method.html\`（评分公式与锚点规则的交互展示，${methodKB.toFixed(1)}KB）\n`
       : "") +
     (HAS_CL ? `- 更新日志：\`changelog.html\`（版本更新日志静态页，${clKB.toFixed(1)}KB，可点击跳转）\n` : "") +
-    (techKB ? `- 科技版落地页：\`landing-tech/\`（独立静态页 + 自带 assets，${(techKB / 1024).toFixed(1)}MB）\n` : "") +
     (modelMB ? `- 端侧模型：\`models/\`（all-MiniLM-L6-v2，${modelMB.toFixed(1)}MB，同源可读）\n` : "") +
     `- 版本：${version}\n` +
     `- 生成时间：${stamp}\n` +
@@ -143,7 +125,7 @@ fs.writeFileSync(
 );
 log(
   "stage",
-  `${tmp}（${sizeKB}KB${HAS_DOC ? ` + 文档 ${docKB.toFixed(1)}KB` : ""}${HAS_CL ? ` + 更新日志 ${clKB.toFixed(1)}KB` : ""}${modelMB ? ` + 模型 ${modelMB.toFixed(1)}MB` : ""}${techKB ? ` + 科技版 ${(techKB / 1024).toFixed(1)}MB` : ""}）`
+  `${tmp}（${sizeKB}KB${HAS_DOC ? ` + 文档 ${docKB.toFixed(1)}KB` : ""}${HAS_CL ? ` + 更新日志 ${clKB.toFixed(1)}KB` : ""}${modelMB ? ` + 模型 ${modelMB.toFixed(1)}MB` : ""}）`
 );
 
 if (DRY) {
@@ -191,4 +173,3 @@ const [owner, name] = repo.split("/");
 log("done", `已发布 → https://${owner.toLowerCase()}.github.io/${name}/`);
 if (HAS_DOC) log("done", `技术文档 → https://${owner.toLowerCase()}.github.io/${name}/docs/technical-doc.html`);
 if (HAS_CL) log("done", `更新日志 → https://${owner.toLowerCase()}.github.io/${name}/changelog.html`);
-if (techKB) log("done", `科技版落地页 → https://${owner.toLowerCase()}.github.io/${name}/landing-tech/`);

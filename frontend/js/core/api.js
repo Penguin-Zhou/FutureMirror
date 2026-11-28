@@ -321,25 +321,3 @@ function refreshBackendUi() {
 try { fmApi.init(); } catch (e) { /* 存储不可用时保持 base 为空，后续请求自然降级 */ }
 
 
-
-/* 静态页入口补码：科技版落地页（landing-tech/）是独立静态文件，不是 hash 路由，
- * 跳过去会重新发一次文档请求——镜像网关只认带 sharecode 的地址，裸路径 403。
- * 页面里这类链接写的仍是相对地址，加载后统一补上当前地址带的码；
- * GitHub Pages 与本地开发没有该参数，链接原样保留。 */
-fmApi.staticHref = function (href) {
-  let share = this.share;
-  if (!share) {
-    try { share = new URLSearchParams(location.search).get("sharecode") || ""; } catch (e) { share = ""; }
-  }
-  if (!share) return href;
-  try {
-    const u = new URL(href, location.href);
-    u.searchParams.set("sharecode", share);
-    return u.href;
-  } catch (e) { return href; }
-};
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("a[data-static-link]").forEach((a) => {
-    a.setAttribute("href", fmApi.staticHref(a.getAttribute("href")));
-  });
-});
