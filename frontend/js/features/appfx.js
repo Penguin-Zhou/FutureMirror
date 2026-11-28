@@ -293,7 +293,9 @@
         chip.className = "fb-coord";
         chip.setAttribute("aria-hidden", "true");
         chip.textContent = tag + " · X--- Y---";
-        b.appendChild(chip);
+        /* v83：翻转卡的坐标标注要贴在正面上，跟着卡一起转走；
+         * 挂在 block 上会浮在翻转后的窗口上面。 */
+        (b.querySelector(".fb3d-front") || b).appendChild(chip);
         let ticking = false, lx = 0, ly = 0;
         const apply = () => {
           ticking = false;
